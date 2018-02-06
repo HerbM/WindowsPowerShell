@@ -1,0 +1,520 @@
+﻿echo "C:\Users\$($env:username)\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
+echo 'Install DOSKey'
+#doskey /exename=powershell.exe /macrofile=c:\bat\macrosPS.txt
+
+
+function Test-Administrator { return (whoami /all | select-string S-1-16-12288) -ne $null }
+if ((whoami /all | select-string S-1-16-12288) -ne $null) {'Administrator privileges  enabled'} else {'Administrator privileges NOT available'}
+
+try {
+  if (!$global:PromptStack) {
+    [string[]]$global:PromptStack +=   (gcm prompt).ScriptBlock
+	}
+} catch {
+	[string[]]$global:PromptStack  = @((gcm prompt).ScriptBlock)
+}
+echo "Pushed previous prompt onto `$PromptStack: $($PromptStack.count) entries"
+# echo 'prompt="PS `"$($executionContext.SessionState.Path.CurrentLocation)`" $('>' * ($nestedPromptLevel + 1)) "
+prompt "PS `"$($executionContext.SessionState.Path.CurrentLocation)`" $('>' * ($nestedPromptLevel + 1)) "
+
+<#
+function docs {
+  [CmdletBinding()]
+  params (
+    [Parameter(Position='0')][string]$path='docs'
+    [Parameter(Position='1')][string]$subdirectory='docs'
+    [switch]$pushd
+  )	
+  if (Test-Path $path) {
+    if ($pushd) { pushd $path } else {cd $path} 
+    if ($subdirectory) {cd $subdirectory}
+  }	
+}
+#>
+
+function down {cd "$($env:userprofile)\downloads"; if ($args[0]) {cd $args[0]}}
+function dod { (dir @args) | sort -prop lastwritetime }
+function don { (dir @args) | sort -prop fullname }
+function dos { (dir @args) | sort -prop length }
+function dox { (dir @args) | sort -prop extension }
+
+function docs {cd "$($env:userprofile)\documents"}
+function down {cd "$($env:userprofile)\downloads"}
+
+echo 'Import-Module PSReadLine https://github.com/lzybkr/PSReadLine' 
+echo 'Customerize:  PSReadLine examples https://github.com/lzybkr/PSReadLine/blob/master/PSReadLine/SamplePSReadlineProfile.ps1' 
+Import-Module PSReadLine
+echo 'Get-PSReadlineKeyHandler to see key bindings'
+echo '...or:'
+echo 'Get-PSReadlineKeyHandler | % {"{0,-24} {1,-25} {2}" -f $_.key, $_.function, $_.description} > .\PSReadLineKeys.txt'
+echo 'Set-PSReadlineKeyHandler -Key UpArrow -Function HistorySearchBackward'
+echo 'Set-PSReadlineKeyHandler -Key DownArrow -Function HistorySearchForward'
+
+set-PSReadlineOption -dingduration 2
+set-PSReadlineOption -dingtone 75
+
+function 4rank ($n, $d1, $d2, $d) {"{0:P2}   {1:P2}" -f ($n/$d),(1 - $n/$d)}
+
+Function Get-PSVersion {
+  "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"
+}
+write-host ('Function Get-PSVersion or use $PSVersionTable: ' + "$(Get-PSVersion)")
+
+
+if (gcm write-information -ea silentlycontinue) {
+	$global:informationaction = $warningpreference
+} else {  
+  echo '#Use write-warning for information stream when write-information doesnt exist'
+	set-alias write-information write-warning -force -option allscope
+	# Remove-Item alias:write-information
+}
+
+
+#region Script Diagnostic & utility Functions
+#region Definitions
+        # function Get-CurrentLineNumber 
+        # function Get-CurrentFileName  
+        # Alias   LINE    Get-CurrentLineNumber
+        # Alias __LINE__  Get-CurrentLineNumber
+        # Alias   FILE    Get-CurrentFileName  
+        # Alias __FILE__  Get-CurrentFileName
+        # function write-log
+        # function ExitWithCode($exitcode)
+        # function Make-Credential
+        # function Get-ErrorDetail
+        # function MyPSHost
+#endregion
+ 
+#region Definitions       
+function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
+function Get-CurrentFileName   { $MyInvocation.MyCommand.Name   }   #$MyInvocation.ScriptName
+Set-Alias -Name   LINE   -Value Get-CurrentLineNumber -Description "Returns the current (caller's) line number in a script." -force -option allscope
+Set-Alias -Name __LINE__ -Value Get-CurrentLineNumber -Description "Returns the current (caller's) line number in a script." -force -option allscope
+Set-Alias -Name   FILE   -Value Get-CurrentFileName   -Description 'Returns the name of the current script file.'             -force -option allscope
+Set-Alias -Name __FILE__ -Value Get-CurrentFileName   -Description 'Returns the name of the current script file.'             -force -option allscope  
+
+"$(FILE) test " 
+
+function write-log {
+  param (
+    [Parameter(Mandatory=$true)][string]$Message,
+    [Parameter()][ValidateSet('1','2','3')][int]$Severity = 1 ## Default to a low severity. Otherwise, override
+  )
+  write-verbose $Message
+  $line = [pscustomobject]@{
+    'DateTime' = (Get-Date)
+    'Severity' = $Severity
+    'Message'  = $Message
+  }
+  if (-not $LogFilePath) {
+    $LogFilePath = '.\LogFile.txt'
+  }
+  $line | Export-Csv -Path $LogFilePath -Append -NoTypeInformation -erroraction Silentlycontinue -force
+}
+ 
+function ExitWithCode($exitcode) {
+  $host.SetShouldExit($exitcode)
+  exit
+}
+ 
+function Make-Credential($username, $password) {
+  $cred = $null
+  $secstr = ConvertTo-SecureString -String $password -AsPlainText -Force
+  if ($secstr) {
+    $cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $Username,$secstr
+  }
+  return $cred
+}
+ 
+function Get-ErrorDetail {
+  param($ErrorRecord = $Error[0])
+  $ErrorRecord | Format-List * -Force
+  $ErrorRecord.InvocationInfo | Format-List *
+  $Exception = $ErrorRecord.Exception
+  for ($depth = 0; $Exception -ne $null; $depth++) {
+    "$depth" * 80
+    $Exception | Format-List -Force *
+    $Exception = $Exception.InnerException
+  }
+}
+ 
+function MyPSHost {
+  $bit = if ([Environment]::Is64BitProcess) {'64-bit'} else {'32-bit'}
+  If ($h = get-host) {
+    return "$($h.name) $($h.version) $bit process"
+  } else {
+    return 'PowerShell host not found'
+  }
+}
+ 
+ 
+Function Get-PSVersion {
+  "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"
+}
+
+<#
+General useful commands
+ gcm *-rsjob*
+ history[-10..-1]
+
+#>
+
+function PSBoundParameter([string]$Parm) {
+  return ($PSCmdlet -and $PSCmdlet.MyInvocation.BoundParameters[$Parm].IsPresent)
+}
+ 
+#endregion Definitions
+ 
+#endregion Script Diagnostic & utility Functions 
+
+
+# Chocolatey profile
+$ChocolateyProfile = "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
+if (Test-Path($ChocolateyProfile)) {
+  Import-Module "$ChocolateyProfile"
+}
+
+# Need to explicitly import PSReadLine in a number of cases: Windows versions < 10 and
+# x86 consoles that aren't loading PSReadLine.
+# Source: https://gist.github.com/rkeithhill/3103994447fd307b68be#file-psreadline_config-ps1
+
+# Other hosts (ISE, ConEmu) don't always work as well with PSReadline.
+if ($host.Name -ne 'ConsoleHost') { return }
+
+# PSReadline hasn't been auto-imported, try to manually import it
+if (!(Get-Module PSReadline -ErrorAction SilentlyContinue)) {
+  if (([IntPtr]::Size -eq 4) -and !(Get-Module -ListAvailable PSReadline)) {
+    $origPSModulePath = $env:PSModulePath
+    $env:PSModulePath += ';C:\Program Files\WindowsPowerShell\Modules'
+    Import-Module PSReadline
+    $env:PSModulePath = $origPSModulePath
+  } else {
+    Import-Module PSReadline
+  }
+}
+
+Set-PSReadlineOption -MaximumHistoryCount 10000 -HistorySearchCursorMovesToEnd -HistoryNoDuplicates -HistorySavePath $PSScriptRoot\PSReadLine_history.txt
+Set-PSReadlineOption -AddToHistoryHandler {
+  param([string]$line)
+  return $line.Length -gt 3
+}
+
+Set-PSReadlineKeyHandler -Chord UpArrow         -Function HistorySearchBackward
+Set-PSReadlineKeyHandler -Chord DownArrow       -Function HistorySearchForward
+Set-PSReadlineKeyHandler -Chord 'Ctrl+D,Ctrl+C' -Function CaptureScreen
+
+# Insert paired quotes if not already on a quote
+Set-PSReadlineKeyHandler -Chord "Ctrl+'","Ctrl+Shift+'" `
+                         -BriefDescription SmartInsertQuote `
+                         -Description "Insert paired quotes if not already on a quote" `
+                         -ScriptBlock {
+  param($key, $arg)
+  $line = $null
+  $cursor = $null
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+
+  $keyChar = $key.KeyChar
+  if ($key.Key -eq 'Oem7') {
+    if ($key.Modifiers -eq 'Control') {
+      $keyChar = "`'"
+    } elseif ($key.Modifiers -eq 'Shift','Control') {
+      $keyChar = '"'
+    }
+  }  
+  if ($line[$cursor] -eq $key.KeyChar) {
+    # Just move the cursor
+    [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor + 1)
+  } else { # Insert matching quotes, move cursor to be in between the quotes
+    [Microsoft.PowerShell.PSConsoleReadLine]::Insert("$keyChar" * 2)
+    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+    [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor - 1)
+  }
+}
+
+# Copy the current path to the clipboard
+Set-PSReadlineKeyHandler -Key Alt+c `
+                         -BriefDescription CopyCurrentPathToClipboard `
+                         -LongDescription "Copy the current path to the clipboard" `
+                         -ScriptBlock {
+  param($key, $arg)
+
+  Add-Type -Assembly System.Windows.Forms
+  [System.Windows.Forms.Clipboard]::SetText($pwd.Path, 'Text')
+}
+
+# Paste the clipboard text as a here string
+Set-PSReadlineKeyHandler -Key Ctrl+Shift+v `
+                         -BriefDescription PasteAsHereString `
+                         -LongDescription "Paste the clipboard text as a here string" `
+                         -ScriptBlock {
+  param($key, $arg)
+
+  Add-Type -Assembly System.Windows.Forms
+  if ([System.Windows.Forms.Clipboard]::ContainsText())
+  {
+    # Get clipboard text - remove trailing spaces, convert \r\n to \n, and remove the final \n.
+    $text = ([System.Windows.Forms.Clipboard]::GetText() -replace "\p{Zs}*`r?`n","`n").TrimEnd()
+    [Microsoft.PowerShell.PSConsoleReadLine]::Insert("@'`n$text`n'@")
+  } else {
+    [Microsoft.PowerShell.PSConsoleReadLine]::Ding()
+  }
+}
+
+# Insert matching braces
+Set-PSReadlineKeyHandler -Key '(','{','[' `
+                         -BriefDescription InsertPairedBraces `
+                         -LongDescription "Insert matching braces" `
+                         -ScriptBlock {
+  param($key, $arg)
+
+  $closeChar = switch ($key.KeyChar)
+  {
+      <#case#> '(' { [char]')'; break }
+      <#case#> '{' { [char]'}'; break }
+      <#case#> '[' { [char]']'; break }
+  }
+
+  $line = $null
+  $cursor = $null
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+
+  if ($cursor -eq $line.Length -or $line[$cursor] -match '\)|}|\]|\s')
+  {
+      [Microsoft.PowerShell.PSConsoleReadLine]::Insert("$($key.KeyChar)$closeChar")
+      [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+      [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor - 1)
+  }
+  else
+  {
+      [Microsoft.PowerShell.PSConsoleReadLine]::Insert($key.KeyChar)
+  }      
+}
+
+# Insert closing brace or skip
+Set-PSReadlineKeyHandler -Key ')',']','}' `
+                         -BriefDescription SmartCloseBraces `
+                         -LongDescription "Insert closing brace or skip" `
+                         -ScriptBlock {
+    param($key, $arg)
+
+    $line = $null
+    $cursor = $null
+    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+
+    if ($line[$cursor] -eq $key.KeyChar)
+    {
+        [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor + 1)
+    }
+    else
+    {
+        [Microsoft.PowerShell.PSConsoleReadLine]::Insert("$($key.KeyChar)")
+    }
+}
+
+# Put parentheses around the selection or entire line and move the cursor to after the closing paren
+Set-PSReadlineKeyHandler -Key 'Ctrl+(' `
+                         -BriefDescription ParenthesizeSelection `
+                         -LongDescription "Put parentheses around the selection or entire line and move the cursor to after the closing parenthesis" `
+                         -ScriptBlock {
+    param($key, $arg)
+
+    $selectionStart = $null
+    $selectionLength = $null
+    [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
+
+    $line = $null
+    $cursor = $null
+    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+    if ($selectionStart -ne -1)
+    {
+        $replacement = '(' + $line.SubString($selectionStart, $selectionLength) + ')'
+        [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, $replacement)
+        [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($selectionStart + $selectionLength + 2)
+    }
+    else
+    {
+        [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $line.Length, '(' + $line + ')')
+        [Microsoft.PowerShell.PSConsoleReadLine]::EndOfLine()
+    }
+}
+
+# Replace all aliases with the full command
+Set-PSReadlineKeyHandler -Key Alt+r `
+                         -BriefDescription ResolveAliases `
+                         -LongDescription "Replace all aliases with the full command" `
+                         -ScriptBlock {
+    param($key, $arg)
+
+    $ast = $null
+    $tokens = $null
+    $errors = $null
+    $cursor = $null
+    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$ast, [ref]$tokens, [ref]$errors, [ref]$cursor)
+
+    $startAdjustment = 0
+    foreach ($token in $tokens)
+    {
+        if ($token.TokenFlags -band [System.Management.Automation.Language.TokenFlags]::CommandName)
+        {
+            $alias = $ExecutionContext.InvokeCommand.GetCommand($token.Extent.Text, 'Alias')
+            if ($alias -ne $null)
+            {
+                $resolvedCommand = $alias.ResolvedCommandName 
+                if ($resolvedCommand -ne $null)
+                {
+                    $extent = $token.Extent
+                    $length = $extent.EndOffset - $extent.StartOffset
+                    [Microsoft.PowerShell.PSConsoleReadLine]::Replace(
+                        $extent.StartOffset + $startAdjustment,
+                        $length,
+                        $resolvedCommand)
+
+                    # Our copy of the tokens won't have been updated, so we need to
+                    # adjust by the difference in length
+                    $startAdjustment += ($resolvedCommand.Length - $length)
+                }
+            }
+        }
+    }
+}
+
+# Save current line in history but do not execute
+Set-PSReadlineKeyHandler -Key Alt+w `
+                         -BriefDescription SaveInHistory `
+                         -LongDescription "Save current line in history but do not execute" `
+                         -ScriptBlock {
+  param($key, $arg)
+  $line = $null
+  $cursor = $null
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+  [Microsoft.PowerShell.PSConsoleReadLine]::AddToHistory($line)
+  [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
+}
+
+# This key handler shows the entire or filtered history using Out-GridView. The
+# typed text is used as the substring pattern for filtering. A selected command
+# is inserted to the command line without invoking. Multiple command selection
+# is supported, e.g. selected by Ctrl + Click.
+Set-PSReadlineKeyHandler -Key F7 `
+                         -BriefDescription History `
+                         -LongDescription 'Show command history' `
+                         -ScriptBlock {
+  $pattern = $null
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$pattern, [ref]$null)
+  if ($pattern) {
+    $pattern = [regex]::Escape($pattern)
+  }
+  $history = [System.Collections.ArrayList]@(
+    $last = ''
+    $lines = ''
+    foreach ($line in [System.IO.File]::ReadLines((Get-PSReadlineOption).HistorySavePath)) {
+      if ($line.EndsWith('`')) {
+        $line = $line.Substring(0, $line.Length - 1)
+        $lines = if ($lines) {
+          "$lines`n$line"
+        } else {
+          $line
+        }
+        continue
+      }
+      if ($lines) {
+        $line = "$lines`n$line"
+        $lines = ''
+      }
+      if (($line -cne $last) -and (!$pattern -or ($line -match $pattern))) {
+        $last = $line
+        $line
+      }
+    }
+  )
+  $history.Reverse()
+  $command = $history | Out-GridView -Title History -PassThru
+  if ($command) {
+    [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
+    [Microsoft.PowerShell.PSConsoleReadLine]::Insert(($command -join "`n"))
+  }
+}
+
+Set-PSReadlineOption -token string -foregroundcolor white 
+Set-PSReadlineOption -HistoryNoDuplicates
+new-alias np C:\util\notepad++.exe
+function doc  {cd "$env:userprofile\documents"}
+function docs {cd "$env:userprofile\documents"}
+function down {cd "$env:userprofile\downloads"}
+function Get-SerialNumber {gwmi win32_operatingsystem  | select -prop SerialNumber}
+function Get-ComputerDomain { gwmi win32_computersystem | select-object -prop Name,Domain,DomainRole,DNSDomainName}
+
+function drive {gwmi win32_logicaldisk | ? {$_.drivetype -eq 3} | % {"$($_.deviceid)\"}}
+function fileformat([string[]]$path = @('c:\dev'), [string[]]$include=@('*.txt')) {
+  dir -path $path -include $include -recurse -force -ea 0 |  Select-Object -prop basename,extension,@{Name='WriteTime';Expression={$_.lastwritetime -f "yyyy-MM-dd-ddd-HH:mm:ss"}},length,directory,fullname | export-csv t.csv -force
+}
+
+new-alias alias new-alias -force
+new-alias 7z 'C:\util\7-Zip\App\7-Zip64\7z.exe' -force
+
+ 
+write-host "`nError count: $($Error.Count)"
+
+#---------------- Snippets
+# gcm *zip*,*7z*,*archive*  | ? {$_.Source -notmatch '\.(cmd|exe|bat)'}
+<#
+	$watcher = New-Object System.IO.FileSystemWatcher
+	$watcher.Path = 'C:\temp\'
+	$watcher.Filter = 'test1.txt'
+	$watcher.EnableRaisingEvents = $true
+	$changed = Register-ObjectEvent
+	$watcher 'Changed' -Action {
+	write-output "Changed: $($eventArgs.FullPath)"
+}
+#>
+
+
+
+<#
+    ExtraPromptLineCount                   : 0
+    AddToHistoryHandler                    :
+    CommandValidationHandler               :
+    CommandsToValidateScriptBlockArguments : {ForEach-Object, %, Invoke-Command, icm...}
+    HistoryNoDuplicates                    : False
+    MaximumHistoryCount                    : 4096
+    MaximumKillRingCount                   : 10
+    HistorySearchCursorMovesToEnd          : False
+    ShowToolTips                           : False
+    DingTone                               : 1221
+    CompletionQueryItems                   : 100
+    WordDelimiters                         : ;:,.[]{}()/\|^&*-=+--?
+    DingDuration                           : 50
+    BellStyle                              : Audible
+    HistorySearchCaseSensitive             : False
+    HistorySavePath                        :
+    C:\Users\TestUser\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadline\ConsoleHost_histor
+    HistorySaveStyle                       : SaveIncrementally
+    ContinuationPromptForegroundColor      : DarkYellow
+    ContinuationPromptBackgroundColor      : DarkMagenta
+    DefaultTokenForegroundColor            : DarkYellow
+    CommentForegroundColor                 : DarkGreen
+    KeywordForegroundColor                 : Green
+    StringForegroundColor                  : DarkCyan
+    OperatorForegroundColor                : DarkGray
+    VariableForegroundColor                : Green
+    CommandForegroundColor                 : Yellow
+    ParameterForegroundColor               : DarkGray
+    TypeForegroundColor                    : Gray
+    NumberForegroundColor                  : White
+    MemberForegroundColor                  : White
+    DefaultTokenBackgroundColor            : DarkMagenta
+    CommentBackgroundColor                 : DarkMagenta
+    KeywordBackgroundColor                 : DarkMagenta
+    StringBackgroundColor                  : DarkMagenta
+    OperatorBackgroundColor                : DarkMagenta
+    VariableBackgroundColor                : DarkMagenta
+    CommandBackgroundColor                 : DarkMagenta
+    ParameterBackgroundColor               : DarkMagenta
+    TypeBackgroundColor                    : DarkMagenta
+    NumberBackgroundColor                  : DarkMagenta
+    MemberBackgroundColor                  : DarkMagenta
+    EmphasisForegroundColor                : Cyan
+    EmphasisBackgroundColor                : DarkMagenta
+    ErrorForegroundColor                   : Red
+    ErrorBackgroundColor                   : DarkMagenta
+#>

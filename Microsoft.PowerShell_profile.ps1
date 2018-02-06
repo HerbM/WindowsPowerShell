@@ -468,7 +468,7 @@ function Global:prompt { "'$($executionContext.SessionState.Path.CurrentLocation
 
 $books = switch ($true) {
   { Test-Path 'c:\books' } { Resolve-Path 'c:\books' }
-  { Test-Path (Join-Path (Join-Path $Home 'Downloads')  Books) } { Resolve-Path (Join-Path (Join-Path $Home 'Downloads')  'Books') -ea 0 }
+  { Test-Path (Join-Path (Join-Path $Home 'Downloads')  'Books') } { Resolve-Path (Join-Path (Join-Path $Home 'Downloads')  Books) -ea 0 }
 }
 
 $gohash = [ordered]@{
@@ -498,34 +498,98 @@ function Set-GoAlias {
   }
 }
 
-# In my profile its just a Hash table with map from shortcut/alias to directory; and a "function go" # which switches based on the alias name you call it by (i.e., call go by) ; add hash entry(+) and definition maps the aliases.
 function Set-GoLocation {
   [CmdletBinding()]param (
-    [Parameter(Position='0')][string]$path,
-    [Parameter(Position='1')][string]$subdirectory,
+    [Parameter(Position='0')][string[]]$path=@(),
+    [Parameter(Position='1')][string[]]$subdirectory=@(),
     [switch]$pushd,
-    [switch]$showInvocation
+    [switch]$showInvocation   # for testing 
   )
-  if ($showInvocation) { $MyInvocation }
+  $verbose = $true
+  write-verbose "$(LINE) Start In: $((Get-Location).path)"
+  if ($showInvocation) { write-warning "$($Myinvocation | out-string )" }
   $InvocationName = $MyInvocation.InvocationName
+  if (Get-Command set-jumplocation -ea 0) { 
+           new-alias jpushd Set-JumpLocation -force  
+  } else { new-alias jpushd pushd            -force }
+  if (!(get-variable gohash -ea 0)) { $goHash = @{} }
   write-verbose "$(LINE) Path: $Path InvocationName: $InvocationName"
-  if     ($gohash -and $goHash.Contains($InvocationName)) { 
-    if (!$subdirectory) { $subdirectory = $path }
-    $Path = $goHash.$InvocationName      
-  } elseif ($gohash -and $gohash.Contains($path))      { $Path = $gohash.$path }	
-  write-verbose "$(LINE) path: [$Path] sub: [$subdirectory]"
+  $subdir = @($subdirectory.foreach{$_.split(';')}) ##### $subdirectory -split ';' 
+  $Target = @(if ($goHash.Contains($InvocationName)) { 
+    if (!$subdirectory) { $subdir = @($path.foreach{$_.split(';')}) } 
+    $goHash.$InvocationName -split ';'
+  } else {
+    ForEach ($P in $Path) {
+      if ($gohash.Contains($P)) { $gohash.$path.foreach{$_.split(';')} }  # @($goHash.path.foreach{$_.split(';')})
+    }  
+  })	
+  if (!$Target ) { $Target = $Path.foreach{$_.split(';')} }
+  write-verbose "$(LINE) path: [$($Target -join '] [')] sub: [$($subdir -join '] [')]"
   try {
-    if (Test-Path $path) {
-      if ($pushd) { pushd $path } else { cd $path } 
-      if ($subdirectory) {cd $subdirectory}
-    }	else {
-      throw "$(LINE) Directory [$Path] not found."
+    $ValidPath = @()
+    :OuterForEach ForEach ($p in ($Target)) {    #  | % {$_ -split ';'}  ### @($path.foreach{$_.split(';')})
+      if ($goHash.Contains($p) -and (Test-Path $goHash.$p)) { $p = $goHash.$p}
+      write-verbose "$(LINE) Foreach P: $p"
+      if (Test-Path $p -ea 0) {
+        $ValidPath += Resolve-Path $p -ea 0
+        ForEach ($Sub in ($subdir)) {   #  | % {$_ -split ';'} 
+          write-verbose "$(LINE) $p sub: $sub"
+          $TryPath = Join-Path (Resolve-Path $pr -ea 0) $Sub
+          if (Test-Path $TryPath) { 
+            $ValidPath = @(Resolve-Path (Join-Path $TryPath))
+            write-verbose "$(LINE) Try: $TryPath ValidPath: [$($ValidPath -join '] [')]"
+            break :OuterForEach
+          }
+        }
+      }
+    }  
+    if ($ValidPath) {
+      write-verbose "$(LINE) Valid: $($ValidPath -join '; ')"
+      if ($true -or $pushd) { jpushd  $ValidPath    } 
+      else        { cd      $ValidPath[0] } 
+    } else {
+      write-verbose "$(LINE) $($Path -join '] [') $($Subdirectory -join '] [')"
+      if ($Path -or $Subdirectory) { 
+        write-verbose "$(LINE) Jump: jpushd $(($Path + $Subdirectory) -join '; ')"
+        jpushd ($Path + $Subdirectory) 
+      } else  { 
+        if ($InvocationName -notin 'go','g','Set-GoLocation','GoLocation') {
+          write-verbose "$(LINE) Jump: jpushd $InvocationName"
+          jpushd $InvocationName 
+        } else {
+          jpushd $InvocationName 
+          write-verbose "$(LINE) Jump: jpushd $InvocationName"
+        }
+      }
     }
   }	catch {
     write-error $_
   }
+  write-verbose "$(LINE) Current: $((Get-Location).path)"
 } New-Alias Go Set-GoLocation -force -scope global; New-Alias G Set-GoLocation -force -scope global 
 
+
+Set-GoAlias
+
+<# 
+
+Ok, I finally got around to starting to learn Pester version 4.1.1 
+PSVersion 5.1.14409.1012
+Got this:
+     Expected: {C:\books}
+     But was:  {C:\books}
+Looks like a match, editor says it's a match, so I tried adding the same test with just gettype() added to the test and should values, and it gave no error (though maybe it was not really 2 strings but just looked like strings. (edited)
+(get-location).gettype();  (resolve-path .).gettype()
+(get-location)  -eq (resolve-path .)
+(get-location).path  -eq (resolve-path .).path
+
+[-] Uses books to change directory to C:\books 90ms
+  Expected: {C:\books}
+  But was:  {C:\books}
+  16:       & ([scriptblock]::Create("$Alias -verbose:$v -PushD"))  ; (get-location).path | Should -Be $goHash.$Alias
+  at Invoke-Assertion, C:\Program Files\WindowsPowerShell\Modules\Pester\4.1.1\Functions\Assertions\Should.ps1: line 209
+  at <ScriptBlock>, C:\Users\A469526\Documents\WindowsPowerShell\Go\GoLocation\GoLocation.Tests.ps1: line 16
+#>
 
 #new-alias docs       go -force
 #new-alias books      go -force
