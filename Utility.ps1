@@ -117,16 +117,16 @@ function Get-CurrentFileName1  {
     else {'GLOBAL'} 
   } else {"GLOBAL"}    
 }   #$MyInvocation.ScriptName
+
 try {
-try {
-  if (![boolean](get-alias line -ea 0)) {
-    New-Alias -Name   LINE   -Value Get-CurrentLineNumber -Description 'Returns the current (caller''s) line number in a script.' -force -Option allscope
-    New-Alias -Name __LINE__ -Value Get-CurrentLineNumber -Description 'Returns the current (caller''s) line number in a script.' -force -Option allscope
-    New-Alias -Name   FILE   -Value Get-CurrentFileName   -Description 'Returns the name of the current script file.' -force             -Option allscope
-    New-Alias -Name   FLINE  -Value Get-CurrentFileLine   -Description 'Returns the name of the current script file.' -force             -Option allscope
-    New-Alias -Name   FILE1  -Value Get-CurrentFileName1  -Description 'Returns the name of the current script file.' -force             -Option allscope
-    New-Alias -Name __FILE__ -Value Get-CurrentFileName   -Description 'Returns the name of the current script file.' -force             -Option allscope
-  }
+    if (![boolean](get-alias line -ea 0)) {
+      New-Alias -Name   LINE   -Value Get-CurrentLineNumber -Description 'Returns the current (caller''s) line number in a script.' -force -Option allscope
+      New-Alias -Name __LINE__ -Value Get-CurrentLineNumber -Description 'Returns the current (caller''s) line number in a script.' -force -Option allscope
+      New-Alias -Name   FILE   -Value Get-CurrentFileName   -Description 'Returns the name of the current script file.' -force             -Option allscope
+      New-Alias -Name   FLINE  -Value Get-CurrentFileLine   -Description 'Returns the name of the current script file.' -force             -Option allscope
+      New-Alias -Name   FILE1  -Value Get-CurrentFileName1  -Description 'Returns the name of the current script file.' -force             -Option allscope
+      New-Alias -Name __FILE__ -Value Get-CurrentFileName   -Description 'Returns the name of the current script file.' -force             -Option allscope
+    } 
 } catch {}
 
 function Get-SortableDate {

@@ -47,7 +47,7 @@ $DotNetKey = @('HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP',
 # find-module PSScriptAnalyzer   | Install-Module -scope AllUsers
 # find-module PSGit              | Install-Module -scope AllUsers
 # find-module Jump.Location      | Install-Module Jump.Location
-
+Import-Module Jump.Location
 # DSC_PowerCLISnapShotCheck  PowerCLITools  PowerCLI.SessionManager PowerRestCLI
 # PowerShell CodeManager https://bytecookie.wordpress.com/
 
@@ -468,7 +468,7 @@ function Global:prompt { "'$($executionContext.SessionState.Path.CurrentLocation
 
 $books = switch ($true) {
   { Test-Path 'c:\books' } { Resolve-Path 'c:\books' }
-  { Test-Path (Join-Path (Join-Path $Home 'Downloads')  Books) } { Resolve-Path (Join-Path (Join-Path $Home 'Downloads')  Books) -ea 0 }
+  { Test-Path (Join-Path (Join-Path $Home 'Downloads')  Books) } { Resolve-Path (Join-Path (Join-Path $Home 'Downloads')  'Books') -ea 0 }
 }
 
 $gohash = [ordered]@{
@@ -494,12 +494,12 @@ function Set-GoAlias {
   }  
   ForEach ($Alias in $goHash.Keys) { 
     write-verbose "New-Alias $Alias go -force -scope Global -Option allscope"
-    New-Alias $Alias go -force -scope Global -Option allscope 
+    New-Alias $Alias Set-GoLocation -force -scope Global -Option allscope 
   }
 }
 
 # In my profile its just a Hash table with map from shortcut/alias to directory; and a "function go" # which switches based on the alias name you call it by (i.e., call go by) ; add hash entry(+) and definition maps the aliases.
-function go {
+function Set-GoLocation {
   [CmdletBinding()]param (
     [Parameter(Position='0')][string]$path,
     [Parameter(Position='1')][string]$subdirectory,
@@ -524,7 +524,7 @@ function go {
   }	catch {
     write-error $_
   }
-} 
+} New-Alias Go Set-GoLocation -force -scope global; New-Alias G Set-GoLocation -force -scope global 
 
 
 #new-alias docs       go -force
@@ -636,11 +636,11 @@ write-information "$(LINE) Error count: $($Error.Count)"
 Rename-Item Function:\Prompt PoshGitPrompt -Force
 function Prompt() {if(Test-Path Function:\PrePoshGitPrompt){++$global:poshScope; New-Item function:\script:Write-host -value "param([object] `$object, `$backgroundColor, `$foregroundColor, [switch] `$nonewline) " -Force | Out-Null;$private:p = PrePoshGitPrompt; if(--$global:poshScope -eq 0) {Remove-Item function:\Write-Host -Force}}PoshGitPrompt}
 #>
-$utility = ('.;' + $env:path) -split ';' | % { join-path $_ 'utility.ps1' } | ? { test-path $_ }
+$utility = (('.;' + $env:path) -split ';' | % { join-path $_ 'utility.ps1' } | ? { test-path $_ }) -split '\s*\n'
 try {
   if ($utility) {
     write-information "$(LINE) Source: $utility"
-    .  $utility
+    .  (Resolve-Path $utility[0]).path
     write-information "$(LINE) Finished sourcing: $utility"
   } else {
     write-information "$(LINE) utility.ps1 not found local or on path"
