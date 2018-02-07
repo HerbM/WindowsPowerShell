@@ -2,6 +2,72 @@
   [Alias('SilentlyContinue')][switch]$Quiet
 ) 
 
+# new-alias np S:\Programs\Portable\Notepad++Portable\Notepad++Portable.exe -force -scope global
+new-alias np S:\Programs\Portable\Notepad++Portable\Notepad++Portable.exe -force -scope global
+function Select-History {param($Pattern) (h).commandline -match $Pattern }
+new-alias sh Select-History -force -scope Global
+
+<#
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force                                                          
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass                                                        
+.\Import-SNPTimeSheet.ps1                                                                                         
+.\Import-SNPTimeSheetV3-5.ps1                                                                                     
+
+
+get-item .\Import-SNPTimeSheetV3-5.ps1 -stream *                                                                  
+Set-ExecutionPolicy -Scope LocalMachine  -ExecutionPolicy RemoteSigned                                            
+Set-ExecutionPolicy -Scope LocalMachine  -ExecutionPolicy RemoteSigned                                            
+Set-ExecutionPolicy -Scope LocalMachine  -ExecutionPolicy RemoteSigned -force                                     
+get-ExecutionPolicy   -scope CurrentUser                                                                          
+get-ExecutionPolicy   -scope Process                                                                              
+$env:psmodulepath -split ';'                                                                                      
+md WindowsPowerShell                                                                                              
+cd .\WindowsPowerShell\                                                                                           
+where.exe git                                                                                                     
+git --version                                                                                                     
+dir -force                                                                                                                                                                                             
+git remote add HerbProfile https://github.com/HerbM/Profile-Utilities                                             
+git remote -v                                                                                                     
+git fetch --all                                                                                                   
+git reset --hard HerbProfile/master                                                                               
+git pull HerbProfile master                                                                                       
+cd S:\Programs\Portable\                                                                                          
+
+???
+git ls-remote --heads origin
+git fetch origin <branch>
+git reset --hard <ref>
+git clean -dfq
+
+
+From Toro
+git init 
+git remote add -f github https://github.com/HerbM/Profile-Utilities
+
+git fetch --all  # Force to current directory:
+git reset --hard origin/master
+git pull origin master 
+
+We did most of this on your 2016 server, maybe better.
+move .\essential-git-sample.pdf .\books\Git\
+git --version
+where.exe git
+.\Git-2.16.1.2-64-bit.exe
+git init .
+# git remote add -f github https://github.com/HerbM/Profile-Utilities
+git remote add github https://github.com/HerbM/Profile-Utilities
+git status
+type .gitignore
+git remote -v
+git fetch --all
+git reset --hard github/master
+git pull github master
+git config --global
+function Select-History {param($Pattern) (h).commandline -match $Pattern }
+new-alias sh Select-History -force -scope Global
+
+#>
+
 $MyInvocation
 if ($MyInvocation.HistoryID -eq 1) {
   if (gcm write-information -type cmdlet,function -ea 0) {
