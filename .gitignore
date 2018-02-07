@@ -9,3 +9,5 @@ Microsoft.PowerShell_profileOld.ps1
 Microsoft.PowerShell_profile[0-9].ps1
 *.doc
 *.xl*
+*~*
+*.bak

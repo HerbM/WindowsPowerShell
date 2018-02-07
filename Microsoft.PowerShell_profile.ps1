@@ -113,7 +113,9 @@ $DotNetKey = @('HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP',
 # find-module PSScriptAnalyzer   | Install-Module -scope AllUsers
 # find-module PSGit              | Install-Module -scope AllUsers
 # find-module Jump.Location      | Install-Module Jump.Location
+# install-module jump.location -force -allowclo 
 Import-Module Jump.Location
+
 # DSC_PowerCLISnapShotCheck  PowerCLITools  PowerCLI.SessionManager PowerRestCLI
 # PowerShell CodeManager https://bytecookie.wordpress.com/
 
@@ -534,7 +536,7 @@ function Global:prompt { "'$($executionContext.SessionState.Path.CurrentLocation
 
 $books = switch ($true) {
   { Test-Path 'c:\books' } { Resolve-Path 'c:\books' }
-  { Test-Path (Join-Path (Join-Path $Home 'Downloads')  'Books') } { Resolve-Path (Join-Path (Join-Path $Home 'Downloads')  Books) -ea 0 }
+  { Test-Path (Join-Path (Join-Path $Home 'Downloads')  'Books') } { Resolve-Path (Join-Path (Join-Path $Home 'Downloads')  'Books') -ea 0 }
 }
 
 $gohash = [ordered]@{
