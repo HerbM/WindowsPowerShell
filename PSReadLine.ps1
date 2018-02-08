@@ -9,7 +9,9 @@ if (!(Test-path $PSHistoryDirectory)) { md $PSHistoryDirectory }
 Dir -ea 0 "$(Split-Path $Profile)\$PSHistoryFileName" | move-item -Dest $PSHistoryDirectory
 Set-PSReadlineOption -HistorySavePath $PSHistoryDirectory
 
-Set-PSReadLineKeyHandler -Key UpArrow -Function HistorySearchBackward
+Set-PSReadlineKeyHandler 'Tab'          -Function TabCompleteNext
+Set-PSReadlineKeyHandler 'Shift+Tab'    -Function TabCompleteNext
+Set-PSReadLineKeyHandler -Key UpArrow   -Function HistorySearchBackward
 Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
 <#
 Set-PSReadLineOption     -HistorySearchCursorMovesToEnd
