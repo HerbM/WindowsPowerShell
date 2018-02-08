@@ -1,6 +1,16 @@
-[CmdletBinding()]param(
-  [Alias('SilentlyContinue')][switch]$Quiet
+[CmdLetBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
+param(
+  [Alias('Modules')][switch]$InstallModules,
+  [ValidateSet('AllUsers','CurrentUser')][string]$ScopeModule='AllUsers',
+  [switch]$ForceModuleInstall,
+  [switch]$AllowClobber,
+  [Alias('SilentlyContinue')][switch]$Quiet,
+  [Parameter(ValueFromRemainingArguments=$true)][String[]]$RemArgs
 ) 
+
+$ForceModuleInstall = [boolean]$ForceModuleInstall
+$AllowClobber       = [boolean]$AllowClobber
+$Confirm            = [boolean]$Confirm
 
 # new-alias np S:\Programs\Portable\Notepad++Portable\Notepad++Portable.exe -force -scope global
 new-alias np S:\Programs\Portable\Notepad++Portable\Notepad++Portable.exe -force -scope global
@@ -98,34 +108,107 @@ new-alias 7z 'S:\Programs\Herb\util\7Zip\app\7-Zip64\7z.exe'                -for
 get-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive | Select WindowArrangementActive | FL
 set-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -value 0 -type dword -force
 
+# 7-Zip     http://www.7-zip.org/download.html
+# Git       https://git-scm.com/download/win
+# Regex     http://www.grymoire.com/Unix/Regular.html#uh-12
+# AwkRef    http://www.grymoire.com/Unix/AwkRef.html
+# Notepad++ https://notepad-plus-plus.org/download/v7.5.4.html
+# ArsClip   http://www.joejoesoft.com/vcms/97/  
+
 write-information ".NET dotnet versions installed"
 $DotNetKey = @('HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP',
                'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4')
 @(foreach ($key in  $DotNetKey) { gci $key }) | get-itemproperty  -ea 0 | select @{N='Name';E={$_.pspath -replace '.*\\([^\\]+)$','$1'}},version,InstallPath,@{N='Path';E={($_.pspath -replace '^[^:]*::') -replace '^HKEY[^\\]*','HKLM:'}}
-# find-module pester             | install-module -scope AllUsers
-# find-module carbon             | install-module -scope AllUsers -allowclobber
-# find-module pscx               | install-module -scope allusers
-# find-module PowerShellCookbook | install-module -scope allusers -allowclobber
-# find-module ImportExcel        | install-module -scope allusers -allowclobber
-# find-module VMWare.PowerCli    | install-module -scope allusers -allowclobber
-# find-module Veeam.PowerCLI-Interactions  | install-module -scope allusers -allowclobber
-# find-module ThreadJob          | Install-Module -scope AllUsers
-# find-module PSScriptAnalyzer   | Install-Module -scope AllUsers
-# find-module PSGit              | Install-Module -scope AllUsers
-# find-module Jump.Location      | Install-Module Jump.Location
-# install-module jump.location -force -allowclo 
-Import-Module Jump.Location
+
+$PSGallery = Get-PSRepository PSGallery
+$PSGallery
+if ($PSGallery -and $PSGallery.InstallationPolicy -ne 'Trusted') { 
+  Set-PSRepository PSGallery -InstallationPolicy 'Trusted'
+  Get-PSRepository PSGallery
+}  
+function Update-ModuleList {
+  [CmdLetBinding(SupportsShouldProcess = $true,ConfirmImpact='Medium')]
+  param(   
+    [Parameter(ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$true)]
+    [string[]]$name='pscx'
+  ) 
+  begin {}
+  process {
+    foreach ($ModuleName in $Name) {
+      $InstalledModule = @(get-module $ModuleName -ea 0 -list | sort -desc Version)
+      $version = if ($InstalledModule) { 
+        $InstalledModule | % {
+          write-warning "$(LINE) Installed module: $($_.Version) $($_.Name)"
+        }
+        $InstalledModule = $InstalledModule[0]      
+        $InstalledModule.version
+      } else { 
+        write-warning "Module $ModuleName not found, searching gallery..." 
+        '0.0'  # set ZERO VERSION
+      } 
+      $FoundModule = find-module $ModuleName -minimum $version -ea 0 | 
+                     sort version -desc  | select -first 1 
+      if ($FoundModule) { 
+        write-warning "$($FoundModule.Version) $($FoundModule.Name)"    
+        If ($InstalledModule) {
+          if ($FoundModule.version -gt $InstalledModule.version) { 
+            write-warning "Updating module $ModuleName to version: $($FoundModule.version)..."
+            try {
+              update-module $ModuleName -force -confirm:$confirm -whatif:$whatif -required $FoundModule.version 
+            } catch {
+              install-module -force -confirm:$confirm -minimum $version -scope 'AllUsers' -whatif:$whatif 
+            }
+          } 
+        } else { 
+          write-warning "Installing module $ModuleName ... "; 
+          install-module -force -confirm:$confirm -minimum $version -scope 'AllUsers' -whatif:$whatif 
+        }
+      } else { 
+        write-warning "Module $ModuleName NOT FOUND on repository!" 
+      }
+    }
+  }  ## Process block
+  end {}
+}
+
+$RecommendedModules = @(
+  'pester',
+  'carbon',
+  'pscx',
+  'PowerShellCookbook',
+  'ImportExcel',
+  'VMWare.PowerCli',
+  'ThreadJob',
+  'PSScriptAnalyzer',
+  'PSGit',
+  'Jump.Location',
+  'Veeam.PowerCLI-Interactions',
+  'PSReadLine'
+)
 
 # DSC_PowerCLISnapShotCheck  PowerCLITools  PowerCLI.SessionManager PowerRestCLI
 # PowerShell CodeManager https://bytecookie.wordpress.com/
+# ChocolateyGet
 
-# Carbon,ImportExcel,PowerShellCookbook,ThreadJob,pscx,PSScriptAnalyzer
-# ??? ChocolateyGet
+
+if ($InstallModules) {
+  Install-ModuleList $RecommendedModules
+} else {
+  get-module -list $RecommendedModules   
+}
+get-module -list | ? {$_.name -match 'PowerShellGet|PSReadline' -or $_.author -notmatch 'Microsoft' } | 
+  ft version,name,author,path
+
+Import-Module Jump.Location
 
 # Get .Net Constructor parameters
 # ([type]"Net.Sockets.TCPClient").GetConstructors() | ForEach { $_.GetParameters() } | Select Name,ParameterType
-get-module -list | ? {$_.name -match 'PowerShellGet|PSReadline' -or $_.author -notmatch 'Microsoft' } | 
-  ft version,name,author,path
+function Get-Constructor {
+  param([Alias('Name')][string[]]$TypeName)
+  ForEach ($Name in $TypeName) {
+    ([type]$Name).GetConstructors() | ForEach { write-host "$_"; $_.GetParameters() } | Select Name,ParameterType
+  }
+}
 
 write-information "https://blogs.technet.microsoft.com/pstips/2014/05/26/useful-powershell-modules/"
 $PSCXprofile = 'C:\Users\hmartin\Documents\WindowsPowerShell\Pscx.UserPreferences'
