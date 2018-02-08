@@ -108,12 +108,17 @@ new-alias 7z 'S:\Programs\Herb\util\7Zip\app\7-Zip64\7z.exe'                -for
 get-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive | Select WindowArrangementActive | FL
 set-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -value 0 -type dword -force
 
-# 7-Zip     http://www.7-zip.org/download.html
-# Git       https://git-scm.com/download/win
-# Regex     http://www.grymoire.com/Unix/Regular.html#uh-12
-# AwkRef    http://www.grymoire.com/Unix/AwkRef.html
-# Notepad++ https://notepad-plus-plus.org/download/v7.5.4.html
-# ArsClip   http://www.joejoesoft.com/vcms/97/  
+# 7-Zip        http://www.7-zip.org/download.html
+# Git          https://git-scm.com/download/win
+# Regex        http://www.grymoire.com/Unix/Regular.html#uh-12
+# AwkRef       http://www.grymoire.com/Unix/AwkRef.html
+# Notepad++    https://notepad-plus-plus.org/download/v7.5.4.html
+# ArsClip      http://www.joejoesoft.com/vcms/97/  
+# Aria2        https://github.com/aria2/aria2/releases/tag/release-1.33.1
+# Deluge       http://download.deluge-torrent.org/windows/?C=M;O=D
+# Transmission https://transmissionbt.com/download/
+# WinMerg      http://developeronfire.com/blog/configuration-of-git-on-windows-to-make-life-easy
+#              
 
 write-information ".NET dotnet versions installed"
 $DotNetKey = @('HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP',
@@ -841,16 +846,6 @@ function PSBoundParameter([string]$Parm) {
 #>
 write-information "$(LINE) Error count: $($Error.Count)"
 
-# Load posh-git example profile
-# . 'C:\tools\poshgit\dahlbyk-posh-git-a1795ab\profile.example.ps1'
-#if(Test-Path Function:\Prompt) {Rename-Item Function:\Prompt PrePoshGitPrompt -Force}
-# Load posh-git example profile
-# . 'C:\tools\poshgit\dahlbyk-posh-git-a1795ab\profile.example.ps1'
-
-<#
-Rename-Item Function:\Prompt PoshGitPrompt -Force
-function Prompt() {if(Test-Path Function:\PrePoshGitPrompt){++$global:poshScope; New-Item function:\script:Write-host -value "param([object] `$object, `$backgroundColor, `$foregroundColor, [switch] `$nonewline) " -Force | Out-Null;$private:p = PrePoshGitPrompt; if(--$global:poshScope -eq 0) {Remove-Item function:\Write-Host -Force}}PoshGitPrompt}
-#>
 $utility = (('.;' + $env:path) -split ';' | % { join-path $_ 'utility.ps1' } | ? { test-path $_ }) -split '\s*\n'
 try {
   if ($utility) {
