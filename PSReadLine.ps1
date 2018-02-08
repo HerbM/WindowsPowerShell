@@ -2,11 +2,17 @@ using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
 
 Import-Module PSReadLine
+$PSHistoryFileName  = 'PSReadLine_history.txt'
+$PSHistoryDirectory = "$Home\Documents\PSHistory"
+$PSHistory          = "$PSHistoryDirectory\$PSHistoryFileName"
+if (!(Test-path $PSHistoryDirectory)) { md $PSHistoryDirectory }
+Dir -ea 0 "$(Split-Path $Profile)\$PSHistoryFileName" | move-item -Dest $PSHistoryDirectory
+Set-PSReadlineOption -HistorySavePath $PSHistoryDirectory
 
-<#
-Set-PSReadLineOption -HistorySearchCursorMovesToEnd
 Set-PSReadLineKeyHandler -Key UpArrow -Function HistorySearchBackward
 Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
+<#
+Set-PSReadLineOption     -HistorySearchCursorMovesToEnd
 #>
 Set-PSReadLineKeyHandler -Key F7 `
                          -BriefDescription History `
@@ -490,10 +496,13 @@ if ($host.Name -eq 'ConsoleHost') {
     Set-PSReadlineKeyHandler -Key DownArrow       -Function HistorySearchForward
     Set-PSReadlineKeyHandler -Key Tab             -Function Complete
     
-
     $Host.PrivateData.ErrorBackgroundColor   = $Host.UI.RawUI.BackgroundColor
     $Host.PrivateData.WarningBackgroundColor = $Host.UI.RawUI.BackgroundColor
     $Host.PrivateData.VerboseBackgroundColor = $Host.UI.RawUI.BackgroundColor
+
+    $Host.PrivateData.ErrorBackgroundColor   = 'Black'
+    $Host.PrivateData.WarningBackgroundColor = 'Black'
+    $Host.PrivateData.VerboseBackgroundColor = 'Black'
 }
 <#        
         function prompt {
