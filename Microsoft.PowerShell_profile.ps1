@@ -118,7 +118,7 @@ set-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -va
 # Deluge       http://download.deluge-torrent.org/windows/?C=M;O=D
 # Transmission https://transmissionbt.com/download/
 # WinMerg      http://developeronfire.com/blog/configuration-of-git-on-windows-to-make-life-easy
-#              
+# NotesProfile See: NotesProfile.txt             
 
 write-information ".NET dotnet versions installed"
 $DotNetKey = @('HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP',
@@ -994,16 +994,5 @@ function PSBoundParameter([string]$Parm) {
 write-host "`nError count: $($Error.Count)"
 #if(Test-Path Function:\Prompt) {Rename-Item Function:\Prompt PrePoshGitPrompt -Force}
 
-# Load posh-git example profile
-if (Test-Path 'C:\tools\poshgit\dahlbyk-posh-git-a1795ab\profile.example.ps1') { 
-                                                                                      
-                               
-  . 'C:\tools\poshgit\dahlbyk-posh-git-a1795ab\profile.example.ps1' 
-}
-
-<#
-Rename-Item Function:\Prompt PoshGitPrompt -Force
-function Prompt() {if(Test-Path Function:\PrePoshGitPrompt){++$global:poshScope; New-Item function:\script:Write-host -value "param([object] `$object, `$backgroundColor, `$foregroundColor, [switch] `$nonewline) " -Force | Out-Null;$private:p = PrePoshGitPrompt; if(--$global:poshScope -eq 0) {Remove-Item function:\Write-Host -Force}}PoshGitPrompt}
-#>
 
 if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $informationpreferenceSave } 
