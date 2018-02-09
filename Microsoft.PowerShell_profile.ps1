@@ -6,7 +6,7 @@ param(
   [switch]$AllowClobber,
   [Alias('SilentlyContinue')][switch]$Quiet,
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$RemArgs
-) 
+)
 
 $ForceModuleInstall = [boolean]$ForceModuleInstall
 $AllowClobber       = [boolean]$AllowClobber
@@ -17,66 +17,11 @@ new-alias np S:\Programs\Portable\Notepad++Portable\Notepad++Portable.exe -force
 function Select-History {param($Pattern) (h).commandline -match $Pattern }
 new-alias sh Select-History -force -scope Global
 
-<#
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force                                                          
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass                                                        
-.\Import-SNPTimeSheet.ps1                                                                                         
-.\Import-SNPTimeSheetV3-5.ps1                                                                                     
-
-
-get-item .\Import-SNPTimeSheetV3-5.ps1 -stream *                                                                  
-Set-ExecutionPolicy -Scope LocalMachine  -ExecutionPolicy RemoteSigned                                            
-Set-ExecutionPolicy -Scope LocalMachine  -ExecutionPolicy RemoteSigned                                            
-Set-ExecutionPolicy -Scope LocalMachine  -ExecutionPolicy RemoteSigned -force                                     
-get-ExecutionPolicy   -scope CurrentUser                                                                          
-get-ExecutionPolicy   -scope Process                                                                              
-$env:psmodulepath -split ';'                                                                                      
-md WindowsPowerShell                                                                                              
-cd .\WindowsPowerShell\                                                                                           
-where.exe git                                                                                                     
-git --version                                                                                                     
-dir -force                                                                                                                                                                                             
-git remote add HerbProfile https://github.com/HerbM/Profile-Utilities                                             
-git remote -v                                                                                                     
-git fetch --all                                                                                                   
-git reset --hard HerbProfile/master                                                                               
-git pull HerbProfile master                                                                                       
-cd S:\Programs\Portable\                                                                                          
-
-???
-git ls-remote --heads origin
-git fetch origin <branch>
-git reset --hard <ref>
-git clean -dfq
-
-
-From Toro
-git init 
-git remote add -f github https://github.com/HerbM/Profile-Utilities
-
-git fetch --all  # Force to current directory:
-git reset --hard origin/master
-git pull origin master 
-
-We did most of this on your 2016 server, maybe better.
-move .\essential-git-sample.pdf .\books\Git\
-git --version
-where.exe git
-.\Git-2.16.1.2-64-bit.exe
-git init .
-# git remote add -f github https://github.com/HerbM/Profile-Utilities
-git remote add github https://github.com/HerbM/Profile-Utilities
-git status
-type .gitignore
-git remote -v
-git fetch --all
-git reset --hard github/master
-git pull github master
-git config --global
-function Select-History {param($Pattern) (h).commandline -match $Pattern }
-new-alias sh Select-History -force -scope Global
-
-#>
+# 'Thu, 08 Feb 2018 07:47:42 -0800 (PST)' -replace '[^\d]+$' -as [datetime] 13:47:42 -0800 (PST)'
+# 'Thu, 08 Feb 2018 07:47:42 -0800 (PST)' -replace '[^\d]+$' -as [datetime] 13:47:42 -0800 (PST)'
+#$raw = 'Thu, 08 Feb 2018 13:47:42 -0800 (PST)'
+#$pattern = 'ddd, dd MMM yyyy H:mm:ss zzz \(PST)'
+#[DateTime]::ParseExact($raw, $pattern, $null)
 
 $MyInvocation
 if ($MyInvocation.HistoryID -eq 1) {
@@ -84,18 +29,18 @@ if ($MyInvocation.HistoryID -eq 1) {
     $InformationPreference = 'Continue'
     Remove-Item alias:write-information -ea 0
     $global:informationpreference = $warningpreference
-  } else {  
+  } else {
     write-warning 'Use write-warning for information if write-information not available'
     new-alias write-information write-warning -force # -option allscope
   }
 }
 
-if ($Quiet -and $global:informationpreference) { 
-  $informationpreferenceSave = $global:informationpreference 
+if ($Quiet -and $global:informationpreference) {
+  $informationpreferenceSave = $global:informationpreference
   $global:informationpreference = 'SilentlyContinue'
   $script:informationpreference = 'SilentlyContinue'
   write-information "SHOULD NOT WRITE"
-} 
+}
 
 $ProfilePath = Split-Path $Profile
 write-information "Use `$Profile for path to Profile: $Profile"
@@ -113,12 +58,12 @@ set-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -va
 # Regex        http://www.grymoire.com/Unix/Regular.html#uh-12
 # AwkRef       http://www.grymoire.com/Unix/AwkRef.html
 # Notepad++    https://notepad-plus-plus.org/download/v7.5.4.html
-# ArsClip      http://www.joejoesoft.com/vcms/97/  
+# ArsClip      http://www.joejoesoft.com/vcms/97/
 # Aria2        https://github.com/aria2/aria2/releases/tag/release-1.33.1
 # Deluge       http://download.deluge-torrent.org/windows/?C=M;O=D
 # Transmission https://transmissionbt.com/download/
 # WinMerg      http://developeronfire.com/blog/configuration-of-git-on-windows-to-make-life-easy
-# NotesProfile See: NotesProfile.txt             
+# NotesProfile See: NotesProfile.txt
 
 write-information ".NET dotnet versions installed"
 $DotNetKey = @('HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP',
@@ -127,49 +72,49 @@ $DotNetKey = @('HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP',
 
 $PSGallery = Get-PSRepository PSGallery
 $PSGallery
-if ($PSGallery -and $PSGallery.InstallationPolicy -ne 'Trusted') { 
+if ($PSGallery -and $PSGallery.InstallationPolicy -ne 'Trusted') {
   Set-PSRepository PSGallery -InstallationPolicy 'Trusted'
   Get-PSRepository PSGallery
-}  
+}
 function Update-ModuleList {
   [CmdLetBinding(SupportsShouldProcess = $true,ConfirmImpact='Medium')]
-  param(   
+  param(
     [Parameter(ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$true)]
     [string[]]$name='pscx'
-  ) 
+  )
   begin {}
   process {
     foreach ($ModuleName in $Name) {
       $InstalledModule = @(get-module $ModuleName -ea 0 -list | sort -desc Version)
-      $version = if ($InstalledModule) { 
+      $version = if ($InstalledModule) {
         $InstalledModule | % {
           write-warning "$(LINE) Installed module: $($_.Version) $($_.Name)"
         }
-        $InstalledModule = $InstalledModule[0]      
+        $InstalledModule = $InstalledModule[0]
         $InstalledModule.version
-      } else { 
-        write-warning "Module $ModuleName not found, searching gallery..." 
+      } else {
+        write-warning "Module $ModuleName not found, searching gallery..."
         '0.0'  # set ZERO VERSION
-      } 
-      $FoundModule = find-module $ModuleName -minimum $version -ea 0 | 
-                     sort version -desc  | select -first 1 
-      if ($FoundModule) { 
-        write-warning "$($FoundModule.Version) $($FoundModule.Name)"    
+      }
+      $FoundModule = find-module $ModuleName -minimum $version -ea 0 |
+                     sort version -desc  | select -first 1
+      if ($FoundModule) {
+        write-warning "$($FoundModule.Version) $($FoundModule.Name)"
         If ($InstalledModule) {
-          if ($FoundModule.version -gt $InstalledModule.version) { 
+          if ($FoundModule.version -gt $InstalledModule.version) {
             write-warning "Updating module $ModuleName to version: $($FoundModule.version)..."
             try {
-              update-module $ModuleName -force -confirm:$confirm -whatif:$whatif -required $FoundModule.version 
+              update-module $ModuleName -force -confirm:$confirm -whatif:$whatif -required $FoundModule.version
             } catch {
-              install-module -force -confirm:$confirm -minimum $version -scope 'AllUsers' -whatif:$whatif 
+              install-module -force -confirm:$confirm -minimum $version -scope 'AllUsers' -whatif:$whatif
             }
-          } 
-        } else { 
-          write-warning "Installing module $ModuleName ... "; 
-          install-module -force -confirm:$confirm -minimum $version -scope 'AllUsers' -whatif:$whatif 
+          }
+        } else {
+          write-warning "Installing module $ModuleName ... ";
+          install-module -force -confirm:$confirm -minimum $version -scope 'AllUsers' -whatif:$whatif
         }
-      } else { 
-        write-warning "Module $ModuleName NOT FOUND on repository!" 
+      } else {
+        write-warning "Module $ModuleName NOT FOUND on repository!"
       }
     }
   }  ## Process block
@@ -199,12 +144,14 @@ $RecommendedModules = @(
 if ($InstallModules) {
   Install-ModuleList $RecommendedModules
 } else {
-  get-module -list $RecommendedModules   
+  get-module -list $RecommendedModules
 }
-get-module -list | ? {$_.name -match 'PowerShellGet|PSReadline' -or $_.author -notmatch 'Microsoft' } | 
+get-module -list | ? {$_.name -match 'PowerShellGet|PSReadline' -or $_.author -notmatch 'Microsoft' } |
   ft version,name,author,path
 
-Import-Module Jump.Location
+if ($psversiontable.psversion.major -lt 6) {
+  Import-Module Jump.Location
+}
 
 # Get .Net Constructor parameters
 # ([type]"Net.Sockets.TCPClient").GetConstructors() | ForEach { $_.GetParameters() } | Select Name,ParameterType
@@ -218,20 +165,22 @@ function Get-Constructor {
 write-information "https://blogs.technet.microsoft.com/pstips/2014/05/26/useful-powershell-modules/"
 $PSCXprofile = 'C:\Users\hmartin\Documents\WindowsPowerShell\Pscx.UserPreferences'
 write-information "import-module -noclobber PSCX $PSCXprofile"
-write-information "import-module -noclobber PowerShellCookbook"
+if ($psversiontable.psversion.major -lt 6) {
+  write-information "import-module -noclobber PowerShellCookbook"
+}
 
 #$MyInvocation
 #$MyInvocation.MyCommand
 
-function LINE { 
+function LINE {
   param ([string]$Format,[switch]$Label)
 	$Line = '[1]'; $Suffix = ''
 	If ($Format) { $Label = $True }
 	If (!$Format) { $Format = 'Line {0,3}:' }
-	try { 
-		if (($L = get-variable MyInvocation -scope 1 -value -ea 0) -and $L.ScriptLineNumber) { 
-		  $Line = $L.ScriptLineNumber 
-		} 
+	try {
+		if (($L = get-variable MyInvocation -scope 1 -value -ea 0) -and $L.ScriptLineNumber) {
+		  $Line = $L.ScriptLineNumber
+		}
 	} catch {
 	  $Suffix = '(Catch in LINE)'
 	}
@@ -255,7 +204,7 @@ write-information "Profile loaded: $($MyInvocation.MyCommand.Path)"
 #if (gcm write-information -ea silentlycontinue) {
 #	Remove-Item alias:write-information -ea 0
 #	$global:informationpreference = $warningpreference
-#} else {  
+#} else {
 #  write-warning 'Use write-warning for information if write-information not available'
 #	set-alias write-information write-warning -force -option allscope
 #}
@@ -280,18 +229,12 @@ function RDP {
   else                { mstsc /v:$ComputerName $Path @argX }
 }
 
-if (get-command 'ScreenSaver.ps1' -ea 0) { ScreenSaver.ps1 }
-
-#get-module -list | ? author -notmatch 'Microsoft' |  ft name,version,author,company 
-write-information "https://blogs.technet.microsoft.com/pstips/2014/05/26/useful-powershell-modules/"
-write-information "import-module -noclobber PSCX"
-write-information "import-module -noclobber PowerShellCookbook"
-
+if ($AdminEnabled -and (get-command 'ScreenSaver.ps1' -ea 0)) { ScreenSaver.ps1 }
 
 <# Testing ideas #>
 
 function Get-HelpLink {
-  $args 
+  $args
   "Args: $($args.count) $($args.gettype())"
   $a = $args
   (((help @a -full) -join ' ## ') -split '(\s+##\s+){2,}' | sls '.*http.*' -all |
@@ -314,31 +257,36 @@ if (Test-Path "$Home\Documents\WindowsPowerShell\tt.xml") {
 		function F4 { "Function Test4"}
 		$testclip = "Clip test4"
 '@
-		} 
-		
+		}
+
 		$hc = import-clixml -first 1 "$Home\Documents\WindowsPowerShell\tt.xml"
 		#$hid = ($hc | % {$_.commandline = gcb } | add-history -passthru).id; ihy $hid
 	}
 }
+
 ### gcb | % { $a = $_ -split '\.'; [array]::reverse($a); $a -join '.'}
-[System.Runtime.InteropServices.RuntimeEnvironment]::SystemConfigurationFile
+  
 #C:\Windows\Microsoft.NET\Framework64\v4.0.30319\config\machine.config
+if ($psversiontable.psversion.major -lt 6) {
+  [System.Runtime.InteropServices.RuntimeEnvironment]::SystemConfigurationFile
+}
+
 
 #> # End testing ideas
 
 
 
 function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
-function Get-CurrentFileName   { split-path -leaf $MyInvocation.PSCommandPath   }   function Get-CurrentFileLine   { 
+function Get-CurrentFileName   { split-path -leaf $MyInvocation.PSCommandPath   }   function Get-CurrentFileLine   {
   if ($MyInvocation.PSCommandPath) {
-    "$(split-path -leaf $MyInvocation.PSCommandPath):$($MyInvocation.ScriptLineNumber)" 
-  } else {"GLOBAL:$(LINE)"} 
+    "$(split-path -leaf $MyInvocation.PSCommandPath):$($MyInvocation.ScriptLineNumber)"
+  } else {"GLOBAL:$(LINE)"}
 }
-function Get-CurrentFileName1  { 
+function Get-CurrentFileName1  {
   if ($var = get-variable MyInvocation -scope 1 -value) {
-    if ($var.PSCommandPath) { split-path -leaf $var.PSCommandPath } 
-    else {'GLOBAL'} 
-  } else {"GLOBAL"}		
+    if ($var.PSCommandPath) { split-path -leaf $var.PSCommandPath }
+    else {'GLOBAL'}
+  } else {"GLOBAL"}
 }   #$MyInvocation.ScriptName
 New-Alias -Name   LINE   -Value Get-CurrentLineNumber -Description 'Returns the current (caller''s) line number in a script.' -force -Option allscope
 New-Alias -Name   FILE   -Value Get-CurrentFileName   -Description 'Returns the name of the current script file.' -force             -Option allscope
@@ -360,14 +308,14 @@ function Write-Log {
       'Severity' = $Severity
       'Message'  = $Message
     }
-    if (-not $LogFilePath) { 
-      $LogFilePath  =  "$($MyInvocation.ScriptName)" -replace '(\.ps1)?$', ''    
+    if (-not $LogFilePath) {
+      $LogFilePath  =  "$($MyInvocation.ScriptName)" -replace '(\.ps1)?$', ''
       $LogFilePath += '-Log.txt'
     }
 		if ($File) { $LogFilePath = $File }
     if ($psversiontable.psversion.major -lt 3) {
       $Entry = "`"$($line.DateTime)`", `"$($line.$Severity)`", `"$($line.$Message)`""
-      $null = Out-file -enc utf8 -filepath $LogFilePath -input $Entry -append -erroraction Silentlycontinue -force 
+      $null = Out-file -enc utf8 -filepath $LogFilePath -input $Entry -append -erroraction Silentlycontinue -force
     } else {
       $line | Export-Csv -Path $LogFilePath -Append -NoTypeInformation -erroraction Silentlycontinue -force -enc ASCII
     }
@@ -375,7 +323,7 @@ function Write-Log {
     $ec   = ('{0:x}' -f $_.Exception.ErrorCode); $em = $_.Exception.Message; $in = $_.InvocationInfo.PositionMessage
     $description =  "$(FLINE) Catch $in $ec, $em"
     "Logging: $description" >> $LogFilePath
-  }  
+  }
 }
 
 #################################################################
@@ -394,20 +342,20 @@ function Get-DriveTypeName ($type) {
 								'CDROM',       # 5 # The drive is a CD-ROM drive.
 								'RAMDISK')     # 6 # The drive is a RAM disk.
   if (($type -le 0) -or ($type -ge $typename.count)) {return 'INVALID'}
-  $typename[$type]								 
-}              
+  $typename[$type]
+}
 function Get-Volume {
  (gwmi win32_volume ) | ? {$_.DriveLetter -match '[A-Z]:'}|
-  % { "{0:2} {0:2} {0:9} {S:9} "-f $_.DriveLetter, $_.DriveType, (Get-DriveTypeName $_.DriveType), $_.Label, ($_.Freespace / 1GB)} 
-  # % {"$($_.DriveLetter) $($_.DriveType) $(Get-DriveTypeName $_.DriveType) $($_.Label) $($_.Freespace / 1GB)GB"} 
-} 
+  % { "{0:2} {0:2} {0:9} {S:9} "-f $_.DriveLetter, $_.DriveType, (Get-DriveTypeName $_.DriveType), $_.Label, ($_.Freespace / 1GB)}
+  # % {"$($_.DriveLetter) $($_.DriveType) $(Get-DriveTypeName $_.DriveType) $($_.Label) $($_.Freespace / 1GB)GB"}
+}
 
-function Get-WMIClassInfo { 
+function Get-WMIClassInfo {
   [CmdletBinding()] param([string]$className, [switch]$WrapList)
   #https://www.darkoperator.com/blog/2013/2/6/introduction-to-wmi-basics-with-powershell-part-2-exploring.html
   $r = (Get-WmiObject -list $className -Amended).qualifiers | Select-Object name, value
   if ($WrapList) { $r | ft -AutoSize -Wrap } else { $r }
-} 
+}
 
 function Get-DotNetAssembly  {
   [CmdletBinding()]param([string[]]$Include=@('.*'), [string[]]$Exclude=@('^$'), [switch]$full)
@@ -416,11 +364,11 @@ function Get-DotNetAssembly  {
 	write-verbose "Include: $Inc"
 	write-verbose "Exclude: $Exc"
 	[appdomain]::CurrentDomain.GetAssemblies() | ForEach {
-		Try { 
+		Try {
       # write-verbose "$($_.fullname)"
-		  $_.GetExportedTypes() |  
+		  $_.GetExportedTypes() |
         Where { $_.fullname -match $inc } #-and $_.fullname -notmatch $Exc }
-		} Catch  { write-verbose "CATCH: $($_.Fullname)"}			
+		} Catch  { write-verbose "CATCH: $($_.Fullname)"}
 	} | % {if ($full) {$_} else { "$($_.fullname)" }}
 }
 function Get-DotNetAssembly  {
@@ -429,13 +377,13 @@ function Get-DotNetAssembly  {
   $Exc = '(' + ($Exclude -join ')|(') + ')'
   write-verbose "Include: $Inc"
   write-verbose "Exclude: $Exc"
-  [appdomain]::CurrentDomain.GetAssemblies() | 
+  [appdomain]::CurrentDomain.GetAssemblies() |
     ? { $_.fullname -match $inc } | #-and $_.fullname -notmatch $Exc } |
       % {
-        write-verbose "$($_.fullname)"        
-        Try { 
-          if ($_.GetExportedTypes()) { $_ }          
-        } Catch  { } #write-verbose "CATCH: $($_.Fullname)" } 			
+        write-verbose "$($_.fullname)"
+        Try {
+          if ($_.GetExportedTypes()) { $_ }
+        } Catch  { } #write-verbose "CATCH: $($_.Fullname)" }
       } # | % {if ($full) {$_} else { "$($_.fullname)" }}.
 }
 function Get-DotNetAssembly  {
@@ -448,16 +396,16 @@ function Get-DotNetAssembly  {
   [appdomain]::CurrentDomain.GetAssemblies() | ? {
     $a = $_.fullname -match $inc -and $_.fullname -notmatch $Exc -and ($_.IsDynamic -or ($_.GetExportedTypes()))
     if ($full) { $a }
-    else { 
-      $a | select GlobalAssemblyCache,IsDynamic,ImageRuntimeversion,Fullname,Location 
+    else {
+      $a | select GlobalAssemblyCache,IsDynamic,ImageRuntimeversion,Fullname,Location
     }
-  } 
+  }
 }
     #  % {
-    #    write-verbose "$($_.fullname)"        
-    #    Try { 
-    #      if ($_.GetExportedTypes()) { $_ }          
-    #    } Catch  { } #write-verbose "CATCH: $($_.Fullname)" } 			
+    #    write-verbose "$($_.fullname)"
+    #    Try {
+    #      if ($_.GetExportedTypes()) { $_ }
+    #    } Catch  { } #write-verbose "CATCH: $($_.Fullname)" }
     #  } # | % {if ($full) {$_} else { "$($_.fullname)" }}.
 new-alias gdna Get-DotNetAssembly -force
 
@@ -516,15 +464,15 @@ function od {
     [parameter(Position=0,ValueFromPipeline,ValueFromPipelineByPropertyName,
     ParameterSetName='Path')][Alias('pspath','fullname','filename')][object[]]$Path=@()
   )
-  begin { $a=@(); $parent = ''} 
-  process { 
+  begin { $a=@(); $parent = ''}
+  process {
     if ($parent -ne $path.psparent) {
       $a | sort @args lastwritetime,starttime
       $a = @()
-    } 
-    $a += $path; 
-    $parent = $path.psparent; 
-  } 
+    }
+    $a += $path;
+    $parent = $path.psparent;
+  }
   end { $a | sort @args lastwritetime,starttime }
 }
 function os {
@@ -532,15 +480,15 @@ function os {
     [parameter(Position=0,ValueFromPipeline,ValueFromPipelineByPropertyName,
     ParameterSetName='Path')][Alias('pspath','fullname','filename')][object[]]$Path=@()
   )
-  begin { $a=@(); $parent = ''} 
-  process { 
+  begin { $a=@(); $parent = ''}
+  process {
     if ($parent -ne $path.psparent) {
-      $a | sort-object length @args 
+      $a | sort-object length @args
       $a = @()
-    } 
-    $a += $path; 
-    $parent = $path.psparent; 
-  } 
+    }
+    $a += $path;
+    $parent = $path.psparent;
+  }
   end { $a | sort-object length @args }
 }
 function cpy {cmd /c copy @args}
@@ -548,7 +496,7 @@ function mov {cmd /c move @args}
 function fr  {cmd /c for @args}
 function frf {cmd /c for /f @args}
 function ff  {cmd /c for /f @args}
-function Get-Drive { 
+function Get-Drive {
   [CmdletBinding()] param(
     [string[]]$name='*',
 	  [string]  $scope=1,
@@ -570,11 +518,11 @@ write-information "$(LINE) Test-Administrator"
 #function Test-Administrator { (whoami /all | select-string S-1-16-12288) -ne $null }
 #if ((whoami /user /priv | select-string S-1-16-12288) -ne $null) {'Administrator privileges  enabled'} #else {'Administrator privileges NOT available'}
 
-function Test-Administrator { 
+function Test-Administrator {
   ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
    [Security.Principal.WindowsBuiltInRole] "Administrator")
 }
-if (Test-Administrator) {write-information "$(LINE) Administrator privileges  enabled"} 
+if ($AdminEnabled = Test-Administrator) {write-information "$(LINE) Administrator privileges  enabled"}
 else {write-information "$(LINE) Administrator privileges NOT available"}
 
 write-information "$(LINE) set Prompt function"
@@ -594,16 +542,16 @@ write-information "$(LINE) prompt='PS $($executionContext.SessionState.Path.Curr
 
 function Global:prompt { "'$($executionContext.SessionState.Path.CurrentLocation)' PS>$('>' * $nestedPromptLevel) "}
 
-# function docs {           
+# function docs {
 #   [CmdletBinding()]param (
 #     [Parameter(Position='0')][string]$path="$Home\Documents",
 #     [Parameter(Position='1')][string]$subdirectory,
 #     [switch]$pushd
-#   )	
+#   )
 #   try {
 #     write-verbose $Path
 #     if (Test-Path $path) {
-#       if ($pushd) { pushd $path } else { cd $path } 
+#       if ($pushd) { pushd $path } else { cd $path }
 #       if ($subdirectory) {cd $subdirectory}
 #     }	else {
 #       throw "Directory [$Path] not found."
@@ -611,14 +559,14 @@ function Global:prompt { "'$($executionContext.SessionState.Path.CurrentLocation
 #   }	catch {
 #     write-error $_
 #   }
-# } 
+# }
 
 # function books {
-#   if (Test-Path "$($env:userprofile)\downloads\books") { 
+#   if (Test-Path "$($env:userprofile)\downloads\books") {
 #     cd "$($env:userprofile)\downloads\books"
-# 	} elseif (Test-Path "C:\books") { 
+# 	} elseif (Test-Path "C:\books") {
 #     cd "C:\books"
-# 	} 
+# 	}
 # 	if ($args[0]) {cd $args[0]}
 # }
 
@@ -632,10 +580,10 @@ $gohash = [ordered]@{
   down       = "$home\downloads"
   download   = "$home\downloads"
   downloads  = "$home\downloads"
-  books      = $books 
-  powershell = "$books\PowerShell" 
-  profile    = $ProfilePath  
-  pro        = $ProfilePath  
+  books      = $books
+  powershell = "$books\PowerShell"
+  profile    = $ProfilePath
+  pro        = $ProfilePath
   txt        = 'c:\txt'
   text       = 'c:\txt'
   esb        = 'c:\esb'
@@ -644,13 +592,13 @@ $gohash = [ordered]@{
 
 function Set-GoAlias {
   [CmdletBinding()]param([string]$Alias, [string]$Path)
-  if ($Alias) { 
-    if ($global:goHash.Contains($Alias)) { $global:goHash.Remove($Alias) } 
-    $global:goHash += @{$Alias = $path} 
-  }  
-  ForEach ($Alias in $goHash.Keys) { 
+  if ($Alias) {
+    if ($global:goHash.Contains($Alias)) { $global:goHash.Remove($Alias) }
+    $global:goHash += @{$Alias = $path}
+  }
+  ForEach ($Alias in $goHash.Keys) {
     write-verbose "New-Alias $Alias go -force -scope Global -Option allscope"
-    New-Alias $Alias Set-GoLocation -force -scope Global -Option allscope 
+    New-Alias $Alias Set-GoLocation -force -scope Global -Option allscope
   }
 }
 
@@ -659,26 +607,26 @@ function Set-GoLocation {
     [Parameter(Position='0')][string[]]$path=@(),
     [Parameter(Position='1')][string[]]$subdirectory=@(),
     [switch]$pushd,
-    [switch]$showInvocation   # for testing 
+    [switch]$showInvocation   # for testing
   )
   $verbose = $true
   write-verbose "$(LINE) Start In: $((Get-Location).path)"
   if ($showInvocation) { write-warning "$($Myinvocation | out-string )" }
   $InvocationName = $MyInvocation.InvocationName
-  if (Get-Command set-jumplocation -ea 0) { 
-           new-alias jpushd Set-JumpLocation -force  
+  if (Get-Command set-jumplocation -ea 0) {
+           new-alias jpushd Set-JumpLocation -force
   } else { new-alias jpushd pushd            -force }
   if (!(get-variable gohash -ea 0)) { $goHash = @{} }
   write-verbose "$(LINE) Path: $Path InvocationName: $InvocationName"
-  $subdir = @($subdirectory.foreach{$_.split(';')}) ##### $subdirectory -split ';' 
-  $Target = @(if ($goHash.Contains($InvocationName)) { 
-    if (!$subdirectory) { $subdir = @($path.foreach{$_.split(';')}) } 
+  $subdir = @($subdirectory.foreach{$_.split(';')}) ##### $subdirectory -split ';'
+  $Target = @(if ($goHash.Contains($InvocationName)) {
+    if (!$subdirectory) { $subdir = @($path.foreach{$_.split(';')}) }
     $goHash.$InvocationName -split ';'
   } else {
     ForEach ($P in $Path) {
       if ($gohash.Contains($P)) { $gohash.$path.foreach{$_.split(';')} }  # @($goHash.path.foreach{$_.split(';')})
-    }  
-  })	
+    }
+  })
   if (!$Target ) { $Target = $Path.foreach{$_.split(';')} }
   write-verbose "$(LINE) path: [$($Target -join '] [')] sub: [$($subdir -join '] [')]"
   try {
@@ -688,32 +636,32 @@ function Set-GoLocation {
       write-verbose "$(LINE) Foreach P: $p"
       if (Test-Path $p -ea 0) {
         $ValidPath += Resolve-Path $p -ea 0
-        ForEach ($Sub in ($subdir)) {   #  | % {$_ -split ';'} 
+        ForEach ($Sub in ($subdir)) {   #  | % {$_ -split ';'}
           write-verbose "$(LINE) $p sub: $sub"
           $TryPath = Join-Path (Resolve-Path $pr -ea 0) $Sub
-          if (Test-Path $TryPath) { 
+          if (Test-Path $TryPath) {
             $ValidPath = @(Resolve-Path (Join-Path $TryPath))
             write-verbose "$(LINE) Try: $TryPath ValidPath: [$($ValidPath -join '] [')]"
             break :OuterForEach
           }
         }
       }
-    }  
+    }
     if ($ValidPath) {
       write-verbose "$(LINE) Valid: $($ValidPath -join '; ')"
-      if ($true -or $pushd) { jpushd  $ValidPath    } 
-      else        { cd      $ValidPath[0] } 
+      if ($true -or $pushd) { jpushd  $ValidPath    }
+      else        { cd      $ValidPath[0] }
     } else {
       write-verbose "$(LINE) $($Path -join '] [') $($Subdirectory -join '] [')"
-      if ($Path -or $Subdirectory) { 
+      if ($Path -or $Subdirectory) {
         write-verbose "$(LINE) Jump: jpushd $(($Path + $Subdirectory) -join '; ')"
-        jpushd ($Path + $Subdirectory) 
-      } else  { 
+        jpushd ($Path + $Subdirectory)
+      } else  {
         if ($InvocationName -notin 'go','g','Set-GoLocation','GoLocation') {
           write-verbose "$(LINE) Jump: jpushd $InvocationName"
-          jpushd $InvocationName 
+          jpushd $InvocationName
         } else {
-          jpushd $InvocationName 
+          jpushd $InvocationName
           write-verbose "$(LINE) Jump: jpushd $InvocationName"
         }
       }
@@ -722,14 +670,14 @@ function Set-GoLocation {
     write-error $_
   }
   write-verbose "$(LINE) Current: $((Get-Location).path)"
-} New-Alias Go Set-GoLocation -force -scope global; New-Alias G Set-GoLocation -force -scope global 
+} New-Alias Go Set-GoLocation -force -scope global; New-Alias G Set-GoLocation -force -scope global
 
 
 Set-GoAlias
 
-<# 
+<#
 
-Ok, I finally got around to starting to learn Pester version 4.1.1 
+Ok, I finally got around to starting to learn Pester version 4.1.1
 PSVersion 5.1.14409.1012
 Got this:
      Expected: {C:\books}
@@ -751,7 +699,8 @@ Looks like a match, editor says it's a match, so I tried adding the same test wi
 #new-alias books      go -force
 #new-alias powershell go -force
 #new-alias profile    go -force
-  
+
+# Utility Functions (small)
 filter Is-Odd?  { param([Parameter(valuefrompipeline)][int]$n) [boolean]($n % 2)}
 filter Is-Even? { param([Parameter(valuefrompipeline)][int]$n) -not (Is-Odd? $n)}
 function get-syntax([string]$command='Get-Command') { if ($command) {gcm $command -syntax} }   # syntax get-command
@@ -770,13 +719,15 @@ function Privs? {
 	}
 }
 
+function Get-DayOfYear([DateTime]$date=(Get-Date)) {"{0:D3}" -f ($date).DayofYear}
+
 function Get-FormattedDate ([DateTime]$Date = (Get-Date)) {
   Get-date "$date" ?f "yyyy-MM-ddTHH:mm:ss-ddd"
 }
 #([System.TimeZoneInfo]::Local.StandardName) -replace '([A-Z])\w+\s*', '$1'
 
 function Get-SortableDate {
-  [CmdletBinding()]param([DateTime]$Date = (Get-Date)) 
+  [CmdletBinding()]param([DateTime]$Date = (Get-Date))
   Get-Date $date -format 's'
 }
 
@@ -797,7 +748,7 @@ try {   # Chocolatey profile
   }
 } catch {
   write-information "$(LINE) Chocolatey not available."
-}  
+}
 
 new-alias alias new-alias -force
 new-alias 7z 'C:\util\7-Zip\App\7-Zip64\7z.exe' -force
@@ -814,11 +765,11 @@ function fileformat([string[]]$path = @('c:\dev'), [string[]]$include=@('*.txt')
 }
 #region Script Diagnostic & utility Functions
 #region Definitions
-        # function Get-CurrentLineNumber 
-        # function Get-CurrentFileName  
+        # function Get-CurrentLineNumber
+        # function Get-CurrentFileName
         # Alias   LINE    Get-CurrentLineNumber
         # Alias __LINE__  Get-CurrentLineNumber
-        # Alias   FILE    Get-CurrentFileName  
+        # Alias   FILE    Get-CurrentFileName
         # Alias __FILE__  Get-CurrentFileName
         # function write-log
         # function ExitWithCode($exitcode)
@@ -872,39 +823,39 @@ function Find-File {
     [switch]$Recurse,
     [switch]$Details
   )
-  
-  Begin { 
+
+  Begin {
     $e = @{}
-    function Extend-File { 
+    function Extend-File {
       param([string]$name, [string]$ext="$($env:pathext);.PS1")
       If ($name -match '(\.[a-z0-9]{0,5})|\*$') {
         return @($name)
-      } elseIf (!$e[$name]) { 
-        $e[$name] = @($ext -split ';' | select -uniq | 
+      } elseIf (!$e[$name]) {
+        $e[$name] = @($ext -split ';' | select -uniq |
                   ? { $_ -notmatch '^\s*$' } | % { "$($Name)$_" })
       }
       $e[$name]
     }
-    
+
     $Location += $Environment | % { $Location += ";$((dir -ea 0 Env:$_).value)" }
     If ($EPath) {$Location += ";$($Env:Path)"}
-    $Location = $Location | % { $_ -split ';' } | select -uniq | ? { $_ -notmatch '^\s*$' } 
-    write-verbose ("$($Location.Count)`n" + ($Location -join "`n"))  
+    $Location = $Location | % { $_ -split ';' } | select -uniq | ? { $_ -notmatch '^\s*$' }
+    write-verbose ("$($Location.Count)`n" + ($Location -join "`n"))
     write-verbose ('-' * 72)
-    write-verbose "Recurse: $Recurse"    
+    write-verbose "Recurse: $Recurse"
   }
 
   Process {
-    $File | % { $F=$_; ($Location | % { 
-      $L = $_; Extend-File $F | 
-      % { dir -file -ea 0 -recurse:$recurse (Join-Path $L $_) } 
+    $File | % { $F=$_; ($Location | % {
+      $L = $_; Extend-File $F |
+      % { dir -file -ea 0 -recurse:$recurse (Join-Path $L $_) }
     })} | % {
       if ($Details) { $_ | select length,lastwritetime,fullname }
       else { $_.fullname }
     }
   }
 
-  End { write-verbose ('-' * 72) }  
+  End { write-verbose ('-' * 72) }
 }
 
 function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
@@ -912,8 +863,8 @@ function Get-CurrentFileName   { $MyInvocation.MyCommand.Name   }   #$MyInvocati
 Set-Alias -Name   LINE   -Value Get-CurrentLineNumber -Description "Returns the current (caller's) line number in a script." -force -option allscope
 Set-Alias -Name __LINE__ -Value Get-CurrentLineNumber -Description "Returns the current (caller's) line number in a script." -force -option allscope
 Set-Alias -Name   FILE   -Value Get-CurrentFileName   -Description 'Returns the name of the current script file.'             -force -option allscope
-Set-Alias -Name __FILE__ -Value Get-CurrentFileName   -Description 'Returns the name of the current script file.'             -force -option allscope  
-"$(FILE) test " 
+Set-Alias -Name __FILE__ -Value Get-CurrentFileName   -Description 'Returns the name of the current script file.'             -force -option allscope
+"$(FILE) test "
 function write-log {
   param (
     [Parameter(Mandatory=$true)][string]$Message,
@@ -977,7 +928,7 @@ function PSBoundParameter([string]$Parm) {
   return ($PSCmdlet -and $PSCmdlet.MyInvocation.BoundParameters[$Parm].IsPresent)
 }
 #endregion Definitions
-#endregion Script Diagnostic & utility Functions 
+#endregion Script Diagnostic & utility Functions
 #---------------- Snippets
 # cd (split-path -parent $profile )
 # gcm *zip*,*7z*,*archive*  | ? {$_.Source -notmatch '\.(cmd|exe|bat)'}
@@ -995,4 +946,4 @@ write-host "`nError count: $($Error.Count)"
 #if(Test-Path Function:\Prompt) {Rename-Item Function:\Prompt PrePoshGitPrompt -Force}
 
 
-if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $informationpreferenceSave } 
+if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $informationpreferenceSave }
