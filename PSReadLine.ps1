@@ -496,7 +496,6 @@ if ($host.Name -eq 'ConsoleHost') {
     Set-PSReadlineKeyHandler -Key Shift+Backspace -Function BackwardKillWord
     Set-PSReadlineKeyHandler -Key UpArrow         -Function HistorySearchBackward
     Set-PSReadlineKeyHandler -Key DownArrow       -Function HistorySearchForward
-    Set-PSReadlineKeyHandler -Key Tab             -Function Complete
     
     $Host.PrivateData.ErrorBackgroundColor   = $Host.UI.RawUI.BackgroundColor
     $Host.PrivateData.WarningBackgroundColor = $Host.UI.RawUI.BackgroundColor
