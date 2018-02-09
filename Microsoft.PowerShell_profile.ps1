@@ -12,6 +12,9 @@ $ForceModuleInstall = [boolean]$ForceModuleInstall
 $AllowClobber       = [boolean]$AllowClobber
 $Confirm            = [boolean]$Confirm
 
+set-psreadlinekeyhandler -chord 'Tab'            -Func TabCompleteNext      ### !!!!!
+set-psreadlinekeyhandler -chord 'Shift+Tab'      -Func TabCompletePrevious  ### !!!!!
+set-psreadlinekeyhandler -chord 'Shift+SpaceBar' -Func Complete             ### !!!!!
 # new-alias np S:\Programs\Portable\Notepad++Portable\Notepad++Portable.exe -force -scope global
 new-alias np S:\Programs\Portable\Notepad++Portable\Notepad++Portable.exe -force -scope global
 function Select-History {param($Pattern) (h).commandline -match $Pattern }
