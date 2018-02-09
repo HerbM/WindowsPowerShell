@@ -10,4 +10,5 @@ Microsoft.PowerShell_profile[0-9].ps1
 *.doc
 *.xl*
 Set-LocalConfig.ps1
-
+*~*
+*.bak
