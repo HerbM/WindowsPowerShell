@@ -2,6 +2,16 @@
 Subst K: C:\\Users\\A469526\\documents\\tools
 https://code.google.com/p/psubst/#Inconstancy
 
+gal | ? ReferencedCommand -match 'childitem'
+(new-object Net.WebClient).DownloadString("http://psget.net/GetPsGet.ps1") | iex
+set-psreadlinekeyhandler -Function *history*
+
+jdhitsolutions/Optimize-PSReadLineHistory    https://gist.github.com/jdhitsolutions/841fcd6f0318f9f51d2e05873ba658a4
+rkeithhill/Optimize-PSReadlineHistory.ps1 ** https://gist.github.com/rkeithhill/4099bfd8420eed0e6dbc
+
+https://codegists.com/language/windows-powershell/
+http://blog.powershell.no/2010/06/02/dynamic-remote-desktop-connection-manager-connection-list 
+
 REGEDIT4
 [HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\DOS Devices] 
 "Z:"="\\??\\C:\\Documents\\All Users\\Tools"
@@ -10,7 +20,29 @@ REGEDIT4
 "K Drive"="subst K: C:\\Users\\A469526\\documents\\tools
 "L Drive"="subst L: G:\\Tools"
 "M Drive"="subst M: F:\\Tools"
+
+TRUE PowerShell command history persistence 
+http://orsontyrell.blogspot.com/2013/11/true-powershell-command-history.html
+  Redirect your default profile to your tricked-out profile.
+  http://orsontyrell.blogspot.com/2013/11/saurons-powershell-profile-in-3-easy.html
+
+  Since you're putting your command history and profile on dropbox, don't forget to add your modules as well!
+
+  Setup a command line installer like Scoop or Chocolatey.
+  https://github.com/lukesampson/scoop/
+  http://chocolatey.org/
+
+  With one of these installer you're one line away from all sorts of cool tools, stuff like:  7zip, curl, grep, nano, git, openssh, vim, wget.  With Chocolately you can install goodies like Notepad++, Chrome, VLC, etc.
+
+
+  bunch of sources:
+  http://psget.net/
+  https://github.com/lzybkr/PSReadLine
+  http://stackoverflow.com/questions/17862618/loading-powershell-history
+  http://blog.clintarmstrong.net/2011/05/powershell-history-persistence.html
+  http://rkeithhill.wordpress.com/2013/10/18/psreadline-a-better-line-editing-experience-for-the-powershell-console/
 #>
+
 
 function Get-LastCommand {
   param([uint16]$count=1, [switch]$All, [string]$filter='*')
