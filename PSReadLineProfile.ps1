@@ -2,12 +2,32 @@ using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
 
 Import-Module PSReadLine
+
 $PSHistoryFileName  = 'PSReadLine_history.txt'
 $PSHistoryDirectory = "$Home\Documents\PSHistory"
 $PSHistory          = "$PSHistoryDirectory\$PSHistoryFileName"
-if (!(Test-path $PSHistoryDirectory)) { md $PSHistoryDirectory }
-Dir -ea 0 "$(Split-Path $Profile)\$PSHistoryFileName" | move-item -Dest $PSHistoryDirectory
-Set-PSReadlineOption -HistorySavePath $PSHistoryDirectory
+
+######### Move Old History to new location
+	if (!(Test-path $PSHistoryDirectory)) { md $PSHistoryDirectory }
+	try {
+		$OldHistory  = @(if (($oh = (Get-PSReadLineOption).HistorySavePath) -and
+													$oh -ne $PSHistoryDirectory                   -and
+													$oh -ne $PSHistory) { $oh })
+		$OldHistory += "$(Split-Path $Profile)\$PSHistoryFileName"
+		$OldHistory  = Get-ChildItem $OldHistory -file -ea 0 | Sort-Object -uniq lastwritetime,fullname
+		$null =  $OldHistory | % { 
+			Get-Content $_ -ea Stop | out-file -append $PSHistory -ea Stop
+			Remove-Item $_ -ea Stop
+		}	
+		Set-PSReadlineOption -HistorySavePath $PSHistory
+	} catch {
+		$_
+		write-error "Cannot reset PSReadlineHistory:$PSHistoryFileName to $PSHistoryDirectory"
+		"HistorySavePath : $((Get-PSReadLineOption).HistorySavePath)"
+	} Finally {
+		write-information "HistorySavePath : $((Get-PSReadLineOption).HistorySavePath)"
+	}
+###################	
 
 Set-PSReadlineKeyHandler 'Tab'          -Function TabCompleteNext
 Set-PSReadlineKeyHandler 'Shift+Tab'    -Function TabCompleteNext
