@@ -1,6 +1,17 @@
 using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
 
+# [Microsoft.PowerShell.PSConsoleReadLine]::AddToHistory($line)
+
+
+# $SaveHistory = $null
+# [Microsoft.PowerShell.PSConsoleReadLine]::AddToHistory('"This is a test"')
+# OEMKey https://msdn.microsoft.com/en-us/library/system.windows.forms.keys%28v=vs.110%29.aspx?f=255&MSPPError=-2147217396
+# [System.ConsoleKey] | gm -static | more
+# Alt-w current line to history
+
+$SaveHistory = (h).commandline
+
 Import-Module PSReadLine
 
 $PSHistoryFileName  = 'PSReadLine_history.txt'
@@ -78,35 +89,29 @@ Set-PSReadLineKeyHandler -Key F7 `
 
 # This is an example of a macro that you might use to execute a command.
 # This will add the command to history.
-Set-PSReadLineKeyHandler -Key Ctrl+B `
-                         -LongDescription "Build the current directory" `
-                         -BriefDescription BuildCurrentDirectory `
-                         -ScriptBlock {
-  [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
-  [Microsoft.PowerShell.PSConsoleReadLine]::Insert("msbuild")
-  [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
-}
+#Set-PSReadLineKeyHandler -Key Ctrl+B `
+#                         -LongDescription "Build the current directory" `
+#                         -BriefDescription BuildCurrentDirectory `
+#                         -ScriptBlock {
+#  [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
+#  [Microsoft.PowerShell.PSConsoleReadLine]::Insert("msbuild")
+#  [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+#}
 
-
-
-# Clipboard interaction is bound by default in Windows mode, but not Emacs mode.
-Set-PSReadLineKeyHandler -Key Shift+Ctrl+C -Function Copy
-Set-PSReadLineKeyHandler -Key Ctrl+V -Function Paste
-
-# CaptureScreen is good for blog posts or email showing a transaction
-# of what you did when asking for help or demonstrating a technique.
+Set-PSReadLineKeyHandler -Key Shift+Ctrl+C   -Function Copy
+Set-PSReadLineKeyHandler -Key Ctrl+V         -Function Paste
 Set-PSReadLineKeyHandler -Chord 'Ctrl+Alt+S' -Function CaptureScreen
 
 # The built-in word movement uses character delimiters, but token based word
 # movement is also very useful - these are the bindings you'd use if you
 # prefer the token based movements bound to the normal emacs word movement
 # key bindings.
-Set-PSReadLineKeyHandler -Key Alt+D -Function ShellKillWord
-Set-PSReadLineKeyHandler -Key Alt+Backspace -Function ShellBackwardKillWord
-Set-PSReadLineKeyHandler -Key Alt+B -Function ShellBackwardWord
-Set-PSReadLineKeyHandler -Key Alt+F -Function ShellForwardWord
-Set-PSReadLineKeyHandler -Key Shift+Alt+B -Function SelectShellBackwardWord
-Set-PSReadLineKeyHandler -Key Shift+Alt+F -Function SelectShellForwardWord
+Set-PSReadLineKeyHandler -Key Alt+D          -Function ShellKillWord
+Set-PSReadLineKeyHandler -Key Alt+Backspace  -Function ShellBackwardKillWord
+Set-PSReadLineKeyHandler -Key Alt+B          -Function ShellBackwardWord
+Set-PSReadLineKeyHandler -Key Alt+F          -Function ShellForwardWord
+Set-PSReadLineKeyHandler -Key Shift+Alt+B    -Function SelectShellBackwardWord
+Set-PSReadLineKeyHandler -Key Shift+Alt+F    -Function SelectShellForwardWord
 
 #region Smart Insert/Delete
 
@@ -524,7 +529,19 @@ if ($host.Name -eq 'ConsoleHost') {
     $Host.PrivateData.ErrorBackgroundColor   = 'Black'
     $Host.PrivateData.WarningBackgroundColor = 'Black'
     $Host.PrivateData.VerboseBackgroundColor = 'Black'
+    
+    $Host.PrivateData.ErrorBackgroundColor   = 'DarkRed'
+    $Host.PrivateData.ErrorForegroundColor   = 'White'
+    $Host.PrivateData.VerboseBackgroundColor = 'Black'
+    $Host.PrivateData.VerboseForegroundColor = 'Yellow'
+    $Host.PrivateData.WarningBackgroundColor = 'Black'
+    $Host.PrivateData.WarningForegroundColor = 'White'
 }
+
+### if ($SaveHistory -and !(Get-History).count) { Add-History $SaveHistory };
+$SaveHistory | % { [Microsoft.PowerShell.PSConsoleReadLine]::AddToHistory($_) }
+$SaveHistory = $null
+
 <#        
         function prompt {
            $c = [ConsoleColor]::Cyan

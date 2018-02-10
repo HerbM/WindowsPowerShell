@@ -5,6 +5,7 @@ param(
   [switch]$ForceModuleInstall,
   [switch]$AllowClobber,
   [Alias('SilentlyContinue')][switch]$Quiet,
+  [Alias('PSReadlineProfile','ReadlineProfile','psrl')][switch]$PSReadline,
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$RemArgs
 )
 
@@ -12,12 +13,49 @@ $ForceModuleInstall = [boolean]$ForceModuleInstall
 $AllowClobber       = [boolean]$AllowClobber
 $Confirm            = [boolean]$Confirm
 
-set-psreadlinekeyhandler -chord 'Tab'            -Func TabCompleteNext      ### !!!!!
-set-psreadlinekeyhandler -chord 'Shift+Tab'      -Func TabCompletePrevious  ### !!!!!
-set-psreadlinekeyhandler -chord 'Shift+SpaceBar' -Func Complete             ### !!!!!
-# new-alias np S:\Programs\Portable\Notepad++Portable\Notepad++Portable.exe -force -scope global
-new-alias np S:\Programs\Portable\Notepad++Portable\Notepad++Portable.exe -force -scope global
-function Select-History {param($Pattern) (h).commandline -match $Pattern }
+if (Get-Command 'Set-PSReadlineKeyHandler' -ea 0) {
+  set-psreadlinekeyhandler -chord 'Tab'            -Func TabCompleteNext      ### !!!!!
+  set-psreadlinekeyhandler -chord 'Shift+Tab'      -Func TabCompletePrevious  ### !!!!!
+  set-psreadlinekeyhandler -chord 'Shift+SpaceBar' -Func Complete             ### !!!!!
+}
+
+<#
+If ($NotepadPlusPlus = @(where.exe 'notepad++*.exe')) {
+} elseif (($NotepadPlusPlus = 
+        (Get-Alias np -ea 0).definition | ? { Test-Path $NotepadPlusPlus -ea 0 }       
+  # Nothing to do but set location          
+} else {
+  $ProgFiles = (get-childitem ENV:prog*).value | select -uniq 
+  dir $ProgFiles -incl NotePad++ -rec
+
+}
+# new-alias np 'C:\util\notepad++.exe' -force
+# new-alias np 'S:\Programs\Portable\Notepad++Portable\Notepad++Portable.exe' -force -scope global
+#>
+
+### $SearchNotePadPlusPlus = @('S:\Programs' )
+$NotepadPlusPlus = (
+  @((get-childitem 'ENV:Notepad++','ENV:NotepadPlusPlus' -ea 0).value -split ';'  |
+    ? { $_ -match '\S'} |
+    % { $_,(Join-Path $_ 'Notepad++*' )} | ? {Test-Path $_ -ea 0})      +
+  (where.exe notepad++ 2>$null)                                +   
+  (gal np -ea 0).definition                                    +
+  ((get-childitem ENV:prog* -ea 0).value | select -uniq        | 
+    % {Join-Path $_ 'Notepad++*'} | ? {Test-Path $_ -ea 0})      +
+  ('C:\ProgramData\chocolatey\bin',
+   'S:\Programs\Notepad++*','S:\Programs\Portable\Notepad++*',  
+   'T:\Programs\Notepad++*','T:\Programs\Portable\Notepad++*',
+   'S:\Programs\Herb\util', 'T:\Programs\Herb\util',
+   'D:\wintools\Tools\hm') | 
+   Get-ChildItem -include 'notepad++*.exe' -excl '.paf.' -file -recurse -ea 0 | 
+   select -first 1).fullname
+if ($NotepadPlusPlus) { new-alias np $NotepadPlusPlus -force -scope Global }
+
+function Select-History {
+ param($Pattern, [int]$Count=9999, $Exclude='Select-History|(\bsh\b)') 
+ (h).commandline -match $Pattern -notmatch $Exclude
+ select -last $Count 
+}
 new-alias sh Select-History -force -scope Global
 
 # 'Thu, 08 Feb 2018 07:47:42 -0800 (PST)' -replace '[^\d]+$' -as [datetime] 13:47:42 -0800 (PST)'
@@ -51,7 +89,6 @@ write-information "Use `$Profile for path to Profile: $Profile"
 # Chrome extensions   chrome://extensions/
 
 function Get-RunTime ($historyitem) { $historyitem.endexecutiontime - $historyitem.startexecutiontime }
-new-alias np 'S:\Programs\Portable\Notepad++Portable\Notepad++Portable.exe' -force
 new-alias 7z 'S:\Programs\Herb\util\7Zip\app\7-Zip64\7z.exe'                -force
 get-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive | Select WindowArrangementActive | FL
 set-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -value 0 -type dword -force
@@ -755,7 +792,6 @@ try {   # Chocolatey profile
 
 new-alias alias new-alias -force
 new-alias 7z 'C:\util\7-Zip\App\7-Zip64\7z.exe' -force
-new-alias np C:\util\notepad++.exe -force
 function 4rank ($n, $d1, $d2, $d) {"{0:P2}   {1:P2}" -f ($n/$d),(1 - $n/$d)}
 function Get-PSVersion {"$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"}
 write-information ("$(LINE) Use Function Get-PSVersion or variable `$PSVersionTable: $(Get-PSVersion)")
@@ -800,7 +836,7 @@ function PSBoundParameter([string]$Parm) {
 #>
 write-information "$(LINE) Error count: $($Error.Count)"
 
-$utility = (('.;' + $env:path) -split ';' | % { join-path $_ 'utility.ps1' } | ? { test-path $_ }) -split '\s*\n'
+$utility = (('.;' + $env:path) -split ';' | % { join-path $_ 'utility.ps1' } | ? { test-path $_ -ea 0}) -split '\s*\n'
 try {
   if ($utility) {
     write-information "$(LINE) Source: $utility"

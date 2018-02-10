@@ -10,6 +10,13 @@ Set-PSReadLineOption -ForeGround Gray    -Token Type
 Set-PSReadLineOption -ForeGround White   -Token Number    
 Set-PSReadLineOption -ForeGround White   -Token Member    
 
+$Host.PrivateData.ErrorBackgroundColor   = 'DarkRed'
+$Host.PrivateData.ErrorForegroundColor   = 'White'
+$Host.PrivateData.VerboseBackgroundColor = 'Black'
+$Host.PrivateData.VerboseForegroundColor = 'Yellow'
+$Host.PrivateData.WarningBackgroundColor = 'Black'
+$Host.PrivateData.WarningForegroundColor = 'White'
+
 <#
 DefaultTokenForegroundColor            : Yellow
 CommentForegroundColor                 : Green
