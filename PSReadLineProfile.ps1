@@ -16,7 +16,7 @@ $PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversi
 if (!(Get-Module PSReadline -listavailable -ea 0)) {  
   $parms = @('-force')
   if ($PSVersionNumber -ge 5.1) { $parms += '-AllowClobber' }
-  Install-Module PSReadline  
+  Install-Module PSReadline @Parms 
 }
 if ( (Get-Module PSReadline -listavailable -ea 0)) {
   Import-Module PSReadLine
