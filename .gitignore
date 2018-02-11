@@ -2,6 +2,7 @@
 *.tmp
 *.sav
 /modules
+modules
 save.*
 t.*
 tt.*
@@ -12,3 +13,6 @@ Microsoft.PowerShell_profile[0-9].ps1
 Set-LocalConfig.ps1
 *~*
 *.bak
+*back*
+/backup
+/backup
