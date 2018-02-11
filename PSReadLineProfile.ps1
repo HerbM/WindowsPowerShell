@@ -12,8 +12,12 @@ using namespace System.Management.Automation.Language
 
 $SaveHistory = (h).commandline
 
-Import-Module PSReadLine
-
+if (!(Get-Module PSReadline -listavailable -ea 0)) {
+  Install-Module PSReadline -force -allowclobber
+}
+if ( (Get-Module PSReadline -listavailable -ea 0)) {
+  Import-Module PSReadLine
+}
 $PSHistoryFileName  = 'PSReadLine_history.txt'
 $PSHistoryDirectory = "$Home\Documents\PSHistory"
 $PSHistory          = "$PSHistoryDirectory\$PSHistoryFileName"

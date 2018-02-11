@@ -20,18 +20,29 @@ if (Test-Path 'C:\tools\poshgit\dahlbyk-posh-git-a1795ab\profile.example.ps1') {
 
   
 <#
+# git reset --hard HEAD^   # delete commit  HEAD~2 (or higher number)
 $env:psmodulepath -split ';'
-md WindowsPowerShell
-cd .\WindowsPowerShell\
-where.exe git
-git --version
-dir -force
-git remote add HerbProfile https://github.com/HerbM/Profile-Utilities
-git remote -v
-git fetch --all
-git reset --hard HerbProfile/master
-git pull HerbProfile master
-cd S:\Programs\Portable\
+
+$ProfileDirectory = Split-Path $Profile
+If (! (Test-Path $ProfileDirectory)) { md $ProfileDirectory }
+If ((Test-Path $ProfileDirectory -ea 0) -and (cd $ProfileDirectory -pass -ea 0) -and
+  (Resolve-Path $ProfileDirectory -ea 0).Path -eq (Resolve-Path .).Path) { 
+  cd $ProfileDirectory
+  where.exe git
+  if (where.exe 2>$null) {
+    git --version
+    if (!(Test-Path .git)) { git init }
+    dir -force    # to see hidden .gitconfig file .git directory
+    git remote add -t master HerbProfile https://github.com/HerbM/Profile-Utilities # name the remote
+    git remote add -t master origin      https://github.com/HerbM/Profile-Utilities
+    git remote -v
+    git fetch --all
+    git reset --hard HerbProfile/master
+    git pull HerbProfile master
+  }
+}
+
+set-psrepository  PSGallery -InstallationPolicy trusted
 
 ???
 git ls-remote --heads origin
@@ -39,13 +50,16 @@ git fetch origin <branch>
 git reset --hard <ref>
 git clean -dfq
 
-
-From Toro
+#From Toro
+where.exe git
+git --version
+dir -force    # to see hidden .gitconfig file .git directory
+git remote add HerbProfile https://github.com/HerbM/Profile-Utilities # name the remote
+git remote -v
 git init
-git remote add -f github https://github.com/HerbM/Profile-Utilities
-
+git remote add HerbProfile https://github.com/HerbM/Profile-Utilities # name the remote
 git fetch --all  # Force to current directory:
-git reset --hard origin/master
+git reset --hard Herb Profile/master
 git pull origin master
 
 We did most of this on your 2016 server, maybe better.

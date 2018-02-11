@@ -96,7 +96,9 @@ set-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -va
 
 # 7-Zip        http://www.7-zip.org/download.html
 # Git          https://git-scm.com/download/win
+#              https://github.com/git-tips/tips
 # Regex        http://www.grymoire.com/Unix/Regular.html#uh-12
+#              http://www.regexlib.com/DisplayPatterns.aspx 
 # AwkRef       http://www.grymoire.com/Unix/AwkRef.html
 # Notepad++    https://notepad-plus-plus.org/download/v7.5.4.html
 # ArsClip      http://www.joejoesoft.com/vcms/97/
@@ -106,6 +108,7 @@ set-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -va
 # WinMerg      http://developeronfire.com/blog/configuration-of-git-on-windows-to-make-life-easy
 # NotesProfile See: NotesProfile.txt
 # docker       https://docs.docker.com/install/windows/docker-ee/#use-a-script-to-install-docker-ee
+#              https://github.com/wsargent/docker-cheat-sheet
 
 write-information ".NET dotnet versions installed"
 $DotNetKey = @('HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP',
