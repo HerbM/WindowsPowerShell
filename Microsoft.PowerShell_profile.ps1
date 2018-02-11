@@ -47,7 +47,8 @@ $NotepadPlusPlus = (
    'T:\Programs\Notepad++*','T:\Programs\Portable\Notepad++*',
    'S:\Programs\Herb\util', 'T:\Programs\Herb\util',
    'D:\wintools\Tools\hm') | 
-   Get-ChildItem -include 'notepad++*.exe' -excl '.paf.' -file -recurse -ea 0 | 
+   Get-ChildItem -include 'notepad++*.exe' -excl '.paf.' -file -recurse -ea 0 |
+   % { write-warning "$_"; $_} |   
    select -first 1).fullname
 if ($NotepadPlusPlus) { new-alias np $NotepadPlusPlus -force -scope Global }
 
@@ -64,7 +65,7 @@ new-alias sh Select-History -force -scope Global
 #$pattern = 'ddd, dd MMM yyyy H:mm:ss zzz \(PST)'
 #[DateTime]::ParseExact($raw, $pattern, $null)
 
-$MyInvocation
+# $MyInvocation
 if ($MyInvocation.HistoryID -eq 1) {
   if (gcm write-information -type cmdlet,function -ea 0) {
     $InformationPreference = 'Continue'
@@ -83,7 +84,7 @@ if ($Quiet -and $global:informationpreference) {
   write-information "SHOULD NOT WRITE"
 }
 
-$ProfilePath = Split-Path $Profile
+$ProfileDirectory = Split-Path $Profile
 write-information "Use `$Profile for path to Profile: $Profile"
 # Chrome key mapper?  chrome://extensions/configureCommands
 # Chrome extensions   chrome://extensions/
@@ -104,6 +105,7 @@ set-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -va
 # Transmission https://transmissionbt.com/download/
 # WinMerg      http://developeronfire.com/blog/configuration-of-git-on-windows-to-make-life-easy
 # NotesProfile See: NotesProfile.txt
+# docker       https://docs.docker.com/install/windows/docker-ee/#use-a-script-to-install-docker-ee
 
 write-information ".NET dotnet versions installed"
 $DotNetKey = @('HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP',
@@ -113,9 +115,14 @@ $DotNetKey = @('HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP',
 $PSGallery = Get-PSRepository PSGallery
 $PSGallery
 if ($PSGallery -and $PSGallery.InstallationPolicy -ne 'Trusted') {
-  Set-PSRepository PSGallery -InstallationPolicy 'Trusted'
-  Get-PSRepository PSGallery
+  Set-PSRepository -name 'PSGallery' -InstallationPolicy 'Trusted'
+  Get-PSRepository -name 'PSGallery'
 }
+if ($psversiontable.psversion.major -lt 6) {
+  if (!(get-module -list jump.location)) { Install-Module 'Jump.Location' -force -allowclobber }
+  if ( (get-module -list jump.location)) { Import-Module Jump.Location }
+}
+
 function Update-ModuleList {
   [CmdLetBinding(SupportsShouldProcess = $true,ConfirmImpact='Medium')]
   param(
@@ -188,10 +195,6 @@ if ($InstallModules) {
 }
 get-module -list | ? {$_.name -match 'PowerShellGet|PSReadline' -or $_.author -notmatch 'Microsoft' } |
   ft version,name,author,path
-
-if ($psversiontable.psversion.major -lt 6) {
-  Import-Module Jump.Location
-}
 
 # Get .Net Constructor parameters
 # ([type]"Net.Sockets.TCPClient").GetConstructors() | ForEach { $_.GetParameters() } | Select Name,ParameterType
@@ -543,15 +546,39 @@ function Get-Drive {
 	  [string]  $PSProvider='FileSystem')
   get-psdrive -name $name -psprovider $psprovider -scope $scope
 }
-function invoke-clipboard {$script = ((Get-Clipboard) -join "`n") -replace '(function\s+)', '$1 '; . ([scriptblock]::Create($script))}
+
+# function invoke-clipboard {$script = ((Get-Clipboard) -join "`n") -replace '(function\s+)', '$1 '; . ([scriptblock]::Create($script))}
 #### Because of DIFFICULT with SCOPE
-write-information "$(LINE) Create ic.ps1"
-if (Test-Path c:\bat\ic.ps1) {
-  set-content c:\bat\ic.ps1 '. ([scriptblock]::Create($((Get-Clipboard) -join "`n")))'
+# $ProfileDirectory = Split-Path $Profile
+$ICFile = "$ProfileDirectory\ic.ps1"
+write-information "$(LINE) Create ic file: $ICFile"
+set-content $ICFile '. ([scriptblock]::Create($((Get-Clipboard) -join "`n")))'
+set-alias ic $ICFile -force -scope global -option AllScope
+function ql { $args   }
+function qs { "$args" }
+function qa { 
+  [CmdLetBinding(PositionalBinding=$False)]
+  param(
+    [Parameter()]$OFS=$(Get-Variable OFS -scope 1 -ea 0 -value),
+    [Parameter()]$Quotes='',
+    [Parameter()][switch]$DoubleQuote,
+    [Parameter()][switch]$SingleQuote,
+    [parameter(Mandatory=$true, ValueFromRemainingArguments=$true)]$Args
+  )
+  begin {
+    If ($DoubleQuote) { $Quotes = '"' }
+    If ($SingleQuote) { $Quotes = "'" }
+    if ($Quotes) { $OFS = $Quotes + $OFS + $Quotes }  
+  }  
+  process {    
+    write-verbose "OFS: [$OFS] Length: $($OFS.Length) Count: $($OFS.Count) Quotes: [$Quotes]"
+    "$Quotes$($(foreach ($a in $args) {if ($a -is [System.Array]) {qa @a } else {$a}} ) -join $OFS)$Quotes" 
+  }
 }
-$ic = [scriptblock]::Create('(Get-Clipboard) -join "`n"')
-$ic =  '. ([scriptblock]::Create($((Get-Clipboard) -join "`n")))'
-$ic =  [scriptblock]::Create('. ([scriptblock]::Create($((Get-Clipboard) -join "`n")))')
+
+# $ic = [scriptblock]::Create('(Get-Clipboard) -join "`n"')
+# $ic =  '. ([scriptblock]::Create($((Get-Clipboard) -join "`n")))'
+# $ic =  [scriptblock]::Create('. ([scriptblock]::Create($((Get-Clipboard) -join "`n")))')
 
 # https://weblogs.asp.net/jongalloway/working-around-a-powershell-call-depth-disaster-with-trampolines
 write-information "$(LINE) Test-Administrator"
@@ -622,8 +649,8 @@ $gohash = [ordered]@{
   downloads  = "$home\downloads"
   books      = $books
   powershell = "$books\PowerShell"
-  profile    = $ProfilePath
-  pro        = $ProfilePath
+  profile    = $ProfileDirectory
+  pro        = $ProfileDirectory
   txt        = 'c:\txt'
   text       = 'c:\txt'
   esb        = 'c:\esb'

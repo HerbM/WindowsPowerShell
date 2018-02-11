@@ -17,6 +17,8 @@ $Host.PrivateData.VerboseForegroundColor = 'Yellow'
 $Host.PrivateData.WarningBackgroundColor = 'Black'
 $Host.PrivateData.WarningForegroundColor = 'White'
 
+# set-psreadlineoption -EmphasisForegroundColor Blue -EmphasisBackgroundColor Black
+
 <#
 DefaultTokenForegroundColor            : Yellow
 CommentForegroundColor                 : Green
