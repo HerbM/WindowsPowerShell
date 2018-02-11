@@ -12,8 +12,11 @@ using namespace System.Management.Automation.Language
 
 $SaveHistory = (h).commandline
 
-if (!(Get-Module PSReadline -listavailable -ea 0)) {
-  Install-Module PSReadline -force -allowclobber
+$PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)" -as [double]
+if (!(Get-Module PSReadline -listavailable -ea 0)) {  
+  $parms = @('-force')
+  if ($PSVersionNumber -ge 5.1) { $parms += '-AllowClobber' }
+  Install-Module PSReadline  
 }
 if ( (Get-Module PSReadline -listavailable -ea 0)) {
   Import-Module PSReadLine
