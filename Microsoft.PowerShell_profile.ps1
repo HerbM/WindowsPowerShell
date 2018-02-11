@@ -9,6 +9,9 @@ param(
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$RemArgs
 )
 
+$PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)" -as [double]
+write-information "$(LINE) PowerShell version PSVersionNumber: [$PSVersionNumber]"
+
 $ForceModuleInstall = [boolean]$ForceModuleInstall
 $AllowClobber       = [boolean]$AllowClobber
 $Confirm            = [boolean]$Confirm
@@ -97,6 +100,7 @@ set-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -va
 # 7-Zip        http://www.7-zip.org/download.html
 # Git          https://git-scm.com/download/win
 #              https://github.com/git-tips/tips
+#              C:\Program Files\Git\mingw64\share\doc\git-doc\giteveryday.html
 # Regex        http://www.grymoire.com/Unix/Regular.html#uh-12
 #              http://www.regexlib.com/DisplayPatterns.aspx 
 # AwkRef       http://www.grymoire.com/Unix/AwkRef.html
@@ -121,10 +125,14 @@ if ($PSGallery -and $PSGallery.InstallationPolicy -ne 'Trusted') {
   Set-PSRepository -name 'PSGallery' -InstallationPolicy 'Trusted'
   Get-PSRepository -name 'PSGallery'
 }
-if ($psversiontable.psversion.major -lt 6) {
-  if (!(get-module -list jump.location)) { Install-Module 'Jump.Location' -force -allowclobber }
-  if ( (get-module -list jump.location)) { Import-Module Jump.Location }
+
+$PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)" -as [double]
+if (!(Get-Module 'Jump.Location' -listavailable -ea 0) -and $PSVersionNumber -lt 6) {  
+  $parms = @('-force')
+  if ($PSVersionNumber -ge 5.1) { $parms += '-AllowClobber' }
+  Install-Module 'Jump.Location' ### @Parms 
 }
+Import-Module jump.location
 
 function Update-ModuleList {
   [CmdLetBinding(SupportsShouldProcess = $true,ConfirmImpact='Medium')]
