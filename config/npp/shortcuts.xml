@@ -1,0 +1,53 @@
+<NotepadPlus>
+    <InternalCommands>
+        <Shortcut id="41015" Ctrl="yes" Alt="no" Shift="yes" Key="65" />
+        <Shortcut id="42047" Ctrl="yes" Alt="yes" Shift="yes" Key="81" />
+    </InternalCommands>
+    <Macros>
+        <Macro name="Trim Trailing and save" Ctrl="no" Alt="yes" Shift="yes" Key="83">
+            <Action type="2" message="0" wParam="42024" lParam="0" sParam="" />
+            <Action type="2" message="0" wParam="41006" lParam="0" sParam="" />
+        </Macro>
+    </Macros>
+    <UserDefinedCommands>
+        <Command name="Launch in Firefox" Ctrl="yes" Alt="yes" Shift="yes" Key="88">firefox &quot;$(FULL_CURRENT_PATH)&quot;</Command>
+        <Command name="Launch in IE" Ctrl="yes" Alt="no" Shift="yes" Key="73">iexplore &quot;$(FULL_CURRENT_PATH)&quot;</Command>
+        <Command name="Launch in Chrome" Ctrl="yes" Alt="yes" Shift="yes" Key="82">chrome &quot;$(FULL_CURRENT_PATH)&quot;</Command>
+        <Command name="Launch in Safari" Ctrl="no" Alt="no" Shift="no" Key="0">safari &quot;$(FULL_CURRENT_PATH)&quot;</Command>
+        <Command name="Get php help" Ctrl="no" Alt="yes" Shift="no" Key="112">http://www.php.net/%20$(CURRENT_WORD)</Command>
+        <Command name="Google Search" Ctrl="no" Alt="yes" Shift="no" Key="113">http://www.google.com/search?q=$(CURRENT_WORD)</Command>
+        <Command name="Wikipedia Search" Ctrl="no" Alt="yes" Shift="no" Key="114">http://en.wikipedia.org/wiki/Special:Search?search=$(CURRENT_WORD)</Command>
+        <Command name="Open file" Ctrl="no" Alt="yes" Shift="no" Key="116">$(NPP_DIRECTORY)\notepad++.exe $(CURRENT_WORD)</Command>
+        <Command name="Open in another instance" Ctrl="no" Alt="yes" Shift="no" Key="117">$(NPP_DIRECTORY)\notepad++.exe $(CURRENT_WORD) -nosession -multiInst</Command>
+        <Command name="Send via Outlook" Ctrl="yes" Alt="yes" Shift="yes" Key="79">outlook /a &quot;$(FULL_CURRENT_PATH)&quot;</Command>
+    </UserDefinedCommands>
+    <PluginCommands>
+        <PluginCommand moduleName="ComparePlugin.dll" internalID="1" Ctrl="yes" Alt="yes" Shift="yes" Key="68" />
+        <PluginCommand moduleName="NPPSvn.dll" internalID="2" Ctrl="no" Alt="no" Shift="no" Key="0" />
+        <PluginCommand moduleName="NppCCompletionPlugin.dll" internalID="11" Ctrl="no" Alt="yes" Shift="no" Key="118" />
+        <PluginCommand moduleName="NppCCompletionPlugin.dll" internalID="12" Ctrl="no" Alt="yes" Shift="no" Key="119" />
+        <PluginCommand moduleName="NppCCompletionPlugin.dll" internalID="10" Ctrl="yes" Alt="yes" Shift="no" Key="117" />
+        <PluginCommand moduleName="NppCCompletionPlugin.dll" internalID="8" Ctrl="yes" Alt="yes" Shift="yes" Key="117" />
+        <PluginCommand moduleName="NppCCompletionPlugin.dll" internalID="7" Ctrl="yes" Alt="yes" Shift="yes" Key="116" />
+        <PluginCommand moduleName="NppCCompletionPlugin.dll" internalID="6" Ctrl="no" Alt="yes" Shift="no" Key="45" />
+        <PluginCommand moduleName="NppCCompletionPlugin.dll" internalID="1" Ctrl="yes" Alt="yes" Shift="yes" Key="32" />
+        <PluginCommand moduleName="NppCCompletionPlugin.dll" internalID="2" Ctrl="no" Alt="yes" Shift="no" Key="122" />
+        <PluginCommand moduleName="NppCCompletionPlugin.dll" internalID="3" Ctrl="no" Alt="yes" Shift="no" Key="123" />
+        <PluginCommand moduleName="UniversalIndentGUI_NPP.dll" internalID="1" Ctrl="yes" Alt="yes" Shift="yes" Key="73" />
+        <PluginCommand moduleName="HTMLTag_unicode.dll" internalID="0" Ctrl="yes" Alt="yes" Shift="no" Key="84" />
+        <PluginCommand moduleName="HTMLTag_unicode.dll" internalID="1" Ctrl="no" Alt="yes" Shift="yes" Key="84" />
+        <PluginCommand moduleName="HTMLTag_unicode.dll" internalID="8" Ctrl="yes" Alt="yes" Shift="no" Key="74" />
+        <PluginCommand moduleName="SpellChecker.dll" internalID="0" Ctrl="no" Alt="yes" Shift="yes" Key="67" />
+        <PluginCommand moduleName="ComparePlugin.dll" internalID="3" Ctrl="no" Alt="yes" Shift="yes" Key="88" />
+        <PluginCommand moduleName="NPPJSONViewer-win32.dll" internalID="1" Ctrl="no" Alt="yes" Shift="yes" Key="77" />
+        <PluginCommand moduleName="MathPad.dll" internalID="3" Ctrl="yes" Alt="yes" Shift="no" Key="50" />
+        <PluginCommand moduleName="MathPad.dll" internalID="4" Ctrl="yes" Alt="yes" Shift="no" Key="51" />
+        <PluginCommand moduleName="MathPad.dll" internalID="5" Ctrl="no" Alt="yes" Shift="yes" Key="13" />
+        <PluginCommand moduleName="MathPad.dll" internalID="10" Ctrl="no" Alt="yes" Shift="yes" Key="66" />
+        <PluginCommand moduleName="NppExec.dll" internalID="0" Ctrl="no" Alt="yes" Shift="yes" Key="117" />
+        <PluginCommand moduleName="NppExec.dll" internalID="1" Ctrl="yes" Alt="no" Shift="yes" Key="117" />
+        <PluginCommand moduleName="XMLTools.dll" internalID="28" Ctrl="no" Alt="yes" Shift="yes" Key="82" />
+        <PluginCommand moduleName="XPatherizerNPP.dll" internalID="0" Ctrl="no" Alt="yes" Shift="no" Key="88" />
+    </PluginCommands>
+    <ScintillaKeys />
+</NotepadPlus>

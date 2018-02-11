@@ -12,8 +12,15 @@ using namespace System.Management.Automation.Language
 
 $SaveHistory = (h).commandline
 
-Import-Module PSReadLine
-
+$PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)" -as [double]
+if (!(Get-Module PSReadline -listavailable -ea 0)) {  
+  $parms = @('-force')
+  if ($PSVersionNumber -ge 5.1) { $parms += '-AllowClobber' }
+  Install-Module PSReadline @Parms 
+}
+if ( (Get-Module PSReadline -listavailable -ea 0)) {
+  Import-Module PSReadLine
+}
 $PSHistoryFileName  = 'PSReadLine_history.txt'
 $PSHistoryDirectory = "$Home\Documents\PSHistory"
 $PSHistory          = "$PSHistoryDirectory\$PSHistoryFileName"
