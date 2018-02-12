@@ -6,6 +6,8 @@
 # WinMerg          http://developeronfire.com/blog/configuration-of-git-on-windows-to-make-life-easy
 # GitHubGist       Øyvind Kallstad https://gist.github.com/gravejester?page=2, https://gist.github.com/toenuff/6715170
 # Babun (CygWin)   http://babun.github.io/
+# qWinSta          mstsc /shadow:6 /noconsentprompt /control 
+# Translate C#->PS https://github.com/LaurentDardenne/ExtensionMethod
 
 #WinMerge with Git
 # Posh-Git
