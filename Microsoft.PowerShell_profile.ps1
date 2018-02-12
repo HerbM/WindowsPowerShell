@@ -116,7 +116,28 @@ write-information "Use `$Profile for path to Profile: $Profile"
 # Chrome key mapper?  chrome://extensions/configureCommands
 # Chrome extensions   chrome://extensions/
 
-function Get-RunTime ($historyitem) { $historyitem.endexecutiontime - $historyitem.startexecutiontime }
+function Get-RunTime { 
+  param(
+    [Microsoft.PowerShell.Commands.HistoryInfo[]]$historyitem, 
+    [switch]$Full
+  ) 
+  $width = +1 * "$((($HistoryItem | measure -max id).maximum))".length
+  $F1 = '{0,5:N2}'; 
+  $F2 = "ID# {1,$($Width):D}: "
+  write-warning "width $Width $F2"
+  foreach ($hi in $HistoryItem) {
+    $CL = $hi.commandline
+    $ID = $hi.id
+    switch ($hi.endexecutiontime - $hi.startexecutiontime) {
+      {$Full                } { $_                                      } 
+      {$_.Days         -gt 0} {"$F1 Days  $F2 $CL" -f $_.TotalDays   ,$ID; break } 
+      {$_.Hours        -gt 0} {"$F1 Hours $F2 $CL" -f $_.TotalHours  ,$ID; break }
+      {$_.Minutes      -gt 0} {"$F1 Mins  $F2 $CL" -f $_.TotalMinutes,$ID; break }
+      {$_.Seconds      -gt 0} {"$F1 Secs  $F2 $CL" -f $_.TotalSeconds,$ID; break }
+      {$_.Milliseconds -gt 0} {"$F1 ms    $F2 $CL" -f $_.TotalSeconds,$ID; break }
+    }
+  }
+}
 new-alias 7z 'S:\Programs\Herb\util\7Zip\app\7-Zip64\7z.exe'                -force
 get-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive | Select WindowArrangementActive | FL
 set-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -value 0 -type dword -force
