@@ -9,6 +9,30 @@ param(
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$RemArgs
 )
 
+#$MyInvocation
+#$MyInvocation.MyCommand
+
+function LINE {
+  param ([string]$Format,[switch]$Label)
+	$Line = '[1]'; $Suffix = ''
+	If ($Format) { $Label = $True }
+	If (!$Format) { $Format = 'Line {0,3}:' }
+	try {
+		if (($L = get-variable MyInvocation -scope 1 -value -ea 0) -and $L.ScriptLineNumber) {
+		  $Line = $L.ScriptLineNumber
+		}
+	} catch {
+	  $Suffix = '(Catch in LINE)'
+	}
+	if ($Label) { $Line = $Format -f $Line }
+  "$Line$Suffix"
+}
+
+<#
+#>
+
+write-information "Profile loaded: $($MyInvocation.MyCommand.Path)"
+
 $PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)" -as [double]
 write-information "$(LINE) PowerShell version PSVersionNumber: [$PSVersionNumber]"
 
@@ -92,7 +116,28 @@ write-information "Use `$Profile for path to Profile: $Profile"
 # Chrome key mapper?  chrome://extensions/configureCommands
 # Chrome extensions   chrome://extensions/
 
-function Get-RunTime ($historyitem) { $historyitem.endexecutiontime - $historyitem.startexecutiontime }
+function Get-RunTime { 
+  param(
+    [Microsoft.PowerShell.Commands.HistoryInfo[]]$historyitem, 
+    [switch]$Full
+  ) 
+  $width = +1 * "$((($HistoryItem | measure -max id).maximum))".length
+  $F1 = '{0,5:N2}'; 
+  $F2 = "ID# {1,$($Width):D}: "
+  write-warning "width $Width $F2"
+  foreach ($hi in $HistoryItem) {
+    $CL = $hi.commandline
+    $ID = $hi.id
+    switch ($hi.endexecutiontime - $hi.startexecutiontime) {
+      {$Full                } { $_                                      } 
+      {$_.Days         -gt 0} {"$F1 Days  $F2 $CL" -f $_.TotalDays   ,$ID; break } 
+      {$_.Hours        -gt 0} {"$F1 Hours $F2 $CL" -f $_.TotalHours  ,$ID; break }
+      {$_.Minutes      -gt 0} {"$F1 Mins  $F2 $CL" -f $_.TotalMinutes,$ID; break }
+      {$_.Seconds      -gt 0} {"$F1 Secs  $F2 $CL" -f $_.TotalSeconds,$ID; break }
+      {$_.Milliseconds -gt 0} {"$F1 ms    $F2 $CL" -f $_.TotalSeconds,$ID; break }
+    }
+  }
+}
 new-alias 7z 'S:\Programs\Herb\util\7Zip\app\7-Zip64\7z.exe'                -force
 get-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive | Select WindowArrangementActive | FL
 set-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -value 0 -type dword -force
@@ -223,45 +268,10 @@ if ($psversiontable.psversion.major -lt 6) {
   write-information "import-module -noclobber PowerShellCookbook"
 }
 
-#$MyInvocation
-#$MyInvocation.MyCommand
-
-function LINE {
-  param ([string]$Format,[switch]$Label)
-	$Line = '[1]'; $Suffix = ''
-	If ($Format) { $Label = $True }
-	If (!$Format) { $Format = 'Line {0,3}:' }
-	try {
-		if (($L = get-variable MyInvocation -scope 1 -value -ea 0) -and $L.ScriptLineNumber) {
-		  $Line = $L.ScriptLineNumber
-		}
-	} catch {
-	  $Suffix = '(Catch in LINE)'
-	}
-	if ($Label) { $Line = $Format -f $Line }
-  "$Line$Suffix"
-}
-
-<#
-#>
-
-write-information "Profile loaded: $($MyInvocation.MyCommand.Path)"
-
 <#
 [System.Windows.Forms.Screen]::AllScreens
 [System.Windows.Forms.Screen]::PrimaryScreen
 #>
-
-
-################################################################
-
-#if (gcm write-information -ea silentlycontinue) {
-#	Remove-Item alias:write-information -ea 0
-#	$global:informationpreference = $warningpreference
-#} else {
-#  write-warning 'Use write-warning for information if write-information not available'
-#	set-alias write-information write-warning -force -option allscope
-#}
 
 <#
 ts.ecs-support.com:32793  terminal server 10.10.11.80
