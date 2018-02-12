@@ -1,0 +1,143 @@
+Name                                           Synopsis
+----                                           --------
+Decode-SqlName                                 Returns the original SQL Server identifier when given an identifier
+                                               that has been encoded into a format usable in Windows PowerShell paths.
+Encode-SqlName                                 Encodes extended characters in SQL Server names to formats usable in
+                                               Windows PowerShell paths.
+SQLSERVER:                                     Set-Location SQLSERVER:  (PSDrive  see Get-PSDrive)
+Add-RoleMember                                 Adds a member to a specific Role of a specific database.
+Add-SqlAvailabilityDatabase                    Adds primary databases to an availability group or joins secondary
+                                               databases to an availability group.
+Add-SqlAvailabilityGroupListenerStaticIp       Adds a static IP address to an availability group listener.
+Add-SqlAzureAuthenticationContext              Performs authentication to Azure and acquires an authentication token.
+Add-SqlColumnEncryptionKeyValue                Adds an encrypted value for an existing column encryption key object in
+                                               the database.
+Add-SqlFirewallRule                            Adds a Windows Firewall rule to allow connections to a specific
+                                               instance of SQL Server.
+Add-SqlLogin                                   Creates a Login object in an instance of SQL Server.
+Backup-ASDatabase                              Enables a database administrator to take the backup of Analysis Service
+                                               Database to a file.
+Backup-SqlDatabase                             Backs up SQL Server database objects.
+Complete-SqlColumnMasterKeyRotation            Completes the rotation of a column master key.
+ConvertFrom-EncodedSqlName                     Returns the original SQL Server identifier when given an identifier
+                                               that has been encoded into a format usable in Windows PowerShell paths.
+ConvertTo-EncodedSqlName                       Encodes extended characters in SQL Server names to formats usable in
+                                               Windows PowerShell paths.
+Convert-UrnToPath                              Converts a SQL Server Management Object URN to a Windows PowerShell
+                                               provider path.
+Disable-SqlAlwaysOn                            Disables the Always On availability groups feature for a server.
+Enable-SqlAlwaysOn                             Enables the Always On availability groups feature.
+Get-SqlAgent                                   Gets a SQL Agent object that is present in the target instance of SQL
+                                               Server.
+Get-SqlAgentJob                                Gets a SQL Agent Job object for each job that is present in the target
+                                               instance of SQL Agent.
+Get-SqlAgentJobHistory                         Gets the job history present in the target instance of SQL Agent.
+Get-SqlAgentJobSchedule                        Gets a job schedule object for each schedule that is present in the
+                                               target instance of SQL Agent Job.
+Get-SqlAgentJobStep                            Gets a SQL JobStep object for each step that is present in the target
+                                               instance of SQL Agent Job.
+Get-SqlAgentSchedule                           Gets a SQL job schedule object for each schedule that is present in the
+                                               target instance of SQL Agent.
+Get-SqlColumnEncryptionKey                     Gets all column encryption key objects defined in the database, or gets
+                                               one column encryption key object with the specified name.
+Get-SqlColumnMasterKey                         Gets the column master key objects defined in the database or gets one
+                                               column master key object with the specified name.
+Get-SqlCredential                              Gets a SQL credential object.
+Get-SqlDatabase                                Gets a SQL database object for each database that is present in the
+                                               target instance of SQL Server.
+Get-SqlErrorLog                                Gets the SQL Server error logs.
+Get-SqlInstance                                Gets a SQL Instance object for each instance of SQL Server that is
+                                               present on the target computer.
+Get-SqlLogin                                   Returns Login objects in an instance of SQL Server.
+Get-SqlSmartAdmin                              Gets the SQL Smart Admin object and its properties.
+Grant-SqlAvailabilityGroupCreateAnyDatabase    Grants the `CREATE ANY DATABASE` permission to an Always On
+                                               Availability Group.
+Invoke-ASCmd                                   Enables a database administrator to execute an XMLA script,
+                                               Multidimensional Expressions (MDX) query, or  Data Mining Extensions
+                                               (DMX) statement against an instance of Microsoft SQL Server Analysis
+                                               Services.
+Invoke-PolicyEvaluation                        Invokes one or more SQL Server policy-based management policy
+                                               evaluations.
+Invoke-ProcessCube                             Conducts the Process operation on a specified Cube of a specific
+                                               database with a specific ProcessType value.
+Invoke-ProcessDimension                        Conducts the Process operation on a specified Cube of a specific
+                                               database with a specific ProcessType value.
+Invoke-ProcessPartition                        Conducts the Process operation on a specific Partition of a specific
+                                               database having a specific Cube name and a MeasureGroup name with a
+                                               specific ProcessType value.
+Invoke-Sqlcmd                                  Runs a script containing statements supported by the SQL Server SQLCMD
+                                               utility.
+Invoke-SqlColumnMasterKeyRotation              Initiates the rotation of a column master key.
+Join-SqlAvailabilityGroup                      Joins the local secondary replica to an availability group.
+Merge-Partition                                This cmdlet merges the data of one or more source partitions into a
+                                               target partition and deletes the source partitions.
+New-RestoreFolder                              Restores an original folder to a new folder.
+New-RestoreLocation                            Used to add a restore location to the server.
+New-SqlAvailabilityGroup                       Creates an availability group.
+New-SqlAvailabilityGroupListener               Creates an availability group listener and attaches it to an
+                                               availability group.
+New-SqlAvailabilityReplica                     Creates an availability replica.
+New-SqlAzureKeyVaultColumnMasterKeySettings    Creates a SqlColumnMasterKeySettings object describing an asymmetric
+                                               key stored in Azure Key Vault.
+New-SqlBackupEncryptionOption                  Creates the encryption options for the Backup-SqlDatabase cmdlet or the
+                                               Set-SqlSmartAdmin cmdlet.
+New-SqlCertificateStoreColumnMasterKeySettings Creates a SqlColumnMasterKeySettings object referencing the specified
+                                               certificate.
+New-SqlCngColumnMasterKeySettings              Creates a SqlColumnMasterKeySettings object describing an asymmetric
+                                               key stored in a key store supporting the CNG API.
+New-SqlColumnEncryptionKey                     Crates a column encryption key object in the database.
+New-SqlColumnEncryptionKeyEncryptedValue       Creates the encrypted value of a column encryption key.
+New-SqlColumnEncryptionSettings                Creates a SqlColumnEncryptionSettings object that encapsulates
+                                               information about a single column's encryption, including CEK and
+                                               encryption type.
+New-SqlColumnMasterKey                         Creates a column master key object in the database.
+New-SqlColumnMasterKeySettings                 Creates a SqlColumnMasterKeySettings object describing a master key
+                                               stored in an arbitrarily specified key store provider and path.
+New-SqlCredential                              Creates a SQL Server credential object.
+New-SqlCspColumnMasterKeySettings              Creates a SqlColumnMasterKeySettings object describing an asymmetric
+                                               key stored in a key store with a CSP supporting CAPI.
+New-SqlHADREndpoint                            Creates a database mirroring endpoint on a SQL Server instance.
+Read-SqlTableData                              Reads data from a table of a SQL database.
+Read-SqlViewData                               Reads data from a view of a SQL database.
+Remove-RoleMember                              Removes a member from the specific Role of a specific database.
+Remove-SqlAvailabilityDatabase                 Removes an availability database from its availability group.
+Remove-SqlAvailabilityGroup                    Removes an availability group.
+Remove-SqlAvailabilityReplica                  Removes a secondary availability replica.
+Remove-SqlColumnEncryptionKey                  Removes the column encryption key object from the database.
+Remove-SqlColumnEncryptionKeyValue             Removes an encrypted value from an existing column encryption key
+                                               object in the database.
+Remove-SqlColumnMasterKey                      Removes the column master key object from the database.
+Remove-SqlCredential                           Removes the SQL credential object.
+Remove-SqlFirewallRule                         Disables the Windows Firewall rule that allows connections to a
+                                               specific instance of SQL Server.
+Remove-SqlLogin                                Removes Login objects from an instance of SQL Server.
+Restore-ASDatabase                             Restores a specified Analysis Service database from a backup file.
+Restore-SqlDatabase                            Restores a database from a backup or transaction log records.
+Resume-SqlAvailabilityDatabase                 Resumes data movement on an availability database.
+Revoke-SqlAvailabilityGroupCreateAnyDatabase   Revokes the `CREATE ANY DATABASE` permission on an Always On
+                                               Availability Group.
+Save-SqlMigrationReport                        Generates In-Memory OLTP Migration Checklist
+Set-SqlAuthenticationMode                      Configures the authentication mode of the target instance of SQL Server.
+Set-SqlAvailabilityGroup                       Sets settings on an availability group.
+Set-SqlAvailabilityGroupListener               Sets the port setting on an availability group listener.
+Set-SqlAvailabilityReplica                     Sets the settings on an availability replica.
+Set-SqlAvailabilityReplicaRoleToSecondary      Sets the Availability Group replica role to secondary.
+Set-SqlColumnEncryption                        Encrypts, decrypts, or re-encrypts specified columns in the database.
+Set-SqlCredential                              Sets the properties for the SQL Credential object.
+Set-SqlErrorLog                                Sets or resets the maximum number of error log files before they are
+                                               recycled.
+Set-SqlHADREndpoint                            Sets the properties of a database mirroring endpoint.
+Set-SqlNetworkConfiguration                    Sets the network configuration of the target instance of SQL Server.
+Set-SqlSmartAdmin                              Configures or modifies backup retention and storage settings.
+Start-SqlInstance                              Starts the specified instance of SQL Server.
+Stop-SqlInstance                               Stops the specified instance of SQL Server.
+Suspend-SqlAvailabilityDatabase                Suspends data movement on an availability database.
+Switch-SqlAvailabilityGroup                    Starts a failover of an availability group to a secondary replica.
+Test-SqlAvailabilityGroup                      Evaluates the health of an availability group.
+Test-SqlAvailabilityReplica                    Evaluates the health of availability replicas.
+Test-SqlDatabaseReplicaState                   Evaluates the health of an availability database.
+Test-SqlSmartAdmin                             Tests the health of Smart Admin by evaluating SQL Server policy based
+                                               management (PBM) policies.
+Write-SqlTableData                             Writes data to a table of a SQL database.
+
+
