@@ -9,6 +9,30 @@ param(
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$RemArgs
 )
 
+#$MyInvocation
+#$MyInvocation.MyCommand
+
+function LINE {
+  param ([string]$Format,[switch]$Label)
+	$Line = '[1]'; $Suffix = ''
+	If ($Format) { $Label = $True }
+	If (!$Format) { $Format = 'Line {0,3}:' }
+	try {
+		if (($L = get-variable MyInvocation -scope 1 -value -ea 0) -and $L.ScriptLineNumber) {
+		  $Line = $L.ScriptLineNumber
+		}
+	} catch {
+	  $Suffix = '(Catch in LINE)'
+	}
+	if ($Label) { $Line = $Format -f $Line }
+  "$Line$Suffix"
+}
+
+<#
+#>
+
+write-information "Profile loaded: $($MyInvocation.MyCommand.Path)"
+
 $PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)" -as [double]
 write-information "$(LINE) PowerShell version PSVersionNumber: [$PSVersionNumber]"
 
@@ -223,45 +247,10 @@ if ($psversiontable.psversion.major -lt 6) {
   write-information "import-module -noclobber PowerShellCookbook"
 }
 
-#$MyInvocation
-#$MyInvocation.MyCommand
-
-function LINE {
-  param ([string]$Format,[switch]$Label)
-	$Line = '[1]'; $Suffix = ''
-	If ($Format) { $Label = $True }
-	If (!$Format) { $Format = 'Line {0,3}:' }
-	try {
-		if (($L = get-variable MyInvocation -scope 1 -value -ea 0) -and $L.ScriptLineNumber) {
-		  $Line = $L.ScriptLineNumber
-		}
-	} catch {
-	  $Suffix = '(Catch in LINE)'
-	}
-	if ($Label) { $Line = $Format -f $Line }
-  "$Line$Suffix"
-}
-
-<#
-#>
-
-write-information "Profile loaded: $($MyInvocation.MyCommand.Path)"
-
 <#
 [System.Windows.Forms.Screen]::AllScreens
 [System.Windows.Forms.Screen]::PrimaryScreen
 #>
-
-
-################################################################
-
-#if (gcm write-information -ea silentlycontinue) {
-#	Remove-Item alias:write-information -ea 0
-#	$global:informationpreference = $warningpreference
-#} else {
-#  write-warning 'Use write-warning for information if write-information not available'
-#	set-alias write-information write-warning -force -option allscope
-#}
 
 <#
 ts.ecs-support.com:32793  terminal server 10.10.11.80
