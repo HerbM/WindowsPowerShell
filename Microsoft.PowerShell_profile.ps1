@@ -9,6 +9,8 @@ param(
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$RemArgs
 )
 
+#### Jessie's original profile
+
 $PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)" -as [double]
 write-information "$(LINE) PowerShell version PSVersionNumber: [$PSVersionNumber]"
 
