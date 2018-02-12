@@ -1,3 +1,6 @@
+Modules
+Script
+=======
 *history*
 *.tmp
 *.sav
@@ -13,7 +16,6 @@ Microsoft.PowerShell_profile[0-9].ps1
 Set-LocalConfig.ps1
 *~*
 *.bak
-<<<<<<< HEAD
 junk
 *back*
 /backup

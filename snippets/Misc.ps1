@@ -1,4 +1,8 @@
 <#
+
+# Naive find functions defined in file:
+(get-content .\Microsoft.PowerShell_profile.ps1) | ? { $_ -match '^\s*(function\s+([^|{])*)'} | % { $Matches[1]} | sort -uniq | measure 
+
 Subst K: C:\\Users\\A469526\\documents\\tools
 https://code.google.com/p/psubst/#Inconstancy
 
@@ -52,19 +56,47 @@ function Get-LastCommand {
 }
 Get-TroubleshootingPack -Path C:\Windows\Diagnostics\System\Aero
 https://blogs.technet.microsoft.com/heyscriptingguy/2011/02/09/use-powershell-troubleshooting-packs-to-diagnose-remote-problems/
+https://blogs.msdn.microsoft.com/commandline/2017/06/20/understanding-windows-console-host-settings/
+Console ColorTool https://github.com/Microsoft/console/tree/master/tools/ColorTool
+iTerm Themes      https://github.com/mbadolato/iTerm2-Color-Schemes
 
 <#  Windows Console Host Regisry Settings 
   1.Hardcoded settings in conhostv2.dll
   2.User's configured Console defaults, stored as values in 'HKCU\Console'
-  3.Per-Console-application registry settings, stored as sub-keys of 'HKCU\Console\<sub-key>' 
+  3.Per-Console-application registry settings, stored as sub-keys of 'HKCU:\Console\<sub-key>' 
     using one of two sub-key names: ◦Console application path (replacing '\' with '_')  ◦Console title
   4.Windows shortcut (.lnk) files
 
-  When modifying 'Defaults', changes are written to the User's configured defaults, stored as values in 'HKCU\Console', (#2 in the hierarchy above).
+(Get-ItemProperty -literal  HKCU:\Console)   # defaults  
+(gci HKCU:\Console\).name                    # names for apps path or windows title
 
-  When modifying 'Properties', changes will be persisted to either the per-Console-application settings in the registry, or to the Windows shortcut file:
-  •If the application was launched directly (e.g. via the Windows run dialog), changes will be persisted in the per-application storage location mentioned above (#3 in the hierarchy).
-  •If the application was launched via a Windows shortcut file, changes will be persisted directly into the .lnk file (the fourth item in the hierarchy). For Console applications with a shortcut, you can also right-click on the shortcut file itself and choose 'Properties' to access the settings dialog.
+$ConsoleColors | % { $colorLeft = $_; $ConsoleColors | % {write-host ('{0,14} on {1,-14}' -f $ColorLeft,$_* 3) -fore $colorLeft -back $_} ; write-host "`n`n" -back black } | more
+$ConsoleColors = 'Black', 'Blue', 'Cyan', 'DarkBlue', 'DarkCyan', 'DarkGray', 'DarkGreen', 'DarkMagenta', 'DarkRed', 'DarkYellow', 'Gray', 'Green', 'Magenta', 'Red', 'White', 'Yellow'
+$ConsoleColors | % { write-host (('{0,16}' -f $_ ) * 4) -back black -fore $_; write-host $(( '{0,16}' -f $_ ) * 4) -back white -fore $_ }
+
+'C:\dev\EncodingDetector\src\Example\bin\Debug'
+Character Encoding Detection dir \dev\*.ps1 |% {write-host ('{0,30}  ' -f $_.name) -NoNewline; .\udetect.exe $_.fullname }
+
+# from https://gist.github.com/zommarin/1480974
+function Get-FileEncoding($Path) {
+    $bytes = [byte[]](Get-Content $Path -Encoding byte -ReadCount 4 -TotalCount 4)
+    if(!$bytes) { return 'utf8' }
+    switch -regex ('{0:x2}{1:x2}{2:x2}{3:x2}' -f $bytes[0],$bytes[1],$bytes[2],$bytes[3]) {
+        '^efbbbf'   { return 'utf8' }
+        '^2b2f76'   { return 'utf7' }
+        '^fffe'     { return 'unicode' }
+        '^feff'     { return 'bigendianunicode' }
+        '^0000feff' { return 'utf32' }
+        default     { return 'ascii' }
+    }
+}
+
+dir ~\Documents\WindowsPowershell -File | 
+    select Name,@{Name='Encoding';Expression={Get-FileEncoding $_.FullName}} | 
+    ft -AutoSize
+ 
+
+New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
 
 #>
 

@@ -15,8 +15,8 @@ $emailTo = "email@yourdomain.com"
 $SessionList = "ACTIVE SERVER SESSIONS REPORT - " + $today + "`n`n" 
  
 # Query Active Directory for computers running a Server operating system 
-$Servers = Get-ADComputer -Filter {OperatingSystem -like "*server*"} 
- 
+# $Servers = Get-ADComputer -Filter {OperatingSystem -like "*server*"} 
+$Servers = ,$Env:Computername 
 # Loop through the list to query each server for login sessions 
 ForEach ($Server in $Servers) { 
     $ServerName = $Server.Name 
