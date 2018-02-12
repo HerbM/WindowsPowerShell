@@ -13,6 +13,7 @@ Microsoft.PowerShell_profile[0-9].ps1
 Set-LocalConfig.ps1
 *~*
 *.bak
+junk
 *back*
 /backup
 /backup
