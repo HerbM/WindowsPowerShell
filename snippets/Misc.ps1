@@ -91,6 +91,41 @@ function Get-FileEncoding($Path) {
     }
 }
 
+function Get-Numbers {
+  [CmdletBinding(SupportsPaging = $true)]param()
+  begin { 
+    write-verbose "Begin..."
+    $FirstNumber = [Math]::Min($PSCmdlet.PagingParameters.Skip, 100)
+    $LastNumber  = [Math]::Min($PSCmdlet.PagingParameters.First +
+      $FirstNumber - 1, 100)
+    $pscmdLet | gm
+    $pscmdLet.WriteCommandDetail("--This is a test--")
+    if ($PSCmdlet.PagingParameters.IncludeTotalCount) {
+        $TotalCountAccuracy = 1.0
+        $TotalCount = $PSCmdlet.PagingParameters.NewTotalCount(100,
+          $TotalCountAccuracy)
+        Write-Output $TotalCount
+    }
+  }  
+  process {    
+    $FirstNumber .. $LastNumber | Write-Output
+  }
+  end { write-verbose "Ending."}  
+}
+
+
+function NoCmdletBinding {    # No CmdLetBinding()
+  param()
+  write-verbose "NoCmdletBinding"
+}
+function CmdletBinding {
+  [CmdletBinding()]param()
+  write-verbose "CmdletBinding"
+}
+function NoParam {            # No CmdLetBinding() No Param  
+  write-verbose "NoParam"
+}
+
 dir ~\Documents\WindowsPowershell -File | 
     select Name,@{Name='Encoding';Expression={Get-FileEncoding $_.FullName}} | 
     ft -AutoSize
