@@ -628,7 +628,7 @@ write-information "$(LINE) Pushed previous prompt onto `$PromptStack: $($PromptS
 write-information "$(LINE) prompt='PS $($executionContext.SessionState.Path.CurrentLocation) $('>' * $nestedPromptLevel + '>')'"
 #function Global:prompt { "PS '$($executionContext.SessionState.Path.CurrentLocation)' $('>.' * $nestedPromptLevel + '>') "}
 
-function Global:prompt { "'$($executionContext.SessionState.Path.CurrentLocation)' PS>$('>' * $nestedPromptLevel) "}
+function Global:prompt { "'$($executionContext.SessionState.Path.CurrentLocation)' |>$('>' * $nestedPromptLevel) "}
 
 # function docs {
 #   [CmdletBinding()]param (
