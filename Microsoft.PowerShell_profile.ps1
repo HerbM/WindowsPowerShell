@@ -1051,6 +1051,7 @@ write-host "`nError count: $($Error.Count)"
 
 if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $informationpreferenceSave }
 
+<#
 Key                   Function                      Description                                                        
 ---                   --------                      -----------                                                        
 Enter                 AcceptLine                    Accept the input or move to the next line if input is missing a ...
@@ -1240,4 +1241,3 @@ Unbound               ShellNextWord                 Move the cursor to the end o
 Unbound               ForwardWord                   Move the cursor forward to the end of the current word, or if be...
 #>
 
-<#
