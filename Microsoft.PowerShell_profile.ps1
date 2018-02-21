@@ -12,6 +12,14 @@ param(
 #$MyInvocation
 #$MyInvocation.MyCommand
 
+# "line1","line2" -join [environment]::NewLine
+function Get-NewLine { [environment]::NewLine }; new-alias NL Get-NewLine -force
+# "line1","line2" -join (NL)
+# https://github.com/FriedrichWeinmann/PSReadline-Utilities
+# https://github.com/FriedrichWeinmann/functions
+# PSFramework
+# Install-Module -Scope CurrentUser -Name Assert
+
 function LINE {
   param ([string]$Format,[switch]$Label)
 	$Line = '[1]'; $Suffix = ''
@@ -236,12 +244,17 @@ $RecommendedModules = @(
   'PSGit',
   'Jump.Location',
   'Veeam.PowerCLI-Interactions',
-  'PSReadLine'
+  'PSReadLine',
+  'PSUtil'
 )
 
 # DSC_PowerCLISnapShotCheck  PowerCLITools  PowerCLI.SessionManager PowerRestCLI
 # PowerShell CodeManager https://bytecookie.wordpress.com/
 # ChocolateyGet
+# https://github.com/FriedrichWeinmann/PSReadline-Utilities
+# https://github.com/FriedrichWeinmann/functions
+# PSFramework
+# Install-Module -Scope CurrentUser -Name Assert
 
 
 if ($InstallModules) {
@@ -568,6 +581,8 @@ function Get-Drive {
   get-psdrive -name $name -psprovider $psprovider -scope $scope
 }
 
+# https://poshtools.com/2018/02/17/building-real-time-web-apps-powershell-universal-dashboard/
+# https://docs.microsoft.com/en-us/dotnet/api/?view=netframework-4.5
 # function invoke-clipboard {$script = ((Get-Clipboard) -join "`n") -replace '(function\s+)', '$1 '; . ([scriptblock]::Create($script))}
 #### Because of DIFFICULT with SCOPE
 # $ProfileDirectory = Split-Path $Profile
@@ -575,6 +590,7 @@ $ICFile = "$ProfileDirectory\ic.ps1"
 write-information "$(LINE) Create ic file: $ICFile"
 set-content $ICFile '. ([scriptblock]::Create($((Get-Clipboard) -join "`n")))'
 set-alias ic $ICFile -force -scope global -option AllScope
+(Get-CimInstance win32_operatingsystem).lastbootuptime
 function ql { $args   }
 function qs { "$args" }
 function qa { 
@@ -1034,3 +1050,194 @@ write-host "`nError count: $($Error.Count)"
 
 
 if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $informationpreferenceSave }
+
+Key                   Function                      Description                                                        
+---                   --------                      -----------                                                        
+Enter                 AcceptLine                    Accept the input or move to the next line if input is missing a ...
+Shift+Enter           AddLine                       Move the cursor to the next line without attempting to execute t...
+Ctrl+Enter            InsertLineAbove               Inserts a new empty line above the current line without attempti...
+Ctrl+Shift+Enter      InsertLineBelow               Inserts a new empty line below the current line without attempti...
+Escape                RevertLine                    Equivalent to undo all edits (clears the line except lines impor...
+LeftArrow             BackwardChar                  Move the cursor back one character                                 
+RightArrow            ForwardChar                   Move the cursor forward one character                              
+Ctrl+LeftArrow        BackwardWord                  Move the cursor to the beginning of the current or previous word   
+Ctrl+RightArrow       NextWord                      Move the cursor forward to the start of the next word              
+Shift+LeftArrow       SelectBackwardChar            Adjust the current selection to include the previous character     
+Shift+RightArrow      SelectForwardChar             Adjust the current selection to include the next character         
+Ctrl+Shift+LeftArrow  SelectBackwardWord            Adjust the current selection to include the previous word          
+Ctrl+Shift+RightArrow SelectNextWord                Adjust the current selection to include the next word              
+UpArrow               HistorySearchBackward         Search for the previous item in the history that starts with the...
+DownArrow             HistorySearchForward          Search for the next item in the history that starts with the cur...
+Home                  BeginningOfLine               Move the cursor to the beginning of the line                       
+End                   EndOfLine                     Move the cursor to the end of the line                             
+Shift+Home            SelectBackwardsLine           Adjust the current selection to include from the cursor to the e...
+Shift+End             SelectLine                    Adjust the current selection to include from the cursor to the s...
+Delete                DeleteChar                    Delete the character under the cusor                               
+Backspace             SmartBackspace                Delete previous character or matching quotes/parens/braces         
+Ctrl+Spacebar         MenuComplete                  Complete the input if there is a single completion, otherwise co...
+Tab                   TabCompleteNext               Complete the input using the next completion                       
+Shift+Tab             TabCompleteNext               Complete the input using the next completion                       
+Ctrl+a                SelectAll                     Select the entire line. Moves the cursor to the end of the line    
+Ctrl+c                CopyOrCancelLine              Either copy selected text to the clipboard, or if no text is sel...
+Ctrl+C                CopyAllLines                  Copies the all lines of the current command into the clipboard     
+Ctrl+l                ClearScreen                   Clear the screen and redraw the current line at the top of the s...
+Ctrl+r                ReverseSearchHistory          Search history backwards interactively                             
+Ctrl+s                ForwardSearchHistory          Search history forward interactively                               
+Ctrl+v                Paste                         Paste text from the system clipboard                               
+Ctrl+x                Cut                           Delete selected region placing deleted text in the system clipboard
+Ctrl+y                Redo                          Redo an undo                                                       
+Ctrl+z                Undo                          Undo a previous edit                                               
+Ctrl+Backspace        BackwardKillWord              Move the text from the start of the current or previous word to ...
+Ctrl+Delete           KillWord                      Move the text from the cursor to the end of the current or next ...
+Ctrl+End              ForwardDeleteLine             Delete text from the cursor to the end of the line                 
+Ctrl+Home             BackwardDeleteLine            Delete text from the cursor to the start of the line               
+Ctrl+]                GotoBrace                     Go to matching brace                                               
+Ctrl+Alt+?            ShowKeyBindings               Show all key bindings                                              
+Alt+.                 YankLastArg                   Copy the text of the last argument to the input                    
+Alt+0                 DigitArgument                 Start or accumulate a numeric argument to other functions          
+Alt+1                 DigitArgument                 Start or accumulate a numeric argument to other functions          
+Alt+2                 DigitArgument                 Start or accumulate a numeric argument to other functions          
+Alt+3                 DigitArgument                 Start or accumulate a numeric argument to other functions          
+Alt+4                 DigitArgument                 Start or accumulate a numeric argument to other functions          
+Alt+5                 DigitArgument                 Start or accumulate a numeric argument to other functions          
+Alt+6                 DigitArgument                 Start or accumulate a numeric argument to other functions          
+Alt+7                 DigitArgument                 Start or accumulate a numeric argument to other functions          
+Alt+8                 DigitArgument                 Start or accumulate a numeric argument to other functions          
+Alt+9                 DigitArgument                 Start or accumulate a numeric argument to other functions          
+Alt+-                 DigitArgument                 Start or accumulate a numeric argument to other functions          
+Alt+?                 WhatIsKey                     Show the key binding for the next chord entered                    
+Alt+F7                ClearHistory                  Remove all items from the command line history (not PowerShell h...
+F3                    CharacterSearch               Read a character and move the cursor to the next occurence of th...
+Shift+F3              CharacterSearchBackward       Read a character and move the cursor to the previous occurence o...
+F8                    HistorySearchBackward         Search for the previous item in the history that starts with the...
+Shift+F8              HistorySearchForward          Search for the next item in the history that starts with the cur...
+PageUp                ScrollDisplayUp               Scroll the display up one screen                                   
+PageDown              ScrollDisplayDown             Scroll the display down one screen                                 
+Ctrl+PageUp           ScrollDisplayUpLine           Scroll the display up one line                                     
+Ctrl+PageDown         ScrollDisplayDownLine         Scroll the display down one line                                   
+Shift+Spacebar        ExpandAlias                   Converts aliases into the resolved command / parameter             
+F7                    History                       Show command history                                               
+Ctrl+Alt+s            CaptureScreen                 Allows you to select multiple lines from the console using Shift...
+Alt+d                 ShellKillWord                 Move the text from the cursor to the end of the current or next ...
+Alt+Backspace         ShellBackwardKillWord         Move the text from the cursor to the start of the current or pre...
+Alt+b                 ShellBackwardWord             Move the cursor to the beginning of the current or previous toke...
+Alt+f                 ShellForwardWord              Move the cursor to the beginning of the next token or end of line  
+Alt+B                 SelectShellBackwardWord       Adjust the current selection to include the previous word using ...
+Alt+F                 SelectShellForwardWord        Adjust the current selection to include the next word using Shel...
+"                     SmartInsertQuote              Insert paired quotes if not already on a quote                     
+'                     SmartInsertQuote              Insert paired quotes if not already on a quote                     
+(                     InsertPairedBraces            Insert matching braces                                             
+{                     InsertPairedBraces            Insert matching braces                                             
+[                     InsertPairedBraces            Insert matching braces                                             
+)                     SmartCloseBraces              Insert closing brace or skip                                       
+]                     SmartCloseBraces              Insert closing brace or skip                                       
+}                     SmartCloseBraces              Insert closing brace or skip                                       
+Alt+w                 SaveInHistory                 Save current line in history but do not execute                    
+Ctrl+V                PasteAsHereString             Paste the clipboard text as a here string                          
+Alt+(                 ParenthesizeSelection         Put parenthesis around the selection or entire line and move the...
+Alt+'                 ToggleQuoteArgument           Toggle quotes on the argument under the cursor                     
+Alt+%                 ExpandAliases                 Replace all aliases with the full command                          
+F1                    CommandHelp                   Open the help window for the current command                       
+Ctrl+J                MarkDirectory                 Mark the current directory                                         
+Ctrl+j                JumpDirectory                 Goto the marked directory                                          
+Alt+j                 ShowDirectoryMarks            Show the currently marked directories                              
+Shift+Backspace       BackwardKillWord              Move the text from the start of the current or previous word to ...
+Unbound               RepeatLastCommand             Repeats the last modification command.                             
+Unbound               ViDigitArgumentInChord        Handles the processing of a number argument after the first key ...
+Unbound               ViAcceptLineOrExit            If the line is empty, exit, otherwise accept the line as input.    
+Unbound               ViInsertLine                  Inserts a new multi-line edit mode line in front of the current ...
+Unbound               ViAppendLine                  Appends a new multi-line edit mode line to the current line.       
+Unbound               ViJoinLines                   Joins the current multi-line edit mode line with the next.         
+Unbound               ScrollDisplayTop              Scroll the display to the top                                      
+Unbound               ScrollDisplayToCursor         Scroll the display to the cursor                                   
+Unbound               UndoAll                       Undoes all commands for this line.                                 
+Unbound               ViEditVisually                Invokes the console compatible editor specified by $env:VISUAL o...
+Unbound               PasteAfter                    Write the contents of the local clipboard after the cursor.        
+Unbound               PasteBefore                   Write the contents of the local clipboard before the cursor.       
+Unbound               ViYankLine                    Place all characters in the current line into the local clipboard. 
+Unbound               ViYankRight                   Place the character at the cursor into the local clipboard.        
+Unbound               ViYankLeft                    Place the character to the left of the cursor into the local cli...
+Unbound               ViYankToEndOfLine             Place all characters at and after the cursor into the local clip...
+Unbound               ViYankPreviousWord            Place all characters from before the cursor to the beginning of ...
+Unbound               ViYankNextWord                Place all characters from the cursor to the end of the word, as ...
+Unbound               ViYankEndOfWord               Place the characters from the cursor to the end of the next word...
+Unbound               ViYankEndOfGlob               Place the characters from the cursor to the end of the next whit...
+Unbound               ViYankBeginningOfLine         Place the characters before the cursor into the local clipboard.   
+Unbound               ViYankToFirstChar             Place all characters before the cursor and to the 1st non-white ...
+Unbound               ViYankPercent                 Place all characters between the matching brace and the cursor i...
+Unbound               ViYankPreviousGlob            Place all characters from before the cursor to the beginning of ...
+Unbound               ViYankNextGlob                Place all characters from the cursor to the end of the word, as ...
+Unbound               ViNextWord                    Move the cursor to the beginning of the next word, as delimited ...
+Unbound               ViBackwardWord                Delete backward to the beginning of the previous word, as delimi...
+Unbound               ViBackwardGlob                Move the cursor to the beginning of the previous word, as delimi...
+Unbound               MoveToEndOfLine               Move to the end of the line.                                       
+Unbound               NextWordEnd                   Moves the cursor forward to the end of the next word.              
+Unbound               GotoColumn                    Moves the cursor to the perscribed column.                         
+Unbound               GotoFirstNonBlankOfLine       Positions the cursor at the first non-blank character.             
+Unbound               ViGotoBrace                   Move the cursor to the matching brace.                             
+Unbound               Abort                         Abort the current operation, e.g. incremental history search       
+Unbound               InvokePrompt                  Erases the current prompt and calls the prompt function to redis...
+Unbound               RepeatLastCharSearch          Repeat the last recorded character search.                         
+Unbound               RepeatLastCharSearchBackwards Repeat the last recorded character search in the opposite direct...
+Unbound               SearchChar                    Move to the next occurance of the specified character.             
+Unbound               SearchCharBackward            Move to the previous occurance of the specified character.         
+Unbound               SearchCharWithBackoff         Move to he next occurance of the specified character and then ba...
+Unbound               SearchCharBackwardWithBackoff Move to the previous occurance of the specified character and th...
+Unbound               ViExit                        Exit the shell.                                                    
+Unbound               DeleteToEnd                   Deletes from the cursor to the end of the line.                    
+Unbound               DeleteWord                    Deletes the current word.                                          
+Unbound               ViDeleteGlob                  Delete the current word, as delimited by white space.              
+Unbound               DeleteEndOfWord               Delete to the end of the current word, as delimited by white spa...
+Unbound               ViDeleteEndOfGlob             Delete to the end of this word, as delimited by white space.       
+Unbound               ViCommandMode                 Switch to VI's command mode.                                       
+Unbound               ViInsertMode                  Switches to insert mode.                                           
+Unbound               ViInsertAtBegining            Moves the cursor to the beginning of the line and switches to in...
+Unbound               ViInsertAtEnd                 Moves the cursor to the end of the line and switches to insert m...
+Unbound               ViInsertWithAppend            Switch to insert mode, appending at the current line position.     
+Unbound               ViInsertWithDelete            Deletes the current character and switches to insert mode.         
+Unbound               ViAcceptLine                  Accept the line and switch to Vi's insert mode.                    
+Unbound               PrependAndAccept              Inserts the entered character at the beginning and accepts the l...
+Unbound               InvertCase                    Inverts the case of the current character and advances the cursor. 
+Unbound               SwapCharacters                Swap the current character with the character before it.           
+Unbound               DeleteLineToFirstChar         Deletes all of the line except for leading whitespace.             
+Unbound               DeleteLine                    Deletes the current line.                                          
+Unbound               BackwardDeleteWord            Delete the previous word in the line.                              
+Unbound               ViBackwardDeleteGlob          Delete backward to the beginning of the previous word, as delimi...
+Unbound               ViDeleteBrace                 Deletes all characters between the cursor position and the match...
+Unbound               ViSearchHistoryBackward       Starts a new seach backward in the history.                        
+Unbound               SearchForward                 Prompts for a search string and initiates a search upon AcceptLine.
+Unbound               RepeatSearch                  Repeat the last search.                                            
+Unbound               RepeatSearchBackward          Repeat the last search, but in the opposite direction.             
+Unbound               CancelLine                    Abort editing the current line and re-evaluate the prompt          
+Unbound               BackwardDeleteChar            Delete the charcter before the cursor                              
+Unbound               DeleteCharOrExit              Delete the character under the cusor, or if the line is empty, e...
+Unbound               ValidateAndAcceptLine         Accept the input or move to the next line if input is missing a ...
+Unbound               AcceptAndGetNext              Accept the current line and recall the next line from history af...
+Unbound               TabCompletePrevious           Complete the input using the previous completion                   
+Unbound               Complete                      Complete the input if there is a single completion, otherwise co...
+Unbound               PossibleCompletions           Display the possible completions without changing the input        
+Unbound               ViTabCompleteNext             Invokes TabCompleteNext after doing some vi-specific clean up.     
+Unbound               ViTabCompletePrevious         Invokes TabCompletePrevious after doing some vi-specific clean up. 
+Unbound               PreviousHistory               Replace the input with the previous item in the history            
+Unbound               NextHistory                   Replace the input with the next item in the history                
+Unbound               BeginningOfHistory            Move to the first item in the history                              
+Unbound               EndOfHistory                  Move to the last item (the current input) in the history           
+Unbound               SetMark                       Mark the location of the cursor                                    
+Unbound               ExchangePointAndMark          Mark the location of the cursor and move the cursor to the posit...
+Unbound               KillLine                      Move the text from the cursor to the end of the input to the kil...
+Unbound               BackwardKillLine              Move the text from the cursor to the beginning of the line to th...
+Unbound               UnixWordRubout                Move the text from the cursor to the start of the current or pre...
+Unbound               KillRegion                    Kill the text between the cursor and the mark                      
+Unbound               Yank                          Copy the text from the current kill ring position to the input     
+Unbound               YankPop                       Replace the previously yanked text with the text from the next k...
+Unbound               YankNthArg                    Copy the text of the first argument to the input                   
+Unbound               SelectForwardWord             Adjust the current selection to include the next word using Forw...
+Unbound               SelectShellNextWord           Adjust the current selection to include the next word using Shel...
+Unbound               Copy                          Copy selected region to the system clipboard.  If no region is s...
+Unbound               PreviousLine                  Move the cursor to the previous line if the input has multiple l...
+Unbound               NextLine                      Move the cursor to the next line if the input has multiple lines.  
+Unbound               ShellNextWord                 Move the cursor to the end of the current token                    
+Unbound               ForwardWord                   Move the cursor forward to the end of the current word, or if be...
+#>
+
+<#
