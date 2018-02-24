@@ -1,16 +1,19 @@
 [CmdLetBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
-param(
-  [Alias('Modules')][switch]$InstallModules,
-  [ValidateSet('AllUsers','CurrentUser')][string]$ScopeModule='AllUsers',
-  [switch]$ForceModuleInstall,
-  [switch]$AllowClobber,
-  [Alias('SilentlyContinue')][switch]$Quiet,
+param (
+  [Alias('DotNet')]                                    [switch]$ShowDotNetVersions,
+  [Alias('Modules')]                                   [switch]$ShowModules,
+  [Alias('IModules')]                                  [switch]$InstallModules,
+                                                       [switch]$ForceModuleInstall,
+  [Alias('ClobberAllowed')]                            [switch]$AllowClobber,
+  [Alias('SilentlyContinue')]                          [switch]$Quiet,
   [Alias('PSReadlineProfile','ReadlineProfile','psrl')][switch]$PSReadline,
-  [Parameter(ValueFromRemainingArguments=$true)][String[]]$RemArgs
+  [ValidateSet('AllUsers','CurrentUser')]              [string]$ScopeModule='AllUsers',
+  [Parameter(ValueFromRemainingArguments=$true)]     [String[]]$RemArgs
 )
 
 #$MyInvocation
 #$MyInvocation.MyCommand
+"PowerShell Version $($psversiontable.PSVersion.tostring())" + ' $psversiontable.PSVersion.tostring()' 
 
 # "line1","line2" -join [environment]::NewLine
 function Get-NewLine { [environment]::NewLine }; new-alias NL Get-NewLine -force
@@ -167,16 +170,28 @@ set-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -va
 # docker       https://docs.docker.com/install/windows/docker-ee/#use-a-script-to-install-docker-ee
 #              https://github.com/wsargent/docker-cheat-sheet
 
-write-information ".NET dotnet versions installed"
-$DotNetKey = @('HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP',
-               'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4')
-@(foreach ($key in  $DotNetKey) { gci $key }) | get-itemproperty  -ea 0 | select @{N='Name';E={$_.pspath -replace '.*\\([^\\]+)$','$1'}},version,InstallPath,@{N='Path';E={($_.pspath -replace '^[^:]*::') -replace '^HKEY[^\\]*','HKLM:'}}
+$CurrentWindowTitle = $Host.ui.RawUI.WindowTitle
+if ($CurrentWindowTitle -match 'Windows PowerShell([\(\)\s\d]*)$') {
+  ($Host.ui.RawUI.WindowTitle += " [$PID]",(whoami),(hostname) +
+  ((ipconfig) -split "`n" | ? {$_ -match 'IPv4'} | % {$_ -replace '^.*\s+'}))  -join ' '
+}
 
-$PSGallery = Get-PSRepository PSGallery
-$PSGallery
-if ($PSGallery -and $PSGallery.InstallationPolicy -ne 'Trusted') {
-  Set-PSRepository -name 'PSGallery' -InstallationPolicy 'Trusted'
-  Get-PSRepository -name 'PSGallery'
+If ($ShowDotNetVersions) {
+  write-information ".NET dotnet versions installed"
+  $DotNetKey = @('HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP',
+                 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4')
+  @(foreach ($key in  $DotNetKey) { gci $key }) | get-itemproperty  -ea 0 | select @{N='Name';E={$_.pspath -replace '.*\\([^\\]+)$','$1'}},version,InstallPath,@{N='Path';E={($_.pspath -replace '^[^:]*::') -replace '^HKEY[^\\]*','HKLM:'}}
+}
+
+$DefaultConsoleTitle = 'Administrator: Windows PowerShell'
+# https://github.com/PowerShell/PowerShellGet/archive/1.6.0.zip
+$PSGallery = Get-PSRepository PSGallery -ea 0
+if ($PSGallery) { 
+  $PSGallery 
+  if ($PSGallery.InstallationPolicy -ne 'Trusted') {
+    Set-PSRepository -name 'PSGallery' -InstallationPolicy 'Trusted' -ea 0
+    Get-PSRepository -name 'PSGallery' -ea 0
+  }
 }
 
 $PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)" -as [double]
@@ -260,10 +275,14 @@ $RecommendedModules = @(
 if ($InstallModules) {
   Install-ModuleList $RecommendedModules
 } else {
-  get-module -list $RecommendedModules
+  # get-module -list $RecommendedModules
 }
-get-module -list | ? {$_.name -match 'PowerShellGet|PSReadline' -or $_.author -notmatch 'Microsoft' } |
-  ft version,name,author,path
+
+if ($ShowModules) {
+ get-module -list | ? {$_.name -match 'PowerShellGet|PSReadline' -or $_.author -notmatch 'Microsoft' } |
+   ft version,name,author,path
+} else {
+}
 
 # Get .Net Constructor parameters
 # ([type]"Net.Sockets.TCPClient").GetConstructors() | ForEach { $_.GetParameters() } | Select Name,ParameterType
@@ -284,6 +303,8 @@ if ($psversiontable.psversion.major -lt 6) {
 <#
 [System.Windows.Forms.Screen]::AllScreens
 [System.Windows.Forms.Screen]::PrimaryScreen
+# Make nicely formatted simple directory for notes:
+dir | sort LastWriteTime -desc | % { '{0,23} {1,11} {2}' -f $_.lastwritetime,$_.length,$_.name } 
 #>
 
 <#
@@ -292,8 +313,11 @@ ts.ecs-support.com:32795 FS02
 #>
 $j1 = $ecsts01 = 'ts.ecs-support.com:32793'
 $j2 = $ecsts02 = 'ts.ecs-support.com:32795'
+$j1s = 'ecs-DCts01'
+$j2x = 'ecs-DCts02'
 
-function RDP {
+
+function New-RDPSession {
   param(
     [Alias('Remote','Target','Server')]$ComputerName,
     [Alias('ConnectionFile','File','ProfileFile')]$path='c:\bat\good.rdp',
@@ -304,7 +328,7 @@ function RDP {
   $argX += '/prompt'
   if ($NoProfileFile) { mstsc /v:$ComputerName /w:$Width /h:$Height @argX }
   else                { mstsc /v:$ComputerName $Path @argX }
-}
+} New-Alias RDP New-RCPSession -force
 
 if ($AdminEnabled -and (get-command 'ScreenSaver.ps1' -ea 0)) { ScreenSaver.ps1 }
 

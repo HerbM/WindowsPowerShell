@@ -308,7 +308,6 @@ Set-PSReadLineKeyHandler -Key Ctrl+Shift+v `
              -LongDescription "Paste the clipboard text as a here string" `
              -ScriptBlock {
   param($key, $arg)
-
   Add-Type -Assembly PresentationCore
   if ([System.Windows.Clipboard]::ContainsText()) {
     # Get clipboard text - remove trailing spaces, convert \r\n to \n, and remove the final \n.
@@ -344,16 +343,18 @@ Set-PSReadLineKeyHandler -Key 'Alt+(' `
   }
 }
 
-Set-PSReadLineKeyHandler -Key "+Alt+'" `
-                         -BriefDescription InsertQuotePair `
-                         -LongDescription "Insert pair of quotes" `
-                         -ScriptBlock {
-  param($key, $arg)   
-}
+## Stub to add new handler
+## Set-PSReadLineKeyHandler -Key "+Alt+'" `
+##                          -BriefDescription InsertQuotePair `
+##                          -LongDescription "Insert pair of quotes" `
+##                          -ScriptBlock {
+##   param($key, $arg)   
+## }
 
 # Each time you press Alt+', this key handler will change the token
 # under or before the cursor.  It will cycle through single quotes, double quotes, or
 # no quotes each time it is invoked.
+
 Set-PSReadLineKeyHandler -Key "Ctrl+Alt+'" `
              -BriefDescription ToggleQuoteArgument `
              -LongDescription "Toggle quotes on the argument under the cursor" `
