@@ -328,7 +328,7 @@ function New-RDPSession {
   $argX += '/prompt'
   if ($NoProfileFile) { mstsc /v:$ComputerName /w:$Width /h:$Height @argX }
   else                { mstsc /v:$ComputerName $Path @argX }
-} New-Alias RDP New-RCPSession -force
+} New-Alias RDP New-RDPSession -force
 
 if ($AdminEnabled -and (get-command 'ScreenSaver.ps1' -ea 0)) { ScreenSaver.ps1 }
 
