@@ -51,12 +51,6 @@ $ForceModuleInstall = [boolean]$ForceModuleInstall
 $AllowClobber       = [boolean]$AllowClobber
 $Confirm            = [boolean]$Confirm
 
-if (Get-Command 'Set-PSReadlineKeyHandler' -ea 0) {
-  set-psreadlinekeyhandler -chord 'Tab'            -Func TabCompleteNext      ### !!!!!
-  set-psreadlinekeyhandler -chord 'Shift+Tab'      -Func TabCompletePrevious  ### !!!!!
-  set-psreadlinekeyhandler -chord 'Shift+SpaceBar' -Func Complete             ### !!!!!
-}
-
 <#
 If ($NotepadPlusPlus = @(where.exe 'notepad++*.exe')) {
 } elseif (($NotepadPlusPlus = 
@@ -70,6 +64,10 @@ If ($NotepadPlusPlus = @(where.exe 'notepad++*.exe')) {
 # new-alias np 'C:\util\notepad++.exe' -force
 # new-alias np 'S:\Programs\Portable\Notepad++Portable\Notepad++Portable.exe' -force -scope global
 #>
+
+# 'C:\Program Files (x86)\Notepad++\Note*.exe'   # ECS-DCTS02  Dec 2017 7.5.4
+#  S:\Programs\Notepad++ # 1/2/2018 Notepad++Portable.exe
+#  S:\Programs\Notepad++\app\Notepad++\   # Dec 2017
 
 ### $SearchNotePadPlusPlus = @('S:\Programs' )
 $NotepadPlusPlus = (
@@ -612,10 +610,10 @@ function Get-Drive {
 # $ProfileDirectory = Split-Path $Profile
 $ICFile = "$ProfileDirectory\ic.ps1"
 write-information "$(LINE) Create ic file: $ICFile"
-set-content $ICFile '. ([scriptblock]::Create($((Get-Clipboard) -join "`n")))'
+set-content  $ICFile '. ([scriptblock]::Create($((Get-Clipboard) -join "`n")))'
 set-alias ic $ICFile -force -scope global -option AllScope
 (Get-CimInstance win32_operatingsystem).lastbootuptime
-function ql { $args   }
+function ql {  $args  }
 function qs { "$args" }
 function qa { 
   [CmdLetBinding(PositionalBinding=$False)]
@@ -638,8 +636,8 @@ function qa {
 }
 
 # $ic = [scriptblock]::Create('(Get-Clipboard) -join "`n"')
-# $ic =  '. ([scriptblock]::Create($((Get-Clipboard) -join "`n")))'
-# $ic =  [scriptblock]::Create('. ([scriptblock]::Create($((Get-Clipboard) -join "`n")))')
+# $ic = '. ([scriptblock]::Create($((Get-Clipboard) -join "`n")))'
+# $ic = [scriptblock]::Create('. ([scriptblock]::Create($((Get-Clipboard) -join "`n")))')
 
 # https://weblogs.asp.net/jongalloway/working-around-a-powershell-call-depth-disaster-with-trampolines
 write-information "$(LINE) Test-Administrator"
@@ -908,6 +906,40 @@ function fileformat([string[]]$path = @('c:\dev'), [string[]]$include=@('*.txt')
 function PSBoundParameter([string]$Parm) {
   return ($PSCmdlet -and $PSCmdlet.MyInvocation.BoundParameters[$Parm].IsPresent)
 }
+
+if (Get-Module 'PSReadline' -ea 0) {
+  set-psreadlinekeyhandler -chord 'Tab'            -Func TabCompleteNext      ### !!!!!
+  set-psreadlinekeyhandler -chord 'Shift+Tab'      -Func TabCompletePrevious  ### !!!!!
+  set-psreadlinekeyhandler -chord 'Shift+SpaceBar' -Func Complete             ### !!!!!
+
+  Set-PSReadlineOption -token string    -fore white 
+  Set-PSReadlineOption -token None      -fore yellow
+  Set-PSReadlineOption -token Operator  -fore cyan
+  Set-PSReadlineOption -token Comment   -fore green
+  Set-PSReadlineOption -token Parameter -fore green
+  Set-PSReadlineOption -token Comment   -fore Yellow -back DarkBlue
+
+	Set-PSReadLineOption -ForeGround Yellow  -Token None      
+	Set-PSReadLineOption -ForeGround Green   -Token Comment   
+	
+	Set-PSReadLineOption -ForeGround Green   -Token Keyword   
+	Set-PSReadLineOption -ForeGround Cyan    -Token String    
+	Set-PSReadLineOption -ForeGround White   -Token Operator  
+	Set-PSReadLineOption -ForeGround Green   -Token Variable  
+	Set-PSReadLineOption -ForeGround Yellow  -Token Command   
+	Set-PSReadLineOption -ForeGround Cyan    -Token Parameter 
+	Set-PSReadLineOption -ForeGround White   -Token Type      
+	Set-PSReadLineOption -ForeGround White   -Token Number    
+	Set-PSReadLineOption -ForeGround White   -Token Member    
+
+	$Host.PrivateData.ErrorBackgroundColor   = 'DarkRed'
+	$Host.PrivateData.ErrorForegroundColor   = 'White'
+	$Host.PrivateData.VerboseBackgroundColor = 'Black'
+	$Host.PrivateData.VerboseForegroundColor = 'Yellow'
+	$Host.PrivateData.WarningBackgroundColor = 'Black'
+	$Host.PrivateData.WarningForegroundColor = 'White'
+}
+
 
 #---------------- Snippets
 # cd (split-path -parent $profile )
