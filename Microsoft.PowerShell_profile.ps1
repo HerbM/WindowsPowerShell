@@ -11,9 +11,25 @@ param (
   [Parameter(ValueFromRemainingArguments=$true)]     [String[]]$RemArgs
 )
 
+# Boottime,ProfilePath moved up,LINE/FILE/Write-LOG,LogFilePath?,7z
+# Add/fix BootTime function
+# Move $ProfileDirectory up
+# Move utility extract up (LINE, FILE, WRITE-LOG)
+# working on LogFilePath
+# worked on 7z  -- 
+# TODO: need Notepad++, 7zip, Git, ??? to be on path with shortcuts
+# TODO: LogFile not being written
+
 #$MyInvocation
 #$MyInvocation.MyCommand
-"PowerShell Version $($psversiontable.PSVersion.tostring())" + ' $psversiontable.PSVersion.tostring()' 
+function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
+New-Alias -Name   LINE   -Value Get-CurrentLineNumber -Description 'Returns the current (caller''s) line number in a script.' -force -Option allscope
+write-warning "$(LINE) PowerShell $($psversiontable.PSVersion.tostring())" 
+$ProfileDirectory = Split-Path $Profile
+write-information "Use `$Profile for path to Profile: $Profile"
+# Chrome key mapper?  chrome://extensions/configureCommands
+# Chrome extensions   chrome://extensions/
+
 
 # "line1","line2" -join [environment]::NewLine
 function Get-NewLine { [environment]::NewLine }; new-alias NL Get-NewLine -force
@@ -23,20 +39,85 @@ function Get-NewLine { [environment]::NewLine }; new-alias NL Get-NewLine -force
 # PSFramework
 # Install-Module -Scope CurrentUser -Name Assert
 
-function LINE {
-  param ([string]$Format,[switch]$Label)
-	$Line = '[1]'; $Suffix = ''
-	If ($Format) { $Label = $True }
-	If (!$Format) { $Format = 'Line {0,3}:' }
-	try {
-		if (($L = get-variable MyInvocation -scope 1 -value -ea 0) -and $L.ScriptLineNumber) {
-		  $Line = $L.ScriptLineNumber
-		}
-	} catch {
-	  $Suffix = '(Catch in LINE)'
-	}
-	if ($Label) { $Line = $Format -f $Line }
-  "$Line$Suffix"
+$ProfileLogName = ($ProfileFile -replace '\.ps1$'), 'LOG.txt'
+$ProfileLogPath = Join-Path $ProfileDirectory $ProfileName 
+Write-Information "$(LINE) ProfileLogPath: $ProfileLogPath"
+try {
+  if (Test-Path (Join-Path $ProfileDirectory 'utillity.ps1')) {
+    Join-Path $ProfileDirectory 'utillity.ps1'
+  }
+  Write-Log "(FLINE) Using Write-Log from Utility.ps1" -file $ProfileLogPath 3
+} catch { # just ignore and take care of below
+} finally {}
+
+if (! (Get-Command 'Write-Log')) { 
+  New-Alias Write-Log Write-Verbose 
+  Write-Warning "$(LINE) Utility.ps1 not found.  Defined alias for Write-Log" 
+  function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
+  function Get-CurrentFileName   { split-path -leaf $MyInvocation.PSCommandPath   }   function Get-CurrentFileLine   {
+    if ($MyInvocation.PSCommandPath) {
+      "$(split-path -leaf $MyInvocation.PSCommandPath):$($MyInvocation.ScriptLineNumber)"
+    } else {"GLOBAL:$(LINE)"}
+  }
+  function Get-CurrentFileName1  {
+    if ($var = get-variable MyInvocation -scope 1 -value) {
+      if ($var.PSCommandPath) { split-path -leaf $var.PSCommandPath }
+      else {'GLOBAL'}
+    } else {"GLOBAL"}
+  }   #$MyInvocation.ScriptName
+  New-Alias -Name   LINE   -Value Get-CurrentLineNumber -Description 'Returns the current (caller''s) line number in a script.' -force -Option allscope
+  New-Alias -Name   FILE   -Value Get-CurrentFileName   -Description 'Returns the name of the current script file.' -force             -Option allscope
+  New-Alias -Name   FLINE  -Value Get-CurrentFileLine   -Description 'Returns the name of the current script file.' -force             -Option allscope
+  New-Alias -Name   FILE1  -Value Get-CurrentFileName1  -Description 'Returns the name of the current script file.' -force             -Option allscope
+
+  function Write-Log {
+    param (
+      [string]$Message,
+      [int]$Severity = 3, ## Default to a high severity. Otherwise, override
+      [string]$File
+    )
+    try {
+      if (!$LogLevel) { $LogLevel = 3 }
+      if ($Severity -lt $LogLevel) { return }
+      write-verbose $Message
+      $line = [pscustomobject]@{
+        'DateTime' = (Get-Date -f "yyyy-MM-dd-ddd-HH:mm:ss") #### (Get-Date)
+        'Severity' = $Severity
+        'Message'  = $Message
+      }
+      if (-not $LogFilePath) {
+        $LogFilePath  =  "$($MyInvocation.ScriptName)" -replace '(\.ps1)?$', ''
+        $LogFilePath += '-Log.txt'
+      }
+      if ($File) { $LogFilePath = $File }
+      if ($psversiontable.psversion.major -lt 3) {
+        $Entry = "`"$($line.DateTime)`", `"$($line.$Severity)`", `"$($line.$Message)`""
+        $null = Out-file -enc utf8 -filepath $LogFilePath -input $Entry -append -erroraction Silentlycontinue -force
+      } else {
+        $line | Export-Csv -Path $LogFilePath -Append -NoTypeInformation -erroraction Silentlycontinue -force -enc ASCII
+      }
+    } catch {
+      $ec   = ('{0:x}' -f $_.Exception.ErrorCode); $em = $_.Exception.Message; $in = $_.InvocationInfo.PositionMessage
+      $description =  "$(FLINE) Catch $in $ec, $em"
+      "Logging: $description" >> $LogFilePath
+    }
+  }
+
+  function LINE {
+    param ([string]$Format,[switch]$Label)
+    $Line = '[1]'; $Suffix = ''
+    If ($Format) { $Label = $True }
+    If (!$Format) { $Format = 'Line {0,3}:' }
+    try {
+      if (($L = get-variable MyInvocation -scope 1 -value -ea 0) -and $L.ScriptLineNumber) {
+        $Line = $L.ScriptLineNumber
+      }
+    } catch {
+      $Suffix = '(Catch in LINE)'
+    }
+    if ($Label) { $Line = $Format -f $Line }
+    "$Line$Suffix"
+  }
 }
 
 <#
@@ -68,6 +149,7 @@ If ($NotepadPlusPlus = @(where.exe 'notepad++*.exe')) {
 # 'C:\Program Files (x86)\Notepad++\Note*.exe'   # ECS-DCTS02  Dec 2017 7.5.4
 #  S:\Programs\Notepad++ # 1/2/2018 Notepad++Portable.exe
 #  S:\Programs\Notepad++\app\Notepad++\   # Dec 2017
+#  S:\Programs\Herb\util\notepad++Portable.exe
 
 ### $SearchNotePadPlusPlus = @('S:\Programs' )
 $NotepadPlusPlus = (
@@ -84,7 +166,7 @@ $NotepadPlusPlus = (
    'S:\Programs\Herb\util', 'T:\Programs\Herb\util',
    'D:\wintools\Tools\hm') | 
    Get-ChildItem -include 'notepad++*.exe' -excl '.paf.' -file -recurse -ea 0 |
-   % { write-warning "$_"; $_} |   
+   % { write-warning "$(LINE) $_"; $_} |   
    select -first 1).fullname
 if ($NotepadPlusPlus) { new-alias np $NotepadPlusPlus -force -scope Global }
 
@@ -108,7 +190,7 @@ if ($MyInvocation.HistoryID -eq 1) {
     Remove-Item alias:write-information -ea 0
     $global:informationpreference = $warningpreference
   } else {
-    write-warning 'Use write-warning for information if write-information not available'
+    write-warning '$(LINE) Use write-warning for information if write-information not available'
     new-alias write-information write-warning -force # -option allscope
   }
 }
@@ -120,11 +202,6 @@ if ($Quiet -and $global:informationpreference) {
   write-information "SHOULD NOT WRITE"
 }
 
-$ProfileDirectory = Split-Path $Profile
-write-information "Use `$Profile for path to Profile: $Profile"
-# Chrome key mapper?  chrome://extensions/configureCommands
-# Chrome extensions   chrome://extensions/
-
 function Get-RunTime { 
   param(
     [Microsoft.PowerShell.Commands.HistoryInfo[]]$historyitem, 
@@ -133,7 +210,7 @@ function Get-RunTime {
   $width = +1 * "$((($HistoryItem | measure -max id).maximum))".length
   $F1 = '{0,5:N2}'; 
   $F2 = "ID# {1,$($Width):D}: "
-  write-warning "width $Width $F2"
+  write-verbose "$(FLINE) width $Width $F2"
   foreach ($hi in $HistoryItem) {
     $CL = $hi.commandline
     $ID = $hi.id
@@ -147,8 +224,21 @@ function Get-RunTime {
     }
   }
 }
-new-alias 7z 'S:\Programs\Herb\util\7Zip\app\7-Zip64\7z.exe'                -force
-get-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive | Select WindowArrangementActive | FL
+
+if ((Get-Alias 7z) -and (Test-Path ((Get-Alias 7z).definition))) {
+
+} else {
+  if (Where.exe 7z.exe) { 
+    New-Alias 7z 7z.exe 
+  } elseif ($S7zipPath = Test-Path $S7zipPath) {
+    new-alias 7z $S7zipPath -force
+  } else {
+    write-warning "$(LINE) Didn't find 7z.exe on path or "
+  }
+}
+write-warning "$(LINE) $((Get-Alias 7z).definition))"
+get-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive | 
+  Select WindowArrangementActive | FL | findstr "WindowArrangementActive"
 set-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -value 0 -type dword -force
 
 # 7-Zip        http://www.7-zip.org/download.html
@@ -168,10 +258,12 @@ set-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -va
 # docker       https://docs.docker.com/install/windows/docker-ee/#use-a-script-to-install-docker-ee
 #              https://github.com/wsargent/docker-cheat-sheet
 
+function Get-CurrentIPAddress {(ipconfig) -split "`n" | ? {$_ -match 'IPv4'} | % {$_ -replace '^.*\s+'}}
+function Get-WhoAmI { "[$PID]",(whoami),(hostname) + (Get-CurrentIPAddress) -join ' ' }
+
 $CurrentWindowTitle = $Host.ui.RawUI.WindowTitle
 if ($CurrentWindowTitle -match 'Windows PowerShell([\(\)\s\d]*)$') {
-  ($Host.ui.RawUI.WindowTitle += " [$PID]",(whoami),(hostname) +
-  ((ipconfig) -split "`n" | ? {$_ -match 'IPv4'} | % {$_ -replace '^.*\s+'}))  -join ' '
+  $Host.ui.RawUI.WindowTitle += " $(Get-WhoAmI)"
 }
 
 If ($ShowDotNetVersions) {
@@ -374,54 +466,39 @@ if ($psversiontable.psversion.major -lt 6) {
 #> # End testing ideas
 
 
-
-function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
-function Get-CurrentFileName   { split-path -leaf $MyInvocation.PSCommandPath   }   function Get-CurrentFileLine   {
-  if ($MyInvocation.PSCommandPath) {
-    "$(split-path -leaf $MyInvocation.PSCommandPath):$($MyInvocation.ScriptLineNumber)"
-  } else {"GLOBAL:$(LINE)"}
+function Set-DefaultPropertySet { param([Object]$Object,
+  [Alias('Properties','Property','Members')][string[]]$DefaultProperties)
+  If (!$Object) { return $Null }
+  $defaultDisplayPropertySet = 
+    New-Object System.Management.Automation.PSPropertySet(
+      'DefaultDisplayPropertySet',[string[]]$defaultProperties)
+  $PSStandardMembers = 
+    [System.Management.Automation.PSMemberInfo[]]@($defaultDisplayPropertySet)
+  $OBject | Add-Member MemberSet PSStandardMembers $PSStandardMembers -PassThru
 }
-function Get-CurrentFileName1  {
-  if ($var = get-variable MyInvocation -scope 1 -value) {
-    if ($var.PSCommandPath) { split-path -leaf $var.PSCommandPath }
-    else {'GLOBAL'}
-  } else {"GLOBAL"}
-}   #$MyInvocation.ScriptName
-New-Alias -Name   LINE   -Value Get-CurrentLineNumber -Description 'Returns the current (caller''s) line number in a script.' -force -Option allscope
-New-Alias -Name   FILE   -Value Get-CurrentFileName   -Description 'Returns the name of the current script file.' -force             -Option allscope
-New-Alias -Name   FLINE  -Value Get-CurrentFileLine   -Description 'Returns the name of the current script file.' -force             -Option allscope
-New-Alias -Name   FILE1  -Value Get-CurrentFileName1  -Description 'Returns the name of the current script file.' -force             -Option allscope
 
-function Write-Log {
-  param (
-    [string]$Message,
-    [int]$Severity = 3, ## Default to a high severity. Otherwise, override
-    [string]$File
-  )
-  try {
-    if (!$LogLevel) { $LogLevel = 3 }
-    if ($Severity -lt $LogLevel) { return }
-    write-verbose $Message
-    $line = [pscustomobject]@{
-      'DateTime' = (Get-Date -f "yyyy-MM-dd-ddd-HH:mm:ss") #### (Get-Date)
-      'Severity' = $Severity
-      'Message'  = $Message
+function Get-WinStaSession {
+  [CmdletBinding()]param($UserName, [Alias('Me','My','Mine')][switch]$Current)
+  $WinSta = qwinsta | select -skip 1
+  write-verbose "Winsta count: $($WinSta.count)"
+  $WinSta | % {
+    write-verbose "WinStaLine: $_"
+    # SESSIONNAME       USERNAME                 ID  STATE   TYPE        DEV
+    # rdp-tcp#89        jramirez                 10  Active
+    ForEach ($COL in @(2,19,56,68)) {
+      $_ = $_ -replace "^(.{$($COL)})\s{3}", '$1###'
     }
-    if (-not $LogFilePath) {
-      $LogFilePath  =  "$($MyInvocation.ScriptName)" -replace '(\.ps1)?$', ''
-      $LogFilePath += '-Log.txt'
-    }
-		if ($File) { $LogFilePath = $File }
-    if ($psversiontable.psversion.major -lt 3) {
-      $Entry = "`"$($line.DateTime)`", `"$($line.$Severity)`", `"$($line.$Message)`""
-      $null = Out-file -enc utf8 -filepath $LogFilePath -input $Entry -append -erroraction Silentlycontinue -force
-    } else {
-      $line | Export-Csv -Path $LogFilePath -Append -NoTypeInformation -erroraction Silentlycontinue -force -enc ASCII
-    }
-  } catch {
-    $ec   = ('{0:x}' -f $_.Exception.ErrorCode); $em = $_.Exception.Message; $in = $_.InvocationInfo.PositionMessage
-    $description =  "$(FLINE) Catch $in $ec, $em"
-    "Logging: $description" >> $LogFilePath
+    write-verbose "WinStaLine: $_"
+    $S=[ordered]@{};
+    $O=[ordered]@{};
+    [boolean]$O.Current =  $_ -match '^>'
+    $null,$S.Name,$S.UserName,$S.ID,$S.State,$S.Type,$S.Device,$null = $_ -split '[>\s]+'
+    ForEach ($Key in $S.Keys) { $O.$Key = $S.$Key -replace '^###$' }    
+    $SelectUser = [boolean]$UserName
+    $Session = [PSCustomObject]$O
+    if ($Current)    { $Session = $Session | ? Current  -eq    $True     }
+    if ($SelectUser) { $Session = $Session | ? UserName -match $UserName }  
+    if ($Session) { Set-DefaultPropertySet $Session @('Current','UserName','ID','State')}     
   }
 }
 
@@ -612,7 +689,10 @@ $ICFile = "$ProfileDirectory\ic.ps1"
 write-information "$(LINE) Create ic file: $ICFile"
 set-content  $ICFile '. ([scriptblock]::Create($((Get-Clipboard) -join "`n")))'
 set-alias ic $ICFile -force -scope global -option AllScope
-(Get-CimInstance win32_operatingsystem).lastbootuptime
+# get-uptime;Get-WURebootStatus;Is-RebootPending?;Get-Uptime;PSCx\get-uptime;boottime.cmd;uptime.cmd
+# 
+function Get-BootTime { (Get-CimInstance win32_operatingsystem).lastbootuptime }
+write-information "$(LINE) Boot Time: $(Get-date ((Get-CimInstance win32_operatingsystem).lastbootuptime) -f 's')" 
 function ql {  $args  }
 function qs { "$args" }
 function qa { 
@@ -1017,33 +1097,6 @@ function Find-File {
   End { write-verbose ('-' * 72) }
 }
 
-function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
-function Get-CurrentFileName   { $MyInvocation.MyCommand.Name   }   #$MyInvocation.ScriptName
-Set-Alias -Name   LINE   -Value Get-CurrentLineNumber -Description "Returns the current (caller's) line number in a script." -force -option allscope
-Set-Alias -Name __LINE__ -Value Get-CurrentLineNumber -Description "Returns the current (caller's) line number in a script." -force -option allscope
-Set-Alias -Name   FILE   -Value Get-CurrentFileName   -Description 'Returns the name of the current script file.'             -force -option allscope
-Set-Alias -Name __FILE__ -Value Get-CurrentFileName   -Description 'Returns the name of the current script file.'             -force -option allscope
-"$(FILE) test "
-function write-log {
-  param (
-    [Parameter(Mandatory=$true)][string]$Message,
-    [Parameter()][ValidateSet('1','2','3')][int]$Severity = 1 ## Default to a low severity. Otherwise, override
-  )
-  write-verbose $Message
-  $line = [pscustomobject]@{
-    'DateTime' = (Get-Date)
-    'Severity' = $Severity
-    'Message'  = $Message
-  }
-  if (-not $LogFilePath) {
-    $LogFilePath = '.\LogFile.txt'
-  }
-  $line | Export-Csv -Path $LogFilePath -Append -NoTypeInformation -erroraction Silentlycontinue -force
-}
-function ExitWithCode($exitcode) {
-  $host.SetShouldExit($exitcode)
-  exit
-}
 function Make-Credential($username, $password) {
   $cred = $null
   $secstr = ConvertTo-SecureString -String $password -AsPlainText -Force
