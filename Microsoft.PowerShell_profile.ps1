@@ -174,6 +174,36 @@ $NotepadPlusPlus = (
    select -first 1).fullname
 if ($NotepadPlusPlus) { new-alias np $NotepadPlusPlus -force -scope Global }
 #>
+function Set-ProgramAlias {
+  param(
+    [Alias('Alias')]  $Name,
+    [Alias('Program')]$Command,
+            [string[]]$Path,
+            [string[]]$Preferred,
+    [switch]          $FirstPath,  
+    [switch]          $IgnoreAlias  
+  )
+  $Old = Get-Alias $Name -ea 0
+  if ($IgnoreAlias) { remove-item Alias:$Name -force -ea 0 }
+  $SearchPath = if ($FirstPath) {
+    $Path + (where.exe $Command) + @(get-command $Name -all -ea 0).definition
+  } else {  
+    @(get-command $Name -all -ea 0).definition + (where.exe $Command) + $Path
+  }
+  Remove-Item Alias:7z -force -ea 0                                  
+  ForEach ($Program in $SearchPath) {
+    if ($Found = Test-Path $7zipPath) {
+      new-alias $Name $Program -force -scope Global
+      break
+    }
+  }
+  if (Get-Command $Name -commandtype alias -ea 0) { 
+    write-warning "$(LINE) $Name found: $Program"
+  } else {
+    write-warning "$(LINE) $Name NOT found on path or in: $($SearchPath -join '; ')"
+  }
+}
+
 Set-ProgramAlias np notepad++.exe @('C:\Util\notepad++.exe', 
    'C:\ProgramData\chocolatey\bin\notepad++.exe',
    'S:\Programs\Notepad++\notepad++.exe','S:\Programs\Portable\Notepad++\notepad++.exe',  
@@ -237,35 +267,6 @@ function Get-RunTime {
   }
 }
 
-function Set-ProgramAlias {
-  param(
-    [Alias('Alias')]  $Name,
-    [Alias('Program')]$Command,
-            [string[]]$Path,
-            [string[]]$Preferred,
-    [switch]          $FirstPath,  
-    [switch]          $IgnoreAlias  
-  )
-  $Old = Get-Alias $Name -ea 0
-  if ($IgnoreAlias) { remove-item Alias:$Name -force -ea 0 }
-  $SearchPath = if ($FirstPath) {
-    $Path + (where.exe $Command) + @(get-command $Name -all -ea 0).definition
-  } else {  
-    @(get-command $Name -all -ea 0).definition + (where.exe $Command) + $Path
-  }
-  Remove-Item Alias:7z -force -ea 0                                  
-  ForEach ($Program in $SearchPath) {
-    if ($Found = Test-Path $7zipPath) {
-      new-alias $Name $Program -force -scope Global
-      break
-    }
-  }
-  if (Get-Command $Name -commandtype alias -ea 0) { 
-    write-warning "$(LINE) $Name found: $Program"
-  } else {
-    write-warning "$(LINE) $Name NOT found on path or in: $($SearchPath -join '; ')"
-  }
-}
 Set-ProgramAlias 7z 7z.exe @('C:Util\7-Zip\app\7-Zip64\7z.exe', 
                              'C:\ProgramData\chocolatey\bin\',
                              'S:\Programs\7-Zip\app\7-Zip64\7z.exe'
