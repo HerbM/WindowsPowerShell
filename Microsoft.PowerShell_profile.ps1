@@ -202,7 +202,7 @@ function Set-ProgramAlias {
     }
   }
   if (Get-Command $Name -commandtype alias -ea 0) { 
-    write-warning "$(LINE) $Name found: $Location"
+    write-warning "$(LINE) $Name found: $Location [$((gal np -ea 0).definition)]"
   } else {
     write-warning "$(LINE) $Name NOT found on path or in: $($SearchPath -join '; ')"
   }
