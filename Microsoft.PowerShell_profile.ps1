@@ -11,6 +11,8 @@ param (
   [Parameter(ValueFromRemainingArguments=$true)]     [String[]]$RemArgs
 )
 
+# Fix RDP alias
+
 # Boottime,ProfilePath moved up,LINE/FILE/Write-LOG,LogFilePath?,7z
 # Add/fix BootTime function
 # Move $ProfileDirectory up
@@ -19,6 +21,7 @@ param (
 # worked on 7z  -- 
 # TODO: need Notepad++, 7zip, Git, ??? to be on path with shortcuts
 # TODO: LogFile not being written
+# https://null-byte.wonderhowto.com/how-to/use-google-hack-googledorks-0163566/
 
 #$MyInvocation
 #$MyInvocation.MyCommand
@@ -418,7 +421,7 @@ function New-RDPSession {
   $argX += '/prompt'
   if ($NoProfileFile) { mstsc /v:$ComputerName /w:$Width /h:$Height @argX }
   else                { mstsc /v:$ComputerName $Path @argX }
-} New-Alias RDP New-RCPSession -force
+} New-Alias RDP New-RDPSession -force
 
 if ($AdminEnabled -and (get-command 'ScreenSaver.ps1' -ea 0)) { ScreenSaver.ps1 }
 
