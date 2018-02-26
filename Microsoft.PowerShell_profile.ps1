@@ -168,10 +168,12 @@ set-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -va
 # docker       https://docs.docker.com/install/windows/docker-ee/#use-a-script-to-install-docker-ee
 #              https://github.com/wsargent/docker-cheat-sheet
 
+function Get-CurrentIPAddress {(ipconfig) -split "`n" | ? {$_ -match 'IPv4'} | % {$_ -replace '^.*\s+'}}
+function Get-WhoAmI { "[$PID]",(whoami),(hostname) + (Get-CurrentIPAddress) -join ' ' }
+
 $CurrentWindowTitle = $Host.ui.RawUI.WindowTitle
 if ($CurrentWindowTitle -match 'Windows PowerShell([\(\)\s\d]*)$') {
-  ($Host.ui.RawUI.WindowTitle += " [$PID]",(whoami),(hostname) +
-  ((ipconfig) -split "`n" | ? {$_ -match 'IPv4'} | % {$_ -replace '^.*\s+'}))  -join ' '
+  $Host.ui.RawUI.WindowTitle += " $(Get-WhoAmI)"
 }
 
 If ($ShowDotNetVersions) {
@@ -422,6 +424,42 @@ function Write-Log {
     $ec   = ('{0:x}' -f $_.Exception.ErrorCode); $em = $_.Exception.Message; $in = $_.InvocationInfo.PositionMessage
     $description =  "$(FLINE) Catch $in $ec, $em"
     "Logging: $description" >> $LogFilePath
+  }
+}
+
+function Set-DefaultPropertySet { param([Object]$Object,
+  [Alias('Properties','Property','Members')][string[]]$DefaultProperties)
+  If (!$Object) { return $Null }
+  $defaultDisplayPropertySet = 
+    New-Object System.Management.Automation.PSPropertySet(
+      'DefaultDisplayPropertySet',[string[]]$defaultProperties)
+  $PSStandardMembers = 
+    [System.Management.Automation.PSMemberInfo[]]@($defaultDisplayPropertySet)
+  $OBject | Add-Member MemberSet PSStandardMembers $PSStandardMembers -PassThru
+}
+
+function Get-WinStaSession {
+  [CmdletBinding()]param($UserName, [Alias('Me','My','Mine')][switch]$Current)
+  $WinSta = qwinsta | select -skip 1
+  write-verbose "Winsta count: $($WinSta.count)"
+  $WinSta | % {
+    write-verbose "WinStaLine: $_"
+    # SESSIONNAME       USERNAME                 ID  STATE   TYPE        DEV
+    # rdp-tcp#89        jramirez                 10  Active
+    ForEach ($COL in @(2,19,56,68)) {
+      $_ = $_ -replace "^(.{$($COL)})\s{3}", '$1###'
+    }
+    write-verbose "WinStaLine: $_"
+    $S=[ordered]@{};
+    $O=[ordered]@{};
+    [boolean]$O.Current =  $_ -match '^>'
+    $null,$S.Name,$S.UserName,$S.ID,$S.State,$S.Type,$S.Device,$null = $_ -split '[>\s]+'
+    ForEach ($Key in $S.Keys) { $O.$Key = $S.$Key -replace '^###$' }    
+    $SelectUser = [boolean]$UserName
+    $Session = [PSCustomObject]$O
+    if ($Current)    { $Session = $Session | ? Current  -eq    $True     }
+    if ($SelectUser) { $Session = $Session | ? UserName -match $UserName }  
+    if ($Session) { Set-DefaultPropertySet $Session @('Current','UserName','ID','State')}     
   }
 }
 

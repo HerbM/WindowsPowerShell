@@ -13,6 +13,39 @@ $emailTo = "email@yourdomain.com"
  
 # Create a fresh variable to collect the results. You can use this to output as desired 
 $SessionList = "ACTIVE SERVER SESSIONS REPORT - " + $today + "`n`n" 
+
+function Get-WinStaSession {
+  [CmdletBinding()]param($UserName, [Alias('Me','Mine')][switch]$Current)
+  $WinSta = qwinsta | select -skip 1
+  write-verbose "Winsta count: $($WinSta.count)"
+  $WinSta | % {
+    write-verbose "WinStaLine: $_"
+    # SESSIONNAME       USERNAME                 ID  STATE   TYPE        DEV
+    # rdp-tcp#89        jramirez                 10  Active
+    ForEach ($COL in @(2,19,56,68)) {
+      $_ = $_ -replace "^(.{$($COL)})\s{3}", '$1###'
+    }
+    write-verbose "WinStaLine: $_"
+    $S=[ordered]@{};
+    $O=[ordered]@{};
+    [boolean]$O.Current =  $_ -match '^>'
+    # $S.Type,$S.Device,
+    $null,$S.Name,$S.UserName,$S.ID,$S.State,$Null,$Null,$null = $_ -split '[>\s]+'
+    ForEach ($Key in $S.Keys) { $O.$Key = $S.$Key -replace '^###$' }    
+    $SelectUser = [boolean]$UserName
+    #switch ($True) {
+    #  { $True       } { $SessionList = [PSCustomObject]$O          }
+    #  { $Current    } { $SessionList | ? Current  -eq    $True     }
+    #  { $SelectUser } { $SessionList | ? UserName -match $UserName }
+    #  default         { $SessionList                               }
+    #}
+    $SessionList = [PSCustomObject]$O
+    if ($Current)    { $SessionList | ? Current  -eq    $True     }
+    if ($SelectUser) { $SessionList | ? UserName -match $UserName }
+    $SessionList                              
+  }
+}
+
  
 # Query Active Directory for computers running a Server operating system 
 # $Servers = Get-ADComputer -Filter {OperatingSystem -like "*server*"} 
