@@ -190,20 +190,23 @@ function Set-ProgramAlias {
   } else {  
     @(get-command $Name -all -ea 0).definition + (where.exe $Command) + $Path
   }
-  Remove-Item Alias:7z -force -ea 0                                  
-  ForEach ($Program in $SearchPath) {
-    if ($Found = Test-Path $7zipPath) {
-      new-alias $Name $Program -force -scope Global
+  Remove-Item Alias:$Name -force -ea 0                                  
+  ForEach ($Location in $SearchPath) {
+    if ($Found = Test-Path $Location -pathType Leaf -ea 0) {
+      new-alias $Name $Location -force -scope Global
+      break
+    } elseif ($Found = (Join-Path $Location $Command -ea 0) -and 
+             (Test-Path (Join-Path $Location $Command -ea 0) -pathType Leaf)) {
+      new-alias $Name (Join-Path $Location $Command) -force -scope Global    
       break
     }
   }
   if (Get-Command $Name -commandtype alias -ea 0) { 
-    write-warning "$(LINE) $Name found: $Program"
+    write-warning "$(LINE) $Name found: $Location"
   } else {
     write-warning "$(LINE) $Name NOT found on path or in: $($SearchPath -join '; ')"
   }
 }
-
 Set-ProgramAlias np notepad++.exe @('C:\Util\notepad++.exe', 
    'C:\ProgramData\chocolatey\bin\notepad++.exe',
    'S:\Programs\Notepad++\notepad++.exe','S:\Programs\Portable\Notepad++\notepad++.exe',  
