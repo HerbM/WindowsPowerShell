@@ -11,7 +11,7 @@ param (
   [Parameter(ValueFromRemainingArguments=$true)]     [String[]]$RemArgs
 )
 
-# Fix RDP alias
+# Fix RDP alias, Put 7-zip, Util,Unx in S:\Programs, New program searcher?  Better?
 
 # Boottime,ProfilePath moved up,LINE/FILE/Write-LOG,LogFilePath?,7z
 # Add/fix BootTime function
@@ -155,6 +155,7 @@ If ($NotepadPlusPlus = @(where.exe 'notepad++*.exe')) {
 #  S:\Programs\Herb\util\notepad++Portable.exe
 
 ### $SearchNotePadPlusPlus = @('S:\Programs' )
+<#
 $NotepadPlusPlus = (
   @((get-childitem 'ENV:Notepad++','ENV:NotepadPlusPlus' -ea 0).value -split ';'  |
     ? { $_ -match '\S'} |
@@ -172,7 +173,15 @@ $NotepadPlusPlus = (
    % { write-warning "$(LINE) $_"; $_} |   
    select -first 1).fullname
 if ($NotepadPlusPlus) { new-alias np $NotepadPlusPlus -force -scope Global }
+#>
+Set-ProgramAlias np notepad++.exe @('C:\Util\notepad++.exe', 
+   'C:\ProgramData\chocolatey\bin\notepad++.exe',
+   'S:\Programs\Notepad++\notepad++.exe','S:\Programs\Portable\Notepad++\notepad++.exe',  
+   'T:\Programs\Notepad++\notepad++.exe','T:\Programs\Portable\Notepad++\notepad++.exe',
+   'S:\Programs\Herb\util\notepad++.exe','T:\Programs\Herb\util\notepad++.exe',
+   'D:\wintools\Tools\hm\notepad++.exe')  -FirstPath  
 
+   
 function Select-History {
  param($Pattern, [int]$Count=9999, $Exclude='Select-History|(\bsh\b)') 
  (h).commandline -match $Pattern -notmatch $Exclude
@@ -228,18 +237,61 @@ function Get-RunTime {
   }
 }
 
-if ((Get-Alias 7z) -and (Test-Path ((Get-Alias 7z).definition))) {
-
-} else {
-  if (Where.exe 7z.exe) { 
-    New-Alias 7z 7z.exe 
-  } elseif ($S7zipPath = Test-Path $S7zipPath) {
-    new-alias 7z $S7zipPath -force
+function Set-ProgramAlias {
+  param(
+    [Alias('Alias')]  $Name,
+    [Alias('Program')]$Command,
+            [string[]]$Path,
+            [string[]]$Preferred,
+    [switch]          $FirstPath,  
+    [switch]          $IgnoreAlias  
+  )
+  $Old = Get-Alias $Name -ea 0
+  if ($IgnoreAlias) { remove-item Alias:$Name -force -ea 0 }
+  $SearchPath = if ($FirstPath) {
+    $Path + (where.exe $Command) + @(get-command $Name -all -ea 0).definition
+  } else {  
+    @(get-command $Name -all -ea 0).definition + (where.exe $Command) + $Path
+  }
+  Remove-Item Alias:7z -force -ea 0                                  
+  ForEach ($Program in $SearchPath) {
+    if ($Found = Test-Path $7zipPath) {
+      new-alias $Name $Program -force -scope Global
+      break
+    }
+  }
+  if (Get-Command $Name -commandtype alias -ea 0) { 
+    write-warning "$(LINE) $Name found: $Program"
   } else {
-    write-warning "$(LINE) Didn't find 7z.exe on path or "
+    write-warning "$(LINE) $Name NOT found on path or in: $($SearchPath -join '; ')"
   }
 }
-write-warning "$(LINE) $((Get-Alias 7z).definition))"
+Set-ProgramAlias 7z 7z.exe @('C:Util\7-Zip\app\7-Zip64\7z.exe', 
+                             'C:\ProgramData\chocolatey\bin\',
+                             'S:\Programs\7-Zip\app\7-Zip64\7z.exe'
+                           )  -FirstPath  
+
+
+<#
+  $7zipPath = @(get-command 7z -all -ea 0).definition +
+               (where.exe   7z.exe) + @('C:Util\7-Zip\app\7-Zip64\7z.exe', 
+                                        'C:\ProgramData\chocolatey\bin\',
+                                        'S:\Programs\7-Zip\app\7-Zip64\7z.exe'
+                                       )
+  Remove-Item Alias:7z -force -ea 0                                  
+  ForEach ($7z in $7zipPath) {
+    if ($7zipFound = Test-Path $7zipPath) {
+      new-alias 7z $7z -force -scope Global
+      break
+    }
+  }
+  if (Get-Command 7z -commandtype alias -ea 0) { 
+    write-warning "$(LINE) 7zip found: $7z"
+  } else {
+    write-warning "$(LINE) 7zip NOT found on path or in: $($7zipPath -join '; ')"
+  }
+}
+#>
 get-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive | 
   Select WindowArrangementActive | FL | findstr "WindowArrangementActive"
 set-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -value 0 -type dword -force
