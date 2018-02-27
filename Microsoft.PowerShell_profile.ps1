@@ -11,8 +11,9 @@ param (
   [Parameter(ValueFromRemainingArguments=$true)]       [String[]]$RemArgs
 )
 
-# Add rdir,cdir,mdir aliases
+# Everything? es?
 
+# Add rdir,cdir,mdir aliases
 # Close with Set-ProgramAlias
 # Add new set-programalias nscp 'C:\Program Files\NSClient++\nscp.exe' -force -scope
 # Fix RDP alias, Put 7-zip, Util,Unx in S:\Programs, New program searcher?  Better?
@@ -52,7 +53,9 @@ param (
 # Chrome key mapper?  chrome://extensions/configureCommands
 # Chrome extensions   chrome://extensions/
 function Get-NewLine { [environment]::NewLine }; new-alias NL Get-NewLine -force
-
+if (! (Get-Command write-log -type function,cmdlet,alias)) {
+  new-alias write-log write-verbose -force -scope Global -ea 0
+}
 new-alias rdir    Remove-Item  -force -scope Global -ea 0 
 new-alias cdir    Set-Location -force -scope Global -ea 0
 new-alias mdir    mkdir        -force -scope Global -ea 0
@@ -77,14 +80,16 @@ $ProfileLogName = ($ProfileFile -replace '\.ps1$'), 'LOG.txt'
 $ProfileLogPath = Join-Path $ProfileDirectory $ProfileName 
 Write-Information "$(LINE) ProfileLogPath: $ProfileLogPath"
 try {
-  if (Test-Path (Join-Path $ProfileDirectory 'utillity.ps1')) {
-    Join-Path $ProfileDirectory 'utillity.ps1'
+  if (Test-Path (Join-Path $ProfileDirectory 'utility.ps1')) {
+    Join-Path $ProfileDirectory 'utility.ps1'
   }
   Write-Log "(FLINE) Using Write-Log from Utility.ps1" -file $ProfileLogPath 3
 } catch { # just ignore and take care of below
 } finally {}
 
-if (! (Get-Command 'Write-Log')) { 
+if ((Get-Command 'Write-Log' -type function,cmdlet)) { 
+  remove-item alias:write-log -force -ea 0
+} else {
   New-Alias Write-Log Write-Verbose 
   Write-Warning "$(LINE) Utility.ps1 not found.  Defined alias for Write-Log" 
   function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
@@ -104,6 +109,7 @@ if (! (Get-Command 'Write-Log')) {
   New-Alias -Name   FLINE  -Value Get-CurrentFileLine   -Description 'Returns the name of the current script file.' -force             -Option allscope
   New-Alias -Name   FILE1  -Value Get-CurrentFileName1  -Description 'Returns the name of the current script file.' -force             -Option allscope
 
+  remove-item alias:write-log -force -ea 0
   function Write-Log {
     param (
       [string]$Message,
@@ -1076,20 +1082,24 @@ if (Get-Module 'PSReadline' -ea 0) {
 }
 #>
 write-information "$(LINE) Error count: $($Error.Count)"
-
-$utility = (('.;' + $env:path) -split ';' | % { join-path $_ 'utility.ps1' } | ? { test-path $_ -ea 0}) -split '\s*\n'
-try {
-  if ($utility) {
-    write-information "$(LINE) Source: $utility"
-    .  (Resolve-Path $utility[0]).path
-    write-information "$(LINE) Finished sourcing: $utility"
-  } else {
-    write-information "$(LINE) utility.ps1 not found local or on path"
+<#
+$SearchPath = (("$Profile;.;" + $env:path) -split ';' | % { join-path $_ 'utility.ps1' } | ? { test-path $_ -ea 0}) -split '\s*\n'
+ForEach ($Path in $SearchPath) {
+  try {
+    $Utility = Join-Path $Path 'utility.ps1'
+    if (Test-Path $utility) {
+      write-information "$(LINE) Source: $utility"
+      .  (Resolve-Path $utility[0]).path
+      write-information "$(LINE) Finished sourcing: $utility"
+      break
+    }
+  } catch {
+    write-information "$(LINE) Caught error importing $Utility"
+    # $_
   }
-} catch {
-  write-information "$(LINE) Caught error importing $Utility"
-  $_
+  write-information "$(LINE) utility.ps1 not found local or on path"
 }
+#>
 #filter dt { if (get-variable _ -scope 0) { get-sortabledate $_ -ea 0 } else { get-sortabledate $args[1] } }
 function dt {param([string[]]$datetime=(get-date)) $datetime | % { get-date $_ -format 'yyyy-MM-dd HH:mm:ss ddd' } }
 #function dt {param([string[]]$datetime=(get-date)) $datetime | % { get-sortabledate $_) -creplace '\dT'  } }
