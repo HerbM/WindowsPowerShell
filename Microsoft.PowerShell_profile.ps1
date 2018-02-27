@@ -11,8 +11,10 @@ param (
   [Parameter(ValueFromRemainingArguments=$true)]     [String[]]$RemArgs
 )
 
-# Fix RDP alias, Put 7-zip, Util,Unx in S:\Programs, New program searcher?  Better?
+# Close with Set-ProgramAlias
+# Add new set-programalias nscp 'C:\Program Files\NSClient++\nscp.exe' -force -scope
 
+# Fix RDP alias, Put 7-zip, Util,Unx in S:\Programs, New program searcher?  Better?
 # Boottime,ProfilePath moved up,LINE/FILE/Write-LOG,LogFilePath?,7z
 # Add/fix BootTime function
 # Move $ProfileDirectory up
@@ -136,7 +138,7 @@ $AllowClobber       = [boolean]$AllowClobber
 $Confirm            = [boolean]$Confirm
 
 <#
-If ($NotepadPlusPlus = @(where.exe 'notepad++*.exe')) {
+If ($NotepadPlusPlus = @(where.exe 'notepad++*.exe'  2>$Null)) {
 } elseif (($NotepadPlusPlus = 
         (Get-Alias np -ea 0).definition | ? { Test-Path $NotepadPlusPlus -ea 0 }       
   # Nothing to do but set location          
@@ -159,7 +161,7 @@ If ($NotepadPlusPlus = @(where.exe 'notepad++*.exe')) {
 $NotepadPlusPlus = (
   @((get-childitem 'ENV:Notepad++','ENV:NotepadPlusPlus' -ea 0).value -split ';'  |
     ? { $_ -match '\S'} |
-    % { $_,(Join-Path $_ 'Notepad++*' )} | ? {Test-Path $_ -ea 0})      +
+    % { $_,(Join-Path $_ 'Notepad++*'  2>$Null)} | ? {Test-Path $_ -ea 0})      +
   (where.exe notepad++ 2>$null)                                +   
   (gal np -ea 0).definition                                    +
   ((get-childitem ENV:prog* -ea 0).value | select -uniq        | 
@@ -184,26 +186,26 @@ function Set-ProgramAlias {
     [switch]          $IgnoreAlias  
   )
   $Old = Get-Alias $Name -ea 0
-  if ($IgnoreAlias -or ($Old -and (!(Test-Path $Old.Definition -ea 0))))
-    { remove-item Alias:$Name -force -ea 0 }
+  if ($IgnoreAlias) { remove-item Alias:$Name -force -ea 0 }
   $SearchPath = if ($FirstPath) {
-    $Path + (where.exe $Command) + @(get-command $Name -all -ea 0).definition
+    $Path + (where.exe $Command 2>$Null) + @(get-command $Name -all -ea 0).definition
   } else {  
-    @(get-command $Name -all -ea 0).definition + (where.exe $Command) + $Path
+    @(get-command $Name -all -ea 0).definition + (where.exe $Command 2>$Null) + $Path
   }
   Remove-Item Alias:$Name -force -ea 0                                  
   ForEach ($Location in $SearchPath) {
-    if ($Found = Test-Path $Location -pathType Leaf -ea 0) {
+    if ($Location -and (Test-Path $Location -pathType Leaf -ea 0)) {
       new-alias $Name $Location -force -scope Global
       break
-    } elseif (($Location = Join-Path $Location $Command -ea 0) -and 
+    } elseif ( $Location -and $Command -and 
+              ($Location = Join-Path $Location $Command -ea 0) -and 
               (Test-Path $Location -pathType Leaf)) {
       new-alias $Name (Join-Path $Location $Command) -force -scope Global    
       break
     }
   }
   if (Get-Command $Name -commandtype alias -ea 0) { 
-    write-warning "$(LINE) $Name found: $Location [$((gal np -ea 0).definition)]"
+    write-warning "$(LINE) $Name found: $Location [$((gal $Name -ea 0).definition)]"
   } else {
     write-warning "$(LINE) $Name NOT found on path or in: $($SearchPath -join '; ')"
   }
@@ -216,7 +218,11 @@ Set-ProgramAlias np notepad++.exe @('C:\Util\notepad++.exe',
    'T:\Programs\Portable\Notepad++portable.exe',
    'S:\Programs\Herb\util\notepad++.exe','T:\Programs\Herb\util\notepad++.exe',
    'D:\wintools\Tools\hm\notepad++.exe')  -FirstPath  
-
+Set-ProgramAlias nscp nscp.exe 'C:\Program Files\NSClient++\nscp.exe' -FirstPath
+Set-ProgramAlias 7z 7z.exe @('C:Util\7-Zip\app\7-Zip64\7z.exe', 
+                             'C:\ProgramData\chocolatey\bin\7z.exe',
+                             'S:\Programs\7-Zip\app\7-Zip64\7z.exe'
+                           )  -FirstPath  
    
 function Select-History {
  param($Pattern, [int]$Count=9999, $Exclude='Select-History|(\bsh\b)') 
@@ -273,15 +279,9 @@ function Get-RunTime {
   }
 }
 
-Set-ProgramAlias 7z 7z.exe @('C:Util\7-Zip\app\7-Zip64\7z.exe', 
-                             'C:\ProgramData\chocolatey\bin\7z.exe',
-                             'S:\Programs\7-Zip\app\7-Zip64\7z.exe'
-                           )  -FirstPath  
-
-
 <#
   $7zipPath = @(get-command 7z -all -ea 0).definition +
-               (where.exe   7z.exe) + @('C:Util\7-Zip\app\7-Zip64\7z.exe', 
+               (where.exe   7z.exe 2>$Null) + @('C:Util\7-Zip\app\7-Zip64\7z.exe', 
                                         'C:\ProgramData\chocolatey\bin\',
                                         'S:\Programs\7-Zip\app\7-Zip64\7z.exe'
                                        )
