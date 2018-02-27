@@ -184,7 +184,8 @@ function Set-ProgramAlias {
     [switch]          $IgnoreAlias  
   )
   $Old = Get-Alias $Name -ea 0
-  if ($IgnoreAlias) { remove-item Alias:$Name -force -ea 0 }
+  if ($IgnoreAlias -or ($Old -and (!(Test-Path $Old.Definition -ea 0))))
+    { remove-item Alias:$Name -force -ea 0 }
   $SearchPath = if ($FirstPath) {
     $Path + (where.exe $Command) + @(get-command $Name -all -ea 0).definition
   } else {  
