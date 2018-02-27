@@ -1,54 +1,54 @@
 <?xml version="1.0" encoding="Windows-1252" ?>
 <NotepadPlus>
     <!-- The History of opened files list -->
-    <FindHistory nbMaxFindHistoryPath="10" nbMaxFindHistoryFilter="10" nbMaxFindHistoryFind="10" nbMaxFindHistoryReplace="10" matchWord="no" matchCase="no" wrap="yes" directionDown="yes" fifRecuisive="yes" fifInHiddenFolder="no" dlgAlwaysVisible="no" fifFilterFollowsDoc="no" fifFolderFollowsDoc="no" searchMode="0" transparencyMode="1" transparency="150" dotMatchesNewline="no">
+    <FindHistory nbMaxFindHistoryPath="10" nbMaxFindHistoryFilter="10" nbMaxFindHistoryFind="10" nbMaxFindHistoryReplace="10" matchWord="no" matchCase="no" wrap="yes" directionDown="yes" fifRecuisive="yes" fifInHiddenFolder="no" dlgAlwaysVisible="no" fifFilterFollowsDoc="no" fifFolderFollowsDoc="no" searchMode="2" transparencyMode="1" transparency="150" dotMatchesNewline="no">
         <Filter name="" />
         <Filter name="" />
         <Filter name="" />
         <Filter name="" />
         <Filter name="" />
-        <Find name="PSVersion" />
-        <Find name="import-module psreadline" />
-        <Find name="find-file" />
-        <Find name="veeam" />
-        <Find name="docker" />
-        <Find name="effcomsys" />
-        <Find name="effsyscom" />
-        <Find name="parameter.*remain" />
-        <Find name="ProfileDirectory" />
-        <Find name="ProfilePath" />
-        <Replace name="ProfileDirectory" />
+        <Filter name="" />
+        <Find name="new-alias.*:" />
+        <Find name="new-alias" />
+        <Find name="herbmartin999" />
+        <Find name="nscp" />
+        <Find name="where.exe" />
+        <Find name="notepadplusplus" />
+        <Find name="notepad" />
+        <Find name="    " />
+        <Find name="twc" />
+        <Find name="notepad++" />
         <Replace name="  " />
+        <Replace name="Location" />
+        <Replace name="Session" />
         <Replace name="&apos;" />
+        <Replace name="ProfileDirectory" />
         <Replace name="&apos;," />
         <Replace name="\$InstalledModule" />
         <Replace name='&quot;' />
         <Replace name="ModuleName" />
         <Replace name="Module" />
-        <Replace name="127.0.0.1" />
-        <Replace name="NOTHING" />
     </FindHistory>
     <History nbMaxFile="20" inSubMenu="no" customLength="-1">
-        <File filename="C:\Program Files\WindowsPowerShell\Modules\Pester\4.1.1\Functions\Assertions\Should.ps1" />
-        <File filename="C:\Users\A469526\Documents\WindowsPowerShell\Go\GoLocation\.git\COMMIT_EDITMSG" />
-        <File filename="C:\Users\A469526\AppData\Local\Temp\ac11057165.txt" />
         <File filename="C:\Users\A469526\AppData\Local\Temp\ac24596180.txt" />
         <File filename="C:\Users\A469526\Documents\Microsoft.PowerShell_profile.ps1" />
         <File filename="C:\Users\A469526\AppData\Local\Temp\Temp1_TXDOT-204.67.63.208.zip\TXDOT-204.67.63.208.txt" />
-        <File filename="C:\Users\A469526\OneDrive - Atos\OneDrive_lastlogon.txt" />
         <File filename="C:\bat\Resolve-PathEx.ps1" />
         <File filename="C:\bat\invoke-touch.ps1" />
         <File filename="C:\txt\teadns.ps1" />
         <File filename="C:\dev\RandomRename-File.ps1" />
         <File filename="C:\bat\Utility.ps1" />
         <File filename="C:\Users\A469526\Documents\WindowsPowerShell\Utility0.ps1" />
-        <File filename="C:\Users\A469526\downloads\PSReadLine-master\PSReadLine\SamplePSReadlineProfile.ps1" />
         <File filename="C:\books\sf\Coqnotes.v" />
         <File filename="C:\books\sf\Coqnotes5.v" />
         <File filename="C:\esb\ESBBos.txt" />
         <File filename="C:\dev\Coq\Coqdomain.txt" />
         <File filename="C:\dev\write-log.ps1" />
         <File filename="C:\esb\Windows_Service_Accounts.txt" />
+        <File filename="C:\bat\uptime.cmd" />
+        <File filename="C:\bat\BootTime.cmd" />
+        <File filename="C:\Users\A469526\documents\longpaths.txt" />
+        <File filename="C:\Users\A469526\downloads\ntrights\UserRights.ps1" />
     </History>
     <GUIConfigs>
         <GUIConfig name="ToolBar" visible="yes">standard</GUIConfig>
@@ -58,7 +58,7 @@
         <GUIConfig name="UserDefineDlg" position="undocked">hide</GUIConfig>
         <GUIConfig name="TabSetting" replaceBySpace="yes" size="2" />
         <GUIConfig name="AppPosition" x="283" y="-2" width="1081" height="723" isMaximized="no" />
-        <GUIConfig name="noUpdate" intervalDays="15" nextUpdateDate="20180222">no</GUIConfig>
+        <GUIConfig name="noUpdate" intervalDays="15" nextUpdateDate="20180310">no</GUIConfig>
         <GUIConfig name="Auto-detection">yes</GUIConfig>
         <GUIConfig name="CheckHistoryFiles">no</GUIConfig>
         <GUIConfig name="TrayIcon">no</GUIConfig>
@@ -89,7 +89,7 @@
         <GUIConfig name="multiInst" setting="0" />
         <GUIConfig name="MISC" fileSwitcherWithoutExtColumn="no" backSlashIsEscapeCharacterForSql="yes" newStyleSaveDlg="no" isFolderDroppedOpenFiles="no" docPeekOnTab="no" docPeekOnMap="no" />
         <GUIConfig name="searchEngine" searchEngineChoice="2" searchEngineCustom="" />
-        <GUIConfig name="SmartHighLight" matchCase="no" wholeWordOnly="yes" useFindSettings="no" onAnotherView="no">yes</GUIConfig>
+        <GUIConfig name="SmartHighLight" matchCase="no" wholeWordOnly="no" useFindSettings="yes" onAnotherView="no">yes</GUIConfig>
         <GUIConfig name="ScintillaPrimaryView" lineNumberMargin="show" bookMarkMargin="show" indentGuideLine="show" folderMarkStyle="box" lineWrapMethod="aligned" currentLineHilitingShow="show" scrollBeyondLastLine="no" disableAdvancedScrolling="no" wrapSymbolShow="hide" Wrap="no" borderEdge="yes" edge="no" edgeNbColumn="100" zoom="0" zoom2="0" whiteSpaceShow="hide" eolShow="hide" borderWidth="2" smoothFont="no" />
         <GUIConfig name="DockingManager" leftWidth="200" rightWidth="64" topHeight="200" bottomHeight="200">
             <PluginDlg pluginName="NppExec.dll" id="2" curr="3" prev="-1" isVisible="yes" />

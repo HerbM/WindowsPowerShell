@@ -8,12 +8,13 @@ param (
   [Alias('SilentlyContinue')]                          [switch]$Quiet,
   [Alias('PSReadlineProfile','ReadlineProfile','psrl')][switch]$PSReadline,
   [ValidateSet('AllUsers','CurrentUser')]              [string]$ScopeModule='AllUsers',
-  [Parameter(ValueFromRemainingArguments=$true)]     [String[]]$RemArgs
+  [Parameter(ValueFromRemainingArguments=$true)]       [String[]]$RemArgs
 )
+
+# Add rdir,cdir,mdir aliases
 
 # Close with Set-ProgramAlias
 # Add new set-programalias nscp 'C:\Program Files\NSClient++\nscp.exe' -force -scope
-
 # Fix RDP alias, Put 7-zip, Util,Unx in S:\Programs, New program searcher?  Better?
 # Boottime,ProfilePath moved up,LINE/FILE/Write-LOG,LogFilePath?,7z
 # Add/fix BootTime function
@@ -24,7 +25,44 @@ param (
 # TODO: need Notepad++, 7zip, Git, ??? to be on path with shortcuts
 # TODO: LogFile not being written
 # https://null-byte.wonderhowto.com/how-to/use-google-hack-googledorks-0163566/
+# 7-Zip        http://www.7-zip.org/download.html
+# Git          https://git-scm.com/download/win
+#              https://github.com/git-tips/tips
+#              C:\Program Files\Git\mingw64\share\doc\git-doc\giteveryday.html
+# Regex        http://www.grymoire.com/Unix/Regular.html#uh-12
+#              http://www.regexlib.com/DisplayPatterns.aspx 
+# AwkRef       http://www.grymoire.com/Unix/AwkRef.html
+# Notepad++    https://notepad-plus-plus.org/download/v7.5.4.html
+# ArsClip      http://www.joejoesoft.com/vcms/97/
+# Aria2        https://github.com/aria2/aria2/releases/tag/release-1.33.1
+# Deluge       http://download.deluge-torrent.org/windows/?C=M;O=D
+# Transmission https://transmissionbt.com/download/
+# WinMerg      http://developeronfire.com/blog/configuration-of-git-on-windows-to-make-life-easy
+# NotesProfile See: NotesProfile.txt
+# docker       https://docs.docker.com/install/windows/docker-ee/#use-a-script-to-install-docker-ee
+#              https://github.com/wsargent/docker-cheat-sheet
 
+
+# "line1","line2" -join (NL)
+# "line1","line2" -join [environment]::NewLine
+# https://github.com/FriedrichWeinmann/PSReadline-Utilities
+# https://github.com/FriedrichWeinmann/functions
+# PSFramework
+# Install-Module -Scope CurrentUser -Name Assert
+# Chrome key mapper?  chrome://extensions/configureCommands
+# Chrome extensions   chrome://extensions/
+function Get-NewLine { [environment]::NewLine }; new-alias NL Get-NewLine -force
+
+new-alias rdir    Remove-Item  -force -scope Global -ea 0 
+new-alias cdir    Set-Location -force -scope Global -ea 0
+new-alias mdir    mkdir        -force -scope Global -ea 0
+new-alias modir   modir        -force -scope Global -ea 0
+new-alias moredir modir        -force -scope Global -ea 0
+new-alias tdir    Get-Content  -force -scope Global -ea 0
+new-alias typedir Get-Content  -force -scope Global -ea 0
+new-alias ldir    less         -force -scope Global -ea 0
+new-alias lessdir less         -force -scope Global -ea 0
+new-alias l       less         -force -scope Global -ea 0
 #$MyInvocation
 #$MyInvocation.MyCommand
 function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
@@ -32,17 +70,8 @@ New-Alias -Name   LINE   -Value Get-CurrentLineNumber -Description 'Returns the 
 write-warning "$(LINE) PowerShell $($psversiontable.PSVersion.tostring())" 
 $ProfileDirectory = Split-Path $Profile
 write-information "Use `$Profile for path to Profile: $Profile"
-# Chrome key mapper?  chrome://extensions/configureCommands
-# Chrome extensions   chrome://extensions/
 
 
-# "line1","line2" -join [environment]::NewLine
-function Get-NewLine { [environment]::NewLine }; new-alias NL Get-NewLine -force
-# "line1","line2" -join (NL)
-# https://github.com/FriedrichWeinmann/PSReadline-Utilities
-# https://github.com/FriedrichWeinmann/functions
-# PSFramework
-# Install-Module -Scope CurrentUser -Name Assert
 
 $ProfileLogName = ($ProfileFile -replace '\.ps1$'), 'LOG.txt'
 $ProfileLogPath = Join-Path $ProfileDirectory $ProfileName 
@@ -137,20 +166,8 @@ $ForceModuleInstall = [boolean]$ForceModuleInstall
 $AllowClobber       = [boolean]$AllowClobber
 $Confirm            = [boolean]$Confirm
 
-<#
-If ($NotepadPlusPlus = @(where.exe 'notepad++*.exe'  2>$Null)) {
-} elseif (($NotepadPlusPlus = 
-        (Get-Alias np -ea 0).definition | ? { Test-Path $NotepadPlusPlus -ea 0 }       
-  # Nothing to do but set location          
-} else {
-  $ProgFiles = (get-childitem ENV:prog*).value | select -uniq 
-  dir $ProgFiles -incl NotePad++ -rec
-
-}
-# new-alias np 'C:\util\notepad++.exe' -force
-# new-alias np 'S:\Programs\Portable\Notepad++Portable\Notepad++Portable.exe' -force -scope global
-#>
-
+# 'C:\util\notepad++.exe' -force
+# 'S:\Programs\Portable\Notepad++Portable\Notepad++Portable.exe' -force -scope global
 # 'C:\Program Files (x86)\Notepad++\Note*.exe'   # ECS-DCTS02  Dec 2017 7.5.4
 #  S:\Programs\Notepad++ # 1/2/2018 Notepad++Portable.exe
 #  S:\Programs\Notepad++\app\Notepad++\   # Dec 2017
@@ -237,7 +254,6 @@ new-alias sh Select-History -force -scope Global
 #$pattern = 'ddd, dd MMM yyyy H:mm:ss zzz \(PST)'
 #[DateTime]::ParseExact($raw, $pattern, $null)
 
-# $MyInvocation
 if ($MyInvocation.HistoryID -eq 1) {
   if (gcm write-information -type cmdlet,function -ea 0) {
     $InformationPreference = 'Continue'
@@ -279,46 +295,10 @@ function Get-RunTime {
   }
 }
 
-<#
-  $7zipPath = @(get-command 7z -all -ea 0).definition +
-               (where.exe   7z.exe 2>$Null) + @('C:Util\7-Zip\app\7-Zip64\7z.exe', 
-                                        'C:\ProgramData\chocolatey\bin\',
-                                        'S:\Programs\7-Zip\app\7-Zip64\7z.exe'
-                                       )
-  Remove-Item Alias:7z -force -ea 0                                  
-  ForEach ($7z in $7zipPath) {
-    if ($7zipFound = Test-Path $7zipPath) {
-      new-alias 7z $7z -force -scope Global
-      break
-    }
-  }
-  if (Get-Command 7z -commandtype alias -ea 0) { 
-    write-warning "$(LINE) 7zip found: $7z"
-  } else {
-    write-warning "$(LINE) 7zip NOT found on path or in: $($7zipPath -join '; ')"
-  }
-}
-#>
 get-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive | 
   Select WindowArrangementActive | FL | findstr "WindowArrangementActive"
 set-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -value 0 -type dword -force
 
-# 7-Zip        http://www.7-zip.org/download.html
-# Git          https://git-scm.com/download/win
-#              https://github.com/git-tips/tips
-#              C:\Program Files\Git\mingw64\share\doc\git-doc\giteveryday.html
-# Regex        http://www.grymoire.com/Unix/Regular.html#uh-12
-#              http://www.regexlib.com/DisplayPatterns.aspx 
-# AwkRef       http://www.grymoire.com/Unix/AwkRef.html
-# Notepad++    https://notepad-plus-plus.org/download/v7.5.4.html
-# ArsClip      http://www.joejoesoft.com/vcms/97/
-# Aria2        https://github.com/aria2/aria2/releases/tag/release-1.33.1
-# Deluge       http://download.deluge-torrent.org/windows/?C=M;O=D
-# Transmission https://transmissionbt.com/download/
-# WinMerg      http://developeronfire.com/blog/configuration-of-git-on-windows-to-make-life-easy
-# NotesProfile See: NotesProfile.txt
-# docker       https://docs.docker.com/install/windows/docker-ee/#use-a-script-to-install-docker-ee
-#              https://github.com/wsargent/docker-cheat-sheet
 
 function Get-CurrentIPAddress {(ipconfig) -split "`n" | ? {$_ -match 'IPv4'} | % {$_ -replace '^.*\s+'}}
 function Get-WhoAmI { "[$PID]",(whoami),(hostname) + (Get-CurrentIPAddress) -join ' ' }
@@ -1019,7 +999,6 @@ try {   # Chocolatey profile
 }
 
 new-alias alias new-alias -force
-new-alias 7z 'C:\util\7-Zip\App\7-Zip64\7z.exe' -force
 function 4rank ($n, $d1, $d2, $d) {"{0:P2}   {1:P2}" -f ($n/$d),(1 - $n/$d)}
 function Get-PSVersion {"$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"}
 write-information ("$(LINE) Use Function Get-PSVersion or variable `$PSVersionTable: $(Get-PSVersion)")
