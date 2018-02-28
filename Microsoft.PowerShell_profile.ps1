@@ -11,6 +11,7 @@ param (
   [Parameter(ValueFromRemainingArguments=$true)]       [String[]]$RemArgs
 )
 
+# Improve goHash, Books & Dev more general
 # Everything? es?
 
 # Add rdir,cdir,mdir aliases
@@ -828,8 +829,8 @@ $ECSTraining = "\Training"
 $SearchPath  = 'C:\',"$Home\Downloads","T:$ECSTraining","S:$ECSTraining" 
 ForEach ($Path in $SearchPath) {
   try {
-    if (Test-Path (Join-Path $Path 'Books')) {
-      $Books = Resolve-Path (Join-Path $Path 'Books') -ea 0
+    if (Test-Path (Join-Path $Path 'Books' -ea 0) -ea 0) {
+      $Books = Resolve-Path (Join-Path $Path 'Books' -ea 0) -ea 0
       If ($Books) { break } 
     } 
   } catch {}  # just ignore
@@ -838,8 +839,8 @@ ForEach ($Path in $SearchPath) {
 $SearchPath  = 'C:\',"S:$ECSTraining","T:$ECSTraining","$Home\Downloads" 
 ForEach ($Path in $SearchPath) {
   try {
-    if (Test-Path (Join-Path $Path 'Dev')) {
-      $Dev = Resolve-Path (Join-Path $Path 'Dev') -ea 0
+    if (Test-Path (Join-Path $Path 'Dev' -ea 0) -ea 0) {
+      $Dev = Resolve-Path (Join-Path $Path 'Dev' -ea 0) -ea 0
       If ($Dev) { break } 
     } 
   } catch {}  # just ignore
