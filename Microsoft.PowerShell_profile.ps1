@@ -824,20 +824,48 @@ function Global:prompt { "'$($executionContext.SessionState.Path.CurrentLocation
 # 	if ($args[0]) {cd $args[0]}
 # }
 
-$books = switch ($true) {
-  { Test-Path 'c:\books' } { Resolve-Path 'c:\books' }
-  { Test-Path (Join-Path (Join-Path $Home 'Downloads')  'Books') } { Resolve-Path (Join-Path (Join-Path $Home 'Downloads')  'Books') -ea 0 }
+$ECSTraining = "\Training"
+$SearchPath  = 'C:\',"$Home\Downloads","T:$ECSTraining","S:$ECSTraining" 
+ForEach ($Path in $SearchPath) {
+  try {
+    if (Test-Path (Join-Path $Path 'Books')) {
+      $Books = Resolve-Path (Join-Path $Path 'Books') -ea 0
+      If ($Books) { break } 
+    } 
+  } catch {}  # just ignore
+  $Books = $Profile
+}
+$SearchPath  = 'C:\',"S:$ECSTraining","T:$ECSTraining","$Home\Downloads" 
+ForEach ($Path in $SearchPath) {
+  try {
+    if (Test-Path (Join-Path $Path 'Dev')) {
+      $Dev = Resolve-Path (Join-Path $Path 'Dev') -ea 0
+      If ($Dev) { break } 
+    } 
+  } catch {}  # just ignore
+  $Dev = $Profile
 }
 
+function Test-Clipboard { gcb | Test-Script }; 
+New-Alias tcb  Get-ClipBoard -force -scope Global
+New-Alias gcbt Get-ClipBoard -force -scope Global
+function Get-HistoryCount {param([int]$Count) get-history -count $Count }
+New-alias count Get-HistoryCount -force -scope Global 
 $gohash = [ordered]@{
   docs       = "$home\documents"
   down       = "$home\downloads"
   download   = "$home\downloads"
   downloads  = "$home\downloads"
+  book       = $books
   books      = $books
-  powershell = "$books\PowerShell"
-  profile    = $ProfileDirectory
+  psbook     = "$books\PowerShell"
+  psbooks    = "$books\PowerShell"
+  psh        = "$books\PowerShell"
+  pshell     = "$books\PowerShell"
+  power      = "$books\PowerShell"
   pro        = $ProfileDirectory
+  prof       = $ProfileDirectory
+  profile    = $ProfileDirectory
   txt        = 'c:\txt'
   text       = 'c:\txt'
   esb        = 'c:\esb'
