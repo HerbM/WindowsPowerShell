@@ -8,12 +8,15 @@ param (
   [Alias('SilentlyContinue')]                          [switch]$Quiet,
   [Alias('PSReadlineProfile','ReadlineProfile','psrl')][switch]$PSReadline,
   [ValidateSet('AllUsers','CurrentUser')]              [string]$ScopeModule='AllUsers',
-  [Parameter(ValueFromRemainingArguments=$true)]     [String[]]$RemArgs
+  [Parameter(ValueFromRemainingArguments=$true)]       [String[]]$RemArgs
 )
 
+# Improve goHash, Books & Dev more general
+# Everything? es?
+
+# Add rdir,cdir,mdir aliases
 # Close with Set-ProgramAlias
 # Add new set-programalias nscp 'C:\Program Files\NSClient++\nscp.exe' -force -scope
-
 # Fix RDP alias, Put 7-zip, Util,Unx in S:\Programs, New program searcher?  Better?
 # Boottime,ProfilePath moved up,LINE/FILE/Write-LOG,LogFilePath?,7z
 # Add/fix BootTime function
@@ -24,7 +27,46 @@ param (
 # TODO: need Notepad++, 7zip, Git, ??? to be on path with shortcuts
 # TODO: LogFile not being written
 # https://null-byte.wonderhowto.com/how-to/use-google-hack-googledorks-0163566/
+# 7-Zip        http://www.7-zip.org/download.html
+# Git          https://git-scm.com/download/win
+#              https://github.com/git-tips/tips
+#              C:\Program Files\Git\mingw64\share\doc\git-doc\giteveryday.html
+# Regex        http://www.grymoire.com/Unix/Regular.html#uh-12
+#              http://www.regexlib.com/DisplayPatterns.aspx 
+# AwkRef       http://www.grymoire.com/Unix/AwkRef.html
+# Notepad++    https://notepad-plus-plus.org/download/v7.5.4.html
+# ArsClip      http://www.joejoesoft.com/vcms/97/
+# Aria2        https://github.com/aria2/aria2/releases/tag/release-1.33.1
+# Deluge       http://download.deluge-torrent.org/windows/?C=M;O=D
+# Transmission https://transmissionbt.com/download/
+# WinMerg      http://developeronfire.com/blog/configuration-of-git-on-windows-to-make-life-easy
+# NotesProfile See: NotesProfile.txt
+# docker       https://docs.docker.com/install/windows/docker-ee/#use-a-script-to-install-docker-ee
+#              https://github.com/wsargent/docker-cheat-sheet
 
+
+# "line1","line2" -join (NL)
+# "line1","line2" -join [environment]::NewLine
+# https://github.com/FriedrichWeinmann/PSReadline-Utilities
+# https://github.com/FriedrichWeinmann/functions
+# PSFramework
+# Install-Module -Scope CurrentUser -Name Assert
+# Chrome key mapper?  chrome://extensions/configureCommands
+# Chrome extensions   chrome://extensions/
+function Get-NewLine { [environment]::NewLine }; new-alias NL Get-NewLine -force
+if (! (Get-Command write-log -type function,cmdlet,alias)) {
+  new-alias write-log write-verbose -force -scope Global -ea 0
+}
+new-alias rdir    Remove-Item  -force -scope Global -ea 0 
+new-alias cdir    Set-Location -force -scope Global -ea 0
+new-alias mdir    mkdir        -force -scope Global -ea 0
+new-alias modir   modir        -force -scope Global -ea 0
+new-alias moredir modir        -force -scope Global -ea 0
+new-alias tdir    Get-Content  -force -scope Global -ea 0
+new-alias typedir Get-Content  -force -scope Global -ea 0
+new-alias ldir    less         -force -scope Global -ea 0
+new-alias lessdir less         -force -scope Global -ea 0
+new-alias l       less         -force -scope Global -ea 0
 #$MyInvocation
 #$MyInvocation.MyCommand
 function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
@@ -32,30 +74,23 @@ New-Alias -Name   LINE   -Value Get-CurrentLineNumber -Description 'Returns the 
 write-warning "$(LINE) PowerShell $($psversiontable.PSVersion.tostring())" 
 $ProfileDirectory = Split-Path $Profile
 write-information "Use `$Profile for path to Profile: $Profile"
-# Chrome key mapper?  chrome://extensions/configureCommands
-# Chrome extensions   chrome://extensions/
 
 
-# "line1","line2" -join [environment]::NewLine
-function Get-NewLine { [environment]::NewLine }; new-alias NL Get-NewLine -force
-# "line1","line2" -join (NL)
-# https://github.com/FriedrichWeinmann/PSReadline-Utilities
-# https://github.com/FriedrichWeinmann/functions
-# PSFramework
-# Install-Module -Scope CurrentUser -Name Assert
 
 $ProfileLogName = ($ProfileFile -replace '\.ps1$'), 'LOG.txt'
 $ProfileLogPath = Join-Path $ProfileDirectory $ProfileName 
 Write-Information "$(LINE) ProfileLogPath: $ProfileLogPath"
 try {
-  if (Test-Path (Join-Path $ProfileDirectory 'utillity.ps1')) {
-    Join-Path $ProfileDirectory 'utillity.ps1'
+  if (Test-Path (Join-Path $ProfileDirectory 'utility.ps1')) {
+    Join-Path $ProfileDirectory 'utility.ps1'
   }
   Write-Log "(FLINE) Using Write-Log from Utility.ps1" -file $ProfileLogPath 3
 } catch { # just ignore and take care of below
 } finally {}
 
-if (! (Get-Command 'Write-Log')) { 
+if ((Get-Command 'Write-Log' -type function,cmdlet -ea 0)) { 
+  remove-item alias:write-log -force -ea 0
+} else {
   New-Alias Write-Log Write-Verbose 
   Write-Warning "$(LINE) Utility.ps1 not found.  Defined alias for Write-Log" 
   function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
@@ -75,6 +110,7 @@ if (! (Get-Command 'Write-Log')) {
   New-Alias -Name   FLINE  -Value Get-CurrentFileLine   -Description 'Returns the name of the current script file.' -force             -Option allscope
   New-Alias -Name   FILE1  -Value Get-CurrentFileName1  -Description 'Returns the name of the current script file.' -force             -Option allscope
 
+  remove-item alias:write-log -force -ea 0
   function Write-Log {
     param (
       [string]$Message,
@@ -137,20 +173,8 @@ $ForceModuleInstall = [boolean]$ForceModuleInstall
 $AllowClobber       = [boolean]$AllowClobber
 $Confirm            = [boolean]$Confirm
 
-<#
-If ($NotepadPlusPlus = @(where.exe 'notepad++*.exe'  2>$Null)) {
-} elseif (($NotepadPlusPlus = 
-        (Get-Alias np -ea 0).definition | ? { Test-Path $NotepadPlusPlus -ea 0 }       
-  # Nothing to do but set location          
-} else {
-  $ProgFiles = (get-childitem ENV:prog*).value | select -uniq 
-  dir $ProgFiles -incl NotePad++ -rec
-
-}
-# new-alias np 'C:\util\notepad++.exe' -force
-# new-alias np 'S:\Programs\Portable\Notepad++Portable\Notepad++Portable.exe' -force -scope global
-#>
-
+# 'C:\util\notepad++.exe' -force
+# 'S:\Programs\Portable\Notepad++Portable\Notepad++Portable.exe' -force -scope global
 # 'C:\Program Files (x86)\Notepad++\Note*.exe'   # ECS-DCTS02  Dec 2017 7.5.4
 #  S:\Programs\Notepad++ # 1/2/2018 Notepad++Portable.exe
 #  S:\Programs\Notepad++\app\Notepad++\   # Dec 2017
@@ -237,7 +261,6 @@ new-alias sh Select-History -force -scope Global
 #$pattern = 'ddd, dd MMM yyyy H:mm:ss zzz \(PST)'
 #[DateTime]::ParseExact($raw, $pattern, $null)
 
-# $MyInvocation
 if ($MyInvocation.HistoryID -eq 1) {
   if (gcm write-information -type cmdlet,function -ea 0) {
     $InformationPreference = 'Continue'
@@ -279,46 +302,10 @@ function Get-RunTime {
   }
 }
 
-<#
-  $7zipPath = @(get-command 7z -all -ea 0).definition +
-               (where.exe   7z.exe 2>$Null) + @('C:Util\7-Zip\app\7-Zip64\7z.exe', 
-                                        'C:\ProgramData\chocolatey\bin\',
-                                        'S:\Programs\7-Zip\app\7-Zip64\7z.exe'
-                                       )
-  Remove-Item Alias:7z -force -ea 0                                  
-  ForEach ($7z in $7zipPath) {
-    if ($7zipFound = Test-Path $7zipPath) {
-      new-alias 7z $7z -force -scope Global
-      break
-    }
-  }
-  if (Get-Command 7z -commandtype alias -ea 0) { 
-    write-warning "$(LINE) 7zip found: $7z"
-  } else {
-    write-warning "$(LINE) 7zip NOT found on path or in: $($7zipPath -join '; ')"
-  }
-}
-#>
 get-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive | 
   Select WindowArrangementActive | FL | findstr "WindowArrangementActive"
 set-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -value 0 -type dword -force
 
-# 7-Zip        http://www.7-zip.org/download.html
-# Git          https://git-scm.com/download/win
-#              https://github.com/git-tips/tips
-#              C:\Program Files\Git\mingw64\share\doc\git-doc\giteveryday.html
-# Regex        http://www.grymoire.com/Unix/Regular.html#uh-12
-#              http://www.regexlib.com/DisplayPatterns.aspx 
-# AwkRef       http://www.grymoire.com/Unix/AwkRef.html
-# Notepad++    https://notepad-plus-plus.org/download/v7.5.4.html
-# ArsClip      http://www.joejoesoft.com/vcms/97/
-# Aria2        https://github.com/aria2/aria2/releases/tag/release-1.33.1
-# Deluge       http://download.deluge-torrent.org/windows/?C=M;O=D
-# Transmission https://transmissionbt.com/download/
-# WinMerg      http://developeronfire.com/blog/configuration-of-git-on-windows-to-make-life-easy
-# NotesProfile See: NotesProfile.txt
-# docker       https://docs.docker.com/install/windows/docker-ee/#use-a-script-to-install-docker-ee
-#              https://github.com/wsargent/docker-cheat-sheet
 
 function Get-CurrentIPAddress {(ipconfig) -split "`n" | ? {$_ -match 'IPv4'} | % {$_ -replace '^.*\s+'}}
 function Get-WhoAmI { "[$PID]",(whoami),(hostname) + (Get-CurrentIPAddress) -join ' ' }
@@ -838,20 +825,48 @@ function Global:prompt { "'$($executionContext.SessionState.Path.CurrentLocation
 # 	if ($args[0]) {cd $args[0]}
 # }
 
-$books = switch ($true) {
-  { Test-Path 'c:\books' } { Resolve-Path 'c:\books' }
-  { Test-Path (Join-Path (Join-Path $Home 'Downloads')  'Books') } { Resolve-Path (Join-Path (Join-Path $Home 'Downloads')  'Books') -ea 0 }
+$ECSTraining = "\Training"
+$SearchPath  = 'C:\',"$Home\Downloads","T:$ECSTraining","S:$ECSTraining" 
+ForEach ($Path in $SearchPath) {
+  try {
+    if (Test-Path (Join-Path $Path 'Books' -ea 0) -ea 0) {
+      $Books = Resolve-Path (Join-Path $Path 'Books' -ea 0) -ea 0
+      If ($Books) { break } 
+    } 
+  } catch {}  # just ignore
+  $Books = $Profile
+}
+$SearchPath  = 'C:\',"S:$ECSTraining","T:$ECSTraining","$Home\Downloads" 
+ForEach ($Path in $SearchPath) {
+  try {
+    if (Test-Path (Join-Path $Path 'Dev' -ea 0) -ea 0) {
+      $Dev = Resolve-Path (Join-Path $Path 'Dev' -ea 0) -ea 0
+      If ($Dev) { break } 
+    } 
+  } catch {}  # just ignore
+  $Dev = $Profile
 }
 
+function Test-Clipboard { gcb | Test-Script }; 
+New-Alias tcb  Get-ClipBoard -force -scope Global
+New-Alias gcbt Get-ClipBoard -force -scope Global
+function Get-HistoryCount {param([int]$Count) get-history -count $Count }
+New-alias count Get-HistoryCount -force -scope Global 
 $gohash = [ordered]@{
   docs       = "$home\documents"
   down       = "$home\downloads"
   download   = "$home\downloads"
   downloads  = "$home\downloads"
+  book       = $books
   books      = $books
-  powershell = "$books\PowerShell"
-  profile    = $ProfileDirectory
+  psbook     = "$books\PowerShell"
+  psbooks    = "$books\PowerShell"
+  psh        = "$books\PowerShell"
+  pshell     = "$books\PowerShell"
+  power      = "$books\PowerShell"
   pro        = $ProfileDirectory
+  prof       = $ProfileDirectory
+  profile    = $ProfileDirectory
   txt        = 'c:\txt'
   text       = 'c:\txt'
   esb        = 'c:\esb'
@@ -1019,7 +1034,6 @@ try {   # Chocolatey profile
 }
 
 new-alias alias new-alias -force
-new-alias 7z 'C:\util\7-Zip\App\7-Zip64\7z.exe' -force
 function 4rank ($n, $d1, $d2, $d) {"{0:P2}   {1:P2}" -f ($n/$d),(1 - $n/$d)}
 function Get-PSVersion {"$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"}
 write-information ("$(LINE) Use Function Get-PSVersion or variable `$PSVersionTable: $(Get-PSVersion)")
@@ -1097,20 +1111,24 @@ if (Get-Module 'PSReadline' -ea 0) {
 }
 #>
 write-information "$(LINE) Error count: $($Error.Count)"
-
-$utility = (('.;' + $env:path) -split ';' | % { join-path $_ 'utility.ps1' } | ? { test-path $_ -ea 0}) -split '\s*\n'
-try {
-  if ($utility) {
-    write-information "$(LINE) Source: $utility"
-    .  (Resolve-Path $utility[0]).path
-    write-information "$(LINE) Finished sourcing: $utility"
-  } else {
-    write-information "$(LINE) utility.ps1 not found local or on path"
+<#
+$SearchPath = (("$Profile;.;" + $env:path) -split ';' | % { join-path $_ 'utility.ps1' } | ? { test-path $_ -ea 0}) -split '\s*\n'
+ForEach ($Path in $SearchPath) {
+  try {
+    $Utility = Join-Path $Path 'utility.ps1'
+    if (Test-Path $utility) {
+      write-information "$(LINE) Source: $utility"
+      .  (Resolve-Path $utility[0]).path
+      write-information "$(LINE) Finished sourcing: $utility"
+      break
+    }
+  } catch {
+    write-information "$(LINE) Caught error importing $Utility"
+    # $_
   }
-} catch {
-  write-information "$(LINE) Caught error importing $Utility"
-  $_
+  write-information "$(LINE) utility.ps1 not found local or on path"
 }
+#>
 #filter dt { if (get-variable _ -scope 0) { get-sortabledate $_ -ea 0 } else { get-sortabledate $args[1] } }
 function dt {param([string[]]$datetime=(get-date)) $datetime | % { get-date $_ -format 'yyyy-MM-dd HH:mm:ss ddd' } }
 #function dt {param([string[]]$datetime=(get-date)) $datetime | % { get-sortabledate $_) -creplace '\dT'  } }
