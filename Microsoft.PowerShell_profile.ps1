@@ -87,7 +87,7 @@ try {
 } catch { # just ignore and take care of below
 } finally {}
 
-if ((Get-Command 'Write-Log' -type function,cmdlet)) { 
+if ((Get-Command 'Write-Log' -type function,cmdlet -ea 0)) { 
   remove-item alias:write-log -force -ea 0
 } else {
   New-Alias Write-Log Write-Verbose 
