@@ -11,7 +11,7 @@ param (
   [Parameter(ValueFromRemainingArguments=$true)]       [String[]]$RemArgs
 )
 
-# Improve goHash, Books & Dev more general
+# Improve goHash, Books & Dev more general, fix S: T: not found
 # Everything? es?
 
 # Add rdir,cdir,mdir aliases
@@ -29,6 +29,7 @@ param (
 # https://null-byte.wonderhowto.com/how-to/use-google-hack-googledorks-0163566/
 # 7-Zip        http://www.7-zip.org/download.html
 # Git          https://git-scm.com/download/win
+#              https://github.com/git-for-windows/git/releases/download/v2.16.2.windows.1/Git-2.16.2-64-bit.exe
 #              https://github.com/git-tips/tips
 #              C:\Program Files\Git\mingw64\share\doc\git-doc\giteveryday.html
 # Regex        http://www.grymoire.com/Unix/Regular.html#uh-12
@@ -39,7 +40,7 @@ param (
 # Aria2        https://github.com/aria2/aria2/releases/tag/release-1.33.1
 # Deluge       http://download.deluge-torrent.org/windows/?C=M;O=D
 # Transmission https://transmissionbt.com/download/
-# WinMerg      http://developeronfire.com/blog/configuration-of-git-on-windows-to-make-life-easy
+# WinMerge     http://developeronfire.com/blog/configuration-of-git-on-windows-to-make-life-easy
 # NotesProfile See: NotesProfile.txt
 # docker       https://docs.docker.com/install/windows/docker-ee/#use-a-script-to-install-docker-ee
 #              https://github.com/wsargent/docker-cheat-sheet
@@ -54,7 +55,7 @@ param (
 # Chrome key mapper?  chrome://extensions/configureCommands
 # Chrome extensions   chrome://extensions/
 function Get-NewLine { [environment]::NewLine }; new-alias NL Get-NewLine -force
-if (! (Get-Command write-log -type function,cmdlet,alias)) {
+if (! (Get-Command write-log -type function,cmdlet,alias -ea 0)) {
   new-alias write-log write-verbose -force -scope Global -ea 0
 }
 new-alias rdir    Remove-Item  -force -scope Global -ea 0 
@@ -996,7 +997,7 @@ function dox { (dir @args) | sort -prop extension }
 function Test-Administrator { return (whoami /all | select-string S-1-16-12288) -ne $null }
 function Privs? {
 	if ((whoami /all | select-string S-1-16-12288) -ne $null) {
-		'Administrator privileges  enabled'
+		'Administrator privileges enabled'
 	} else {
 		'Administrator privileges NOT available'
 	}
