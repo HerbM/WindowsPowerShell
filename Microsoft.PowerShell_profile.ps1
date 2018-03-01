@@ -11,9 +11,11 @@ param (
   [Parameter(ValueFromRemainingArguments=$true)]       [String[]]$RemArgs
 )
 
-# Improve goHash, Books & Dev more general
-# Everything? es?
+# Git-Windows Git (new file), previous commit worked on JR 2 machines
+# Needed: improve go, find alias Version numbers (at least display)
 
+# Improve goHash, Books & Dev more general, fix S: T: not found
+# Everything? es?
 # Add rdir,cdir,mdir aliases
 # Close with Set-ProgramAlias
 # Add new set-programalias nscp 'C:\Program Files\NSClient++\nscp.exe' -force -scope
@@ -29,6 +31,7 @@ param (
 # https://null-byte.wonderhowto.com/how-to/use-google-hack-googledorks-0163566/
 # 7-Zip        http://www.7-zip.org/download.html
 # Git          https://git-scm.com/download/win
+#              https://github.com/git-for-windows/git/releases/download/v2.16.2.windows.1/Git-2.16.2-64-bit.exe
 #              https://github.com/git-tips/tips
 #              C:\Program Files\Git\mingw64\share\doc\git-doc\giteveryday.html
 # Regex        http://www.grymoire.com/Unix/Regular.html#uh-12
@@ -39,11 +42,12 @@ param (
 # Aria2        https://github.com/aria2/aria2/releases/tag/release-1.33.1
 # Deluge       http://download.deluge-torrent.org/windows/?C=M;O=D
 # Transmission https://transmissionbt.com/download/
-# WinMerg      http://developeronfire.com/blog/configuration-of-git-on-windows-to-make-life-easy
+# WinMerge     http://developeronfire.com/blog/configuration-of-git-on-windows-to-make-life-easy
 # NotesProfile See: NotesProfile.txt
 # docker       https://docs.docker.com/install/windows/docker-ee/#use-a-script-to-install-docker-ee
 #              https://github.com/wsargent/docker-cheat-sheet
-
+# Wakoopa      https://web.appstorm.net/how-to/app-management-howto/how-to-discover-new-apps-with-wakoopa/
+# 
 
 # "line1","line2" -join (NL)
 # "line1","line2" -join [environment]::NewLine
@@ -54,7 +58,7 @@ param (
 # Chrome key mapper?  chrome://extensions/configureCommands
 # Chrome extensions   chrome://extensions/
 function Get-NewLine { [environment]::NewLine }; new-alias NL Get-NewLine -force
-if (! (Get-Command write-log -type function,cmdlet,alias)) {
+if (! (Get-Command write-log -type function,cmdlet,alias -ea 0)) {
   new-alias write-log write-verbose -force -scope Global -ea 0
 }
 new-alias rdir    Remove-Item  -force -scope Global -ea 0 
@@ -996,7 +1000,7 @@ function dox { (dir @args) | sort -prop extension }
 function Test-Administrator { return (whoami /all | select-string S-1-16-12288) -ne $null }
 function Privs? {
 	if ((whoami /all | select-string S-1-16-12288) -ne $null) {
-		'Administrator privileges  enabled'
+		'Administrator privileges enabled'
 	} else {
 		'Administrator privileges NOT available'
 	}
@@ -1237,6 +1241,12 @@ function PSBoundParameter([string]$Parm) {
 write-host "`nError count: $($Error.Count)"
 #if(Test-Path Function:\Prompt) {Rename-Item Function:\Prompt PrePoshGitPrompt -Force}
 
+if (w choco.exe 2>&1) {
+  "Get Chocolatey: iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
+}
+if (w git.exe 2>&1) {
+  "Get WindowsGit: & '$Profile\Get-WindowsGit.ps1'"
+}
 
 if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $informationpreferenceSave }
 
