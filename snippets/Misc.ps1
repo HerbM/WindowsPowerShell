@@ -1,4 +1,69 @@
+[Net.ServicePointManager]::SecurityProtocol = 
+  [Net.SecurityProtocolType]::Tls12 -bor `
+  [Net.SecurityProtocolType]::Tls11 -bor `
+  [Net.SecurityProtocolType]::Tls
+# Or since this is PowerShell, you can let it parse a string for you:
+[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+
 <#
+https://github.com/ChrisLGardner/PowershellScripts/blob/master/Get-LoginSuccess.ps1
+
+Defrag Tools: #1 - Building your USB thumbdrive
+Defrag Tools: #2 - Process Explorer
+Defrag Tools: #3 - Process Monitor
+Defrag Tools: #4 - Process Monitor - Examples
+Defrag Tools: #5 - Autoruns and MSConfig
+Defrag Tools: #6 - RAMMap
+Defrag Tools: #7 - VMMap
+Defrag Tools: #8 - Mark Russinovich
+Defrag Tools: #9 - ProcDump
+Defrag Tools: #10 - ProcDump - Triggers
+Defrag Tools: #11 - ProcDump - Windows 8 & Process Monitor
+Defrag Tools: #12 - TaskMgr and ResMon
+
+### Fix getsession -> Get-WinStaSession
+### Function Get-Session { param([string]$UserName=($env:UserName), [Alias('All','Users')][switch]$AllUsers,[switch]$AllSessions ) $sessions = (qwinsta | select -skip 1 );  ($sessions -match '^([>\s]' |select -first 1) -split '\s+' | [pscustomerobject]@{  } } 
+
+# DOTNET .NET collection objects 
+$hashset = [System.Collections.Generic.HashSet[string]]::new()
+$hashset.gettype()
+$hashset = @{}
+$hash.gettype()
+$hashset = [System.Collections.Generic.HashSet[string]]::new()
+$hash.gettype()
+$hashset = @{}
+$hashset = [System.Collections.Generic.HashSet[string]]::new()
+$hashset.gettype()
+$hash = @{}
+$hash.gettype()
+$hashord = [ordered]@{}
+$hashord.gettype()
+$ListString = [System.Collections.Generic.List[string]]::new()
+$ListString.gettype()
+$ListString.Add(1)
+$ListString
+
+$SortedSet = [System.Collections.Generic.SortedSet[String]]::new([System.StringComparer]::InvariantCultureIgnoreCase)
+mayb difference between a hasset and a hash table is the complete lack of values in a hashset
+it's just keys
+it's like an array or list of unique items
+and it's always unique.. when you try to add one that already exists nothing happens
+it's super fast to add to because it stores those keys in the same kind of bucket sturcture that hashtables keys use for fast lookups (edited)
+if you have pluralsight... there are several C# lessions on the generic types, how they work, and when to use them.. and it doesn't really require a deep understanding of C#... if you know powershell decent enough, the videos will make sense as the examples are simple and the syntax for them is close enough to powershell
+
+$ListString | %{$_.gettype()}
+$ListInt = [System.Collections.Generic.List[int]]::new()
+$ListInt.Add("happy")
+$ListInt.Add(1)
+$ListObject = [System.Collections.Generic.List[System.Object]]::new()
+$ListObject.Add(1)
+$ListObject.Add("string value" )
+$ListObject
+$ListObject | ? { $_.gettype() }
+
+
+# so if you want to use the hashset.. fasted was is to just use the add method
+$hashset = [System.Collections.Generic.HashSet[string]]::new()
 
 # Naive find functions defined in file:
 (get-content .\Microsoft.PowerShell_profile.ps1) | ? { $_ -match '^\s*(function\s+([^|{])*)'} | % { $Matches[1]} | sort -uniq | measure 
@@ -873,3 +938,21 @@ PS> 1..5 | % { $result = 0 } { $result += $_ } { $result } # % is an alias for F
 
 filter num2x { $_ -replace "\d","x" }
 Get-Content test.txt | num2x | add-content new.txt 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

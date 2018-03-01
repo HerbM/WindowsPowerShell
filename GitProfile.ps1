@@ -3,14 +3,41 @@
 # Git Windows      http://developeronfire.com/blog/configuration-of-git-on-windows-to-make-life-easy              
 # Git Windows      http://developeronfire.com/blog/configuration-of-git-on-windows-to-make-life-easy              
 # PoSh-Git         https://github.com/PoshCode/PSGit/wiki/Command-Proposals 
-# WinMerg          http://developeronfire.com/blog/configuration-of-git-on-windows-to-make-life-easy
+# WinMerge 2011    https://portableapps.com/apps/utilities/winmerge-2011-portable    
+# WinMerge /w Git? http://developeronfire.com/blog/configuration-of-git-on-windows-to-make-life-easy
 # GitHubGist       Øyvind Kallstad https://gist.github.com/gravejester?page=2, https://gist.github.com/toenuff/6715170
 # Babun (CygWin)   http://babun.github.io/
 # qWinSta          mstsc /shadow:6 /noconsentprompt /control 
 # Translate C#->PS https://github.com/LaurentDardenne/ExtensionMethod
-
-#WinMerge with Git
-# Posh-Git
+# Recuva, CCleaner https://www.techradar.com/news/software/applications/the-best-free-system-utilities-and-tools-1323949
+# NirSoft Pwd      https://lifehacker.com/5178222/top-10-tiny--awesome-windows-utilities
+# NirSoftUtilities https://www.nirsoft.net/utils/index.html
+#                  https://portableapps.com/
+# Portable Apps    https://portableapps.com/redirect/?a=PAcPlatform&t=http%3A%2F%2Fdownloads.portableapps.com%2Fportableapps%2Fpacplatform%2FPortableApps.com_Platform_Setup_14.4.3.paf.exe
+#   Apps           https://portableapps.com/apps
+#   AkelPad Editor https://downloads.sourceforge.net/portableapps/AkelPadPortable_4.9.8.paf.exe
+#   IrFanView      https://portableapps.com/apps/graphics_pictures/irfanview_portable
+#   Links Portable https://portableapps.com/apps/internet/links-portable      
+#   Lynx Portable  https://portableapps.com/apps/internet/lynx-portable
+#   2X RDP         https://portableapps.com/apps/utilities/2x_client_portable
+# SysInternals     https://download.sysinternals.com/files/SysinternalsSuite.zip Updated: February 13, 2018Feb 13, 2018
+# SysInternalsNano https://download.sysinternals.com/files/SysinternalsSuite-Nano.zip
+#   Forums         https://forum.sysinternals.com/
+#                  Troubleshooting with the Windows Sysinternals Tools
+# Gnu Win32        http://gnuwin32.sourceforge.net/
+# UnxUtils         http://unxutils.sourceforge.net/
+# Curl             https://curl.haxx.se/download.html
+# Curl 7.58        https://bintray.com/artifact/download/vszakats/generic/curl-7.58.0-win64-mingw.7z
+# Strawberry Perl  http://strawberryperl.com/download/5.26.1.1/strawberry-perl-5.26.1.1-64bit.msi
+# Exiting Vim      Git brings up Vim by default to edit
+#   :w - write (save) the file, but don't exit
+#   :w !sudo tee % - write out the current file using sudo
+#   :wq or :x or ZZ - write (save) and quit
+#   :q - quit (fails if there are unsaved changes)
+#   :q! or ZQ - quit and throw away unsaved changes
+#   :wqa - write (save) and quit on all tabs
+#
+## Posh-Git
 # Load posh-git example profile
 # . 'C:\tools\poshgit\dahlbyk-posh-git-a1795ab\profile.example.ps1'
 #if(Test-Path Function:\Prompt) {Rename-Item Function:\Prompt PrePoshGitPrompt -Force}

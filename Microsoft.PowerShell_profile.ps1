@@ -11,9 +11,11 @@ param (
   [Parameter(ValueFromRemainingArguments=$true)]       [String[]]$RemArgs
 )
 
+# Git-Windows Git (new file), previous commit worked on JR 2 machines
+# Needed: improve go, find alias Version numbers (at least display)
+
 # Improve goHash, Books & Dev more general, fix S: T: not found
 # Everything? es?
-
 # Add rdir,cdir,mdir aliases
 # Close with Set-ProgramAlias
 # Add new set-programalias nscp 'C:\Program Files\NSClient++\nscp.exe' -force -scope
@@ -44,7 +46,8 @@ param (
 # NotesProfile See: NotesProfile.txt
 # docker       https://docs.docker.com/install/windows/docker-ee/#use-a-script-to-install-docker-ee
 #              https://github.com/wsargent/docker-cheat-sheet
-
+# Wakoopa      https://web.appstorm.net/how-to/app-management-howto/how-to-discover-new-apps-with-wakoopa/
+# 
 
 # "line1","line2" -join (NL)
 # "line1","line2" -join [environment]::NewLine
@@ -1238,6 +1241,12 @@ function PSBoundParameter([string]$Parm) {
 write-host "`nError count: $($Error.Count)"
 #if(Test-Path Function:\Prompt) {Rename-Item Function:\Prompt PrePoshGitPrompt -Force}
 
+if (w choco.exe 2>&1) {
+  "Get Chocolatey: iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
+}
+if (w git.exe 2>&1) {
+  "Get WindowsGit: & '$Profile\Get-WindowsGit.ps1'"
+}
 
 if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $informationpreferenceSave }
 
