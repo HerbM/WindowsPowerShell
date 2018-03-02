@@ -827,7 +827,7 @@ function qa {
 # https://weblogs.asp.net/jongalloway/working-around-a-powershell-call-depth-disaster-with-trampolines
 write-information "$(LINE) Test-Administrator"
 #function Test-Administrator { (whoami /all | select-string S-1-16-12288) -ne $null }
-#if ((whoami /user /priv | select-string S-1-16-12288) -ne $null) {'Administrator privileges  enabled'} #else {'Administrator privileges NOT available'}
+#if ((whoami /user /priv | select-string S-1-16-12288) -ne $null) {'Administrator privileges: ENABLED'} #else {'Administrator privileges: DISABLED'}
 
 function Test-Administrator {
   ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
