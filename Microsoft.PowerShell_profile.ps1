@@ -11,9 +11,23 @@ param (
   [Parameter(ValueFromRemainingArguments=$true)]       [String[]]$RemArgs
 )
 
-# Git-Windows Git (new file), previous commit worked on JR 2 machines
-# Needed: improve go, find alias Version numbers (at least display)
+# Started Add-Path(crude) -- more ToDo notes 
 
+# Needed: improve go, find alias Version numbers (at least display)
+# TODO: need Notepad++, 7zip, Git, ??? to be on path with shortcuts (improved, not good enough yet)
+# TODO: LogFile not being written???
+# Clean up output -- easier to read, don't use "warnings" (colors?)
+# Setup website for initial BootStrap scripts to get tools, Profile etc.
+#   Run scripts from "master" ????
+#   Download Tools -- as job
+#   Sync tools -- as job or scheduled job?
+#   Upgrade PowerShell, Git, Enable Scripting/Remoting etc., 
+#   Configure new build, Firewall off,RDP On,No IPv6 etc 
+#   Split out functions etc to "Scripts" directory
+#   Speed up History loading?
+#   
+
+# Git-Windows Git (new file), previous commit worked on JR 2 machines
 # Improve goHash, Books & Dev more general, fix S: T: not found
 # Everything? es?
 # Add rdir,cdir,mdir aliases
@@ -26,8 +40,6 @@ param (
 # Move utility extract up (LINE, FILE, WRITE-LOG)
 # working on LogFilePath
 # worked on 7z  -- 
-# TODO: need Notepad++, 7zip, Git, ??? to be on path with shortcuts
-# TODO: LogFile not being written
 # https://null-byte.wonderhowto.com/how-to/use-google-hack-googledorks-0163566/
 # 7-Zip        http://www.7-zip.org/download.html
 # Git          https://git-scm.com/download/win
@@ -47,7 +59,47 @@ param (
 # docker       https://docs.docker.com/install/windows/docker-ee/#use-a-script-to-install-docker-ee
 #              https://github.com/wsargent/docker-cheat-sheet
 # Wakoopa      https://web.appstorm.net/how-to/app-management-howto/how-to-discover-new-apps-with-wakoopa/
-# 
+
+
+function Add-ToolPath {
+  [CmdLetBinding()]param(
+    [string[]]$Path
+  )
+  ForEach ($TryPath in $Path) {
+    if ($marker = where.exe PortCheck.exe 2>&1) {
+      Write-Warning "Path is good: $marker"
+      return 
+    } else {
+      if (Test-Path (Join-Path $TryPath "Util\PortCheck.exe" -ea 0)) {
+        $addpath = ";$TryPath\util;$TryPath\Unx;$\TryPath\Bat"
+        $Env:Path += $addpath
+        Write-Warning "Added: $addpath"        
+        return
+      }
+    }
+  }
+  Write-Warning "Unabled to put tools on path: PortCheck.exe"        
+}
+try { Add-ToolPath 'C:\','T:\Programs\Herb','S:\Programs\Herb' } catch { Write-Warning "Caught:  Add-Path"}
+
+<#
+function Add-Path {
+  [CmdLetBinding()]param(
+    [string[]]$Path
+  )
+  $SpltPath = $Env:Path -split ';'
+  ForEach ($Dir in Path) {
+    $Dir = Split-Path -leaf $Dir -ea 0 # get just final directory name
+    $OnPath = $SplitPath -match "\\$Dir$"
+    $OnPath = 
+    #If (! ())
+    if (!(Test-Path 'C:\Util')) {
+      # $env:path += ';T:\Programs\Herb\util;T:\Programs\Herb\Unx;T:\programs\Herb\Bat'
+      
+    }
+  }
+}
+#>
 
 # "line1","line2" -join (NL)
 # "line1","line2" -join [environment]::NewLine
@@ -775,7 +827,7 @@ function qa {
 # https://weblogs.asp.net/jongalloway/working-around-a-powershell-call-depth-disaster-with-trampolines
 write-information "$(LINE) Test-Administrator"
 #function Test-Administrator { (whoami /all | select-string S-1-16-12288) -ne $null }
-#if ((whoami /user /priv | select-string S-1-16-12288) -ne $null) {'Administrator privileges  enabled'} #else {'Administrator privileges NOT available'}
+#if ((whoami /user /priv | select-string S-1-16-12288) -ne $null) {'Administrator privileges: ENABLED'} #else {'Administrator privileges: DISABLED'}
 
 function Test-Administrator {
   ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
