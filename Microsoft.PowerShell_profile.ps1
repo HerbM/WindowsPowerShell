@@ -95,7 +95,7 @@ try {
 if ((Get-Command 'Write-Log' -type function,cmdlet -ea 0)) { 
   remove-item alias:write-log -force -ea 0
 } else {
-  New-Alias Write-Log Write-Verbose 
+  New-Alias Write-Log Write-Verbose -ea 0
   Write-Warning "$(LINE) Utility.ps1 not found.  Defined alias for Write-Log" 
   function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
   function Get-CurrentFileName   { split-path -leaf $MyInvocation.PSCommandPath   }   function Get-CurrentFileLine   {
