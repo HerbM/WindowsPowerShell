@@ -25,7 +25,9 @@ param (
 #   Configure new build, Firewall off,RDP On,No IPv6 etc 
 #   Split out functions etc to "Scripts" directory
 #   Speed up History loading?
-#   
+#   get-process notepad++ | select name,starttime,productversion,path
+#   gwmi win32_service -filter 'name = "everything"' | select name,StartMode,State,Status,Processid,StartName,DisplayName,PathName | ft
+
 
 # Git-Windows Git (new file), previous commit worked on JR 2 machines
 # Improve goHash, Books & Dev more general, fix S: T: not found
@@ -59,7 +61,7 @@ param (
 # docker       https://docs.docker.com/install/windows/docker-ee/#use-a-script-to-install-docker-ee
 #              https://github.com/wsargent/docker-cheat-sheet
 # Wakoopa      https://web.appstorm.net/how-to/app-management-howto/how-to-discover-new-apps-with-wakoopa/
-
+# ArsClip
 
 function Add-ToolPath {
   [CmdLetBinding()]param(
