@@ -11,23 +11,25 @@ param (
   [Parameter(ValueFromRemainingArguments=$true)]       [String[]]$RemArgs
 )
 
-# Show-ConsoleColor,Get-Syntax(aliases),++Select-History,++FullHelp,++d cmds, esf (needs *,? support)
+# Show-ConsoleColor,Get-Syntax(aliases),++Select-History,++FullHelp,++d cmds, esf (needs *,? support),++Add-ToolPath,Reduce History Saved
 # Started Add-Path(crude) -- more ToDo notes 
 
-# Needed: improve go, find alias Version numbers (at least display)
-# TODO: need Notepad++, 7zip, Git, ??? to be on path with shortcuts (improved, not good enough yet)
-# TODO: LogFile not being written???
-# Clean up output -- easier to read, don't use "warnings" (colors?)
-# Setup website for initial BootStrap scripts to get tools, Profile etc.
-#   Run scripts from "master" ????
-#   Download Tools -- as job
-#   Sync tools -- as job or scheduled job?
-#   Upgrade PowerShell, Git, Enable Scripting/Remoting etc., 
-#   Configure new build, Firewall off,RDP On,No IPv6 etc 
-#   Split out functions etc to "Scripts" directory
-#   Speed up History loading?
-#   get-process notepad++ | select name,starttime,productversion,path
-#   gwmi win32_service -filter 'name = "everything"' | select name,StartMode,State,Status,Processid,StartName,DisplayName,PathName | ft
+
+# ToDo: Test-Path -resolve only in 5.1????, Add Server to Get-WinStaSession
+# ToDo: improve go, find alias Version numbers (at least display)
+# ToDo: need Notepad++, 7zip, Git, ??? to be on path with shortcuts (improved, not good enough yet)
+# ToDo: LogFile not being written???
+# ToDo: Clean up output -- easier to read, don't use "warnings" (colors?)
+# ToDo: Setup website for initial BootStrap scripts to get tools, Profile etc.
+#         Run scripts from "master" ????
+#         Download Tools -- as job
+#         Sync tools -- as job or scheduled job?
+#         Upgrade PowerShell, Git, Enable Scripting/Remoting etc., 
+#         Configure new build, Firewall off,RDP On,No IPv6 etc 
+#         Split out functions etc to "Scripts" directory
+#         Speed up History loading?
+#         get-process notepad++ | select name,starttime,productversion,path
+#         gwmi win32_service -filter 'name = "everything"' | select name,StartMode,State,Status,Processid,StartName,DisplayName,PathName | ft
 
 
 # Git-Windows Git (new file), previous commit worked on JR 2 machines
@@ -923,7 +925,7 @@ function Global:prompt {
       $Excess = [Math]::Min($Excess, $LocLen)    
     }
   }
-  write-host -nonewline "'$Loc'$Prompt" -fore Gray -back DarkGray
+  write-host -nonewline "'$Loc'$Prompt" -fore Cyan -back Gray`
   ' '
 }
 
