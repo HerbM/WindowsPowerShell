@@ -17,7 +17,8 @@ If ($QuoteMatching -and $BraceMatching) { $Matching = $True }
 # [System.ConsoleKey] | gm -static | more
 # Alt-w current line to history
 
-$SaveHistory = (h).commandline
+$SaveHistory = (h -count 3000).commandline
+write-warning "History count $((h).count)"
 
 $PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)" -as [double]
 if (!(Get-Module PSReadline -listavailable -ea 0)) {  
@@ -63,20 +64,13 @@ Set-PSReadLineKeyHandler -Key 'Alt+F7','Alt+F8' `
                          -ScriptBlock {
   $pattern = $null
   [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$pattern, [ref]$null)
-  if ($pattern) {
-    $pattern = [regex]::Escape($pattern)
-  }
+  if ($pattern) { $pattern = [regex]::Escape($pattern) }
   $history = [System.Collections.ArrayList]@(
-    $last = ''
-    $lines = ''
+    $last = $lines = ''
     foreach ($line in [System.IO.File]::ReadLines((Get-PSReadLineOption).HistorySavePath)) {
       if ($line.EndsWith('`')) {
         $line = $line.Substring(0, $line.Length - 1)
-        $lines = if ($lines) {
-          "$lines`n$line"
-        } else  {
-          $line
-        }
+        $lines = if ($lines) { "$lines`n$line" } else { $line }
         continue
       }
       if ($lines) {

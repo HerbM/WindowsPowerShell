@@ -11,6 +11,7 @@ param (
   [Parameter(ValueFromRemainingArguments=$true)]       [String[]]$RemArgs
 )
 
+# Show-ConsoleColor,Get-Syntax(aliases),++Select-History,++FullHelp,++d cmds, esf (needs *,? support)
 # Started Add-Path(crude) -- more ToDo notes 
 
 # Needed: improve go, find alias Version numbers (at least display)
@@ -82,7 +83,11 @@ function Add-ToolPath {
   }
   Write-Warning "Unabled to put tools on path: PortCheck.exe"        
 }
-try { Add-ToolPath 'C:\','T:\Programs\Herb','S:\Programs\Herb' } catch { Write-Warning "Caught:  Add-Path"}
+
+$PlacesToLook = 'C:\','T:\Programs\Herb','T:\Programs\Tools','T:\Programs',
+                'S:\Programs\Tools','S:\Programs\Herb''S:\Programs'        | 
+                ?  { Test-Path $_ -ea 0 }
+try { Add-ToolPath $PlacesToLook } catch { Write-Warning "Caught:  Add-Path"}
 
 <#
 function Add-Path {
@@ -306,13 +311,6 @@ Set-ProgramAlias 7z 7z.exe @('C:Util\7-Zip\app\7-Zip64\7z.exe',
                              'S:\Programs\7-Zip\app\7-Zip64\7z.exe'
                            )  -FirstPath  
    
-function Select-History {
- param($Pattern, [int]$Count=9999, $Exclude='Select-History|(\bsh\b)') 
- (h).commandline -match $Pattern -notmatch $Exclude
- select -last $Count 
-}
-new-alias sh Select-History -force -scope Global
-
 # 'Thu, 08 Feb 2018 07:47:42 -0800 (PST)' -replace '[^\d]+$' -as [datetime] 13:47:42 -0800 (PST)'
 # 'Thu, 08 Feb 2018 07:47:42 -0800 (PST)' -replace '[^\d]+$' -as [datetime] 13:47:42 -0800 (PST)'
 #$raw = 'Thu, 08 Feb 2018 13:47:42 -0800 (PST)'
@@ -337,33 +335,9 @@ if ($Quiet -and $global:informationpreference) {
   write-information "SHOULD NOT WRITE"
 }
 
-function Get-RunTime { 
-  param(
-    [Microsoft.PowerShell.Commands.HistoryInfo[]]$historyitem, 
-    [switch]$Full
-  ) 
-  $width = +1 * "$((($HistoryItem | measure -max id).maximum))".length
-  $F1 = '{0,5:N2}'; 
-  $F2 = "ID# {1,$($Width):D}: "
-  write-verbose "$(FLINE) width $Width $F2"
-  foreach ($hi in $HistoryItem) {
-    $CL = $hi.commandline
-    $ID = $hi.id
-    switch ($hi.endexecutiontime - $hi.startexecutiontime) {
-      {$Full                } { $_                                      } 
-      {$_.Days         -gt 0} {"$F1 Days  $F2 $CL" -f $_.TotalDays   ,$ID; break } 
-      {$_.Hours        -gt 0} {"$F1 Hours $F2 $CL" -f $_.TotalHours  ,$ID; break }
-      {$_.Minutes      -gt 0} {"$F1 Mins  $F2 $CL" -f $_.TotalMinutes,$ID; break }
-      {$_.Seconds      -gt 0} {"$F1 Secs  $F2 $CL" -f $_.TotalSeconds,$ID; break }
-      {$_.Milliseconds -gt 0} {"$F1 ms    $F2 $CL" -f $_.TotalSeconds,$ID; break }
-    }
-  }
-}
-
 get-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive | 
   Select WindowArrangementActive | FL | findstr "WindowArrangementActive"
 set-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -value 0 -type dword -force
-
 
 function Get-CurrentIPAddress {(ipconfig) -split "`n" | ? {$_ -match 'IPv4'} | % {$_ -replace '^.*\s+'}}
 function Get-WhoAmI { "[$PID]",(whoami),(hostname) + (Get-CurrentIPAddress) -join ' ' }
@@ -397,6 +371,7 @@ if (!(Get-Module 'Jump.Location' -listavailable -ea 0) -and $PSVersionNumber -lt
   if ($PSVersionNumber -ge 5.1) { $parms += '-AllowClobber' }
   Install-Module 'Jump.Location' ### @Parms 
 }
+
 Import-Module jump.location
 
 function Update-ModuleList {
@@ -490,7 +465,7 @@ function Get-Constructor {
   }
 }
 
-write-information "https://blogs.technet.microsoft.com/pstips/2014/05/26/useful-powershell-modules/"
+write-information "Useful modules: https://blogs.technet.microsoft.com/pstips/2014/05/26/useful-powershell-modules/"
 $PSCXprofile = 'C:\Users\hmartin\Documents\WindowsPowerShell\Pscx.UserPreferences'
 write-information "import-module -noclobber PSCX $PSCXprofile"
 if ($psversiontable.psversion.major -lt 6) {
@@ -512,7 +487,6 @@ $j1 = $ecsts01 = 'ts.ecs-support.com:32793'
 $j2 = $ecsts02 = 'ts.ecs-support.com:32795'
 $j1s = 'ecs-DCts01'
 $j2x = 'ecs-DCts02'
-
 
 function New-RDPSession {
   param(
@@ -692,17 +666,99 @@ function Get-DotNetAssembly  {
     #  } # | % {if ($full) {$_} else { "$($_.fullname)" }}.
 new-alias gdna Get-DotNetAssembly -force
 
-function Get-Commandline {
+
+
+function Get-HistoryCommandline {
   (get-history @args).commandline
-} New-Alias cl Get-Commandline -force
+} New-Alias cl Get-HistoryCommandline -force
 
 new-alias gch Get-HistoryCommandLine -force
 new-alias ghc Get-HistoryCommandLine -force
 new-alias gcl Get-HistoryCommandLine -force
 new-alias hcm Get-HistoryCommandLine -force
-function get-syntax   { get-command -syntax @args }; new-alias syn get-syntax -force
+
+# Search books (or Search Directory Find Books Find Directory Files)  ## :HM:
+# dir F:\bt\Programming\Python\*,c:\users\herb\downloads\books\python\* -include *hacking*
+# join-path $Books 'Python' -resolve
+# dir F:\bt\Programming\Python\*,c:\users\herb\downloads\books\python\* -include *hack* | select @{Name='LastWrite';E={get-date ($_.LastWriteTime) -f 'yyyy-mm-dd HH:mm'}},Length,Name
+# $FileFormat = @{N='LastWrite';E={get-date ($_.LastWriteTime) -f 'yyyy-MM-dd HH:mm'}},'Length','Name';
+function esf { "es '$($args -join '.*')' -dm -name -regex"; es "$($args -join '.*')" -dm -name -regex}
+
+function Select-History {
+  [CmdLetBinding()]param(
+    $Pattern, 
+    [int]$Count=9999,
+    [Alias('ID','Object','FullObject')][switch]$HistoryInfo,   
+    [Alias('JustCommandLine','Bare','String')][switch]$CommandLine,   
+    $Exclude='Select-History|(\bsh\b)'
+  )
+  begin { 
+    $LastID  = (Get-History -count 1).ID
+    $IDWidth = "$LastID".length 
+    write-verbose "Last ID: $LastID Width: $IDWidth"
+    $FoundCount = 0
+    $FirstTime = $LastTime = $FirstID = $LastId = ''
+    $IDFormat = if ($CommandLine) { '' } else { "{0,$IDWidth} " }
+  }  
+  process {
+    h | ? { $_.commandline -match $Pattern -and $_.CommandLine -notmatch $Exclude } | 
+        select -last $Count | % {
+      If (!$FirstID) { $FirstID = $_.ID; $FirstTime = $_.StartExecutionTime }
+      if ($HistoryInfo) {
+        $_                      # Output the entire history object
+      } else {
+        $id = $IDFormat -f $_.id
+        "$id$($_.CommandLine)"
+      }
+      #if ($Verbose) {
+        $LastID = $_.ID
+        $LastTime = $_.EndExecutionTime
+        $FoundCount++
+      #}
+    } 
+  }
+  end {
+    write-verbose "FirstID: $FirstID FirstTime: $FirstTime LastID: $LastID LastTime: $LastTime"
+  }
+}
+new-alias sh Select-History -force -scope Global
+
+function Get-RunTime { 
+  param(
+    [Microsoft.PowerShell.Commands.HistoryInfo[]]$historyitem, 
+    [switch]$Full
+  ) 
+  $width = +1 * "$((($HistoryItem | measure -max id).maximum))".length
+  $F1 = '{0,5:N2}'; 
+  $F2 = "ID# {1,$($Width):D}: "
+  write-verbose "$(FLINE) width $Width $F2"
+  foreach ($hi in $HistoryItem) {
+    $CL = $hi.commandline
+    $ID = $hi.id
+    switch ($hi.endexecutiontime - $hi.startexecutiontime) {
+      {$Full                } { $_                                      } 
+      {$_.Days         -gt 0} {"$F1 Days  $F2 $CL" -f $_.TotalDays   ,$ID; break } 
+      {$_.Hours        -gt 0} {"$F1 Hours $F2 $CL" -f $_.TotalHours  ,$ID; break }
+      {$_.Minutes      -gt 0} {"$F1 Mins  $F2 $CL" -f $_.TotalMinutes,$ID; break }
+      {$_.Seconds      -gt 0} {"$F1 Secs  $F2 $CL" -f $_.TotalSeconds,$ID; break }
+      {$_.Milliseconds -gt 0} {"$F1 ms    $F2 $CL" -f $_.TotalSeconds,$ID; break }
+    }
+  }
+}
+function get-syntax   { 
+  param()
+  $Result = get-command -syntax @args
+  write-warning "result: $Result"  
+  Foreach ($R in $Result) {
+    If ($R -and $R -match '^(["'']?.+["'']?(?!= ))|(\S+)$' -and $R -notmatch '^[\[\-]<') { 
+      "Get-Command $R -synax -ea 0"
+      Get-Command $R -syntax -ea 0
+    } else { $Result }
+  } 
+}; new-alias syn get-syntax -force
+
 function get-fullhelp { get-help -full @args }
-'full','fh','fhelp','helpf' | % { new-alias $_ get-help -force -ea continue }
+'hf','full','fh','fhelp','helpf' | % { new-alias $_ get-fullhelp -force -ea continue }
 
 write-information "$(LINE) $home"
 write-information "$(LINE) Try: import-module -prefix cx Pscx"
@@ -728,20 +784,24 @@ function ahk {
   $path | % { C:\util\AutoHotKey\AutoHotkey.exe $_ @a }
 }  New-Alias a ahk -force
 function d   { cmd /c dir @args}
+function df   { dir @args -force -file       }
+function da   { dir @args -force             }
+function dfs  { dir @args -force -file -rec  }
+function dd   { dir @args -force -dir        }
+function dds  { dir @args -force -dir  -rec  }
+function ddb  { dir @args -force -dir        | % { "$($_.FullName)" } }
+function db   { dir @args -force             | % { "$($_.FullName)" } }
+function dsb  { dir @args -force       -rec  | % { "$($_.FullName)" } }
+function dfsb { dir @args -force -file -rec  | % { "$($_.FullName)" } }
+function dod  { dd  @args -force             | sort lastwritetime }
+function dfod { df  @args -force             | sort lastwritetime }
+function ddod { dd  @args -force             | sort lastwritetime }
+function dfp  { d /a-@args d /b              | % {dir "$_"} }
+function dl   { dir @args -force -attr ReparsePoint }
+new-alias dj dl -force -scope Global
 new-alias w  where.exe -force
-#new-alias wh where.exe -force
-function df  { dir @args -file }
-function dfs { dir @args -file -rec }
-function dd  { dir @args -dir  }
-function dds { dir @args -dir  -rec }
-function ddb { dir @args -dir       | select fullname}
-function db  { dir @args            | select fullname }
-function dsb { dir @args -rec       | select fullname}
-function dfsb{ dir @args -rec -file | select fullname }
-function dfp { d /a-@args d /b       | % {dir "$_"} }
-function dod { dd @args | sort -lastwritetime }
-function dfod {df @args | sort -lastwritetime }
-function ddod {dd @args | sort -lastwritetime }
+new-alias wh where.exe -force
+new-alias wi where.exe -force
 function od {
   param(
     [parameter(Position=0,ValueFromPipeline,ValueFromPipelineByPropertyName,
@@ -782,7 +842,7 @@ function ff  {cmd /c for /f @args}
 function Get-Drive {
   [CmdletBinding()] param(
     [string[]]$name='*',
-	  [string]  $scope=1,
+	  [string]  $scope=0,
 	  [string]  $PSProvider='FileSystem')
   get-psdrive -name $name -psprovider $psprovider -scope $scope
 }
@@ -848,12 +908,49 @@ try {
 	[string[]]$global:PromptStack  = @((gcm prompt).ScriptBlock)
 }
 
-
 write-information "$(LINE) Pushed previous prompt onto `$PromptStack: $($PromptStack.count) entries"
 write-information "$(LINE) prompt='PS $($executionContext.SessionState.Path.CurrentLocation) $('>' * $nestedPromptLevel + '>')'"
 #function Global:prompt { "PS '$($executionContext.SessionState.Path.CurrentLocation)' $('>.' * $nestedPromptLevel + '>') "}
 
-function Global:prompt { "'$($executionContext.SessionState.Path.CurrentLocation)' |>$('>' * $nestedPromptLevel) "}
+function Global:prompt {
+  $loc = "$($executionContext.SessionState.Path.CurrentLocation)"
+  $Sig = " |>$('>' * $nestedPromptLevel)"
+  if ($Global:MaxPromptLength) { 
+    $LocLen = $Loc.length; $SigLen = $Sig.Length
+    $Length = $LocLen + $SigLen   
+    $Excess = $Length - $Global:MaxPromptLength
+    If ($Excess -gt 0) {
+      $Excess = [Math]::Min($Excess, $LocLen)    
+    }
+  }
+  write-host -nonewline "'$Loc'$Prompt" -fore Gray -back DarkGray
+  ' '
+}
+
+function Show-ConsoleColor {
+  param ([int]$MaxLength = 6, [int]$SkipLines = 0, [switch]$Bracket)
+  $ConsoleWidth = $host.ui.rawui.WindowSize.Width
+  $MaxWidth     = ($ConsoleWidth - 2) / 17
+  $MaxLength    = [Math]::Max($MaxLength, $MaxWidth)
+  $SkipLines    = [Math]::Min(0,$SkipLines)
+  $NewLines     = "`n" * $SkipLines
+  $ColorValues  = [consolecolor]::GetValues('consolecolor') 
+  $ColorNames   = $ColorValues -replace 'Dark','D'
+  $LineWidth    = 17 * ($MaxLength) + 2
+  $BlankLine    = If ($Bracket) { ' ' * $LineWidth } else { '' }
+  $ColorValues | % { 
+    $Back = $_
+    $BackName = " $($_ -replace 'Dark','D') ".PadRight($MaxLength).SubString(0,$MaxLength)
+    If ($Bracket) { Write-Host "$BlankLine$NewLines" -back $Back }
+    Write-Host "$($BackName)" -nonewline -fore White -back Black    
+    $ColorValues | % {
+      $Name = " $($_ -replace 'Dark','D') ".PadRight($MaxLength).SubString(0,$MaxLength)
+      Write-Host $name -nonewline -fore $_ -back $Back
+    }
+    if ($Bracket) { Write-Host "$BlankLine$NewLines" -back $Back }
+    else          { Write-Host "$NewLines" }
+  }
+}
 
 # function docs {
 #   [CmdletBinding()]param (
@@ -1035,11 +1132,6 @@ Looks like a match, editor says it's a match, so I tried adding the same test wi
   at Invoke-Assertion, C:\Program Files\WindowsPowerShell\Modules\Pester\4.1.1\Functions\Assertions\Should.ps1: line 209
   at <ScriptBlock>, C:\Users\A469526\Documents\WindowsPowerShell\Go\GoLocation\GoLocation.Tests.ps1: line 16
 #>
-
-#new-alias docs       go -force
-#new-alias books      go -force
-#new-alias powershell go -force
-#new-alias profile    go -force
 
 # Utility Functions (small)
 filter Is-Odd?  { param([Parameter(valuefrompipeline)][int]$n) [boolean]($n % 2)}
