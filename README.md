@@ -1,8 +1,8 @@
-My idiosyncratic PowerShell utilities and profile -- much of this is junky but I need to get it under source control.
+# My idiosyncratic PowerShell utilities and profile -- much of this is junky but I need to get it under source control.
 
 # Use the following to download Git if not present:
 
-
+```
 [CmdLetBinding(SupportsShouldProcess=$true,ConfirmImpact='Low')]
 param (
   [Alias('Url','Link')] [string]$uri='https://git-scm.com/download/win', # Windows Git page 
@@ -26,4 +26,4 @@ if ($PSCmdlet.ShouldProcess("$dl", "Saving: $out`n")) {
   Invoke-WebRequest -uri $dl -OutFile $out -UseBasicParsing -verbose:$false # download file 
 }  
 Get-item $out | ForEach { "$($_.length) $($_.lastwrittentime) $($_.fullname)" }
-
+```
