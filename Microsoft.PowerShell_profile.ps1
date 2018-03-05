@@ -925,7 +925,7 @@ function Global:prompt {
       $Excess = [Math]::Min($Excess, $LocLen)    
     }
   }
-  write-host -nonewline "'$Loc'$Prompt" -fore Cyan -back Gray`
+  write-host -nonewline "'$Loc'$Sig" -fore Cyan -back DarkGray`
   ' '
 }
 
