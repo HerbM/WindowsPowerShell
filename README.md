@@ -26,4 +26,6 @@ if ($PSCmdlet.ShouldProcess("$dl", "Saving: $out`n")) {
   Invoke-WebRequest -uri $dl -OutFile $out -UseBasicParsing -verbose:$false # download file 
 }  
 Get-item $out | ForEach { "$($_.length) $($_.lastwrittentime) $($_.fullname)" }
+
+Exit
 ```
