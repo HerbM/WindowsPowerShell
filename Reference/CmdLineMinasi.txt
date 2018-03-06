@@ -1,0 +1,1596 @@
+netsh, reg, netdom, winrm, winrs, repadmin, netdiag, dcdiag,
+DNSCmd, DCPromo, route, netstat, nslookup, nblookup, portqry,
+nltest, dsadd, dsmod, dsget, dsquery, dsrm
+netdiag, dcdiag, dsacls, dsrevoke
+wevtutil, eventcreate, eventtriggers,
+whoami,cacls, xcacls, icacls,subinacl
+blat, selfssl,
+setx, pnputil, w32tm, robocopy, xcopy
+fsutil
+fondue
+Set IP attribs:
+  netsh int ip set address local static 10.10.1.3
+  255.255.255.0 10.10.1.1 2
+  netsh int ip set address local source=dhcp
+  netsh int ip set dns local static 192.168.0.2
+  netsh int ip set dns local source=dhcp
+  netsh int ip add dns local 10.7.3.2 index=2
+  Same for WINS
+See computer name with hostname
+Change computer name with netdom:
+  netdom renamecomputer %computername% /newname:newname
+  netdom renamecomputer %computername% /newname:mypc21
+NetDom
+  Join or leave a domain
+  List FSMOs, PDC, DCs, OUs etc
+  Verify a secure channel with a domain
+  Reset a secure channel with a domain
+  netdom command machinename
+    /domain:domainname /usero:acctname
+    /passwordo:password /userd:acctname
+    /passwordd:password [other settings]
+  netdom join mypc /domain:bigfirm.com
+    /usero:localadmin /passwordo:hithere
+    /userd:domainadmin /passwordd:H1there
+    /reboot
+  netdom query fsmo | workstation | server | dc | ou | PDC | trust
+Changing the registry
+  reg /add hklm\software\acme\myeditor
+  That adds a key; this adds a value:
+  reg /add hklm\software\acme\myeditor /v autosave /t REG_DWORD /d 0
+  reg /delete hklm\software\acme\myeditor /f
+  reg export "hkcu\console\command prompt"  CommandPrompt.reg /y /reg:64
+winrs -r:remotesystem options command
+Example:
+winrs -r:10.71.0.197 -u:administrator
+-p:swordfish ipconfig
+Works most easily in a forest
+Needs the Windows Remote Management service
+running to work (type winrm quickconfig to
+start it)
+psexec is nice too, particularly with the -s option
+DNSCmd
+Creates zones, resource records, etc; examples:
+dnscmd 192.168.0.2 /zoneadd
+bigfirm.com /primary /file
+bigfirm.dns creates a zone
+dnscmd 192.168.0.2 /config
+bigfirm.com /AllowUpdate 1 makes it
+dynamic
+dnscmd 192.168.0.2 /recordadd
+bigfirm.com @ NS
+downtowndc.bigfirm.com adds an NS record
+for downtowndc to the bigfirm.com zone
+dcpromo /answer:filename in 2000/2003
+dcpromo /unattend:filename
+Use the GUI to get a DHCP server as you like it
+Then open a command prompt and type
+netsh dhcp server export dhcpbak.txt all
+Then take dhcpbak.txt to your new Server Core
+system
+netsh dhcp server import dhcpbak.txt all
+ipconfig (but you probably already knew that) –
+built in, does not remote
+getmac /s systemname /u username /p password
+shows MAC addresses -- /s, /u, /p only necessary
+if remoting
+ping ipaddress or hostname
+tracert [-d] ipaddress or hostname
+arp –a dumps the ARP cache
+route add print delete
+nslookup for DNS; pack it all into one command line with –opts, as in
+  nslookup –type=mx minasi.com
+  nslookup –vc –type=mx minasi.com (tells
+  nslookup to use TCP)
+  see all of the –options with nslookup –all
+NBlookup
+KB 830578 offers nblookup, a WINS version of nslookup
+with almost identical syntax and is quite useful!
+portqry –n targetsystem [options]
+Nice port tester at KB 832919
+Options:
+-e n try port number n
+-p tcp, -p udp, -p both protocol to use (tcp default)
+-r n:m try range of ports from n to m
+-o a,b,c,d… try list of specific ports
+-i do not reverse-resolve IP addresses
+netdom verify pcname /domain:domainname
+Good to verify that you're indeed logged in
+netdom reset pcname /domain:domainname
+[/server:servername]
+NLTest
+Enabling ping no longer in the GUI
+netsh firewall set icmpsetting 8 enable
+From an elevated command prompt, of course!
+If Vista/LH work very slowly, turn off autotuning:
+netsh interface tcp set global
+autotuninglevel=disabled
+Some public routers need this; un-do by changing
+“disabled” to “normal”
+https://www.windows-commandline.com/cmd-net-user-command/
+Reset Password
+net user username [password] [/domain] [/add]
+net user newguy longpassword /domain /add
+  (creates a new domain user named newguy with
+  password longpassword)
+net user newguy newpasswd
+  (resets a password for a local user)
+net user newguy newpasswd /domain
+net user joe /random /domain
+    /active:yes|no
+    /comment:"text"
+    /homedir:path
+    /ProfileDirectory:path
+    /fullname:name string
+    /workstations:machinename,machinename…
+    /scriptpath:path inside Netlogon
+/Active:Yes/no  LOCKED OUT
+create a local group:
+  net localgroup groupname /comment:text
+  /add|/delete [/domain]
+  /domain creates a domain local group
+  To add a user to a local group,
+  net localgroup groupname username /add
+  net localgroup all by itself lists the local groups
+  net groups works the same, but only on DCs and
+  creates global groups
+net use * \\s1\stuff /u:joe@bigfirm.com swordfish
+net use
+\\servername\sharename /savecred
+You'll be prompted for credentials… and your XP
+or later system will remember them in the future
+Look in Control Panel / Users to manage this
+net start, stop, pause, continue, helpmsg
+net statistics workstation | findstr /c:"Statistics since"
+for /f "tokens=3-4" %a in ('net statistics workstation ^| findstr /c:"Statistics since"') do @echo Up since: %a %b
+dsadd, dsmod, dsget, dsquery, dsrm
+Use /? to get help, /listhelp for syntax on writing lists of DCs and, if ye be brave, matey, /experthelp
+repadmin /kcc dcname forces a topology and
+  replication partner check
+repadmin /rebuildgc dcname causes a GC server
+  to dump and rebuild its global catalog
+repadmin /bridgeheads dcname shows
+  bridgehead servers
+repadmin /istg dcname shows inter-site topology
+  generator DCs
+GUID-ing and de-GUIDing:
+repadmin /dsaguid dcname GUID converts a DC's GUID
+to the DC's "friendly name"
+repadmin /showsig dcname is mostly useful because it
+first shows you the GUID of the DC – it calls it the
+"invocationID" – and THEN you can use the GUID like
+so:
+Understanding times:
+repadmin /showtime [value] either shows the time in
+AD's "days since 1601" format, or takes a number in AD
+format and shows it in UTC
+Revealing what each DC thinks it knows about its
+replication partners:
+repadmin /showutdvec dcname naming-context shows
+up-to-date vectors for all DCs, from the point of view of
+dcname
+repadmin /showrepl dcname naming-context /verbose
+shows the DC's replication partners and high-watermark
+table
+repadmin /replsummary dcname compiles a list of
+success/fail statistics between a DC and its
+partners
+repadmin /queue dcname lists the items in the
+outgoing queue for a given DC
+repadmin /showchanges destdc GUID-ofsourceDC
+naming-context /verbose summarizes
+everything that sourceDC hasn't yet replicated to
+DestDC
+repadmin /syncall /e [/P] dcname naming-context
+/e – cross sites
+/P – push changes
+example:
+repadmin /syncall /e /P dc1 dc=acme,dc=com
+Or use repadmin /syncall /j dcname
+/j: only sync to adjacent dcs
+bigfirm.com: dc=bigfirm,dc=com
+Configuration NC:
+cn=configuration,dc=bigfirm,dc=com
+Schema NC:
+cn=schema,cn=configuration,dc=bigfirm,dc=com
+No NC named:  repadmin /syncall assumes the
+configuration NC
+dc=ForestDnsZones,DC=bigfirm,dc=com (will only
+appear in the root)
+dc=DomainDnsZones,dc=bigfirm,dc=com
+dcdiag /e /c /v /ferr:c:\dcdiagerrs.log /f:dcdiag.log
+netdiag /v /l
+repadmin /showrepl * /verbose /all /intersite > repadmin.log
+dsacls, dsrevoke
+dsacls is a built-in XP/2003 command to view or
+modify AD permissions … which means AD
+delegation
+Simplest form: dsacls dn-of-object shows the
+current permission
+Option /A says to add owner/audit info
+Option /S restores to schema default
+Add /T and it walks the entire tree downward
+CACLS (built into the system)
+ICACLS:  cacls’s replacement in Vista, LH, 2003 SP2
+XCACLS (somewhat more complete, built into Support
+Tools)
+SUBINACL (a Resource Kit tool that's powerful but
+buggy, so go to www.microsoft.com/downloads to get an
+updated one)
+shutdown [-s|-r|-l] [-t ss] [-f] [-a]
+-s=shut down, -r=reboot, -l=log off
+-t ss lets you specify seconds; without –t, it's 30 seconds
+-f forces apps that are open to just plain close, possibly losing data
+-a says "there's a shutdown countdown in progress, abort it"
+whoami /all
+wevtutil qe application /c:2 /f:text
+/rd:true
+(Shows the two most recent events in the
+Application log)
+/c = # events to view
+/f = output format (text or whatever)
+/rd = Read from the most recent ("true") or from
+the oldest ("false")
+Also archives logs, allowing us to finally
+automatically archive logs!
+Find errors in a log:
+  wevtutil qe system  /rd:true /f:text /c:5 /q:"Event[System[(Level=2)]]"
+eventcreate /ID 833 /l system /t information /so BuildSystem /d "Just saying hi"
+eventtriggers /create /eid eventidnumber /tr
+triggername /tk actiontotake /ru
+usernametoruncommand /rp
+passwordofthataccount
+In Vista/LH, it’s the schtasks command, or just
+right-click any event in the Event Log and choose
+“Attach Task To This Event...”
+eventtriggers /create /eid 64002 /tr
+sysalert /tk "net send jack123
+Something’s deleting system files!”
+/ru jack123 /rp swordfish
+eventtriggers or eventtriggers /query /v will list
+the triggers
+eventtriggers /delete /tid n deletes a given
+eventtrigger, or … /delete /tid * deletes them all
+blat, from www.blat.net
+  blat - -body “Event ID 763 happened!”
+  –server mail.bigfirm.com –to
+  mark@mmco.com –f noone@bigfirm.com –
+  subject “Event 763 alert” –u joe –pw
+  swordfish
+  The "blat - -body" is no typo
+  The –u and –pw assume that your SMTP server
+  needs logons; BLAT supports GSSAPI so it can do
+  secure logons to Microsoft and other SMTP servers
+  Free download
+  Even includes the source
+  You can pre-store most of the parameters in the
+  Registry
+Selfssl, a tool that will generate a
+cert and install it, all in one line
+It's in the IIS Resource Kit
+Enable Terminal Server Enable RDP
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server
+Change fDenyTSConnections to 0
+Reboot:
+shutdown -r -t 0
+Open the firewall:
+netsh firewall set portopening tcp 3389 "Remote
+Desktop"
+setx
+pnputil -a c:\newdrivers\scan.inf
+pnputil -e
+WinPE use peimg
+core: ocsetup rolename
+ex: ocsetup DNS-Server-Core-Role
+w32tm, robocopy, xcopy,
+Licensingdiag
+The licensingdiag command is actually a pretty handy tool. You define an XML and a CAB file to create and Windows 8 will generate both, full of information about your Windows 8 installation, specifically product activation and registration related data.
+The most reasonable use for licensingdiag is to provide valuable activation troubleshooting information to Microsoft or some other support person.
+Pwlauncher
+The pwlauncher command is a command-line tool that can enable, disable, or show the current status of your Windows To Go startup options.
+Recimg
+The recimg command lets you create a custom recovery image and set it as the default image when using the Refresh Your PC recovery option.
+Register-cimprovider
+The register-cimprovider command does just that - it registers CIM (Common Information Model) providers in Windows 8 from the command line.
+Tpmvscmgr
+The tpmvscmgr command is a full TPM virtual smart card tool, allowing both the creation and removal of smart cards.
+===================================================
+CERTMGR.MSC Certificates snap-in
+CERTSRV.MSC Certification Services
+CMD.EXE Command Prompt
+COMPMGMT.MSC Computer Management
+DCPOL.MSC Domain Controller Security Policy
+DEVMGMT.MSC Device Manager
+DFRG.MSC Disk Defragmenter
+DFSGUI.MSC Distributed File System
+DHCPMGMT.MSC DHCP Manager
+DISKMGMT.MSC Disk Management
+DNSMGMT.MSC DNS Manager
+DOMAIN.MSC Active Directory Domains & Trust
+DOMPOL.MSC Domain Security Policy
+DSA.MSC Active Directory Users & Computers
+  DSA.MSC /DOMAIN=domainnam
+  DSA.MSC /SERVER=servername
+DSSITE.MSC Active Directory Sites & Services
+EVENTVWR.MSC Event Viewer
+FSMGMT.MSC Shared Folders
+GPEDIT.MSC local Group Policy Editor
+IAS.MSC Internet Authentication Service
+INETMGR Internet Information Service (\Windows\system32\inetsrv)
+LUSRMGR.MSC Local Users and Groups
+MMC.EXE Microsoft Management Console
+MSINFO32.EXE Hardware and software configuration information
+PERFMON.MSC Performance Monitor
+REGEDIT.EXE Run Registry Editor
+RRASMGMT.MSC Routing and Remote Access
+RSOP.MSC Resultant Set of Policy
+SECPOL.MSC Local Security Policy
+SERVICES.MSC Service Configuration
+TSCC.MSC Terminal Services
+MSTSC Remote Desktop
+CERTMGR.MSC
+Certificates snap-in
+CERTSRV.MSC
+Certification Services
+CMD.EXE
+Command Prompt
+COMPMGMT.MSC
+Computer Management
+DCPOL.MSC
+Domain Controller Security Policy
+DEVMGMT.MSC
+Device Manager
+DFRG.MSC
+Disk Defragmenter
+DFSGUI.MSC
+Distributed File System
+DHCPMGMT.MSC
+DHCP Manager
+DISKMGMT.MSC
+Disk Management
+DNSMGMT.MSC
+DNS Manager
+DOMAIN.MSC
+Active Directory Domains & Trust
+DOMPOL.MSC
+Domain Security Policy
+DSA.MSC
+Active Directory Users & Computers
+DSA.MSC /DOMAIN=domainname
+DSA.MSC /SERVER=servername
+https://social.technet.microsoft.com/Forums/windowsserver/en-US/61b864f4-2b04-44a1-88dc-86fae0a8d592/the-most-usefull-active-directory-mmc-run-commands?forum=winservergen
+DSSITE.MSC Active Directory Sites & Services
+EVENTVWR.MSC Event Viewer
+FSMGMT.MSC Shared Folders
+GPEDIT.MSC local Group Policy Editor
+IAS.MSC Internet Authentication Service
+INETMGR Internet Information Service (\Windows\system32\inetsrv)
+LUSRMGR.MSC Local Users and Groups
+MMC.EXE Microsoft Management Console
+MSINFO32.EXE Hardware and software configuration information
+PERFMON.MSC Performance Monitor
+REGEDIT.EXE Run Registry Editor
+RRASMGMT.MSC Routing and Remote Access
+RSOP.MSC Resultant Set of Policy
+SECPOL.MSC Local Security Policy
+SERVICES.MSC Service Configuration
+TSCC.MSC Terminal Services
+MSTSC Remote Desktop
+===================================================
+http://pcsupport.about.com/od/tipstricks/a/control-panel-command-line.htm
+Control Panel Applet 	Command 	OS
+Accessibility Options 	control access.cpl 	XP
+Action Center 	control /name Microsoft.ActionCenter 	8, 7
+control wscui.cpl 	8, 7
+Add Features to Windows 8 	control /name Microsoft.WindowsAnytimeUpgrade 	8
+Add Hardware 	control /name Microsoft.AddHardware 	Vista
+control hdwwiz.cpl 	XP
+Add or Remove Programs 	control appwiz.cpl 	XP
+Administrative Tools 	control /name Microsoft.AdministrativeTools 	8, 7, Vista
+control admintools 	8, 7, Vista, XP
+Automatic Updates 	control wuaucpl.cpl 	XP
+AutoPlay 	control /name Microsoft.AutoPlay 	8, 7, Vista
+Backup and Restore  ontrol /name Microsoft.BackupAndRestoreCenter 	Vista
+Backup and Restore 	control /name Microsoft.BackupAndRestore 	7
+Biometric Devices 	control /name Microsoft.BiometricDevices 	8, 7
+BitLocker Drive Encryption 	control /name Microsoft.BitLockerDriveEncryption 	8, 7, Vista
+Bluetooth Devices 	control bthprops.cpl13 	8, 7, Vista
+control /name Microsoft.BluetoothDevices 	Vista
+Color Management 	control /name Microsoft.ColorManagement 	8, 7, Vista
+Color1 	WinColor.exe2 	XP
+Credential Manager 	control /name Microsoft.CredentialManager 	8, 7
+Client Service for NetWare 	control nwc.cpl 	XP
+Date and Time 	control /name Microsoft.DateAndTime 	8, 7, Vista
+control timedate.cpl 	8, 7, Vista
+control date/time 	8, 7, Vista, XP
+Default Location 	control /name Microsoft.DefaultLocation 	7
+Default Programs 	control /name Microsoft.DefaultPrograms 	8, 7, Vista
+Desktop Gadgets 	control /name Microsoft.DesktopGadgets 	7
+Device Manager 	control /name Microsoft.DeviceManager 	8, 7, Vista
+control hdwwiz.cpl 	8, 7, Vista
+devmgmt.msc 	8, 7, Vista, XP3
+Devices and Printers 	control /name Microsoft.DevicesAndPrinters 	8, 7
+control printers 	8, 7
+Display 	control /name Microsoft.Display 	8, 7
+control desk.cpl 	XP
+control desktop 	XP
+*****
+Ease of Access Center 	control /name Microsoft.EaseOfAccessCenter 	8, 7, Vista
+control access.cpl 	8, 7, Vista
+Family Safety 	control /name Microsoft.ParentalControls 	8
+File History 	control /name Microsoft.FileHistory 	8
+Flash Player Settings Manager 	control flashplayercplapp.cpl 	8
+Folder Options 	control /name Microsoft.FolderOptions 	8, 7, Vista
+control folders 	8, 7, Vista, XP
+Fonts 	control /name Microsoft.Fonts 	8, 7, Vista
+control fonts 	8, 7, Vista, XP
+Game Controllers 	control /name Microsoft.GameControllers 	8, 7, Vista
+control joy.cpl 	8, 7, Vista, XP
+Get Programs 	control /name Microsoft.GetPrograms 	8, 7, Vista
+Getting Started 	control /name Microsoft.GettingStarted 	7
+Home Group 	control /name Microsoft.HomeGroup 	8, 7
+Indexing Options 	control /name Microsoft.IndexingOptions 	8, 7, Vista
+rundll32.exe shell32.dll,Control_RunDLL srchadmin.dll 	8, 7, Vista, XP
+Infrared 	control /name Microsoft.Infrared 	8, 7
+control irprops.cpl 	8, 7, Vista
+control /name Microsoft.InfraredOptions 	Vista
+Internet Options 	control /name Microsoft.InternetOptions 	8, 7, Vista
+control inetcpl.cpl 	8, 7, Vista, XP
+iSCSI Initiator 	control /name Microsoft.iSCSIInitiator 	8, 7, Vista
+Keyboard 	control /name Microsoft.Keyboard 	8, 7, Vista
+control keyboard 	8, 7, Vista, XP
+Language 	control /name Microsoft.Language 	8
+Location and Other Sensors 	control /name Microsoft.LocationAndOtherSensors 	7
+Location Settings 	control /name Microsoft.LocationSettings 	8
+Mail4 	control mlcfg32.cpl5 	8, 7, Vista, XP
+Mouse 	control /name Microsoft.Mouse 	8, 7, Vista
+control main.cpl 	8, 7, Vista
+control mouse 	8, 7, Vista, XP
+Network and Sharing Center 	control /name Microsoft.NetworkAndSharingCenter 	8, 7, Vista
+Network Connections 	control ncpa.cpl 	8, 7, Vista
+control netconnections 	8, 7, Vista, XP
+Network Setup Wizard 	control netsetup.cpl 	8, 7, Vista, XP
+Notification Area Icons 	control /name Microsoft.NotificationAreaIcons 	8, 7
+ODBC Data Source Administrator 	control odbccp32.cpl 	XP6
+Offline Files 	control /name Microsoft.OfflineFiles 	8, 7, Vista
+Parental Controls 	control /name Microsoft.ParentalControls 	7, Vista
+Pen and Input Devices 	control /name Microsoft.PenAndInputDevices 	Vista
+control tabletpc.cpl 	Vista
+Pen and Touch 	control /name Microsoft.PenAndTouch 	8, 7
+control tabletpc.cpl 	8, 7
+People Near Me 	control /name Microsoft.PeopleNearMe 	7, Vista
+control collab.cpl 	7, Vista
+Performance Information and Tools 	control /name Microsoft.PerformanceInformationAndTools 	8, 7, Vista
+Personalization 	control /name Microsoft.Personalization 	8, 7, Vista
+control desktop 	8, 7, Vista
+Phone and Modem Options 	control /name Microsoft.PhoneAndModemOptions 	Vista
+control telephon.cpl 	Vista, XP
+Phone and Modem 	control /name Microsoft.PhoneAndModem 	8, 7
+control telephon.cpl 	8, 7
+Power Options 	control /name Microsoft.PowerOptions 	8, 7, Vista
+control powercfg.cpl 	8, 7, Vista, XP
+Printers and Faxes 	control printers 	XP
+Printers 	control /name Microsoft.Printers 	Vista
+control printers 	Vista
+Problem Reports and Solutions 	control /name Microsoft.ProblemReportsAndSolutions 	Vista
+Programs and Features 	control /name Microsoft.ProgramsAndFeatures 	8, 7, Vista
+control appwiz.cpl 	8, 7, Vista
+Recovery 	control /name Microsoft.Recovery 	8, 7
+Region 	control /name Microsoft.RegionAndLanguage 	8
+control intl.cpl 	8
+control international 	8
+Region and Language 	control /name Microsoft.RegionAndLanguage 	7
+control intl.cpl 	7
+control international 	7
+Regional and Language Options 	control /name Microsoft.RegionalAndLanguageOptions 	Vista
+control intl.cpl 	Vista
+control international 	Vista, XP
+RemoteApp and Desktop Connections 	control /name Microsoft.RemoteAppAndDesktopConnections 	8, 7
+Scanners and Cameras 	control /name Microsoft.ScannersAndCameras 	8, 7, Vista
+control sticpl.cpl 	XP
+Scheduled Tasks 	control schedtasks 	XP7
+Screen Resolution 	control desk.cpl 	8, 7
+Security Center 	control /name Microsoft.SecurityCenter 	Vista
+control wscui.cpl 	XP
+Software Explorers8 	msascui.exe9 	XP
+Sound 	control /name Microsoft.Sound 	8, 7
+control /name Microsoft.AudioDevicesAndSoundThemes 	Vista
+control mmsys.cpl 	8, 7, Vista
+Sounds and Audio Devices 	control mmsys.cpl 	XP
+Speech Recognition Options 	control /name Microsoft.SpeechRecognitionOptions 	Vista
+Speech Recognition 	control /name Microsoft.SpeechRecognition 	8, 7
+Speech 	control sapi.cpl10 	XP
+Storage Spaces 	control /name Microsoft.StorageSpaces 	8
+Sync Center 	control /name Microsoft.SyncCenter 	8, 7, Vista
+System 	control /name Microsoft.System 	8, 7, Vista
+control sysdm.cpl 	XP
+System Properties 	control sysdm.cpl 	8, 7, Vista
+Tablet PC Settings 	control /name Microsoft.TabletPCSettings 	8, 7, Vista
+Task Scheduler7 	control schedtasks 	8, 7, Vista
+Taskbar 	control /name Microsoft.Taskbar 	8
+rundll32.exe shell32.dll,Options_RunDLL 1 	8
+Taskbar and Start Menu 	control /name Microsoft.TaskbarAndStartMenu 	7, Vista
+rundll32.exe shell32.dll,Options_RunDLL 1 	7, Vista, XP
+Text to Speech 	control /name Microsoft.TextToSpeech 	8, 7, Vista
+Troubleshooting 	control /name Microsoft.Troubleshooting 	8, 7
+User Accounts 	control /name Microsoft.UserAccounts 	8, 7, Vista
+control userpasswords 	8, 7, Vista, XP
+Welcome Center 	control /name Microsoft.WelcomeCenter 	Vista
+Windows 7 File Recovery 	control /name Microsoft.BackupAndRestore 	8
+Windows Anytime Upgrade 	control /name Microsoft.WindowsAnytimeUpgrade 	7, Vista
+Windows CardSpace 	control /name Microsoft.CardSpace 	7, Vista
+control infocardcpl.cpl 	7, Vista
+Windows Defender 	control /name Microsoft.WindowsDefender 	8, 7, Vista11
+Windows Firewall 	control /name Microsoft.WindowsFirewall 	8, 7, Vista
+control firewall.cpl 	8, 7, Vista, XP
+Windows Marketplace 	control /name Microsoft.GetProgramsOnline 	Vista
+Windows Mobility Center 	control /name Microsoft.MobilityCenter 	8, 7, Vista
+Windows Sidebar Properties 	control /name Microsoft.WindowsSidebarProperties 	Vista
+Windows SideShow 	control /name Microsoft.WindowsSideShow 	8,7, Vista
+Windows Update 	control /name Microsoft.WindowsUpdate 	8, 7, Vista12
+Wireless Link 	control irprops.cpl 	XP
+Wireless Network Setup Wizard 	? 	XP
+•How to Use and See All Windows 7 Shell Commands
+  https://www.sevenforums.com/tutorials/4941-shell-command.html
+  reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\explorer\FolderDescriptions"
+•A List of Shortcut Keys for Windows 7
+•How to Add or Remove Run Command from the Windows 7 Start Menu
+•A List of Command Prompt Commands Used in Windows 7
+  https://www.microsoft.com/en-us/download/details.aspx?id=2632 Downloaded CHM
+  https://technet.microsoft.com/en-us/library/cc754340.aspx
+•How to Enable or Disable Run Command Box in Windows 7
+•CLSID Key List for Windows 7
+•How to Create Custom Run Commands
+  https://www.sevenforums.com/tutorials/87438-run-commands-create.html
+  HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths
+  New | Key and Type the Application name WITH extension -- For Example: CCleaner.exe
+  Default string value REG_SZ and in the Value (/ve) -> path of the executable i.e.
+    C:\Program Files\CCleaner\CCleaner.exe
+    reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\winmerge.exe"
+https://www.sevenforums.com/tutorials/110919-clsid-key-list-windows-7-a.html
+explorer.exe shell:::{CLSID key number below}
+explorer.exe /e,::{CLSID key number below}
+Action Center {BB64F8A7-BEE7-4E1A-AB8D-7D8273F7FDB6}
+Add Network Location {D4480A50-BA28-11d1-8E75-00C04FA31A86}
+Administrative Tools {D20EA4E1-3957-11d2-A40B-0C5020524153}
+Advanced User Accounts {7A9D77BD-5403-11d2-8785-2E0420524153}
+Applications {4234d49b-0245-4df3-b780-3893943456e1}
+AutoPlay {9C60DE1E-E5FC-40f4-A487-460851A8D915}
+Backup and Restore {B98A2BEA-7D42-4558-8BD1-832F41BAC6FD}
+Biometric Devices {0142e4d0-fb7a-11dc-ba4a-000ffe7ab428}
+BitLocker Drive Encryption {D9EF8727-CAC2-4e60-809E-86F80A666C91}
+Bluetooth Devices {28803F59-3A75-4058-995F-4EE5503B023C}
+Briefcase {85BBD920-42AO-1069-A2E4-08002B30309D}
+Color Management {B2C761C6-29BC-4f19-9251-E6195265BAF1}
+Command Folder {437ff9c0-a07f-4fa0-af80-84b6c6440a16}
+Common Places FS Folder {d34a6ca6-62c2-4c34-8a7c-14709c1ad938}
+Computer {20d04fe0-3aea-1069-a2d8-08002b30309d}
+Connect To {38A98528-6CBF-4CA9-8DC0-B1E1D10F7B1B}
+Control Panel {5399E694-6CE5-4D6C-8FCE-1D8870FDCBA0}
+Control Panel (All Tasks) {ED7BA470-8E54-465E-825C-99712043E01C}
+Control Panel (Category view) {26EE0668-A00A-44D7-9371-BEB064C98683}
+Control Panel (Icons view) {21EC2020-3AEA-1069-A2DD-08002B30309D}
+Credential Manager {1206F5F1-0569-412C-8FEC-3204630DFB70}
+Date and Time {E2E7934B-DCE5-43C4-9576-7FE4F75E7480}
+Default Location {00C6D95F-329C-409a-81D7-C46C66EA7F33}
+Default Programs {17cd9488-1228-4b2f-88ce-4298e93e0966} or {E44E5D18-0652-4508-A4E2-8A090067BCB0}
+delegate folder that appears in Computer {b155bdf8-02f0-451e-9a26-ae317cfd7779}
+Desktop Gadgets {37efd44d-ef8d-41b1-940d-96973a50e9e0}
+Desktop in Favorites {04731B67-D933-450a-90E6-4ACD2E9408FE}
+Device Manager {74246bfc-4c96-11d0-abef-0020af6b0b7a}
+Devices and Printers {A8A91A66-3A7D-4424-8D24-04E180695C7A}
+Display (DPI) {C555438B-3C23-4769-A71F-B6D3D9B6053A}
+Ease of Access Center {D555645E-D4F8-4c29-A827-D93C859C4F2A}
+E-mail (default program) {2559a1f5-21d7-11d4-bdaf-00c04f60b9f0}
+Favorites {323CA680-C24D-4099-B94D-446DD2D7249E}
+Flip 3D {3080F90E-D7AD-11D9-BD98-0000947B0257}
+Folder Options {6DFD7C5C-2451-11d3-A299-00C04F8EF6AF}
+Font Settings {93412589-74D4-4E4E-AD0E-E0CB621440FD}
+Fonts {BD84B380-8CA2-1069-AB1D-08000948534}
+Gadgets {37efd44d-ef8d-41b1-940d-96973a50e9e0}
+Game Controllers {259EF4B1-E6C9-4176-B574-481532C9BCE8}
+Games Explorer {ED228FDF-9EA8-4870-83b1-96b02CFE0D52}
+Get Programs {15eae92e-f17a-4431-9f28-805e482dafd4}
+Getting Started {CB1B7F8C-C50A-4176-B604-9E24DEE8D4D1}
+Help and Support {2559a1f1-21d7-11d4-bdaf-00c04f60b9f0}
+HomeGroup {67CA7650-96E6-4FDD-BB43-A8E774F73A57} or {B4FB3F98-C1EA-428d-A78A-D1F5659CBA93}
+Indexing Options {87D66A43-7B11-4A28-9811-C86EE395ACF7}
+Infared {A0275511-0E86-4ECA-97C2-ECD8F1221D08}
+Installed Updates {d450a8a1-9568-45c7-9c0e-b4f9fb4537bd}
+Internet Explorer {871C5380-42A0-1069-A2EA-08002B30309D}
+Internet Options {A3DD4F92-658A-410F-84FD-6FBBBEF2FFFE}
+iSCCI Initiator {A304259D-52B8-4526-8B1A-A1D6CECC8243}
+Keyboard Properties {725BE8F7-668E-4C7B-8F90-46BDB0936430}
+Libraries {031E4825-7B94-4dc3-B131-E946B44C8DD5}
+Location {00C6D95F-329C-409a-81D7-C46C66EA7F33}
+Location and Other Sensors {E9950154-C418-419e-A90A-20C5287AE24B}
+Manage Wireless Networks {1fa9085f-25a2-489b-85d4-86326eedcd87}
+Mobility Center {5ea4f148-308c-46d7-98a9-49041b1dd468}
+Mouse Properties {6C8EEC18-8D75-41B2-A177-8831D59D2D50}
+My Documents {450d8fba-ad25-11d0-98a8-0800361b1103}
+Network {F02C1A0D-BE21-4350-88B0-7367FC96EF3C}
+Network and Sharing Center 8E908FC9-BECC-40f6-915B-F4CA0E70D03D}
+Network Center Notification area pop-up {38A98528-6CBF-4CA9-8DC0-B1E1D10F7B1B}
+Network Connections {7007ACC7-3202-11D1-AAD2-00805FC1270E} or {992CFFA0-F557-101A-88EC-00DD010CCC48}
+Network Map {E7DE9B1A-7533-4556-9484-B26FB486475E}
+Network Neighborhood {208D2C60-3AEA-1069-A2D7-O8002B30309D}
+Network (WorkGroup) Places {208D2C60-3AEA-1069-A2D7-08002B30309D}
+Notification Area Icons {05d7b0f4-2121-4eff-bf6b-ed3f69b894d9}
+NVIDIA Control Panel (if driver installed) {0bbca823-e77d-419e-9a44-5adec2c8eeb0}
+Offline Files Folder {AFDB1F70-2A4C-11d2-9039-00C04F8EEB3E}
+Parental Controls {96AE8D84-A250-4520-95A5-A47A7E3C548B}
+Pen and Touch {F82DF8F7-8B9F-442E-A48C-818EA735FF9B}
+People Near Me {5224F545-A443-4859-BA23-7B5A95BDC8EF}
+Performance Information and Tools {78F3955E-3B90-4184-BD14-5397C15F1EFC}
+Personalization {ED834ED6-4B5A-4bfe-8F11-A626DCB6A921}
+Phone & Modem Location Information {40419485-C444-4567-851A-2DD7BFA1684D}
+Portable Devices {35786D3C-B075-49b9-88DD-029876E11C01}
+Power Options {025A5937-A6BE-4686-A844-36FE4BEC8B6D}
+Previous Versions Results Folder {f8c2ab3b-17bc-41da-9758-339d7dbf2d88}
+printhood delegate folder {ed50fc29-b964-48a9-afb3-15ebb9b97f36}
+Printers {2227A280-3AEA-1069-A2DE-08002B30309D} or {863aa9fd-42df-457b-8e4d-0de1b8015c60}
+Programs and Features {7b81be6a-ce2b-4676-a29e-eb907a5126c5}
+Public folder {4336a54d-038b-4685-ab02-99bb52d3fb8b}
+Recent Places {22877a6d-37a1-461a-91b0-dbda5aaebc99}
+Recovery (System Restore) {9FE63AFD-59CF-4419-9775-ABCC3849F861}
+Recycle Bin {645FF040-5081-101B-9F08-00AA002F954E}
+Region and Language {62d8ed13-c9d0-4ce8-a914-47dd628fb1b0}
+RemoteApp and Desktop Connections {241D7C96-F8BF-4F85-B01F-E2B043341A4B}
+Run {2559a1f3-21d7-11d4-bdaf-00c04f60b9f0}
+Search {2559a1f0-21d7-11d4-bdaf-00c04f60b9f0}
+Search Results {9343812e-1c37-4a49-a12e-4b2d810d956b}
+Set Program Access and Defaults {2559a1f7-21d7-11d4-bdaf-00c04f60b9f0}
+Show Desktop {3080F90D-D7AD-11D9-BD98-0000947B0257}
+Sound {F2DDFC82-8F12-4CDD-B7DC-D4FE1425AA4D}
+Speech Recognition {58E3C745-D971-4081-9034-86E34B30836A}
+Sync Center {9C73F5E5-7AE7-4E32-A8E8-8D23B85255BF}
+Sync Setup Folder {2E9E59C0-B437-4981-A647-9C34B9B90891}
+System {BB06C0E4-D293-4f75-8A90-CB05B6477EEE}
+System Icons {05d7b0f4-2121-4eff-bf6b-ed3f69b894d9} \SystemIcons
+Tablet PC Settings {80F3F1D5-FECA-45F3-BC32-752C152E456E}
+Taskbar and Start Menu {0DF44EAA-FF21-4412-828E-260A8728E7F1}
+Text to Speech {D17D1D6D-CC3F-4815-8FE3-607E7D5D10B3}
+Time and Date {E2E7934B-DCE5-43C4-9576-7FE4F75E7480}
+Troubleshooting {C58C4893-3BE0-4B45-ABB5-A63E4B8C8651}
+User Accounts {60632754-c523-4b62-b45c-4172da012619}
+User Folder {59031a47-3f72-44a7-89c5-5595fe6b30ee}
+User Pinned {1f3427c8-5c10-4210-aa03-2ee45287d668}
+Web Browser (default) {871C5380-42A0-1069-A2EA-08002B30309D}
+Windows Anytime Upgrade {BE122A0E-4503-11DA-8BDE-F66BAD1E3F3A}
+Windows Cardspace {78CB147A-98EA-4AA6-B0DF-C8681F69341C}
+Windows Defender {D8559EB9-20C0-410E-BEDA-7ED416AECC2A}
+Windows Features {67718415-c450-4f3c-bf8a-b487642dc39b}
+WEI {78F3955E-3B90-4184-BD14-5397C15F1EFC}
+Windows Firewall {4026492F-2F69-46B8-B9BF-5654FC07E423}
+Windows Mobility Center {5ea4f148-308c-46d7-98a9-49041b1dd468}
+Windows SideShow {E95A4861-D57A-4be1-AD0F-35267E261739}
+Windows Update {36eef7db-88ad-4e81-ad49-0e313f0c35f8}
+https://www.sevenforums.com/tutorials/5966-run-commands-windows-7-a.html
+Administrative Tools
+ Administrative Tools = control admintools
+ Authorization Manager = azman.msc
+ Component Services = dcomcnfg
+ Certificate Manager = certmgr.msc
+ Direct X Troubleshooter = dxdiag
+ Display Languages = lpksetup
+ ODBC Data Source Administrator = odbcad32
+ File Signature Verification Tool = sigverif
+ Group Policy Editor = gpedit.msc
+ Add Hardware Wizard = hdwwiz.cpl
+ iSCSI Initiator = iscsicpl
+ Iexpress Wizard = iexpress
+ Local Security Settings = secpol.msc
+ Microsoft Support Diagnostic Tool = msdt
+ Microsoft Management Console = mmc
+ Print management = printmanagement.msc
+ Printer User Interface = printui
+ Problems Steps Recorder = psr
+ People Near Me = p2phost
+ Registry Editor = regedit or regedt32
+ Resoure Monitor = resmon
+ System Configuration Utility = msconfig
+ Resultant Set of Policy = rsop.msc
+ SQL Server Client Configuration = cliconfg
+ Task Manager = taskmgr
+ Trusted Platform Module = tpm.msc
+ TPM Security Hardware = TpmInit
+ Windows Remote Assistance = msra
+ Windows Share Folder Creation Wizard = shrpubw
+ Windows Standalong Update Manager = wusa
+ Windows System Security Tool = syskey
+ Windows Script Host Settings = wscript
+ Windows Version = winver
+ Windows Firewall with Advanced Security = wf.msc
+ Windows Memory Diagnostic = MdSched
+ Windows Malicious Removal Tool = mrt
+Computer Management
+ Computer Management = compmgmt.msc or CompMgmtLauncher
+ Task Scheduler = control schedtasks
+ Event Viewer = eventvwr.msc
+ Shared Folders/MMC = fsmgmt.msc
+ Local Users and Groups = lusrmgr.msc
+ Performance Monitor = perfmon.msc
+ Device Manager = devmgmt.msc
+ Disk Management = diskmgmt.msc
+ Services = services.msc
+ Windows Management Infrastructure = wmimgmt.msc
+Conrtol Panel
+ Control Panel = control
+ Action Center= wscui.cpl
+ Autoplay = control.exe /name Microsoft.autoplay
+ Backup and Restore = sdclt
+ Create a System Repair disc = recdisc
+ BDE Administrator = bdeadmin.cpl
+ Color Management = colorcpl
+ Credential Manager = control.exe /name Microsoft.CredentialManager
+ Credential Manager Stored User Names and Passwords = credwiz
+ Date and Time Properties = timedate.cpl
+ Default Programs = control.exe /name Microsoft.DefaultPrograms
+ Set Program Access and Computer Defaults = control appwiz.cpl,,3 or ComputerDefaults
+ Devices and Printers = control printers
+ Devices and Printers Add a Device = DevicePairingWizard
+ Display = dpiscaling
+ Screen Resolution = desk.cpl
+ Display Color Calibration = dccw
+ Cleartype Text Tuner = cttune
+ Folders Options = control folders
+ Fonts = control fonts
+ Getting Started = GettingStarted
+ HomeGroup = control.exe /name Microsoft.HomeGroup
+ Indexing Options = control.exe /name Microsoft.IndexingOptions
+ Internet Properties = inetcpl.cpl
+ Keyboard = control keyboard
+ Location and Other Sensors = control.exe /name Microsoft.LocationandOtherSensors
+ Location Notifications = LocationNotifications
+ Mouse = control mouse or main.cpl
+ Network and Sharing Center = control.exe /name Microsoft.NetworkandSharingCenter
+ Network Connections = control netconnections or ncpa.cpl
+ Notification Area Icons = control.exe /name Microsoft.NotificationAreaIcons
+ Parental Controls = control.exe /name Microsoft.ParentalControls
+ Performance Information = control.exe /name Microsoft.PerformanceInformationandTools
+ Personalization = control desktop
+ Windows Color and Appearance = control color
+ Phone and Modem Options = telephon.cpl
+ Power Configuration = powercfg.cpl
+ Programs and Features = appwiz.cpl or control appwiz.cpl
+ Optional Features Manager = optionalfeatures or control appwiz.cpl,,2
+ Recovery = control.exe /name Microsoft.Recovery
+ Regional and Language = intl.cpl
+ RemoteApp = control.exe /name Microsoft.RemoteAppandDesktopConnections
+ Sound = mmsys.cpl
+ Volume Mixer = sndvol
+ System Properties = sysdm.cpl or Windows logo key + Pause/Break
+ SP ComputerName Tab = SystemPropertiesComputerName
+ SP Hardware Tab = SystemPropertiesHardware
+ SP Advanced Tab = SystemPropertiesAdvanced
+ SP Performance = SystemPropertiesPerformance
+ SP Data Execution Prevention = SystemPropertiesDataExecutionPrevention
+ SP Protection Tab = SystemPropertiesProtection
+ SP Remote Tab = SystemPropertiesRemote
+ Windows Activation = slui
+ Windows Activation Phone Numbers = slui 4
+ Taskbar and Start Menu = control.exe /name Microsoft.TaskbarandStartMenu
+ Troubleshooting = control.exe /name Microsoft.Troubleshooting
+ User Accounts = control.exe /name Microsoft.UserAccounts
+ User Account Control Settings = UserAccountControlSettings
+ User Accounts Windows 2000/domain version = netplwiz or control userpasswords2
+ Encryption File System = rekeywiz
+ Windows Anytime Upgrade = WindowsAnytimeUpgradeui
+ Windows Anytime Upgrade Results = WindowsAnytimeUpgradeResults
+ Windows CardSpace = control.exe /name Microsoft.cardspace
+ Windows Firewall = firewall.cpl
+ WindowsSideshow = control.exe /name Microsoft.WindowsSideshow
+ Windows Update App Manager = wuapp
+Accessories
+ Calculator = calc
+ Command Prompt = cmd
+ Connect to a Network Projector = NetProj
+ Presentation Settings = PresentationSettings
+ Connect to a Projector = displayswitch or Windows logo key + P
+ Notepad = notepad
+ Microsoft Paint = mspaint.exe
+ Remote Desktop Connection = mstsc
+ Run = Windows logo key + R
+ Snipping Tool = snippingtool
+ Sound Recorder = soundrecorder
+ Sticky Note = StikyNot
+ Sync Center = mobsync
+ Windows Mobility Center (Only on Laptops) = mblctr or Windows logo key + X
+ Windows Explorer = explorer or Windows logo key + E
+ Wordpad = write
+ Ease of Access Center = utilman or Windows logo key + U
+ Magnifier = magnify
+ Narrator = Narrator
+ On Screen Keyboard = osk
+ Private Character Editor = eudcedit
+ Character Map = charmap
+ Ditilizer Calibration Tool = tabcal
+ Disk Cleanup Utility = cleanmgr
+ Defragment User Interface = dfrgui
+ Internet Explorer = iexplore
+ Rating System = ticrf
+ Internet Explorer (No Add-ons) = iexplore -extoff
+ Internet Explorer (No Home) = iexplore about:blank
+ Phone Dialer = dialer
+ Printer Migration = PrintBrmUi
+ System Information = msinfo32
+ System Restore = rstrui
+ Windows Easy Transfer = migwiz
+ Windows Media Player = wmplayer
+ Windows Media Player DVD Player = dvdplay
+ Windows Fax and Scan Cover Page Editor = fxscover
+ Windows Fax and Scan = wfs
+ Windows Image Acquisition = wiaacmgr
+ Windows PowerShell ISE = powershell_ise
+ Windows PowerShell = powershell
+ XPS Viewer = xpsrchvw
+ Open Documents folder = documents
+ Open Pictures folder = pictures
+ Open Music folder = music
+ Open Videos folder = videos
+ Open Downloads folder = downloads
+ Open Favorites folder = favorites
+ Open Recent folder = recent
+ Logs out of Windows = logoff
+ Locks User Account = Windows logo Key + L
+https://www.symantec.com/connect/articles/list-run-commands-windows-7-and-8
+Open Documents Folder documents
+Open Videos folder videos
+Open Downloads Folder downloads
+Open Favorites Folder favorites
+Open Recent Folder recent
+Open Pictures Folder pictures
+Windows Sideshow control.exe /name Microsoft.WindowsSideshow
+Windows CardSpace control.exe /name Microsoft.cardspace
+Windows Anytime Upgrade WindowsAnytimeUpgradeui
+Taskbar and Start Menu control.exe /name Microsoft.TaskbarandStartMenu
+Troubleshooting control.exe /name Microsoft.Troubleshooting
+User Accounts control.exe /name Microsoft.UserAccounts
+Adding a new Device devicepairingwizard
+Add Hardware Wizard hdwwiz
+Advanced User Accounts netplwiz
+Advanced User Accounts azman.msc
+Backup and Restore sdclt
+Bluetooth File Transfer fsquirt
+Calculator calc
+Certificates certmgr.msc
+Change Computer Performance Settings systempropertiesperformance
+Change Data Execution Prevention Settings systempropertiesdataexecutionprevention
+Change Data Execution Prevention Settings printui
+Character Map charmap
+ClearType Tuner cttune
+Color Management colorcpl
+Command Prompt cmd
+Component Services comexp.msc
+Component Services dcomcnfg
+Computer Management compmgmt.msc
+Computer Management compmgmtlauncher
+Connessione proiettore di rete netproj
+Connect to a Projector displayswitch
+Control Panel control
+Create A Shared Folder Wizard shrpubw
+Create a System Repair Disc recdisc
+Credential Backup and Restore Wizard credwiz
+Data Execution Prevention systempropertiesdataexecutionprevention
+Date and Time timedate.cpl
+Default Location locationnotifications
+Device Manager devmgmt.msc
+Device Manager hdwwiz.cpl
+Device Pairing Wizard devicepairingwizard
+Diagnostics Troubleshooting Wizard msdt
+Digitizer Calibration Tool tabcal
+DirectX Diagnostic Tool dxdiag
+Disk Cleanup cleanmgr
+Disk Defragmenter dfrgui
+Disk Management diskmgmt.msc
+Display dpiscaling
+Display Color Calibration dccw
+Display Switch displayswitch
+DPAPI Key Migration Wizard dpapimig
+Driver Verifier Manager verifier
+Ease of Access Center utilman
+EFS Wizard rekeywiz
+Event Viewer eventvwr.msc
+Fax Cover Page Editor fxscover
+File Signature Verification sigverif
+Font Viewer fontview
+Game Controllers joy.cpl
+Getting Started gettingstarted
+IExpress Wizard iexpress
+Getting Started irprops.cpl
+Install or Uninstall Display Languages lusrmgr
+Internet Explorer iexplore
+Internet Options inetcpl.cpl
+iSCSI Initiator Configuration Tool iscsicpl
+Language Pack Installer lpksetup
+Local Group Policy Editor gpedit.msc
+Local Security Policy secpol.msc
+Local Users and Groups lusrmgr.msc
+Location Activity locationnotifications
+Magnifier magnify
+Malicious Software Removal Tool mrt
+Manage Your File Encryption Certificates rekeywiz
+Math Input Panel mip
+Microsoft Management Console mmc
+Microsoft Support Diagnostic Tool msdt
+Mouse main.cpl
+NAP Client Configuration napclcfg.msc
+Narrator narrator
+Network Connections ncpa.cpl
+New Scan Wizard wiaacmgr
+Notepad notepad
+ODBC Data Source Administrator odbcad32
+ODBC Driver Configuration odbcconf
+On-Screen Keyboard osk
+Paint mspaint
+Pen and Touch tabletpc.cpl
+People Near Me collab.cpl
+Performance Monitor perfmon.msc
+Performance Options systempropertiesperformance
+Phone and Modem telephon.cpl
+Phone Dialer dialer
+Power Options powercfg.cpl
+Presentation Settings presentationsettings
+Print Management printmanagement.msc
+Printer Migration printbrmui
+Printer User Interface printui
+Private Character Editor eudcedit
+Problem Steps Recorder psr
+Programs and Features appwiz.cpl
+Protected Content Migration dpapimig
+Region and Language intl.cpl
+Registry Editor regedit
+Registry Editor 32 regedt32
+Remote Access Phonebook rasphone
+Remote Desktop Connection mstsc
+Resource Monitor resmon
+Resultant Set of Policy rsop.msc
+SAM Lock Tool syskey
+Screen Resolution desk.cpl
+Securing the Windows Account Database syskey
+Services services.msc
+Set Program Access and Computer Defaults computerdefaults
+Share Creation Wizard shrpubw
+Shared Folders fsmgmt.msc
+Snipping Tool snippingtool
+Sound mmsys.cpl
+Sound recorder soundrecorder
+SQL Server Client Network Utility cliconfg
+Sticky Notes stikynot
+Stored User Names and Passwords credwiz
+Sync Center mobsync
+System Configuration msconfig
+System Configuration Editor sysedit
+System Information msinfo32
+System Properties sysdm.cpl
+System Properties (Advanced Tab) systempropertiesadvanced
+System Properties (Computer Name Tab) systempropertiescomputername
+System Properties (Hardware Tab) systempropertieshardware
+System Properties (Remote Tab) systempropertiesremote
+System Properties (System Protection Tab) systempropertiesprotection
+System Restore rstrui
+Task Manager taskmgr
+Task Scheduler taskschd.msc
+Trusted Platform Module (TPM) Management tpm.msc
+User Account Control Settings useraccountcontrolsettings
+Utility Manager utilman
+Version Reporter Applet winver
+Volume Mixer sndvol
+Windows Action Center wscui.cpl
+Windows Activation Client slui
+Windows Anytime Upgrade Results windowsanytimeupgraderesults
+Windows CardSpace infocardcpl.cpl
+Windows Disc Image Burning Tool isoburn
+Windows DVD Maker dvdmaker
+Windows Easy Transfer migwiz
+Windows Explorer explorer
+Windows Fax and Scan wfs
+Windows Features optionalfeatures
+Windows Firewall firewall.cpl
+Windows Firewall with Advanced Security wf.msc
+Windows Journal journal
+Windows Media Player wmplayer
+Windows Memory Diagnostic Scheduler mdsched
+Windows Mobility Center mblctr
+Windows Picture Acquisition Wizard wiaacmgr
+Windows PowerShell powershell
+Windows PowerShell ISE powershell_ise
+Windows Remote Assistance msra
+Windows Repair Disc recdisc
+Windows Script Host wscript
+Windows Update wuapp
+Windows Update Standalone Installer wusa
+Versione Windows winver
+WMI Management wmimgmt.msc
+WordPad write
+XPS Viewer xpsrchvw
+Shell Command       Path of Folder it Opens
+shell:AddNewProgramsFolder  Control Panel\All Control Panel Items\Get Programs
+shell:Administrative Tools  hidden C:\Users\User-Name\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Administrative Tools
+shell:AppData  hidden C:\Users\(User-Name)\AppData\Roaming
+shell:AppUpdatesFolder  Installed Updates
+shell:Cache  hidden C:\Users\User-Name\AppData\Local\Microsoft\Windows\Temporary Internet Files
+shell:CD Burning  hidden C:\Users\User-Name\AppData\Local\Microsoft\Windows\Burn\Burn
+shell:ChangeRemoveProgramsFolder  Control Panel\All Control Panel Items\Programs and Features
+shell:Common Administrative Tools  hidden C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Administrative Tools
+shell:Common AppData  hidden C:\ProgramData
+shell:Common Desktop  C:\Users\Public\Desktop
+shell:Common Documents  C:\Users\Public\Documents
+shell:CommonDownloads  C:\Users\Public\Downloads
+shell:CommonMusic  C:\Users\Public\Music
+shell:CommonPictures  C:\Users\Public\Pictures
+shell:Common Programs hidden C:\ProgramData\Microsoft\Windows\Start Menu\Programs
+shell:CommonRingtones  hidden C:\ProgramData\Microsoft\Windows\Ringtones
+shell:Common Start Menu  hidden C:\ProgramData\Microsoft\Windows\Start Menu
+shell:Common Startup  hidden C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup
+shell:Common Templates  hidden C:\ProgramData\Microsoft\Windows\Templates
+shell:CommonVideo  C:\Users\Public\Videos
+shell:ConflictFolder  Control Panel\All Control Panel Items\Sync Center\Conflicts
+shell:ConnectionsFolder  Control Panel\All Control Panel Items\Network Connections
+shell:Contacts  C:\Users\User-Name\Contacts
+shell:ControlPanelFolder  Control Panel\All Control Panel Items
+shell:Cookies  hidden C:\Users\User-Name\AppData\Roaming\Microsoft\Windows\Cookies
+shell:Cookies\Low  hidden C:\Users\User-Name\AppData\Roaming\Microsoft\Windows\Cookies\Low
+shell:CredentialManager  hidden C:\Users\User-Name\AppData\Roaming\Microsoft\Credentials
+shell:CryptoKeys  hidden C:\Users\User-Name\AppData\Roaming\Microsoft\Crypto
+shell:default Gadgets  C:\Program Files\Windows Sidebar\Gadgets
+shell:desktop  C:\Users\User-Name\Desktop
+shell:device Metadata Store hidden C:\ProgramData\Microsoft\Windows\DeviceMetadataStore
+shell:documentsLibrary Libraries\Documents
+shell:downloads  C:\Users\User-Name\Downloads
+shell:dpapiKeys  hidden C:\Users\User-Name\AppData\Roaming\Microsoft\Protect
+shell:Favorites  C:\Users\User-Name\Favorites
+shell:Fonts  C:\Windows\Fonts
+shell:Gadgets  hidden C:\Users\User-Name\AppData\Local\Microsoft\Windows Sidebar\Gadgets
+shell:Games  Games
+shell:GameTasks  hidden C:\Users\User-Name\AppData\Local\Microsoft\Windows\GameExplorer
+shell:History  hidden C:\Users\User-Name\AppData\Local\Microsoft\Windows\History
+Shell:HomeGroupFolder Homegroup
+shell:ImplicitAppShortcuts hidden C:\Users\User-Name\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\ImplicitAppShortcuts
+shell:InternetFolder  32-bit Internet Explorer.
+shell:Links  C:\Users\User-Name\Links
+shell:Libraries Libraries
+shell:Local AppData  hidden C:\Users\User-Name\AppData\Local
+shell:LocalAppDataLow  hidden C:\Users\User-Name\AppData\LocalLow
+shell:MusicLibrary Libraries\Music
+shell:My Music  C:\Users\User-Name\Music
+shell:My Pictures  C:\Users\User-Name\Pictures
+shell:My Video  C:\Users\User-Name\Videos
+shell:MyComputerFolder  Computer
+shell:NetHood  hidden C:\Users\User-Name\AppData\Roaming\Microsoft\Windows\Network Shortcuts
+shell:NetworkPlacesFolder  Network
+shell:Personal  C:\Users\User-Name\Documents
+shell:PicturesLibrary Libraries\Pictures
+shell:PrintersFolder  All Control Panel Items\Printers
+shell:PrintHood  hidden C:\Users\User-Name\AppData\Roaming\Microsoft\Windows\Printer Shortcuts
+shell:Profile  C:\Users\User-Name
+shell:ProgramFiles  C:\Program Files
+shell:ProgramFilesCommon  C:\Program Files\Common Files
+shell:ProgramFilesCommonX64 C:\Program Files\Common Files (in 64-bit Windows only)
+shell:ProgramFilesCommonX86  C:\Program Files (x86)\Common Files (in 64-bit Windows only)
+shell:ProgramFilesX64 C:\Program Files (in 64-bit Windows only)
+shell:ProgramFilesX86  C:\Program Files (x86) (in 64-bit Windows only)
+shell:Programs  hidden C:\Users\User-Name\AppData\Roaming\Microsoft\Windows\Start Menu\Programs
+shell:Public  C:\Public
+shell:PublicGameTasks  hidden C:\ProgramData\Microsoft\Windows\GameExplorer
+Shell:PublicLibraries  C:\Users\Public\Libraries
+shell:PublicSuggestedLocations C:\Users\Public\Library\PublicSuggestedLocations
+shell:Quick Launch  hidden C:\Users\User-Name\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch
+shell:Recent  hidden C:\Users\User-Name\AppData\Roaming\Microsoft\Windows\Recent
+shell:RecycleBinFolder  Recycle Bin
+shell:ResourceDir  C:\Windows\Resources
+shell:Ringtones hidden C:\ProgramData\Microsoft\Windows\Ringtones
+shell:SampleMusic  C:\Users\Public\Music\Sample Music
+shell:SamplePictures  C:\Users\Public\Pictures\Sample Pictures
+shell:SampleVideos  C:\Users\Public\Videos\Sample Videos
+shell:SavedGames  C:\Users\User-Name\Saved Games
+shell:Searches  C:\Users\User-Name\Searches
+shell:SearchHomeFolder search-ms:
+shell:SendTo  hidden C:\Users\User-Name\AppData\Roaming\Microsoft\Windows\SendTo
+shell:Start Menu  hidden C:\Users\User-Name\AppData\Roaming\Microsoft\Windows\Start Menu
+shell:Startup  hidden C:\Users\User-Name\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
+shell:SyncCenterFolder  Control Panel\All Control Panel Items\Sync Center
+shell:SyncResultsFolder  Control Panel\All Control Panel Items\Sync Center\Sync Results
+shell:SyncSetupFolder  Control Panel\All Control Panel Items\Sync Center\Sync Setup
+shell:System  C:\Windows\System32
+shell:SystemCertificates  hidden C:\Users\User-Name\AppData\Roaming\Microsoft\SystemCertificates
+shell:SystemX86  C:\Windows\SysWOW64
+shell:Templates  hidden C:\Users\User-Name\AppData\Roaming\Microsoft\Windows\Templates
+shell:User Pinned hidden C:\Users\User-Name\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned
+shell:UserProfiles  C:\Users
+shell:UsersFilesFolder  C:\Users\User-Name
+shell:UsersLibrariesFolder Libraries
+shell:VideosLibrary Libraries\Videos
+shell:Windows  C:\Windows
+Dell Latitude 5550  SN 8F9MN72
+  Use Fn + B to get the "Break" key functionality.
+  No Pause/Break key on this keyboard
+  Esc Fn + Esc Activates Function Key Lock
+  F1 Fn + F1 Mute Audio
+  F2 Fn + F2 Decrease Volume
+  F3 Fn +  F3 Increase Volume
+  F4 Fn +  F4 Toggle Microphone On/Off
+  F6 Fn +  F6 Enable or Disable Scroll Lock
+  F8 Fn + F8 Toggles between external displays and/or the internal LCD
+  F9 Fn + F9 Search (Windows 8 onwards)
+  F10 Fn + F10 Adjust Keyboard Backlight brightness and on/off (Optional)
+  F11 Fn + F11 Decrease LCD Brightness
+  F12 Fn + F12 Increase LCD Brightness
+  PrtScr Fn +  PrtScr Toggle Wireless on/off
+  Insert Fn +  Insert Enter Sleep / Hibernation mode
+  Left Arrow Fn + ? Home
+  Right Arrow Fn + ? End
+Calculator Keyboard Shortcuts•Alt+1 Switch to Standard mode
+•Alt+2 Switch to Scientific mode
+•Alt+3 Switch to Programmer mode
+•Alt+4 Switch to Statistics mode
+•Alt + C Calculate or solve date calculations and worksheets
+•Ctrl + E Open date calculations
+•Ctrl + H Turn calculation history on or off
+•Ctrl + L Press the MC button
+•Ctrl + M Press the MS button
+•Ctrl + P Press the M+ button
+•Ctrl + Q Press the M- button
+•Ctrl + R Press the MR button
+•Ctrl + U Open unit conversion
+•Del Press the CE button
+•Esc Press the C button
+•F1 Open Calculator Help
+•F9 Press the +/– button
+•R Press the 1/× button
+•@ Press the square root button
+•Ctrl+ Shift + D Clear the calculation history
+•Enter Recalculate the calculation history after editing
+•Esc Cancel editing the calculation history
+•F2 Edit the calculation history
+•Down Arrow Navigate down in the calculation history
+•Up Arrow Navigate up in the calculation history
+•D Press the Mod button in Scientific mode
+•I Press the Inv button in Scientific mode
+•L Press the log button in Scientific mode
+•M Press the dms button in Scientific mode
+•N Press the ln button in Scientific mode
+•O Press the cos button in Scientific mode
+•P Press the pi button in Scientific mode
+•Q Press the x^2 button in Scientific mode
+•S Press the sin button in Scientific mode
+•T Press the tan button in Scientific mode
+•V Press the F-E button in Scientific mode
+•X Press the Exp button in Scientific mode
+•Y Press the x^y button in Scientific mode
+•Ctrl + B Press the 3vx button in Scientific mode
+•Ctrl + G Press the 10x button in Scientific mode
+•Ctrl + O Press the cosh button in Scientific mode
+•Ctrl + S Press the sinh button in Scientific mode
+•Ctrl + T Press the tanh button in Scientific mode
+•Ctrl + Y Press the yvx button in Scientific mode
+•F3 Select Degrees in Scientific mode
+•F4 Select Radians in Scientific mode
+•F5 Select Grads in Scientific mode
+•; Press the Int button in Scientific mode
+•# Press the x^3 button in Scientific mode
+•! Press the n! button in Scientific mode
+•F2 Select Dword in Programmer mode
+•F3 Select Word in Programmer mode
+•F4 Select Byte in Programmer mode
+•F5 Select Hex in Programmer mode
+•F6 Select Dec in Programmer mode
+•F7 Select Oct in Programmer mode
+•F8 Select Bin in Programmer mode
+•F12 Select Qword in Programmer mode
+•J Press the RoL button in Programmer mode
+•K Press the RoR button in Programmer mode
+•< Press the Lsh button in Programmer mode
+•> Press the Rsh button in Programmer mode
+•% Press the Mod button in Programmer mode
+•| Press the Or button in Programmer mode
+•^ Press the Xor button in Programmer mode
+•~ Press the Not button in Programmer mode
+•& Press the And button in Programmer mode
+•Spacebar Toggles the bit value in Programmer mode
+•A Press the Average button in Statistics mode
+•D Press the CAD button in Statistics mode
+•S Press the Sum button in Statistics mode
+•T Press the S.D. button in Statistics mode
+•Ctrl + A Press the Average Sq button in Statistics mode
+•Ctrl + S Press the Sum Sq button in Statistics mode
+•Ctrl + T Press the Inv S.D. button in Statistics mode
+Command Prompt Keyboard Shortcuts•F1 or Right Arrow Auto fills characters from previously ran command one by one in the current command prompt session
+•F2 Copies characters from previously ran command in the current command prompt session
+•F3 Repeats running the last command ran in the current command prompt session
+•F5 or Up/Down Arrow Cycles through previously ran commands from command history in the current command prompt session
+•F7 Displays list of all previously ran commands in the numerical order that they were ran in from the current command prompt session. You can use the Up or Down arrow keys to cycle though them, and press Enter to run the selected command.
+•F8 Auto fills matching command name from previously ran command history in the current command prompt session when you type a charater and press F8. Continuing to press F8 will allow you to cycle through all matching names.
+•F9 When pressed, this will ask you to "Enter command number". Type in the command number from the order it was ran (F7 to see number) in and press Enter to run the command.
+•ALT+F7 Clears command history
+•Esc Erases current line
+•Tab Auto fills matching file or folder names in current directory when you type a charater and press tab. Continuing to press tab will allow you to cycle through all matching names in current directory.
+Dialog Box Keyboard Shortcuts•Arrow Keys Select a button if the active option is a group of option buttons
+•Backspace Open a folder one level up if a folder is selected in the Save As or Open dialog box
+•Ctrl + Shift + Tab Move back through tabs
+•Ctrl + Tab Move forward through tabs
+•Enter Replaces clicking the mouse for many selected commands
+•F4 Display the items in the active list
+•Shift + Tab Move back through options
+•Spacebar Select or clear the check box if the active option is a check box
+•Tab Move forward through options
+Ease of Access Keyboard Shortcuts•Left Alt + Left Shift + Num Lock Turn Mouse Keys on or off
+•Left Alt + Left Shift + PrtScn Turn High Contrast on or off
+•Num Lock (hold for 8 seconds) Turn Toggle Keys on or off
+•Right Shift (hold for 8 seconds) Turn Filter Keys on and off
+•Shift (pressed 5 times) Turn Sticky Keys on or off
+•Windows Key + U Open Ease of Access Center
+Function Key Keyboard Shortcuts
+NOTE: On multimedia keyboards, you may need to press the F-Lock or Function key first. •F1 Open Help window
+•F2 Rename the selected item
+•F3 Opens Search window
+•F4 Display the Address bar drop down list in Windows Explorer and Internet Explorer
+•F5 Refresh the current active window
+•F6 Cycle through items in current active window
+•F10 Displays the menu bar in the active window and underlines the menu bar shortcut keys
+•F11 Toggle Full Screen Mode On or Off in Windows Explorer and Internet Explorer
+•Alt + F4 Close the current active window or program. From the desktop, it opens the Shut Down Windows window.
+•Ctrl + F4 Close the active document (in programs that allow you to have multiple documents open simultaneously)
+•Shift + F10 Open context menu of selected item
+General Keyboard Shortcuts•Alt + D Move focus to address bar in Windows Explorer and Internet Explorer
+•Alt + D, Tab Move focus to search bar in Windows Explorer and Internet Explorer
+•Alt + Enter or Alt + Double Click on File Open Properties window of selected item
+•Alt + Esc Cycle through all open windows.
+•Alt + P Turn Preview Pane on or off in Windows Explorer
+•Alt + Left Arrow Go back in Windows Explorer
+•Alt + Right Arrow Go forward in Windows Explorer
+•Alt + underlined letter Display the corresponding menu or Perform the menu command
+•Alt + Up Arrow Go Up a directory in Windows Explorer
+•Alt + Tab select a open items or windows to see.
+•Alt + Spacebar Open menu of the current active window
+•Ctrl + Alt + Tab Use the arrow keys to switch between open items or windows
+•Ctrl + Down Arrow Move the cursor to the beginning of the next paragraph
+•Ctrl + Up Arrow Move the cursor to the beginning of the previous paragraph
+•Ctrl + Left Arrow Move the cursor to the beginning of the previous word
+•Ctrl + Right Arrow Move the cursor to the beginning of the next word
+•Ctrl + Shift + Arrow Select a block of text
+•Ctrl + Arrow + Spacebar Select multiple individual items in a window or on the desktop
+•Ctrl + A Select all items in active open window
+•Ctrl + C Copy the selected item
+•Ctrl + Esc Open Start menu
+•Ctrl + Mouse Wheel Increase or decrease icon size in current active Windows Explorer window or desktop
+•Ctrl + N Opens new Windows Explorer or Internet Explorer window
+•Ctrl + Shift + N Creates a New Folder on the active desktop or in the active Windows Explorer window.
+•Ctrl + Shift + Esc Open Task Manager
+•Ctrl + V Paste the selected item
+•Ctrl + X Cut the selected item
+•Ctrl + Y Redo an action
+•Ctrl + Z Undo an action
+•Delete Delete the selected item and move it to the Recycle Bin
+•End Scroll to the bottom of the current active window
+•Esc Cancel the current task
+•Home Scroll to the top of the current active window
+•Right Arrow Open the next menu to the right, or open a submenu
+•Left Arrow Open the next menu to the left, or close a submenu
+•Shift + Arrow Select more than one item in a window or on the desktop, or select text within a document
+•Shift + Delete Delete selected item permanently without it going to the Recycle Bin first.
+•Shift + Left Click Select a item or multiple items
+•Shift (when you insert a CD) Prevent the CD from automatically playing
+Help and Support Keyboard Shortcuts•Alt + A Display the customer support page
+•Alt + C Display the Table of Contents
+•Alt + N Display the Connection Settings menu
+•Alt + Left Arrow Move back to the previously viewed help topic
+•Alt + Right Arrow Move forward to the next previously viewed help topic
+•Alt + Home Display the Help and Support home page
+•Ctrl + F Search the current help topic
+•Ctrl + P Print the current help topic
+•End Move to the end of a help topic
+•F3 Move focus to the Search box
+•F10 Display the Options menu
+•Home Move the to beginning of a help topic
+Magnifier Keyboard Shortcuts•Ctrl + Alt + Arrow keys Pan in the direction of the arrow keys
+•Ctrl + Alt + D Switch to docked mode
+•Ctrl + Alt + F Switch to full-screen mode
+•Ctrl + Alt + I Invert colors
+•Ctrl + Alt + L Switch to lens mode
+•Ctrl + Alt + R Resize the lens
+•Ctrl + Alt + Spacebar Show the mouse pointer
+•Windows Key + Esc Exit Magnifier
+•Windows Key + Plus Sign (+) or Minus Sign (-) Zoom in or out
+Paint Keyboard Shortcuts•Alt Display keytips
+•Alt + F4 Close a picture and its Paint window
+•Ctrl + A Select the entire picture
+•Ctrl + B Bold selected text
+•Ctrl + C Copy a selection to the Clipboard
+•Ctrl + E Open the Properties dialog box
+•Ctrl + G Show or hide gridlines
+•Ctrl + I Italicize selected text
+•Ctrl + Minus Sign (-) Decrease the width of a brush, line, or shape outline by one pixel
+•Ctrl + N Create a new picture
+•Ctrl + O Open an existing picture
+•Ctrl + P Print a picture
+•Ctrl + Page Down Zoom out
+•Ctrl + Page Up Zoom in
+•Ctrl + Plus Sign (+) Increase the width of a brush, line, or shape outline by one pixel
+•Ctrl + R Show or hide the ruler
+•Ctrl + S Save changes to a picture
+•Ctrl + U Underline selected text
+•Ctrl + V Paste a selection from the Clipboard
+•Ctrl + W Open the Resize and Skew dialog box
+•Ctrl + X Cut a selection
+•Ctrl + Y Redo a change
+•Ctrl + Z Undo a change
+•Delete Delete a selection
+•Esc Cancel a selection
+•F1 Open Paint Help
+•F10 Display keytips
+•Shift + F10 Show the current shortcut menu
+•F11 View a picture in full-screen mode
+•F12 Save the picture as a new file
+•Right Arrow Move the selection or active shape right by one pixel
+•Left Arrow Move the selection or active shape left by one pixel
+•Down Arrow Move the selection or active shape down by one pixel
+•Up Arrow Move the selection or active shape up by one pixel
+Remote Desktop Keyboard Shortcuts•Alt + Delete Display the system menu.
+•Alt + Home Display the Start menu.
+•Alt + Insert Cycle through programs in the order that they were started in.
+•Alt + Page Down Move between programs from right to left.
+•Alt + Page Up Move between programs from left to right.
+•Ctrl + Alt + Break Switch between a window and full screen.
+•Ctrl + Alt + End Display the Windows Security dialog box.
+•Ctrl + Alt + Minus Sign (-) on numeric keypad Place a copy of the active window, within the client, on the Terminal server clipboard (provides the same functionality as pressing Alt+PrtScn on a local computer).
+•Ctrl + Alt + Plus Sign (+) on numeric keypad Place a copy of the entire client window area on the Terminal server clipboard (provides the same functionality as pressing PrtScn on a local computer).
+•Ctrl + Alt + Right Arrow Tab out of the Remote Desktop controls to a control in the host program (for example, a button or a text box). Useful when the Remote Desktop controls are embedded in another (host) program.
+•Ctrl + Alt + Left Arrow Tab out of the Remote Desktop controls to a control in the host program (for example, a button or a text box). Useful when the Remote Desktop controls are embedded in another (host) program.
+Taskbar Keyboard Shortcuts •Ctrl + Left Click Use on a grouped pinned taskbar program icon to cycle through the open windows in that group.
+•Ctrl + Shift + Left Click Use on a pinned taskbar program icon to open another instance of that program with administrator privileges (run as administrator)
+•Shift + Left Click Use on a pinned taskbar program icon to open another instance of that program.
+•Shift + Right Click Use on a pinned taskbar program icon to open the context menu for the icon.
+•Shift + Right Click Use on a grouped icon on the taskbar to open the context menu for the group.
+•Windows Key + (1 to 0) Opens the pinned taskbar icon that corresponds to the order that they are in from left (1) to right (0) on the taskbar. 0 is for 10.
+•Windows Key + Alt + (1 to 0) Opens the Jump List of recently accessed items for the program pinned to the taskbar in the position indicated by the number.
+•Windows Key + Ctrl + (1 to 0) Switches to the last active window of the program pinned to the taskbar in the position indicated by the number
+•Windows Key + Shift + (1 to 0) Starts a new instance of the program pinned to the taskbar in the position indicated by the number
+•Windows Key + B Makes the focus on the system tray icons (notification area icons) on the taskbar
+•Windows Key + T Cycle through programs on the taskbar. Press Enter to open the one selected.
+•Windows Key + Shift + T Cycle backwards through programs on the taskbar. Press Enter to open the one selected.
+Windows Explorer Keyboard Shortcuts•Alt + D Select the address bar
+•Alt + Enter or Alt + Double Click on File Opens the Properties window of the selected item
+•Alt + P Toggle the preview pane on or off
+•Alt+Left Arrow View the previous folder
+•Alt + Right Arrow View the next folder
+•Alt + Up Arrow Go up one folder level in the path
+•Back Go back one folder level in the path
+•Ctrl + E Select the search box
+•Ctrl + Mouse scroll wheel Change the size and appearance of file and folder icons
+•Ctrl + N Open a new window
+•Ctrl + Shift + N Creates a New Folder on the active desktop or in the active Windows Explorer window.
+•End Display the bottom of the active window
+•F11 Maximize or minimize the active window
+•Home Display the top of the active window
+•Num Lock + Asterisk (*) on numeric keypad Display all subfolders under the selected folder
+•Num Lock + Plus Sign (+) on numeric keypad Display the contents of the selected folder
+•Num Lock + Minus Sign (-) on numeric keypad Collapse the selected folder
+•Left Arrow Collapse the current selection (if it's expanded), or select the parent folder
+•Right Arrow Display the current selection (if it's collapsed), or select the first subfolder
+•Shift+Right Click on a file Adds Copy as Path, which copies the path of a file to the clipboard.
+•Shift+Right-Click on a file Adds extra hidden items to the Send To context menu.
+•Shift+Right-Click on a folder Adds Open Command Prompt Here to the context menu.
+Windows Journal Keyboard Shortcuts•Alt + F4 Close a note and its Journal window
+•Ctrl + A Select all items on a page
+•Ctrl + C Copy a selection to the Clipboard
+•Ctrl + Shift + C Display a shortcut menu for column headings in a note list
+•Ctrl + F Start a basic find
+•Ctrl + G Go to a page
+•Ctrl + N Start a new note
+•Ctrl + O Open a recently used note
+•Ctrl + P Print a note
+•Ctrl + S Save changes to a note
+•Ctrl + V Paste a selection from the Clipboard
+•Ctrl + Shift + V Move a note to a specific folder
+•Ctrl + X Cut a selection
+•Ctrl + Y Redo a change
+•Ctrl + Z Undo a change
+•Esc Cancel a selection
+•Delete Delete a selection
+•F1 Open Journal Help
+•F5 Refresh find results or Refresh the note list
+•F6 Toggle between a note list and a note
+•F11 View a note in full-screen mode
+Windows Logo Keyboard Shortcuts
+Windows Logo Keyboard Shortcuts
+•Windows Key Open or close the Start menu
+•Windows Key + Pause/Break Opens the System properties window
+•Windows Key + B Moves focus to the program that displayed a message in the Notification Area on the taskbar
+•Ctrl + Windows Key + B Switch focus to the program that displayed a message in the notification area
+•Windows Key + D Toggles to Show Desktop and restore desktop
+•Windows Key + M Minimize all opened windows
+•Windows Key + Shift + M Restore minimized windows to the desktop
+•Windows Key + E Open Window Explorer to Libraries
+•Windows Key + F Open Search window
+•Ctrl + Windows Key + F Search for computers (if you are on a network)
+•Windows Key + G Displays desktop gadgets
+•Windows Key + L Lock your computer or switch users
+•Windows Key + P Displays desktop to projector display presentation switch window.
+•Windows Key + R Open Run command window
+•Windows Key + T Cycle through programs on the taskbar. Press Enter to open the one selected.
+•Windows Key + Shift + T Cycle backwards through programs on the taskbar. Press Enter to open the one selected.
+•Windows Key + Tab Cycle through open windows by using Flip 3D. Release to open the window in the front.
+•Ctrl+Windows Key + Tab Use the tab or left and right arrow keys to cycle through open windows by using Flip 3D. Press enter or click on the first window to open the window in the front.
+•Windows Key + U Open Ease of Access Center
+•Windows Key + X Open Windows Mobility Center
+•Windows Key + Spacebar Press and hold for a Desktop Preview. Also known as Aero Peak.
+•Windows Key + 1 to 0 Opens the program pinned to the taskbar that corresponds to the order that they are in from left (1) to right (0) on the taskbar. 0 is for 10.
+•Ctrl+Windows Key + 1 to 0 Switch to the last active window of the program pinned to the taskbar that corresponds to the order that they are in from left (1) to right (0) on the taskbar. 0 is for 10.
+•Shift + Windows Key + 1 to 0 Start a new instance of the program pinned to the taskbar that corresponds to the order that they are in from left (1) to right (0) on the taskbar. 0 is for 10. If the program is already running, switch to that program.
+•Windows Key + Left Arrow Docks and undocks current active window to the left side of the screen.
+•Windows Key + Shift+ Left Arrow Moves the current active window over one monitor to the left.
+•Windows Key + Right Arrow Docks and undocks current active window to the right side of the screen.
+•Windows Key, Right Arrow, Enter Shutdown
+•Windows Key, Right Arrow, Right Arrow, R Restart
+•Windows Key, Right Arrow, Right Arrow, S Sleep
+•Windows Key, Right Arrow, Right Arrow, W Switch Users
+•Windows Key + Shift+ Right Arrow Moves the current active window over one monitor to the right.
+•Windows Key + Up Arrow Maximizes current active window to full screen.
+•Windows Key + Shift + Up Arrow Maximizes current active window vertically.
+•Windows Key + Shift + Down Arrow Restores vertically maximized current active window back to the way it was before maximized vertically.
+•Windows Key + Down Arrow Minimizes current active window to taskbar.
+•Windows Key + Home Toggles minimize and restore not active open windows.
+•Windows Key + + Zoom in
+•Windows Key + - Zoom out
+•Windows Key + = Open Magnifier
+Windows Media Center Basic Navigation Keyboard Shortcuts•Alt + Enter Go in or out of full-screen mode
+•Arrow keys Move left, right, up, or down
+•Backspace Go back to previous screen
+•End Go to the last item in list
+•Enter Accept a selection
+•Home Go to the first item in list
+•Windows Key + Alt + Enter Open Media Center or Return to Media Center start screen
+Windows Media Center Audio Keyboard Shortcuts•Ctrl + B Go to the beginning of the current song
+•Ctrl + D Display the shortcut menu
+•Ctrl + F Skip to the next song
+•Ctrl + M Go to the Music library page
+•Ctrl + P Pause a song
+•Ctrl + R Rip a CD
+•Ctrl + Shift + F Fast forward a song
+•Ctrl + Shift + P Play a song
+•Ctrl + Shift + S Stop playing a song
+•F8 Mute or unmute volume
+•F9 Turn down volume
+•F10 Turn up volume
+Windows Media Center View Pictures Keyboard Shortcuts•Ctrl + D Display the shortcut menu
+•Ctrl + I Go to pictures
+•Ctrl + P Pause or resume a slide show
+•Ctrl + Shift + P Play a slide show
+•Ctrl + Shift + S Stop a slide show
+•Enter Zoom in on a picture
+•Up Arrow or Left Arrow Skip back to the previous picture
+•Down Arrow or Right Arrow Skip forward to the next picture
+Windows Media Center Watch & Record TV Keyboard Shortcuts•Ctrl + B Skip back
+•Ctrl + D Display the shortcut menu
+•Ctrl + F Skip forward
+•Ctrl + G Go to the Guide
+•Ctrl + O Go to Recorded TV
+•Ctrl + P Pause or resume live TV or recorded TV
+•Ctrl + R Record a TV Show
+•Ctrl + Shift + B Rewind live TV or recorded TV
+•Ctrl + Shift + F Fast forward live TV or recorded TV
+•Ctrl + Shift + P Resume playing a TV show
+•Ctrl + Shift + S Stop recording or stop playing a TV show
+•Ctrl + Shift + Z Change the screen aspect ratio (zoom)
+•Ctrl + T Go to live TV
+•Page Up - Go to the next channel
+•Page Down - Go to the previous channel
+Windows Media Center Play DVDs Keyboard Shortcuts •Ctrl + B Go to previous chapter
+•Ctrl + F Go to next chapter
+•Ctrl + P Pause or resume a DVD
+•Ctrl + Shift + A Change the DVD audio selection
+•Ctrl + Shift + B Rewind a DVD
+•Ctrl + Shift + F Fast forward a DVD
+•Ctrl + Shift + M Go to the DVD menu
+•Ctrl + Shift + P Play a DVD
+•Ctrl + Shift + S Stop a DVD
+•Ctrl + Shift + Z Change the screen aspect ratio (zoom)
+Windows Media Center Play Videos Keyboard Shortcuts •Ctrl + B Skip back
+•Ctrl + E Go to Videos
+•Ctrl + F Skip forward
+•Ctrl + P Pause or resume a video
+•Ctrl + Shift + B Rewind a video
+•Ctrl + Shift + F Fast forward a video
+•Ctrl + Shift + P Play a video
+•Ctrl + Shift + S Stop a video
+•Ctrl + Shift + Z Change the screen aspect ratio (zoom)
+Windows Media Player Keyboard Shortcuts•Alt + 1 Video Size 50% in Now Playing or skin mode, with a video playing
+•Alt + 2 Video Size 100% in Now Playing or skin mode, with a video playing
+•Alt + 3 Video Size 200% in Now Playing or skin mode, with a video playing
+•Alt + Enter Full Screen Toggle in Now Playing, skin, or full screen mode
+•Ctrl + 1 Switches to library mode from any mode
+•Ctrl + 2 Switches to skin mode from any mode
+•Ctrl + 3 Switches to player mode from any mode except full screen
+•Ctrl + 7 Add to Play in library mode
+•Ctrl + 8 Add to Burn in library mode
+•Ctrl + 9 Add to Sync in library mode
+•Ctrl + A Selects everything in a list in the library or list
+•Ctrl + B Previous (Item or Chapter) with content playing
+•Ctrl + E Focus on Search text box and switch to library mode if not there
+•Ctrl + F Next (Item or Chapter) with content playing
+•Ctrl + H Turn on/off shuffle mode
+•Ctrl + J Eject in any mode
+•Ctrl + M Toggle menu bar in library in any mode
+•Ctrl + N Create playlist in library mode
+•Ctrl + O Shows Open Dialog in any mode
+•Ctrl + P Play/Pause Toggle with content queued up
+•Ctrl + Q Adds selected track to open list. Default is Play list.
+•Ctrl + S Stops Playback with content playing
+•Ctrl + T Turn on/off repeat mode in any mode
+•Ctrl + U Shows Open URL Dialog in any mode
+•Ctrl + W Stops playback with content playing or paused
+•Ctrl + Shift + B Rewinds playing content with DVD playing
+•Ctrl + Shift + C Caption On/Off Toggle when playing content which has captions
+•Ctrl + Shift + F Fast forwards playing content with content playing
+•Ctrl + Shift + G Play Speed Fast with content playing
+•Ctrl + Shift + N Play Speed Normal with content playing
+•Ctrl + Shift + S Play Speed Slow with content playing
+•Ctrl + Right Arrow Next playlist in playlist history when focus is not on Seek bar
+•Ctrl + Left Arrow Previous playlist in playlist history when focus is not on Seek bar
+•Ctrl + Right Arrow Skip forward (large increment) when focus is on Seek bar
+•Ctrl + Left Arrow Skip backward (large increment) when focus is on Seek bar
+•Shift + Right Arrow Skip forward (small increment) when focus is on Seek bar
+•Shift + Left Arrow Skip backward (small increment) when focus is on Seek bar
+•Right Arrow Skip forward when focus is on Seek bar
+•Left Arrow Skip backward when focus is on Seek bar
+•Ctrl + Click Resize player to image in Now Playing mode
+•Escape Return to Now Playing in Full Screen Mode
+•F1 Opens Help file in any mode
+•F2 Edit meta data column in library mode with an item selected
+•F4 Switch view mode in library mode, focus in list view
+•F5 Refresh screen when focus is on library or in online services
+•F6 Increases album art when focus is in list view
+•Shift + F6 Decreases album art when focus is in list view
+•F7 Mutes sound in any mode
+•F8 Decrease sound volume in any mode
+•F9 Increases sound volume in any mode
+•F10 Show menu bar in library from any mode
+•Shift + F10 Context menu shortcut in any mode
+WordPad Keyboard Shortcuts•Alt + F4 Close WordPad
+•Ctrl + 1 Set single line spacing
+•Ctrl + 2 Set double line spacing
+•Ctrl + 5 Set line spacing to 1.5
+•Ctrl + A Select the entire document
+•Ctrl + Shift + A Change characters to all capitals
+•Ctrl + B Make selected text bold
+•Ctrl + C Copy a selection to the Clipboard
+•Ctrl + D Insert a Microsoft Paint drawing
+•Ctrl + Delete Delete the next word
+•Ctrl + E Align text center
+•Ctrl + End Move to the end of the document
+•Ctrl + F Find text in a document
+•Ctrl + H Replace text in a document
+•Ctrl + Home Move to the beginning of the document
+•Ctrl + I Italicize selected text
+•Ctrl + J Justify text
+•Ctrl + L Align text left
+•Ctrl + Shift + L Change the bullet style
+•Ctrl + N Create a new document
+•Ctrl + O Open an existing document
+•Ctrl + P Print a document
+•Ctrl + Page Down Move down one page
+•Ctrl + Page Up Move up one page
+•Ctrl + R Align text right
+•Ctrl + S Save changes to a document
+•Ctrl + U Underline selected text
+•Ctrl + V Paste a selection from the Clipboard
+•Ctrl + X Cut a selection
+•Ctrl + Y Redo a change
+•Ctrl + Z Undo a change
+•Ctrl + = Make selected text subscript
+•Ctrl + Shift + = Make selected text superscript
+•Ctrl + Shift + > Increase the font size
+•Ctrl + Shift + < Decrease the font size
+•Ctrl + Left Arrow Move the cursor one word to the left
+•Ctrl + Right Arrow Move the cursor one word to the right
+•Ctrl + Up Arrow Move the cursor to the line above
+•Ctrl + Down Arrow Move the cursor to the line below
+•F1 Open WordPad Help
+•F3 Find the next instance of the text in the Find dialog box
+•F10 Display keytips
+•Shift + F10 Show the current shortcut menu
+•F12 Save the document as a new file
+http://www.curata.com/blog/content-curation-tools-the-ultimate-list/
+https://www.google.com/search?q=dealing+with+information+overload&gws_rd=ssl
+Spiceworks ticketing emails
