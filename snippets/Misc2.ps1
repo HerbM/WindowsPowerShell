@@ -4,6 +4,11 @@ https://github.com/PowerShell/platyPS
 Install-Module -Name platyPS -Scope CurrentUser
 Import-Module platyPS
 
+Checking SSL status
+# https://www.ssllabs.com/ssltest/index.html
+# https://www.ssllabs.com/ssltest/analyze.html?d=git-scm.com&latest
+# https://www.ssllabs.com/ssltest/analyze.html?d=git-scm.com&s=104.20.12.91&latest
+
 
 Invoke-WebRequest fails disabled  
 DisableFirstRunCustomize DWORD value greater than 0 under one of these keys:
@@ -39,8 +44,8 @@ HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings AutoDetect 0 (D
 
 reg query  "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v AutoDetect
 reg query  "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" | findstr /i auto
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings"  /v AutoDetect /d 1 /f /t REG_DWORD
-reg add    "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v AutoConfigURL /d http://proxyconf.my-it-solutions.net/proxy-na.pac /f /t REG_SZ
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v AutoDetect /d 1 /f /t REG_DWORD
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v AutoConfigURL /d http://proxyconf.my-it-solutions.net/proxy-na.pac /f /t REG_SZ
 $url = (get-itemproperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings").'AutoConfigURL'
 if ($url) {
   $url = set-itemproperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" 'AutoConfigURL-Save' $url

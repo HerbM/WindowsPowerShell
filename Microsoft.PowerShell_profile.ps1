@@ -11,10 +11,13 @@ param (
   [Parameter(ValueFromRemainingArguments=$true)]       [String[]]$RemArgs
 )
 
+ 
+# Improved Get-ChildItem2, Add-ToolPath,++B,++DosKey,CleanPath,start Get-DirectoryListing,add refs,README.md
 # Show-ConsoleColor,Get-Syntax(aliases),++Select-History,++FullHelp,++d cmds, esf (needs *,? support),++Add-ToolPath,Reduce History Saved
 # Started Add-Path(crude) -- more ToDo notes 
 
-
+# ToDo: Move notes out of this file
+# ToDo: Finish README.md change to reference "bootstrap file" (Get-WindowsGit.ps1)
 # ToDo: Test-Path -resolve only in 5.1????, Add Server to Get-WinStaSession
 # ToDo: improve go, find alias Version numbers (at least display)
 # ToDo: need Notepad++, 7zip, Git, ??? to be on path with shortcuts (improved, not good enough yet)
@@ -66,6 +69,11 @@ param (
 # Wakoopa      https://web.appstorm.net/how-to/app-management-howto/how-to-discover-new-apps-with-wakoopa/
 # ArsClip
 
+#Clean the $Env:Path 
+$SavePath = ($Env:Path -split ';' -replace '(?<=[\w\)])\\\s*$' | 
+          ? { Test-Path $_ } | select -uniq) -join ';'
+if ($SavePath) { $Env:Path, $SavePath = $SavePath, $Env:Path }
+
 function Add-ToolPath {
   [CmdLetBinding()]param(
     [string[]]$Path
@@ -77,7 +85,7 @@ function Add-ToolPath {
     } else {
       if (Test-Path (Join-Path $TryPath "Util\PortCheck.exe" -ea 0)) {
         $addpath = ";$TryPath\util;$TryPath\Unx;$\TryPath\Bat"
-        $Env:Path += $addpath
+        $Global:Env:Path += $addpath
         Write-Warning "Added: $addpath"        
         return
       }
@@ -90,6 +98,9 @@ $PlacesToLook = 'C:\','T:\Programs\Herb','T:\Programs\Tools','T:\Programs',
                 'S:\Programs\Tools','S:\Programs\Herb''S:\Programs'        | 
                 ?  { Test-Path $_ -ea 0 }
 try { Add-ToolPath $PlacesToLook } catch { Write-Warning "Caught:  Add-Path"}
+
+Function DosKey { param($Pattern='=') if ($macros = where.exe 'macros.txt' 2>$Null) { gc $macros | ? {$_ -match $Pattern }}}
+Function B { if (!$Args) { $args = ,95}  DisplayBrightnessConsole @Args }
 
 <#
 function Add-Path {
@@ -485,10 +496,16 @@ dir | sort LastWriteTime -desc | % { '{0,23} {1,11} {2}' -f $_.lastwritetime,$_.
 ts.ecs-support.com:32793  terminal server 10.10.11.80
 ts.ecs-support.com:32795 FS02
 #>
-$j1 = $ecsts01 = 'ts.ecs-support.com:32793'
-$j2 = $ecsts02 = 'ts.ecs-support.com:32795'
-$j1s = 'ecs-DCts01'
-$j2x = 'ecs-DCts02'
+# Get-WindowsFeature 'RSAT-DNS-Server'
+# Import-Module ServerManager
+
+$ecs     = 'ts.ecs-support.com' 
+# $ecsts01 = 'ts.ecs-support.com'
+# $ecsts02 = 'ts.ecs-support.com'
+$j1        = '$ecs:32793'
+$j2        = '$ecs:32795'
+$ts1       = 'ecs-DCts01'
+$ts2       = 'ecs-DCts02'
 
 function New-RDPSession {
   param(
@@ -497,6 +514,7 @@ function New-RDPSession {
     [int]$Width=1350, [int]$Height:730,
     [Alias('NoConnectionFile','NoFile','NoPath')][switch]$NoProfileFile
   )
+  If (!(Test-Target $Path)) { $NoProfileFile = $False }
   $argX = $args
   $argX += '/prompt'
   if ($NoProfileFile) { mstsc /v:$ComputerName /w:$Width /h:$Height @argX }
