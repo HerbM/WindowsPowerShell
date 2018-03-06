@@ -88,7 +88,7 @@ param(
   [switch]${Force},[switch]${Name},
   [Alias('sn')]    [switch]$SortName,  
   [Alias('sd')]    [switch]$SortDate,
-  [Alias('sl')]    [switch]$SortLength,
+  [Alias('sl','Length')]    [switch]$SortLength,
   [Alias('se')]    [switch]$SortExt,
   [Alias('st')]    [switch]$SortType,
   [Alias('sg')]    [switch]$SortGroupDirectories,
@@ -144,6 +144,7 @@ dynamicparam {
 begin {
   try {   # Separate out for proxy to clarify source of errors
     #Write-Verbose "$LINE ProxyBoundParams contains: [$($Script:ProxyBoundParams | Out-String)]"
+    Write-Verbose  $($PSBoundParameters | Out-String)
     #Write-Verbose "$LINE Params: $($ProxyParamNames)"
     ForEach ($ProxyParam in $Script:ProxyParamNames) {
       Write-Verbose ( "$LINE ProxyBoundParams has parm {0,-20} with value [{1}]" -f 
