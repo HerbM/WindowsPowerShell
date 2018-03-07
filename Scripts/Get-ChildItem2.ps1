@@ -13,7 +13,6 @@ param(
   [Alias('StringOutput')]                  [switch]$SimpleOutput, 
                                            [switch]$CSVOutput, 
   [Alias('OutputOnlyLong','OnlyLongNames')][switch]$LongOnly, 
-                                            [Int32]$ItemCount=0,                                
                                             [Int32]$GCCount=5000                                
 )
 
@@ -92,11 +91,9 @@ Function Get-ChildItem2 {
   [Alias('StringOutput')]                  [switch]$SimpleOutput, 
                                            [switch]$CSVOutput, 
   [Alias('OutputOnlyLong','OnlyLongNames')][switch]$LongOnly, 
-                                            [Int32]$ItemCount=0,                                
                                             [Int32]$GCCount=5000                                
   )
   Begin {
-    $TopLevel = !$ItemCount
     Try{
       if ($OutFileName) { 
       if (!($OutParent = Split-Path $OutFileName)) { 
@@ -108,7 +105,6 @@ Function Get-ChildItem2 {
         $OutFileName = Join-Path $OutFileParent $OutFileName
         $OutFileName = (Resolve-Path $OutFileName -ea 0).ToString()
         write-verbose "OutFileName: $OutFileName"
-        write-verbose "ResolvePath: $OutFileName"
       } else {
         write-error "OutFileName parent directory NOT_FOUND: $OutParent"
         $OutFileName = ''
@@ -296,10 +292,9 @@ Function Get-ChildItem2 {
       $Depth = [int]::MaxValue
     }
     If (-NOT $PSBoundParameters.ContainsKey('Recurse') -AND ($PSBoundParameters.ContainsKey('Depth'))) {
-      Throw "Cannot set Depth without Recurse parameter!"
+      Throw "Cannot set Depth without Recurse parameter!"    #### :HM: Fix this to figure it out
     }
-    Write-Verbose "Search: $($SearchPath)"
-    Write-Verbose "Depth: $($Script:Count)"
+    Write-Verbose "Depth: $($Script:Count) Search: $($SearchPath)"
     $Handle = [poshfile]::FindFirstFile("$SearchPath",[ref]$findData)
     If ($Handle -ne -1) {
       While ($Found) {
@@ -365,9 +360,9 @@ Function Get-ChildItem2 {
               $ToOutPut = $Null
             }
           }
-          $Output = $Null
-          if ($GCCount -and !(++$ItemCount % $GCCount)) { [GC]::Collect() }
           If ($ToOutPut) {
+            [void]$Script:OutputCount++
+            $Script:OutputCount
             if ($SimpleOutput) {
               $ToOutPut = "$($ToOutPut.LastAccessTime -f 's'),$($ToOutPut.Length),$($ToOutPut.FullName)"
             } elseif ( $CSVOutput ) {
@@ -380,32 +375,35 @@ Function Get-ChildItem2 {
             }
             $ToOutPut = $Null
           }
-          If ($Recurse -AND $IsDirectory -AND ($PSBoundParameters.ContainsKey('Depth') -AND [int]$Script:Count -lt $Depth)) {            
-            #Dive deeper
-            Write-Verbose "Recursive"
-            $Script:Count++
+          If ($Recurse -AND $IsDirectory -AND ($PSBoundParameters.ContainsKey('Depth')) -AND ([int]$Script:Count -lt $Depth)) {             
+            [void]$Script:Count++
+            Write-Verbose "Recurse to $($Script:Count): $($Script:OutputCount) of $($Script:IOInfoCount)"
             $PSBoundParameters.Path = $FullName
-            $ItemCount = Get-ChildItem2 @PSBoundParameters
-            $Script:Count--
+            Get-ChildItem2 @PSBoundParameters                          #Dive deeper
+            [void]$Script:Count--
           }
+        }
+        $Output = $Null
+        if ($GCCount -and !(++$Script:IOInfoCount % $GCCount)) { 
+          Write-Warning "$(get-date -f 't') GC: $($Script:OutputCount) Total items: $($Script:IOInfoCount)"
+          [GC]::Collect() 
         }
         $Found = [poshfile]::FindNextFile($Handle,[ref]$findData)
       }
       [void][PoshFile]::FindClose($Handle)
     }
   }
-  End { 
-    If ($TopLevel) { Write-Warning "Total items: $ItemCount" }
-    else { $ItemCount }
-  }
+  End { }
 } 
 
 Set-Alias GCI2 Get-ChildItem2
 if ($LoadOnly) {
   write-warning "Function loaded, no action taken."
 } else {
+  $Script:OutputCount = $Script:IOInfoCount = 0
   Get-ChildItem2 @PSBoundParameters 
-}
+  Write-Warning "Output: $($Script:OutputCount) Total items: $($Script:IOInfoCount)"
+}   
 
 
 <#
