@@ -11,7 +11,7 @@ param (
   [Parameter(ValueFromRemainingArguments=$true)]       [String[]]$RemArgs
 )
 
-
+ 
 # Improved Get-ChildItem2, Add-ToolPath,++B,++DosKey,CleanPath,start Get-DirectoryListing,add refs,README.md
 # Show-ConsoleColor,Get-Syntax(aliases),++Select-History,++FullHelp,++d cmds, esf (needs *,? support),++Add-ToolPath,Reduce History Saved
 # Started Add-Path(crude) -- more ToDo notes 
@@ -496,10 +496,16 @@ dir | sort LastWriteTime -desc | % { '{0,23} {1,11} {2}' -f $_.lastwritetime,$_.
 ts.ecs-support.com:32793  terminal server 10.10.11.80
 ts.ecs-support.com:32795 FS02
 #>
-$j1 = $ecsts01 = 'ts.ecs-support.com:32793'
-$j2 = $ecsts02 = 'ts.ecs-support.com:32795'
-$j1s = 'ecs-DCts01'
-$j2x = 'ecs-DCts02'
+# Get-WindowsFeature 'RSAT-DNS-Server'
+# Import-Module ServerManager
+
+$ecs     = 'ts.ecs-support.com' 
+# $ecsts01 = 'ts.ecs-support.com'
+# $ecsts02 = 'ts.ecs-support.com'
+$j1        = '$ecs:32793'
+$j2        = '$ecs:32795'
+$ts1       = 'ecs-DCts01'
+$ts2       = 'ecs-DCts02'
 
 function New-RDPSession {
   param(
@@ -508,6 +514,7 @@ function New-RDPSession {
     [int]$Width=1350, [int]$Height:730,
     [Alias('NoConnectionFile','NoFile','NoPath')][switch]$NoProfileFile
   )
+  If (!(Test-Target $Path)) { $NoProfileFile = $False }
   $argX = $args
   $argX += '/prompt'
   if ($NoProfileFile) { mstsc /v:$ComputerName /w:$Width /h:$Height @argX }

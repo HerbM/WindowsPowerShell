@@ -125,7 +125,9 @@ https://blogs.msdn.microsoft.com/commandline/2017/06/20/understanding-windows-co
 Console ColorTool https://github.com/Microsoft/console/tree/master/tools/ColorTool
 iTerm Themes      https://github.com/mbadolato/iTerm2-Color-Schemes
 
-<#  Windows Console Host Regisry Settings 
+# https://github.com/awakecoding/FreeRDP-Manuals/blob/master/User/FreeRDP-User-Manual.markdown
+# https://ci.freerdp.com/job/freerdp-nightly-windows/arch=win64,label=vs2013/lastSuccessfulBuild/artifact/build/Release/wfreerdp.exe
+ <#  Windows Console Host Regisry Settings 
   1.Hardcoded settings in conhostv2.dll
   2.User's configured Console defaults, stored as values in 'HKCU\Console'
   3.Per-Console-application registry settings, stored as sub-keys of 'HKCU:\Console\<sub-key>' 
@@ -138,6 +140,13 @@ iTerm Themes      https://github.com/mbadolato/iTerm2-Color-Schemes
 $ConsoleColors | % { $colorLeft = $_; $ConsoleColors | % {write-host ('{0,14} on {1,-14}' -f $ColorLeft,$_* 3) -fore $colorLeft -back $_} ; write-host "`n`n" -back black } | more
 $ConsoleColors = 'Black', 'Blue', 'Cyan', 'DarkBlue', 'DarkCyan', 'DarkGray', 'DarkGreen', 'DarkMagenta', 'DarkRed', 'DarkYellow', 'Gray', 'Green', 'Magenta', 'Red', 'White', 'Yellow'
 $ConsoleColors | % { write-host (('{0,16}' -f $_ ) * 4) -back black -fore $_; write-host $(( '{0,16}' -f $_ ) * 4) -back white -fore $_ }
+
+# Select-Xml -Path C:\Windows\System32\WindowsPowerShell\v1.0\types.ps1xml -XPath "Types/Type/Name" | Select-Object -ExpandProperty Node
+# find-module psscripttools |install-module -force -allowclo
+# install-module pstypeextensiontools 
+
+New NotePad++ Version
+<li class="first"><a href="news/notepad-7.5.5-released.html">Notepad++ 7.5.5 released</a>
 
 'C:\dev\EncodingDetector\src\Example\bin\Debug'
 Character Encoding Detection dir \dev\*.ps1 |% {write-host ('{0,30}  ' -f $_.name) -NoNewline; .\udetect.exe $_.fullname }
