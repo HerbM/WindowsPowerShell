@@ -47,9 +47,58 @@ reg query  "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" | 
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v AutoDetect /d 1 /f /t REG_DWORD
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v AutoConfigURL /d http://proxyconf.my-it-solutions.net/proxy-na.pac /f /t REG_SZ
 $url = (get-itemproperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings").'AutoConfigURL'
-if ($url) {
-  $url = set-itemproperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" 'AutoConfigURL-Save' $url
-}
+
+Function Set-InternetProxy {
+  [CmdletBinding()]
+  param(
+    #[Parameter(ValidateSet='Enable','On','Disable','Off')][string]$State,
+    [string]$State,
+    [string]$Url,
+    [Alias('On' )][switch]$Enable,
+    [Alias('Off')][switch]$Disable 
+  )
+  If ($State -match '^(On|Ena)') { $Enable = $True  }
+  If ($State -match '^(Of|Dis)') { $Disable = $True }
+  $InternetSettingsKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings"
+  $AutoConfigURL       = 'AutoConfigURL'
+  $AutoConfigURLSave   = $AutoConfigURL + 'SAVE'
+  $AutoDetect          = 'AutoDetect'
+  $ProxyEnable         = 'ProxyEnable'
+  $ProxyValues         = 'AutoConfig ProxyEnable Autodetect'
+  $urlEnvironment      = $Env:AutoConfigUrl 
+  $urlCurrent          = (get-itemproperty $InternetSettingsKey $AutoConfigURL     -ea 0).$AutoConfigURL      
+  $urlSaved            = (get-itemproperty $InternetSettingsKey $AutoConfigURLSave -ea 0).$AutoConfigURLSAVE 
+  $urlDefault          = 'http://proxyconf.my-it-solutions.net/proxy-na.pac'
+  If ($Enable -eq $Disable) {
+    Write-Warning "Must specify either Enable or Disable (alias: On or Off)"
+  } elseif ($Disable) {
+    if ($urlCurrent) {
+      set-itemproperty $InternetSettingsKey $AutoConfigURLSave $urlCurrent -force -ea 0
+      remove-itemproperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" 'AutoConfigURL' -ea 0
+    }
+    Set-ItemProperty $InternetSettingsKey $AutoDetect  0 -force -ea 0
+    Set-ItemProperty $InternetSettingsKey $ProxyEnable 0 -force -ea 0
+  } elseif ($Enable) {
+    $Url = switch ($True) {
+      { [boolean]$Url            } { $Url            ; break }
+      { [boolean]$UrlEnvironment } { $UrlEnvironment ; break }
+      { [boolean]$UrlCurrent     } { $UrlCurrent     ; break }  
+      { [boolean]$urlSaved       } { $UrlSaved       ; break } 
+      { [boolean]$urlDefault     } { $UrlDefault     ; break }
+      Default { 
+        Write-Warning "Supply URL for enabling and setting AutoConfigURL Proxy"
+        return
+      }
+    }
+    Set-Itemproperty $InternetSettingsKey $AutoConfigURL $url -force -ea 0
+    Set-ItemProperty $InternetSettingsKey $AutoDetect    1    -force -ea 0    
+    Set-ItemProperty $InternetSettingsKey $ProxyEnable   1    -force -ea 0
+  }
+  $Settings = get-itemproperty $InternetSettingsKey -ea 0 | findstr /i $ProxyValues | sort
+  ForEach ($Line in $Settings) {
+    Write-Verbose $Line
+  }
+} 
 
 reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings"  |findstr /i auto
 

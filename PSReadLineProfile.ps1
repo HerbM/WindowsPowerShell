@@ -552,11 +552,13 @@ if (Get-Module PSReadline) {
   Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
   Set-PSReadLineKeyHandler -Key 'F7','F9'             -Function HistorySearchBackward
   Set-PSReadLineKeyHandler -Key 'Shift+F7','Shift+F9' -Function HistorySearchForward
+  ### if ($SaveHistory -and !(Get-History).count) { Add-History $SaveHistory };
+  if ($SaveHistory) {
+    $SaveHistory | % { [Microsoft.PowerShell.PSConsoleReadLine]::AddToHistory($_) }
+    $SaveHistory = $null
+  }
 }
 
-### if ($SaveHistory -and !(Get-History).count) { Add-History $SaveHistory };
-$SaveHistory | % { [Microsoft.PowerShell.PSConsoleReadLine]::AddToHistory($_) }
-$SaveHistory = $null
 
 <#        
         function prompt {

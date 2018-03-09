@@ -1,3 +1,64 @@
+<#
+.SYNOPSIS
+    Gets the files and folders in a file system drive beyond the 256 character limitation
+.DESCRIPTION
+    Gets the files and folders in a file system drive beyond the 256 character limitation
+.PARAMETER Path
+    Path to a folder/file
+.PARAMETER Filter
+    Filter object by name. Accepts wildcard (*)
+.PARAMETER Recurse
+    Perform a recursive scan
+.PARAMETER Depth
+    Limit the depth of a recursive scan
+.PARAMETER Directory
+    Only show directories
+.PARAMETER File
+    Only show files
+.PARAMETER SimpleOutput 
+  Output a simple string LastAccessTime,Length,FullName
+.PARAMETER OutFileName
+  Output to file give by OutFileName parameter 
+.PARAMETER CSVOutput 
+  Output CSV format, to filename by require OutFileName parameter
+.PARAMETER LongOnly 
+  Output only long names: total length > 260 or directory length > 248
+.PARAMETER GCCount
+ Default 5000 items between calls to the .NET Garbage Collector (GC)
+ Set this to 0 to disable explicit garbage collection.   
+.NOTES
+    Name: Get-ChildItem2
+    Author: Boe Prox (original and primary author)
+    Version History:
+      1.42//Herb Martin <2018-03-05>
+          - Add simple GC, option to only output long files/paths   
+      1.41//Herb Martin <2018-02-22>
+          - Simple changes for output control added to Boe's excellent function
+      1.4 //Boe Prox <21 OCt 2015>
+          - Bug fixes in output
+          - Auto conversion of path to UNC for bypassing 260 character limit w/o user input
+      1.2 //Boe Prox <20 Oct 2015>
+          - Added additional parameters (File, Directory and Filter)
+          - Made output mirror Get-ChildItem
+          - Added Mode property
+      1.0 //Boe Prox
+          - Initial version
+.OUTPUT
+    System.Io.DirectoryInfo
+    System.Io.FileInfo
+    or 
+    LastAccessTime,Length,FullName
+      Simple PSCustomOBjects, when -SimpleOutput switch is specified then out only 
+.EXAMPLE
+  \Scripts\Get-ChildItem2.ps1 -path $Home -outf t2.csv -long -rec -simple
+.EXAMPLE
+    Get-ChildItem2 -Recurse -Depth 3 -Directory
+
+    Description
+    -----------
+    Performs a scan from the current directory and recursively displays all
+    directories down to 3 folder levels.
+#>
 [CmdletBinding()]
 param(
   [parameter(ValueFromPipeline=$True, ValueFromPipelineByPropertyName=$True)]
@@ -43,6 +104,9 @@ Function Get-ChildItem2 {
     Output CSV format, to filename by require OutFileName parameter
   .PARAMETER LongOnly 
     Output only long names: total length > 260 or directory length > 248
+  .PARAMETER GCCount
+   Default 5000 items between calls to the .NET Garbage Collector (GC)
+   Set this to 0 to disable explicit garbage collection.   
   .NOTES
       Name: Get-ChildItem2
       Author: Boe Prox (original and primary author)
@@ -67,6 +131,8 @@ Function Get-ChildItem2 {
       LastAccessTime,Length,FullName
         Simple PSCustomOBjects, when -SimpleOutput switch is specified then out only 
 
+  .EXAMPLE
+    \Scripts\Get-ChildItem2.ps1 -path $Home -outf t2.csv -long -rec -simple
   .EXAMPLE
       Get-ChildItem2 -Recurse -Depth 3 -Directory
 
@@ -362,7 +428,6 @@ Function Get-ChildItem2 {
           }
           If ($ToOutPut) {
             [void]$Script:OutputCount++
-            $Script:OutputCount
             if ($SimpleOutput) {
               $ToOutPut = "$($ToOutPut.LastAccessTime -f 's'),$($ToOutPut.Length),$($ToOutPut.FullName)"
             } elseif ( $CSVOutput ) {

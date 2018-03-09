@@ -8,6 +8,19 @@ blat, selfssl,
 setx, pnputil, w32tm, robocopy, xcopy
 fsutil
 fondue
+You need to prove that they are fully replicated or your domain will just get sicker over time.
+95% of these problem if it was previously working are DNS based.
+Sounds like you know how to use repadmin so that and DCDiag are your friend.
+I like to force syncs, especially from the problem DC, with these:
+repadmin /syncall /AdeP     # PUSH
+repadmin /syncall /Ade        # PULL 
+## And read all the errors for both that and DCDiag on every domain controller.  If you don't have a giant forest you can use /E for enterprise (every DC in forest) to check  them all at once.
+(Never did find a /d or similar switch for "all in domain" which irritates me.)
+Check DNS carefully with EXPLICIT nslookup.
+nslookup from each DC to himself EXPLICITLY and to his configured DNS (as a client) as well as with his replication partners.
+Check your sites if you have significant sites or sitelinks etc.  Make sure everyone has a connection whether auto or manual that WORKS.
+If you continue to have a sick DC, "dcpromo cycle him"  (non-DC and back to DC) once you are sure the DNS setting are all correct.
+
 Set IP attribs:
   netsh int ip set address local static 10.10.1.3
   255.255.255.0 10.10.1.1 2
