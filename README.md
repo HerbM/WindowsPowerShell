@@ -2,12 +2,8 @@
 
 # Use the following to download Git if not present:
 
-# My idiosyncratic PowerShell utilities and profile -- much of this is junky but I need to get it under source control.
-
-# Use the following to download Git if not present on your system
-
 ```
-https://raw.githubusercontent.com/HerbM/Profile-Utilities/master/Scripts/Get-WindowsGit.ps1
+# https://raw.githubusercontent.com/HerbM/Profile-Utilities/master/Scripts/Get-WindowsGit.ps1
 ```
 
 <#
