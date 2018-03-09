@@ -1,34 +1,58 @@
+[CmdletBinding()]param(
+  [Object[]]$Object, 
+  [switch]$ShowPSReadLine,
+  [switch]$Main,
+  [switch]$Private
+) 
+  
 Function Get-ColorOption {
-  param([Object[]]$Object) 
+  [CmdletBinding()]param(
+    [Object[]]$Object, 
+    [switch]$ShowPSReadLine,
+    [switch]$Main,
+    [switch]$Private
+  ) 
   ForEach ($O in $Object) {
     $PropertyNames = ($O | gm -member *property* *color*).name
     ForEach ($Name in $PropertyNames) {
+      $Fore = 'White'
+      $Back = 'Black'
       If ($Name -match 'fore') { 
-        $fore = $O.$Name; 
         $backName = $Name -replace 'Fore', 'Back'; 
+        Write-Verbose "$(LINE) ForeName: $Name $O.Name BackName: $BackName $O.$BackName"
+        $fore = $O.$Name; 
         $Back = $O.BackName
       } elseIf ($Name -match 'back') { 
-        $back = $O.$Name; 
         $foreName = $Name -replace 'Back', 'Fore'; 
+        Write-Verbose "$(LINE) ForeName: $Name $O.ForeName BackName: $Name $O.$Name"
+        $back = $O.$Name; 
         $Fore = $O.ForeName
       } else {
         $fore = 'white'; $back = 'black'
       }
-      write-warning 'Fore: $Fore Back: $Back'
-      Write-Host "$Name" -fore $fore -back $back
+      If (!$Fore) { $Fore = 'White' } 
+      If (!$Back) { $Back = 'Black' }
+      #write-warning "$(LINE) $Name Fore: $Fore Back: $Back"
+      Write-Host "$(LINE) $Name Fore: $Fore Back: $Back" -fore $fore -back $back
     }
   }
 }  
 
 $Token      = [tokenkind]::GetNames([tokenkind]) # |gm -me method -static
-$MainColors = ($Host.UI.RawUI  | gm -member *property* *color*).name # fore / back
-$MainColors
-$Private    = ($host.PrivateData | gm -member *property* *color*).name # all colors Error,Warning,Debug,Verbose,Progress  Fore/Back color
-$Private
+If ($Main) { 
+  $MainColors = ($Host.UI.RawUI  | gm -member *property* *color*).name # fore / back
+  $MainColors 
+}
+If ($Private) { 
+  $Private    = ($host.PrivateData | gm -member *property* *color*).name # all colors Error,Warning,Debug,Verbose,Progress  Fore/Back color
+  $Private 
+}
 get-ColorOption $host.PrivateData
-$PSreadlineOptions = (get-psreadlineoption | gm -member *property* *color*).name
-$PSreadlineOptions
-(gcm -syn set-psreadlineoption) -replace '<\w+>' -split '\W+' | ? { $_ -match 'Color$' }
+If ($ShowPSReadLine) {
+  $PSreadlineOptions = (get-psreadlineoption | gm -member *property* *color*).name
+  $PSreadlineOptions
+  (gcm -syn set-psreadlineoption) -replace '<\w+>' -split '\W+' | ? { $_ -match 'Color$' }
+}
 
 <#
 https://blogs.msdn.microsoft.com/commandline/2017/06/20/understanding-windows-console-host-settings/

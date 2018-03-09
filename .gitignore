@@ -21,3 +21,4 @@ junk
 /backup
 /backup
 *.exe
+*log.txt

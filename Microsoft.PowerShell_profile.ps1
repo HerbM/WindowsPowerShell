@@ -74,8 +74,8 @@ try {
 # ArsClip
 
 #Clean the $Env:Path 
-$SavePath = ($Env:Path -split ';' -replace '(?<=[\w\)])\\\s*$' | 
-          Where-Object { Test-Path $_ } | select -uniq) -join ';'
+$SavePath = ($Env:Path -split ';' -replace '(?<=[\w\)])[\\;\s]*$' | 
+             Where-Object { $_ -and Test-Path $_ } | select -uniq) -join ';'
 if ($SavePath) { $Env:Path, $SavePath = $SavePath, $Env:Path }
 
 function Add-ToolPath {
@@ -529,7 +529,7 @@ function New-RDPSession {
     [int]$Width=1350, [int]$Height:730,
     [Alias('NoConnectionFile','NoFile','NoPath')][switch]$NoProfileFile
   )
-  If (!(Test-Target $Path)) { $NoProfileFile = $False }
+  If (!(Test-Path $Path)) { $NoProfileFile = $False }
   $argX = $args
   $argX += '/prompt'
   if ($NoProfileFile) { mstsc /v:$ComputerName /w:$Width /h:$Height @argX }
