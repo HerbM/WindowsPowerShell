@@ -75,7 +75,7 @@ try {
 
 #Clean the $Env:Path 
 $SavePath = ($Env:Path -split ';' -replace '(?<=[\w\)])[\\;\s]*$' | 
-             Where-Object { $_ -and Test-Path $_ } | select -uniq) -join ';'
+             Where-Object { $_ -and (Test-Path $_) } | select -uniq) -join ';'
 if ($SavePath) { $Env:Path, $SavePath = $SavePath, $Env:Path }
 
 function Add-ToolPath {
