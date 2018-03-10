@@ -1637,12 +1637,12 @@ function PSBoundParameter([string]$Parm) {
 write-host "`nError count: $($Error.Count)"
 #if(Test-Path Function:\Prompt) {Rename-Item Function:\Prompt PrePoshGitPrompt -Force}
 
-if (!(where.exe choco.exe 2>&1)) {
+if (!(where.exe choco.exe 2>$Null)) {
   "Get Chocolatey: iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
 } else {
-  where.exe choco.exe 2>&1
+  where.exe choco.exe 2>$Null
 }
-if (!(where.exe git.exe 2>&1)) {
+if (!(where.exe git.exe 2>$Null)) {
   "Get WindowsGit: & '$PSProfile\Scripts\Get-WindowsGit.ps1'"
 } else {
   where.exe git.exe
