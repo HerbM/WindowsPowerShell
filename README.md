@@ -1,11 +1,12 @@
 # My idiosyncratic PowerShell utilities and profile -- much of this is junky but I need to get it under source control.
 
-# Use the following to download Git if not present:
+## Use the following to download Git if not present:
 
 ```
-# https://raw.githubusercontent.com/HerbM/Profile-Utilities/master/Scripts/Get-WindowsGit.ps1
+https://raw.githubusercontent.com/HerbM/Profile-Utilities/master/Scripts/Get-WindowsGit.ps1
 ```
 
+```
 <#
 .Synopsis 
   Get git for Windows and clone Profile-Utilities to profile directory
@@ -115,9 +116,4 @@ if (Test-Path $Out) {
   "Download FAILED to $Out"
 }
 
-<#
-# https://www.ssllabs.com/ssltest/index.html
-# https://www.ssllabs.com/ssltest/analyze.html?d=git-scm.com&latest
-# https://www.ssllabs.com/ssltest/analyze.html?d=git-scm.com&s=104.20.12.91&latest                              
-#>
 ```

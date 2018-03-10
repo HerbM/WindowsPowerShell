@@ -77,6 +77,7 @@ try {
 $SavePath = ($Env:Path -split ';' -replace '(?<=[\w\)])[\\;\s]*$' | 
              Where-Object { $_ -and (Test-Path $_) } | select -uniq) -join ';'
 if ($SavePath) { $Env:Path, $SavePath = $SavePath, $Env:Path }
+function Get-PSVersion {"$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"}
 
 function Add-ToolPath {
   [CmdLetBinding()]param(
@@ -165,7 +166,7 @@ try {
   if ($Util=@(Join-Path $TryPath 'utility.ps1' -ea 0)) {
     Write-Warning "Utility: $($Util -join '; ')" 
     . $Util[0]
-    Write-Log "(FLINE) Using Write-Log from Utility.ps1" -file $ProfileLogPath 3
+    Write-Log "(LINE) Using Write-Log from Utility.ps1" -file $ProfileLogPath 3
   }
 } catch { # just ignore and take care of below
   Write-Log "Failed loading Utility.ps1" -file $PSProfileLogPath 3
@@ -222,7 +223,7 @@ if ((Get-Command 'Write-Log' -type function,cmdlet -ea 0)) {
       }
     } catch {
       $ec   = ('{0:x}' -f $_.Exception.ErrorCode); $em = $_.Exception.Message; $in = $_.InvocationInfo.PositionMessage
-      $description =  "$(FLINE) Catch $in $ec, $em"
+      $description =  "$(LINE) Catch $in $ec, $em"
       "Logging: $description" >> $LogFilePath
     }
   }
@@ -377,16 +378,20 @@ If ($ShowDotNetVersions) {
 $DefaultConsoleTitle = 'Administrator: Windows PowerShell'
 # https://github.com/PowerShell/PowerShellGet/archive/1.6.0.zip
 try {
+  if ((Get-PSVersion) -lt 6.0) {
+    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+  }
   $PSGallery = Get-PSRepository PSGallery -ea 0
   if ($PSGallery) { 
-    $PSGallery 
+    #$PSGallery 
     if ($PSGallery.InstallationPolicy -ne 'Trusted') {
       Set-PSRepository -name 'PSGallery' -InstallationPolicy 'Trusted' -ea 0
-      Get-PSRepository -name 'PSGallery'                               -ea 0
+      $PSGallery = Get-PSRepository -name 'PSGallery'                  -ea 0
     }
+    $PSGallery | Format-Table 
   }
 } catch {
-  Write-Information "$(FLINE) Problem with PSRepository"
+  Write-Information "$(LINE) Problem with PSRepository"
 }
 
 $PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)" -as [double]
@@ -396,7 +401,9 @@ if (!(Get-Module 'Jump.Location' -listavailable -ea 0) -and $PSVersionNumber -lt
   Install-Module 'Jump.Location' ### @Parms 
 }
 
-Import-Module jump.location
+If (((Get-PSVersion) -lt 6.0 ) -and (Get-Module -list Jump.Location -ea 0)) {
+  Import-Module jump.location -ea 0
+}
 
 function Update-ModuleList {
   [CmdLetBinding(SupportsShouldProcess = $true,ConfirmImpact='Medium')]
@@ -768,7 +775,7 @@ function Get-RunTime {
   $width = +1 * "$((($HistoryItem | measure -max id).maximum))".length
   $F1 = '{0,5:N2}'; 
   $F2 = "ID# {1,$($Width):D}: "
-  write-verbose "$(FLINE) width $Width $F2"
+  write-verbose "$(LINE) width $Width $F2"
   foreach ($hi in $HistoryItem) {
     $CL = $hi.commandline
     $ID = $hi.id
@@ -1429,7 +1436,6 @@ try {   # Chocolatey profile
 
 new-alias alias new-alias -force
 function 4rank ($n, $d1, $d2, $d) {"{0:P2}   {1:P2}" -f ($n/$d),(1 - $n/$d)}
-function Get-PSVersion {"$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"}
 write-information ("$(LINE) Use Function Get-PSVersion or variable `$PSVersionTable: $(Get-PSVersion)")
 function down {cd "$env:userprofile\downloads"}
 function Get-SerialNumber {gwmi win32_operatingsystem  | select -prop SerialNumber}
@@ -1631,11 +1637,15 @@ function PSBoundParameter([string]$Parm) {
 write-host "`nError count: $($Error.Count)"
 #if(Test-Path Function:\Prompt) {Rename-Item Function:\Prompt PrePoshGitPrompt -Force}
 
-if (w choco.exe 2>&1) {
+if (!(where.exe choco.exe 2>&1)) {
   "Get Chocolatey: iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
+} else {
+  where.exe choco.exe 2>&1
 }
-if (w git.exe 2>&1) {
-  "Get WindowsGit: & '$PSProfile\Get-WindowsGit.ps1'"
+if (!(where.exe git.exe 2>&1)) {
+  "Get WindowsGit: & '$PSProfile\Scripts\Get-WindowsGit.ps1'"
+} else {
+  where.exe git.exe
 }
 
 if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $informationpreferenceSave }
@@ -1652,12 +1662,14 @@ if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $i
   if (!(Test-Path $PSProfileDirectory)) {
     md (Split-Path $PSProfile -ea 0) -ea 0 -force
   }
-  If (Test-Path $PSProfileDirectory) { 
-    cd $PSProfileDirectory
-  } else { 
-    cd $Home 
-  }
-  if ((Get-Location) -match '^.:\\Windows') { cd \ }
+  if ((Get-Location) -match '^.:\\Windows') {
+    If (Test-Path $PSProfileDirectory) { 
+      cd $PSProfileDirectory
+    } else { 
+      cd $Home 
+    }
+    if ((Get-Location) -match '^.:\\Windows') { cd \ }
+  }  
 }
 if ((Get-Location) -match '^.:\\Windows\\System32$') { cd \ }
 
