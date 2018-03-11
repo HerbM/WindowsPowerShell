@@ -15,25 +15,20 @@ Function Get-ColorOption {
   ForEach ($O in $Object) {
     $PropertyNames = ($O | gm -member *property* *color*).name
     ForEach ($Name in $PropertyNames) {
-      $Fore = 'White'
-      $Back = 'Black'
-      If ($Name -match 'fore') { 
-        $backName = $Name -replace 'Fore', 'Back'; 
-        Write-Verbose "$(LINE) ForeName: $Name $O.Name BackName: $BackName $O.$BackName"
-        $fore = $O.$Name; 
-        $Back = $O.BackName
-      } elseIf ($Name -match 'back') { 
-        $foreName = $Name -replace 'Back', 'Fore'; 
-        Write-Verbose "$(LINE) ForeName: $Name $O.ForeName BackName: $Name $O.$Name"
-        $back = $O.$Name; 
-        $Fore = $O.ForeName
+      $Fore = $Null
+      If ($Name -match 'Fore') {
+        $Other = 'Back'        
       } else {
-        $fore = 'white'; $back = 'black'
+        $Other = 'Fore'
       }
+      $OtherName = $Name -replace 'Fore|Back', $Other 
+      Write-Verbose "$(LINE) ColorName: $Name $($O.$Name) OtherName: $OtherName $($O.$OtherName)"
+      $Fore = $O.$Name
+      $Back = $O.$OtherName
       If (!$Fore) { $Fore = 'White' } 
       If (!$Back) { $Back = 'Black' }
-      #write-warning "$(LINE) $Name Fore: $Fore Back: $Back"
-      Write-Host "$(LINE) $Name Fore: $Fore Back: $Back" -fore $fore -back $back
+      Write-Warning "$(LINE) ColorName: $Name $($O.$Name) OtherName: $OtherName $($O.$OtherName)"
+      Write-Host    "         $(LINE) ColorName: $Name $Fore OtherName: $OtherName $Back" -Fore $Fore -Back $Back
     }
   }
 }  
