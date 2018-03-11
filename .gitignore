@@ -21,3 +21,5 @@ junk
 /backup
 /backup
 *.exe
+*log.txt
+Microsoft.PowerShell_profileLOG.txt

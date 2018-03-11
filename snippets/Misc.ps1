@@ -1,3 +1,165 @@
+# C:\Users\Herb\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1
+# https://keepass.info
+# https://keepass.info/plugins.html
+# https://github.com/kee-org/keepassrpc/releases/tag/v1.7.3.1
+# 
+new-alias kp 'C:\Program Files (x86)\KeePass2\KeePass.exe' -force -scope Global
+function Group-Error {
+  [CmdletBinding()]param([Object[]]$Error=$Error,[int]$First=9999, [int]$Last=20)
+  $error | select -first $First | group | sort count |select count,name -Last $Last
+}
+
+
+# Background Intelligent Transfer Service
+# Get date-time formatString  https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings
+# Get string format
+# Get regex 
+# Build Help addendum
+
+
+Video Debugging 
+https://github.com/KirkMunro
+Version   Name      Repository Description                                                                             
+-------   ----      ---------- -----------                                                                             
+1.0.5.18  SnippetPx PSGallery  The SnippetPx module enhances the snippet experience in PowerShell by offering a new ...
+1.0.6.15  HistoryPx PSGallery  HistoryPx uses proxy commands to add extended history information to PowerShell. This...
+1.1.3.15  FormatPx  PSGallery  FormatPx separates the formatting layer from the data processing layer in PowerShell....
+1.0.3.14  DebugPx   PSGallery  The DebugPx module provides a set of commands that make it easier to debug PowerShell...
+2.0.1.20  TypePx    PSGallery  The TypePx module adds properties and methods to the most commonly used types to make...
+1.0.17.60 ScsmPx    PSGallery  The ScsmPx module facilitates automation with Microsoft System Center Service Manager...
+1.0.0.8   DoPx      PSGallery  The DoPx module provides a rich set of commands that extend the automation capabiliti...
+0.3       MrAAppx   PSGallery  Custom Functions for working with Appx.                                                 
+1.0.8.10  LodPx     PSGallery  Automation library for the OneLearn Lab on Demand platform                              
+
+
+
+
+"C:\Program Files (x86)\Microsoft VS Code\Code.exe"
+
+The Organized Mind: Thinking Straight in the Age of Information Overload
+Resylio Sync
+Anki
+code -d fileold filenew
+https://github.com/ShareX/ShareX/releases/tag/v12.0.0
+
+http://sp.ntpcug.org/PowerShell/Shared%20Documents/Larry_Weiss_PS_cheatsheet.doc.doc
+http://sp.ntpcug.org/PowerShell/Shared%20Documents/Larry_Weiss_PS_strings_cheatsheet.doc.doc
+
+
+$Events = Get-EventLog -LogName "system" -Newest 1000
+#$Events | Group-Object -Property eventID
+$Events | Group-Object -Property eventID |sort count
+
+https://github.com/vimwiki/vimwiki
+
+Fred:
+Templates
+(A component of the `PSModuleDevelopment` powershell module)
+Specifically, a simple way to create, manage and use templates (not restricted to PowerShell - it can template anything plaintext and carry along other files).
+Official announcement:
+https://allthingspowershell.blogspot.com/2018/03/announcing-simple-templates-latest.html
+Short video on creating and using a template in less than 5 minutes:
+https://youtu.be/8WkHaH20OEE
+Documentation Root:
+http://psframework.org/documentation/documents/psmoduledevelopment/templates.html (edited)
+YouTubePSFramework https://youtu.be/8WkHaH20OEE
+PSModuleDevelopment Templates Tutorial 1 - File
+# Deal with TLS requirements for download from web sites
+
+OneNote work for you
+https://www.youtube.com/watch?v=v7PYPl5WSVA
+
+<#
+# Collection Type Guidence
+## When to use what
+* Use Arrays if you know the element types and have a fixed length and/or known-up-front collection size that will not change.
+* Use ArrayList if you have an unkown collection size with either unknown or mixed type elements.
+* Use a Generic List<t> when know the type of the elements but not the size of the collection. 
+* Use a HashTable if you are going to do key based lookups on a collection and don't know the object type of the elements. 
+* Use a Dictionary<TKey, TValue> you are going to do key based lookups on a collection and you know the type of the elements. 
+* Use a HashSet<t> when you know the type of elements and just want unique values and quick lookups and assignmnets.
+* Use LinkList<t> if you are going to make large numbers of additions and subtractions to an ordered list (and have the understanding to use this type)
+* Use Queue<t> if you will build a collection that will need to be worked on First-in-first-out FIFO
+* Use Stack<t> if you will build a collection that will need to be worked Last-in-first-out LIFO
+* Use SortedSet<T> when you need a HasSet<t> like set, but sorted (alaphbetically, for example)
+* Use SortedList<t> when you need a List<t>, but sorted (alaphbetically, for example)
+* Use SortedDictionary<TKey, TValue> when you need a Dictionary<TKey, TValue>, but sorted (alaphbetically, for example)
+## Avoid the following:
+* Do not use Object[]
+* Do not use += on Arrays. If your collection will grow or shrink, use ArrayList or List<t>
+* Do not use List<Object> for value types (int32, int64, char, etc)
+* avoid using Arrays, Lists, and ArrayLists for lookup/search operations, use ditcionaries and sets instead
+* Linked lists should only be considered in rediculously high volume add/remove operations to a list as the code complexity is too much for PowerShell
+* Only use "sorted" types when you really need to. If you only need it for reconstituion, sorting the keys and then foreaching them can work on small collections
+## Examples
+### Arrays
+https://docs.microsoft.com/en-us/dotnet/api/system.array?view=netframework-4.7.1
+string array:
+```powershell
+$Array = [string[]]@('string1','string2')
+```
+Int array:
+```powershell
+$Array = [int[]]@(1,2,3,4,5)
+```
+### ArrayList
+https://docs.microsoft.com/en-us/dotnet/api/system.collections.arraylist?view=netframework-4.7.1
+```powershell
+$ArrayList = [System.Collections.ArrayList]::new()
+$null = $ArrayList.Add(1)
+$null = $ArrayList.Add('String1')
+```
+### List<t>
+https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1?view=netframework-4.7.1
+String:
+```powershell
+$List = [System.Collections.Generic.List[String]]::new()
+$List.Add('String1')
+$List.Add('String2')
+```
+Int:
+```powershell
+$List = [System.Collections.Generic.List[Int]]::new()
+$List.Add(1)
+$List.Add(2)
+```
+### Hashtable
+https://docs.microsoft.com/en-us/dotnet/api/system.collections.hashtable?view=netframework-4.7.1
+```powershell
+$HashTable = @{
+    Key1 = "Value1"
+    Key2 = "Value2"
+}
+```
+### Dictionary
+https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.dictionary-2?view=netframework-4.7.1
+Case Sensitive (default)
+```powershell
+$Dictionary = [System.Collections.Generic.Dictionary[String,String]]::New()
+$Dictionary['key1'] = 'Value1'
+$Dictionary['key2'] = 'Value2'
+# Is case sensitiveby default:
+$Dictionary['Key2'] = 'Value3'
+```
+Case Insensitive:
+```powershell
+$Comparer = [System.StringComparer]::InvariantCultureIgnoreCase
+$Dictionary = [System.Collections.Generic.Dictionary[String,String]]::New($Comparer)
+$Dictionary['key1'] = 'Value1'
+$Dictionary['key2'] = 'Value2'
+# Will repllace the key above
+$Dictionary['Key2'] = 'Value3'
+```
+Example using processes and looking them up by PID:
+```powershell
+$ProcessDict = [System.Collections.Generic.Dictionary[int,System.Diagnostics.Process]]::new()
+Get-Process | ForEach-Object {
+    $ProcessDict[$_.Id] = $_
+}
+$ProcessDict[0] | format-list *
+```
+#>
+
 [Net.ServicePointManager]::SecurityProtocol = 
   [Net.SecurityProtocolType]::Tls12 -bor `
   [Net.SecurityProtocolType]::Tls11 -bor `

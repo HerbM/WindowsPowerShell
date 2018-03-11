@@ -137,6 +137,8 @@ function Get-NewLine { [environment]::NewLine }; new-alias NL Get-NewLine -force
 if (! (Get-Command write-log -type function,cmdlet,alias -ea 0)) {
   new-alias write-log write-verbose -force -scope Global -ea 0
 }
+new-alias kp      'C:\Program Files (x86)\KeePass2\KeePass.exe' -force -scope Global
+new-alias KeePass 'C:\Program Files (x86)\KeePass2\KeePass.exe' -force -scope Global
 new-alias rdir    Remove-Item  -force -scope Global -ea 0 
 new-alias cdir    Set-Location -force -scope Global -ea 0
 new-alias mdir    mkdir        -force -scope Global -ea 0
@@ -783,7 +785,8 @@ function Get-RunTime {
   }
 }
 function get-syntax   { 
-  param()
+  param(
+  )
   $Result = get-command -syntax @args
   write-warning "result: $Result"  
   Foreach ($R in $Result) {
@@ -793,7 +796,7 @@ function get-syntax   {
     } else { $Result }
   } 
 }; new-alias syn get-syntax -force
-
+function syn { get-command @args -syntax }
 function get-fullhelp { get-help -full @args }
 'hf','full','fh','fhelp','helpf' | % { new-alias $_ get-fullhelp -force -ea continue }
 
