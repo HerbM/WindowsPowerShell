@@ -89,18 +89,16 @@ if (Test-Path $Out) {
     
     # $out to install Git"
     
-    $out
-    
-    md  (Split-Path) `$Profile -ea 0 # OR:  md `$Home\Documents\WindowsPowerShell -ea 0
-    cd  (Split-Path) `$Profile -ea 0 # OR:  cd `$Home\Documents\WindowsPowerShell   
-    git clone https://github.com/HerbM/Profile-Utilities . # DOT IF in Profile directory
-    
+    $out /verysilent
+    $Env:Path += ';C:\Program Files\Git\cmd'
+    cd  $Home\Documents -ea 0 # OR:  cd `$Home\Documents\WindowsPowerShell   
+    git clone https://github.com/HerbM/Profile-Utilities WindowsPowerShell
+        
     git remote -v      # will show:
-    
     #  origin     https://github.com/HerbM/Profile-Utilities
     #  origin     https://github.com/HerbM/Profile-Utilities
  
-    #  You will a nice .gitprofile, usually in `$Home 
+    #  You will need a decent .gitprofile, usually in `$Home 
     #    $Home/.gitprofile
     #    but `$Env:Home may point somewhere else: [$($Env:Home)]
 "@

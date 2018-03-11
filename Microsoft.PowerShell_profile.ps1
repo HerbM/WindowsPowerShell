@@ -16,22 +16,26 @@ $PSProfile          = $MyInvocation.MyCommand.Definition
 $PSProfileDirectory = Split-Path $PSProfile
 
 try {
+# Fix 6.0 problems, PSGallery, Where.exe output, PSProvider,Jump.Location load
 # Improved Get-ChildItem2, Add-ToolPath,++B,++DosKey,CleanPath,start Get-DirectoryListing,add refs,README.md
 # Show-ConsoleColor,Get-Syntax(aliases),++Select-History,++FullHelp,++d cmds, esf (needs *,? support),++Add-ToolPath,Reduce History Saved
 # Started Add-Path(crude) -- more ToDo notes 
 
 # ToDo: Move notes out of this file
-# ToDo: Finish README.md change to reference "bootstrap file" (Get-WindowsGit.ps1)
+# ToDo: Test without Admin privs and skip issues
+# ToDo: Add Update-Help as background job?
+# ToDo: Updrade PowerShell to 5.1+
+# ToDo: Set console colors?  DarkGray = 80 80 80?
 # ToDo: JOIN-PATH -resolve:  NOT Test-Path -resolve , Add Server to Get-WinStaSession
 # ToDo: improve go, find alias Version numbers (at least display)
 # ToDo: need Notepad++, 7zip, Git, ??? to be on path with shortcuts (improved, not good enough yet)
-# ToDo: LogFile not being written???
+# ToDo: LogFile was being written, written now, CHECK?
 # ToDo: Clean up output -- easier to read, don't use "warnings" (colors?)
 # ToDo: Setup website for initial BootStrap scripts to get tools, Profile etc.
 #         Run scripts from "master" ????
 #         Download Tools -- as job
 #         Sync tools -- as job or scheduled job?
-#         Upgrade PowerShell, Git, Enable Scripting/Remoting etc., 
+#         Git, Enable Scripting/Remoting etc., 
 #         Configure new build, Firewall off,RDP On,No IPv6 etc 
 #         Split out functions etc to "Scripts" directory
 #         Speed up History loading?
@@ -52,6 +56,23 @@ try {
 # Move utility extract up (LINE, FILE, WRITE-LOG)
 # working on LogFilePath
 # worked on 7z  -- 
+
+# Jing imagex sharex
+# C:\Program Files\ShareX\ & 'C:\Program Files\ShareX\ShareX.exe'
+#   https://getsharex.com/docs/amazon-s3
+# PowerShell Windows Management Framework 5.1 https://www.microsoft.com/en-us/download/details.aspx?id=54616
+#   W2K12-KB3191565-x64.msu
+#   Win7AndW2K8R2-KB3191566-x64.zip
+#   Win7-KB3191566-x86.zip
+#   Win8.1AndW2K12R2-KB3191564-x64.msu
+#   Win8.1-KB3191564-x86.msu
+# Delete multiple downloads with parenthesis numbers
+#   dir '*([1-9]).*' | sort name | % { if (Test-Path ($F0=$($_.FullName -replace '\s+\(\d+\)'))) { write-host "Ok: $F0" -fore Green -back 'Black' ; "del $($_.FullName)" } } 
+# Interact with Symbolic links using improved Item cmdlets
+#   https://docs.microsoft.com/en-us/powershell/wmf/5.0/feedback_symbolic
+# How To Set Up Chocolatey For Organizational/Internal Use 
+#   https://chocolatey.org/docs/how-to-setup-offline-installation 
+
 # https://null-byte.wonderhowto.com/how-to/use-google-hack-googledorks-0163566/
 # 7-Zip        http://www.7-zip.org/download.html
 # Git          https://git-scm.com/download/win
@@ -74,9 +95,10 @@ try {
 # ArsClip
 
 #Clean the $Env:Path 
-$SavePath = ($Env:Path -split ';' -replace '(?<=[\w\)])\\\s*$' | 
-          Where-Object { Test-Path $_ } | select -uniq) -join ';'
+$SavePath = ($Env:Path -split ';' -replace '(?<=[\w\)])[\\;\s]*$' | 
+             Where-Object { $_ -and (Test-Path $_) } | select -uniq) -join ';'
 if ($SavePath) { $Env:Path, $SavePath = $SavePath, $Env:Path }
+function Get-PSVersion {"$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"}
 
 function Add-ToolPath {
   [CmdLetBinding()]param(
@@ -167,7 +189,7 @@ try {
   if ($Util=@(Join-Path $TryPath 'utility.ps1' -ea 0)) {
     Write-Warning "Utility: $($Util -join '; ')" 
     . $Util[0]
-    Write-Log "(FLINE) Using Write-Log from Utility.ps1" -file $ProfileLogPath 3
+    Write-Log "(LINE) Using Write-Log from Utility.ps1" -file $ProfileLogPath 3
   }
 } catch { # just ignore and take care of below
   Write-Log "Failed loading Utility.ps1" -file $PSProfileLogPath 3
@@ -224,7 +246,7 @@ if ((Get-Command 'Write-Log' -type function,cmdlet -ea 0)) {
       }
     } catch {
       $ec   = ('{0:x}' -f $_.Exception.ErrorCode); $em = $_.Exception.Message; $in = $_.InvocationInfo.PositionMessage
-      $description =  "$(FLINE) Catch $in $ec, $em"
+      $description =  "$(LINE) Catch $in $ec, $em"
       "Logging: $description" >> $LogFilePath
     }
   }
@@ -379,16 +401,20 @@ If ($ShowDotNetVersions) {
 $DefaultConsoleTitle = 'Administrator: Windows PowerShell'
 # https://github.com/PowerShell/PowerShellGet/archive/1.6.0.zip
 try {
+  if ((Get-PSVersion) -lt 6.0) {
+    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+  }
   $PSGallery = Get-PSRepository PSGallery -ea 0
   if ($PSGallery) { 
-    $PSGallery 
+    #$PSGallery 
     if ($PSGallery.InstallationPolicy -ne 'Trusted') {
       Set-PSRepository -name 'PSGallery' -InstallationPolicy 'Trusted' -ea 0
-      Get-PSRepository -name 'PSGallery'                               -ea 0
+      $PSGallery = Get-PSRepository -name 'PSGallery'                  -ea 0
     }
+    $PSGallery | Format-Table 
   }
 } catch {
-  Write-Information "$(FLINE) Problem with PSRepository"
+  Write-Information "$(LINE) Problem with PSRepository"
 }
 
 $PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)" -as [double]
@@ -398,7 +424,9 @@ if (!(Get-Module 'Jump.Location' -listavailable -ea 0) -and $PSVersionNumber -lt
   Install-Module 'Jump.Location' ### @Parms 
 }
 
-Import-Module jump.location
+If (((Get-PSVersion) -lt 6.0 ) -and (Get-Module -list Jump.Location -ea 0)) {
+  Import-Module jump.location -ea 0
+}
 
 function Update-ModuleList {
   [CmdLetBinding(SupportsShouldProcess = $true,ConfirmImpact='Medium')]
@@ -531,7 +559,7 @@ function New-RDPSession {
     [int]$Width=1350, [int]$Height:730,
     [Alias('NoConnectionFile','NoFile','NoPath')][switch]$NoProfileFile
   )
-  If (!(Test-Target $Path)) { $NoProfileFile = $False }
+  If (!(Test-Path $Path)) { $NoProfileFile = $False }
   $argX = $args
   $argX += '/prompt'
   if ($NoProfileFile) { mstsc /v:$ComputerName /w:$Width /h:$Height @argX }
@@ -770,7 +798,7 @@ function Get-RunTime {
   $width = +1 * "$((($HistoryItem | measure -max id).maximum))".length
   $F1 = '{0,5:N2}'; 
   $F2 = "ID# {1,$($Width):D}: "
-  write-verbose "$(FLINE) width $Width $F2"
+  write-verbose "$(LINE) width $Width $F2"
   foreach ($hi in $HistoryItem) {
     $CL = $hi.commandline
     $ID = $hi.id
@@ -1432,7 +1460,6 @@ try {   # Chocolatey profile
 
 new-alias alias new-alias -force
 function 4rank ($n, $d1, $d2, $d) {"{0:P2}   {1:P2}" -f ($n/$d),(1 - $n/$d)}
-function Get-PSVersion {"$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"}
 write-information ("$(LINE) Use Function Get-PSVersion or variable `$PSVersionTable: $(Get-PSVersion)")
 function down {cd "$env:userprofile\downloads"}
 function Get-SerialNumber {gwmi win32_operatingsystem  | select -prop SerialNumber}
@@ -1634,11 +1661,15 @@ function PSBoundParameter([string]$Parm) {
 write-host "`nError count: $($Error.Count)"
 #if(Test-Path Function:\Prompt) {Rename-Item Function:\Prompt PrePoshGitPrompt -Force}
 
-if (w choco.exe 2>&1) {
+if (!(where.exe choco.exe 2>$Null)) {
   "Get Chocolatey: iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
+} else {
+  where.exe choco.exe 2>$Null
 }
-if (w git.exe 2>&1) {
-  "Get WindowsGit: & '$PSProfile\Get-WindowsGit.ps1'"
+if (!(where.exe git.exe 2>$Null)) {
+  "Get WindowsGit: & '$PSProfile\Scripts\Get-WindowsGit.ps1'"
+} else {
+  where.exe git.exe
 }
 
 if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $informationpreferenceSave }
@@ -1655,12 +1686,14 @@ if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $i
   if (!(Test-Path $PSProfileDirectory)) {
     md (Split-Path $PSProfile -ea 0) -ea 0 -force
   }
-  If (Test-Path $PSProfileDirectory) { 
-    cd $PSProfileDirectory
-  } else { 
-    cd $Home 
-  }
-  if ((Get-Location) -match '^.:\\Windows') { cd \ }
+  if ((Get-Location) -match '^.:\\Windows') {
+    If (Test-Path $PSProfileDirectory) { 
+      cd $PSProfileDirectory
+    } else { 
+      cd $Home 
+    }
+    if ((Get-Location) -match '^.:\\Windows') { cd \ }
+  }  
 }
 if ((Get-Location) -match '^.:\\Windows\\System32$') { cd \ }
 
