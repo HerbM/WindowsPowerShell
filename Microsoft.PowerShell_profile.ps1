@@ -16,12 +16,14 @@ $PSProfile          = $MyInvocation.MyCommand.Definition
 $PSProfileDirectory = Split-Path $PSProfile
 
 try {
+# Add to Scripts, Snippets etc. 
 # Fix 6.0 problems, PSGallery, Where.exe output, PSProvider,Jump.Location load
 # Improved Get-ChildItem2, Add-ToolPath,++B,++DosKey,CleanPath,start Get-DirectoryListing,add refs,README.md
 # Show-ConsoleColor,Get-Syntax(aliases),++Select-History,++FullHelp,++d cmds, esf (needs *,? support),++Add-ToolPath,Reduce History Saved
 # Started Add-Path(crude) -- more ToDo notes 
 
-# ToDo: Move notes out of this file
+# ToDo: Put scripts on path
+# ToDo: Move notes out of this file, Use Misc1/Work Misc/Home
 # ToDo: Test without Admin privs and skip issues
 # ToDo: Add Update-Help as background job?
 # ToDo: Updrade PowerShell to 5.1+
@@ -72,7 +74,10 @@ try {
 #   https://docs.microsoft.com/en-us/powershell/wmf/5.0/feedback_symbolic
 # How To Set Up Chocolatey For Organizational/Internal Use 
 #   https://chocolatey.org/docs/how-to-setup-offline-installation 
-
+# C:\ProgramData\Ditto\Ditto.exe
+# 'C:\Program Files\WinMerge2011\WinMergeU.exe'
+#  
+new-alias WinMerge 'C:\Program Files\WinMerge2011\WinMergeU.exe' -force -scope Global
 # https://null-byte.wonderhowto.com/how-to/use-google-hack-googledorks-0163566/
 # 7-Zip        http://www.7-zip.org/download.html
 # Git          https://git-scm.com/download/win
@@ -96,7 +101,8 @@ try {
 
 #Clean the $Env:Path 
 $SavePath = ($Env:Path -split ';' -replace '(?<=[\w\)])[\\;\s]*$' | 
-             Where-Object { $_ -and (Test-Path $_) } | select -uniq) -join ';'
+             Where-Object { $_ -and (Test-Path $_) } | 
+             select -uniq) -join ';'
 if ($SavePath) { $Env:Path, $SavePath = $SavePath, $Env:Path }
 function Get-PSVersion {"$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"}
 
@@ -126,7 +132,7 @@ $PlacesToLook = 'C:\','T:\Programs\Herb','T:\Programs\Tools','T:\Programs',
 try { Add-ToolPath $PlacesToLook } catch { Write-Warning "Caught:  Add-Path"}
 
 Function DosKey { param($Pattern='=') if ($macros = where.exe 'macros.txt' 2>$Null) { gc $macros | Where-Object {$_ -match $Pattern }}}
-Function B { if (!$Args) { $args = ,95}  DisplayBrightnessConsole @Args }
+Function B { if (!$Args) { $args = ,95 }  DisplayBrightnessConsole @Args }
 
 <#
 function Add-Path {
