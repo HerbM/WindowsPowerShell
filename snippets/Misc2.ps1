@@ -1,4 +1,5 @@
 <#
+Join-Path -Path (Get-PSDrive -PSProvider filesystem | ? { $_.root } | % { $_.Root }) -ChildPath Util -resolve -ea 0 2>$null
 
 https://github.com/jamesottaway?language=powershell&tab=stars
 https://github.com/dfinke/ImportExcel  # Finke
@@ -63,7 +64,7 @@ Function Set-InternetProxy {
     [Alias('On' )][switch]$Enable,
     [Alias('Off')][switch]$Disable 
   )
-  If ($State -match '^(On|Ena)') { $Enable = $True  }
+  If ($State -match '^(On|Ena)') { $Enable  = $True  }
   If ($State -match '^(Of|Dis)') { $Disable = $True }
   $InternetSettingsKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings"
   $AutoConfigURL       = 'AutoConfigURL'
