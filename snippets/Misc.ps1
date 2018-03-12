@@ -5,10 +5,17 @@
 # 
 new-alias kp 'C:\Program Files (x86)\KeePass2\KeePass.exe' -force -scope Global
 function Group-Error {
-  [CmdletBinding()]param([Object[]]$Error=$Error,[int]$First=9999, [int]$Last=20)
-  $error | select -first $First | group | sort count |select count,name -Last $Last
+  [CmdletBinding()]param(
+    [Object[]]$Error=$Error,
+    [int]$First=9999, 
+    [int]$Last=20
+  )
+  $error | select -first $First | group | sort count | select count, name -Last $Last
 }
 
+install-module SnippetPX,HistoryPX,FormatPx,DebugPx,TypePx -force -allowclobber
+$vlcPath = join-path 'C:\Program*\V*','T:\Program*\V*' 'vlc.exe' -resolve -ea 0 2>$Null | 
+           select -first 1 | % { new-alias v $_ -force -scope Global -ea 0 }
 
 # Background Intelligent Transfer Service
 # Get date-time formatString  https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings

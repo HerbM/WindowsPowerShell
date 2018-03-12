@@ -1,104 +1,140 @@
 [CmdLetBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
-param (
-  [Alias('DotNet')]                                    [switch]$ShowDotNetVersions,
-  [Alias('Modules')]                                   [switch]$ShowModules,
-  [Alias('IModules')]                                  [switch]$InstallModules,
-                                                       [switch]$ForceModuleInstall,
-  [Alias('ClobberAllowed')]                            [switch]$AllowClobber,
-  [Alias('SilentlyContinue')]                          [switch]$Quiet,
-  [Alias('PSReadlineProfile','ReadlineProfile','psrl')][switch]$PSReadline,
-  [ValidateSet('AllUsers','CurrentUser')]              [string]$ScopeModule='AllUsers',
-  [Parameter(ValueFromRemainingArguments=$true)]     [string[]]$RemArgs
-)
+  param (
+    [Alias('DotNet')]                                    [switch]$ShowDotNetVersions,
+    [Alias('Modules')]                                   [switch]$ShowModules,
+    [Alias('IModules')]                                  [switch]$InstallModules,
+                                                         [switch]$ForceModuleInstall,
+    [Alias('ClobberAllowed')]                            [switch]$AllowClobber,
+    [Alias('SilentlyContinue')]                          [switch]$Quiet,
+    [Alias('PSReadlineProfile','ReadlineProfile','psrl')][switch]$PSReadline,
+    [ValidateSet('AllUsers','CurrentUser')]              [string]$ScopeModule='AllUsers',
+    [Parameter(ValueFromRemainingArguments=$true)]     [string[]]$RemArgs
+  )
+
+  # Temporary Fix to Go(works without Jump), Scripts to path,find and run Local*.ps1" 
+  # Fix 6.0 problems, PSGallery, Where.exe output, PSProvider,Jump.Location load
+  # Improved Get-ChildItem2, Add-ToolPath,++B,++DosKey,CleanPath,start Get-DirectoryListing,add refs,README.md
+  # Show-ConsoleColor,Get-Syntax(aliases),++Select-History,++FullHelp,++d cmds, esf (needs *,? support),++Add-ToolPath,Reduce History Saved
+  # Started Add-Path(crude) -- more ToDo notes 
+
+  # ToDo: Add support for local-only PS1 files -- started
+  # ToDo: Move notes out of this file
+  # ToDo: Test without Admin privs and skip issues -- partial
+  # ToDo: Add Update-Help as background job?
+  # ToDo: Updrade PowerShell to 5.1+
+  # ToDo: Set console colors?  DarkGray = 80 80 80?
+  # ToDo: JOIN-PATH -resolve:  NOT Test-Path -resolve , Add Server to Get-WinStaSession
+  # ToDo: improve go, find alias Version numbers (at least display)
+  # ToDo: need Notepad++, 7zip, Git, ??? to be on path with shortcuts (improved, not good enough yet)
+  # ToDo: LogFile was being written, written now, CHECK?
+  # ToDo: Clean up output -- easier to read, don't use "warnings" (colors?)
+  # ToDo: Setup website for initial BootStrap scripts to get tools, Profile etc.
+  #         Run scripts from "master" ????
+  #         Download Tools -- as job
+  #         Sync tools -- as job or scheduled job?
+  #         Git, Enable Scripting/Remoting etc., 
+  #         Configure new build, Firewall off,RDP On,No IPv6 etc 
+  #         Split out functions etc to "Scripts" directory
+  #         Speed up History loading?
+  #         get-process notepad++ | select name,starttime,productversion,path
+  #         gwmi win32_service -filter 'name = "everything"' | select name,StartMode,State,Status,Processid,StartName,DisplayName,PathName | ft
+
+
+  # Git-Windows Git (new file), previous commit worked on JR 2 machines
+  # Improve goHash, Books & Dev more general, fix S: T: not found
+  # Everything? es?
+  # Add rdir,cdir,mdir aliases
+  # Close with Set-ProgramAlias
+  # Add new set-programalias nscp 'C:\Program Files\NSClient++\nscp.exe' -force -scope
+  # Fix RDP alias, Put 7-zip, Util,Unx in S:\Programs, New program searcher?  Better?
+  # Boottime,ProfilePath moved up,LINE/FILE/Write-LOG,LogFilePath?,7z
+  # Add/fix BootTime function
+  # Move $PSProfileDirectory up
+  # Move utility extract up (LINE, FILE, WRITE-LOG)
+  # working on LogFilePath
+  # worked on 7z  -- 
+
+  # Jing imagex sharex
+  # C:\Program Files\ShareX\ & 'C:\Program Files\ShareX\ShareX.exe'
+  #   https://getsharex.com/docs/amazon-s3
+  # PowerShell Windows Management Framework 5.1 https://www.microsoft.com/en-us/download/details.aspx?id=54616
+  #   W2K12-KB3191565-x64.msu
+  #   Win7AndW2K8R2-KB3191566-x64.zip
+  #   Win7-KB3191566-x86.zip
+  #   Win8.1AndW2K12R2-KB3191564-x64.msu
+  #   Win8.1-KB3191564-x86.msu
+  # Delete multiple downloads with parenthesis numbers
+  #   dir '*([1-9]).*' | sort name | % { if (Test-Path ($F0=$($_.FullName -replace '\s+\(\d+\)'))) { write-host "Ok: $F0" -fore Green -back 'Black' ; "del $($_.FullName)" } } 
+  # Interact with Symbolic links using improved Item cmdlets
+  #   https://docs.microsoft.com/en-us/powershell/wmf/5.0/feedback_symbolic
+  # How To Set Up Chocolatey For Organizational/Internal Use 
+  #   https://chocolatey.org/docs/how-to-setup-offline-installation 
+
+  # https://null-byte.wonderhowto.com/how-to/use-google-hack-googledorks-0163566/
+  # 7-Zip        http://www.7-zip.org/download.html
+  # Git          https://git-scm.com/download/win
+  #              https://github.com/git-for-windows/git/releases/download/v2.16.2.windows.1/Git-2.16.2-64-bit.exe
+  #              https://github.com/git-tips/tips
+  #              C:\Program Files\Git\mingw64\share\doc\git-doc\giteveryday.html
+  # Regex        http://www.grymoire.com/Unix/Regular.html#uh-12
+  #              http://www.regexlib.com/DisplayPatterns.aspx 
+  # AwkRef       http://www.grymoire.com/Unix/AwkRef.html
+  # Notepad++    https://notepad-plus-plus.org/download/v7.5.4.html
+  # ArsClip      http://www.joejoesoft.com/vcms/97/
+  # Aria2        https://github.com/aria2/aria2/releases/tag/release-1.33.1
+  # Deluge       http://download.deluge-torrent.org/windows/?C=M;O=D
+  # Transmission https://transmissionbt.com/download/
+  # WinMerge     http://developeronfire.com/blog/configuration-of-git-on-windows-to-make-life-easy
+  # NotesProfile See: NotesProfile.txt
+  # docker       https://docs.docker.com/install/windows/docker-ee/#use-a-script-to-install-docker-ee
+  #              https://github.com/wsargent/docker-cheat-sheet
+  # Wakoopa      https://web.appstorm.net/how-to/app-management-howto/how-to-discover-new-apps-with-wakoopa/
+  # ArsClip
+
+function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
+New-Alias -Name LINE -Value Get-CurrentLineNumber -Description 'Returns the caller''s current line number' -force -Scope Global -Option allscope
+write-warning "$(LINE) PowerShell $($psversiontable.PSVersion.tostring())" 
 
 $ProfileDirectory   = Split-Path $Profile
 $PSProfile          = $MyInvocation.MyCommand.Definition
 $PSProfileDirectory = Split-Path $PSProfile
+$ProfileLogPath = $Profile -replace '\.ps1$','LOG.txt'
+write-information "$(LINE) Use `$Profile   for path to Profile: $Profile"
+write-information "$(LINE) Use `$PSProfile for path to Profile: $PSProfile"
+Write-Information "$(LINE) ProfileLogPath: $ProfileLogPath"
+
+try { 
+  $ProfileScriptDirectories = $ProfileDirectory, $PSProfileDirectory,
+            "$ProfileDirectory\Scripts*", "$PSProfileDirectory\Scripts*"
+  Join-Path $ProfileScriptDirectories Local*.ps1 -resolve -ea 0 2>$Null | select -uniq | % { 
+    try { 
+      . $_  2>&1 
+    } catch { 
+      write-warning "1: Caught error in loading local profile scripts: $_ "
+    }
+  }  
+} catch {
+  write-warning "2: Caught error in loading local profile scripts"  
+}
 
 try {
-# Fix 6.0 problems, PSGallery, Where.exe output, PSProvider,Jump.Location load
-# Improved Get-ChildItem2, Add-ToolPath,++B,++DosKey,CleanPath,start Get-DirectoryListing,add refs,README.md
-# Show-ConsoleColor,Get-Syntax(aliases),++Select-History,++FullHelp,++d cmds, esf (needs *,? support),++Add-ToolPath,Reduce History Saved
-# Started Add-Path(crude) -- more ToDo notes 
 
-# ToDo: Move notes out of this file
-# ToDo: Test without Admin privs and skip issues
-# ToDo: Add Update-Help as background job?
-# ToDo: Updrade PowerShell to 5.1+
-# ToDo: Set console colors?  DarkGray = 80 80 80?
-# ToDo: JOIN-PATH -resolve:  NOT Test-Path -resolve , Add Server to Get-WinStaSession
-# ToDo: improve go, find alias Version numbers (at least display)
-# ToDo: need Notepad++, 7zip, Git, ??? to be on path with shortcuts (improved, not good enough yet)
-# ToDo: LogFile was being written, written now, CHECK?
-# ToDo: Clean up output -- easier to read, don't use "warnings" (colors?)
-# ToDo: Setup website for initial BootStrap scripts to get tools, Profile etc.
-#         Run scripts from "master" ????
-#         Download Tools -- as job
-#         Sync tools -- as job or scheduled job?
-#         Git, Enable Scripting/Remoting etc., 
-#         Configure new build, Firewall off,RDP On,No IPv6 etc 
-#         Split out functions etc to "Scripts" directory
-#         Speed up History loading?
-#         get-process notepad++ | select name,starttime,productversion,path
-#         gwmi win32_service -filter 'name = "everything"' | select name,StartMode,State,Status,Processid,StartName,DisplayName,PathName | ft
+  #Clean the $Env:Path 
+  $SavePath = ($Env:Path -split ';' -replace '(?<=[\w\)])[\\;\s]*$' | 
+               Where-Object { $_ -and (Test-Path $_) } | select -uniq) -join ';'
+  if ($SavePath) { $Env:Path, $SavePath = $SavePath, $Env:Path }
+  function Get-PSVersion {"$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"}
 
-
-# Git-Windows Git (new file), previous commit worked on JR 2 machines
-# Improve goHash, Books & Dev more general, fix S: T: not found
-# Everything? es?
-# Add rdir,cdir,mdir aliases
-# Close with Set-ProgramAlias
-# Add new set-programalias nscp 'C:\Program Files\NSClient++\nscp.exe' -force -scope
-# Fix RDP alias, Put 7-zip, Util,Unx in S:\Programs, New program searcher?  Better?
-# Boottime,ProfilePath moved up,LINE/FILE/Write-LOG,LogFilePath?,7z
-# Add/fix BootTime function
-# Move $PSProfileDirectory up
-# Move utility extract up (LINE, FILE, WRITE-LOG)
-# working on LogFilePath
-# worked on 7z  -- 
-
-# Jing imagex sharex
-# C:\Program Files\ShareX\ & 'C:\Program Files\ShareX\ShareX.exe'
-#   https://getsharex.com/docs/amazon-s3
-# PowerShell Windows Management Framework 5.1 https://www.microsoft.com/en-us/download/details.aspx?id=54616
-#   W2K12-KB3191565-x64.msu
-#   Win7AndW2K8R2-KB3191566-x64.zip
-#   Win7-KB3191566-x86.zip
-#   Win8.1AndW2K12R2-KB3191564-x64.msu
-#   Win8.1-KB3191564-x86.msu
-# Delete multiple downloads with parenthesis numbers
-#   dir '*([1-9]).*' | sort name | % { if (Test-Path ($F0=$($_.FullName -replace '\s+\(\d+\)'))) { write-host "Ok: $F0" -fore Green -back 'Black' ; "del $($_.FullName)" } } 
-# Interact with Symbolic links using improved Item cmdlets
-#   https://docs.microsoft.com/en-us/powershell/wmf/5.0/feedback_symbolic
-# How To Set Up Chocolatey For Organizational/Internal Use 
-#   https://chocolatey.org/docs/how-to-setup-offline-installation 
-
-# https://null-byte.wonderhowto.com/how-to/use-google-hack-googledorks-0163566/
-# 7-Zip        http://www.7-zip.org/download.html
-# Git          https://git-scm.com/download/win
-#              https://github.com/git-for-windows/git/releases/download/v2.16.2.windows.1/Git-2.16.2-64-bit.exe
-#              https://github.com/git-tips/tips
-#              C:\Program Files\Git\mingw64\share\doc\git-doc\giteveryday.html
-# Regex        http://www.grymoire.com/Unix/Regular.html#uh-12
-#              http://www.regexlib.com/DisplayPatterns.aspx 
-# AwkRef       http://www.grymoire.com/Unix/AwkRef.html
-# Notepad++    https://notepad-plus-plus.org/download/v7.5.4.html
-# ArsClip      http://www.joejoesoft.com/vcms/97/
-# Aria2        https://github.com/aria2/aria2/releases/tag/release-1.33.1
-# Deluge       http://download.deluge-torrent.org/windows/?C=M;O=D
-# Transmission https://transmissionbt.com/download/
-# WinMerge     http://developeronfire.com/blog/configuration-of-git-on-windows-to-make-life-easy
-# NotesProfile See: NotesProfile.txt
-# docker       https://docs.docker.com/install/windows/docker-ee/#use-a-script-to-install-docker-ee
-#              https://github.com/wsargent/docker-cheat-sheet
-# Wakoopa      https://web.appstorm.net/how-to/app-management-howto/how-to-discover-new-apps-with-wakoopa/
-# ArsClip
-
-#Clean the $Env:Path 
-$SavePath = ($Env:Path -split ';' -replace '(?<=[\w\)])[\\;\s]*$' | 
-             Where-Object { $_ -and (Test-Path $_) } | select -uniq) -join ';'
-if ($SavePath) { $Env:Path, $SavePath = $SavePath, $Env:Path }
-function Get-PSVersion {"$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"}
+  function Test-Administrator {
+    ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
+     [Security.Principal.WindowsBuiltInRole] "Administrator")
+  }
+  #write-information "$(LINE) Test-Administrator: $(Test-Administrator)"
+  #function Test-Administrator { (whoami /all | select-string S-1-16-12288) -ne $null }
+  #if ((whoami /user /priv | select-string S-1-16-12288) -ne $null) {'Administrator privileges: ENABLED'} #else {'Administrator privileges: DISABLED'}
+  if ($AdminEnabled = Test-Administrator) {
+           write-information "$(LINE) Administrator privileges enabled"
+  } else { write-information "$(LINE) Administrator privileges DISABLED"}
 
 function Add-ToolPath {
   [CmdLetBinding()]param(
@@ -171,17 +207,7 @@ new-alias typedir Get-Content  -force -scope Global -ea 0
 new-alias ldir    less         -force -scope Global -ea 0
 new-alias lessdir less         -force -scope Global -ea 0
 new-alias l       less         -force -scope Global -ea 0
-#$MyInvocation
-#$MyInvocation.MyCommand
-function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
-New-Alias -Name   LINE   -Value Get-CurrentLineNumber -Description 'Returns the current (caller''s) line number in a script.' -force -Option allscope
-write-warning "$(LINE) PowerShell $($psversiontable.PSVersion.tostring())" 
-$PSProfileDirectory = Split-Path $PSProfile
-write-information "$(LINE) Use `$Profile for path to Profile: $Profile"
 
-$ProfileLogPath = $Profile -replace '\.ps1$','LOG.txt'
-#$ProfileLogPath = Join-Path $ProfileDirectory $ProfileLogName 
-Write-Information "$(LINE) ProfileLogPath: $ProfileLogPath"
 try {
   $TryPath = $PSProfileDirectory,$ProfileDirectory,'C:\Bat' |
     Where-Object { Test-Path $_ -ea 0 } 
@@ -386,11 +412,6 @@ set-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -va
 function Get-CurrentIPAddress {(ipconfig) -split "`n" | Where-Object {$_ -match 'IPv4'} | % {$_ -replace '^.*\s+'}}
 function Get-WhoAmI { "[$PID]",(whoami),(hostname) + (Get-CurrentIPAddress) -join ' ' }
 
-$CurrentWindowTitle = $Host.ui.RawUI.WindowTitle
-if ($CurrentWindowTitle -match 'Windows PowerShell([\(\)\s\d]*)$') {
-  $Host.ui.RawUI.WindowTitle += " $(Get-WhoAmI)"
-}
-
 If ($ShowDotNetVersions) {
   write-information ".NET dotnet versions installed"
   $DotNetKey = @('HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP',
@@ -398,26 +419,35 @@ If ($ShowDotNetVersions) {
   @(foreach ($key in  $DotNetKey) { gci $key }) | get-itemproperty  -ea 0 | select @{N='Name';E={$_.pspath -replace '.*\\([^\\]+)$','$1'}},version,InstallPath,@{N='Path';E={($_.pspath -replace '^[^:]*::') -replace '^HKEY[^\\]*','HKLM:'}}
 }
 
-$DefaultConsoleTitle = 'Administrator: Windows PowerShell'
-# https://github.com/PowerShell/PowerShellGet/archive/1.6.0.zip
-try {
-  if ((Get-PSVersion) -lt 6.0) {
-    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
-  }
-  $PSGallery = Get-PSRepository PSGallery -ea 0
-  if ($PSGallery) { 
-    #$PSGallery 
-    if ($PSGallery.InstallationPolicy -ne 'Trusted') {
-      Set-PSRepository -name 'PSGallery' -InstallationPolicy 'Trusted' -ea 0
-      $PSGallery = Get-PSRepository -name 'PSGallery'                  -ea 0
+$DefaultConsoleTitle = 'Windows PowerShell'
+If (Test-Administrator) {
+  $DefaultConsoleTitle = 'Administrator: Windows PowerShell'
+  # https://github.com/PowerShell/PowerShellGet/archive/1.6.0.zip
+  try {
+    if ((Get-PSVersion) -lt 6.0) {
+      Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
     }
-    $PSGallery | Format-Table 
+    $PSGallery = Get-PSRepository PSGallery -ea 0
+    if ($PSGallery) { 
+      #$PSGallery 
+      if ($PSGallery.InstallationPolicy -ne 'Trusted') {
+        Set-PSRepository -name 'PSGallery' -InstallationPolicy 'Trusted' -ea 0
+        $PSGallery = Get-PSRepository -name 'PSGallery'                  -ea 0
+      }
+      $PSGallery | Format-Table 
+    }
+  } catch {
+    Write-Information "$(LINE) Problem with PSRepository"
   }
-} catch {
-  Write-Information "$(LINE) Problem with PSRepository"
 }
 
 $PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)" -as [double]
+$CurrentWindowTitle = $Host.ui.RawUI.WindowTitle
+if ($CurrentWindowTitle -match 'Windows PowerShell([\(\)\s\d]*)$') {
+  $Host.ui.RawUI.WindowTitle += " $(Get-WhoAmI) OS:" + 
+    (gwmi win32_operatingsystem).version + "PS: $PSVersionNumber"
+}
+
 if (!(Get-Module 'Jump.Location' -listavailable -ea 0) -and $PSVersionNumber -lt 6) {  
   $parms = @('-force')
   if ($PSVersionNumber -ge 5.1) { $parms += '-AllowClobber' }
@@ -960,16 +990,6 @@ function qa {
 # $ic = [scriptblock]::Create('. ([scriptblock]::Create($((Get-Clipboard) -join "`n")))')
 
 # https://weblogs.asp.net/jongalloway/working-around-a-powershell-call-depth-disaster-with-trampolines
-write-information "$(LINE) Test-Administrator"
-#function Test-Administrator { (whoami /all | select-string S-1-16-12288) -ne $null }
-#if ((whoami /user /priv | select-string S-1-16-12288) -ne $null) {'Administrator privileges: ENABLED'} #else {'Administrator privileges: DISABLED'}
-
-function Test-Administrator {
-  ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
-   [Security.Principal.WindowsBuiltInRole] "Administrator")
-}
-if ($AdminEnabled = Test-Administrator) {write-information "$(LINE) Administrator privileges  enabled"}
-else {write-information "$(LINE) Administrator privileges NOT available"}
 
 write-information "$(LINE) set Prompt function"
 try {
@@ -1075,12 +1095,12 @@ ForEach ($Path in $SearchPath) {
   $Dev = $PSProfile
 }
 
-function Test-Clipboard { gcb | Test-Script }; 
-New-Alias tcb  Get-ClipBoard -force -scope Global
-New-Alias gcbt Get-ClipBoard -force -scope Global
-function Get-HistoryCount {param([int]$Count) get-history -count $Count }
+Function Test-Clipboard { Get-Clipboard | Test-Script }; 
+New-Alias tcb  Test-ClipBoard -force -scope Global
+New-Alias gcbt Test-ClipBoard -force -scope Global
+Function Get-HistoryCount {param([int]$Count) get-history -count $Count }
 New-alias count Get-HistoryCount -force -scope Global 
-$gohash = [ordered]@{
+$goHash = [ordered]@{
   docs       = "$home\documents"
   down       = "$home\downloads"
   download   = "$home\downloads"
@@ -1183,6 +1203,40 @@ function Set-GoLocation {
   write-verbose "$(LINE) Current: $((Get-Location).path)"
 } New-Alias Go Set-GoLocation -force -scope global; New-Alias G Set-GoLocation -force -scope global
 
+Function Set-GoLocation {
+  [CmdletBinding()]param (
+    [Parameter(Position='0')][string[]]$path=@(),
+    [Parameter(Position='1')][string[]]$subdirectory=@(),
+    [switch]$pushd,
+    [switch]$showInvocation   # for testing
+  )
+  $verbose = $true
+  write-verbose "$(LINE) Start In: $((Get-Location).path)"
+  if ($showInvocation) { write-warning "$($Myinvocation | out-string )" }
+  $InvocationName = $MyInvocation.InvocationName
+  if (Get-Command set-jumplocation -module Jump.Location -ea 0) {
+           new-alias jpushd Set-JumpLocation -force -scope Global
+  } else { new-alias jpushd pushd            -force -scope Global }
+  if (!(get-variable gohash -ea 0)) { $goHash = @{} }
+  write-verbose "$(LINE) Path: $Path InvocationName: $InvocationName"
+  $Target = @(if ($goHash.Contains($InvocationName)) {
+    $goHash.$InvocationName -split ';' |  Where-Object { Test-Path $_ }
+  })
+  $Target += @($path.foreach{$_.split(';')})         ##### $path split on semicolon
+  $Target += @($subdirectory.foreach{$_.split(';')}) ##### $subdirectory -split ';'
+  $Target | ForEach-Object {  
+    $_ = @(if ($goHash.Contains($_)) {
+      $goHash.$_ -split ';' |  Where-Object { Test-Path $_ }
+    } else {$_} ) 
+    $_ | ForEach-Object { 
+      write-verbose "$(LINE) Target: $_ Current: $((Get-Location).path)"
+      Set-Location $_ -ea 0 2>&1
+    }  
+  } 
+  write-verbose "$(LINE) Current: $((Get-Location).path)"
+} 
+New-Alias Go Set-GoLocation -force -scope global; 
+New-Alias G  Set-GoLocation -force -scope global
 
 Set-GoAlias
 $books = switch ($true) {

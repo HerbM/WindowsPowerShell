@@ -22,3 +22,4 @@ junk
 *.exe
 *log.txt
 Microsoft.PowerShell_profileLOG.txt
+Local*.ps1

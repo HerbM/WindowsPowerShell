@@ -103,7 +103,11 @@
 #endregion
 
 #region Definitions
-function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
+function Get-CurrentLineNumber { 
+  $Invocation = Get-Variable MyInvocation -scope 1 -ea 0 2>$Null
+  If (!$Invocation) { $Invocation = $MyInvocation } 
+  $Invocation.ScriptLineNumber 
+}
 #function Get-CurrentFileName  { $MyInvocation.MyCommand.Name   }   #$MyInvocation.ScriptName
 function Get-CurrentFileName   { split-path -leaf $MyInvocation.PSCommandPath   }   #$MyInvocation.ScriptName
 function Get-CurrentFileLine   { 
