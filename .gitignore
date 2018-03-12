@@ -1,6 +1,5 @@
 Modules
 Script
-=======
 *history*
 *.tmp
 *.sav
@@ -22,3 +21,5 @@ junk
 /backup
 *.exe
 *log.txt
+Microsoft.PowerShell_profileLOG.txt
+Local*.ps1

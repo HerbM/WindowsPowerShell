@@ -1,5 +1,11 @@
 <#
 
+https://github.com/jamesottaway?language=powershell&tab=stars
+https://github.com/dfinke/ImportExcel  # Finke
+https://github.com/dfinke?tab=repositories
+ahk.ahk, ahk.ps1???? Move to scripts?
+https://github.com/PoshCode/ModuleBuilder/tree/master
+
 https://github.com/PowerShell/platyPS
 Install-Module -Name platyPS -Scope CurrentUser
 Import-Module platyPS
@@ -629,41 +635,30 @@ function get-uptime {
 get-winevent -listprovider microsoft-windows* | % {$_.Name} | sort
 
 #==============================================================================
-https://github.com/jamesottaway?language=powershell&tab=stars
-https://github.com/dfinke/ImportExcel  # Finke
-https://github.com/dfinke?tab=repositories
 
 #==============================================================================
 # Using a target web service that requires SSL, but server is self-signed.
 # Without this, we'll fail unable to establish trust relationship.
-function Set-CertificateValidationCallback
-{
-    try
-    {
-       Add-Type @'
-    using System;
-
-    public static class CertificateAcceptor{
-
-        public static void SetAccept()
-        {
-            System.Net.ServicePointManager.ServerCertificateValidationCallback = AcceptCertificate;
-        }
-
-        private static bool AcceptCertificate(Object sender,
-                        System.Security.Cryptography.X509Certificates.X509Certificate certificate,
-                        System.Security.Cryptography.X509Certificates.X509Chain chain,
-                        System.Net.Security.SslPolicyErrors policyErrors)
-            {
-                Console.WriteLine("Accepting certificate and ignoring any SSL errors.");
-                return true;
-            }
+function Set-CertificateValidationCallback {
+  try {
+  Add-Type @'
+  using System;
+  public static class CertificateAcceptor{
+    public static void SetAccept() {
+      System.Net.ServicePointManager.ServerCertificateValidationCallback = AcceptCertificate;
     }
+    private static bool AcceptCertificate (                         Object sender,
+      System.Security.Cryptography.X509Certificates.X509Certificate certificate,
+      System.Security.Cryptography.X509Certificates.X509Chain       chain,
+      System.Net.Security.SslPolicyErrors                           policyErrors) {
+        Console.WriteLine("Accepting certificate and ignoring any SSL errors.");
+        return true;
+    }
+  }
 '@
-    }
-    catch {} # Already exists? Find a better way to check.
-
-     [CertificateAcceptor]::SetAccept()
+  }
+  catch {} # Already exists? Find a better way to check.
+  [CertificateAcceptor]::SetAccept()
 }
 #==============================================================================
 function Get-FolderSizes {
