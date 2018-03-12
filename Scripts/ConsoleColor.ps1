@@ -1,3 +1,9 @@
+<#
+.Notes
+  How to Change PowerShell Console Font and Background Colors -- Jeff Hicks
+  https://www.petri.com/change-powershell-console-font-and-background-colors
+  Colors https://github.com/lukesampson/concfg
+#>
 [CmdletBinding()]param(
   [Object[]]$Object, 
   [switch]$ShowPSReadLine,

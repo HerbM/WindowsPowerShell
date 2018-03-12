@@ -119,7 +119,6 @@ try {
 }
 
 try {
-<<<<<<< HEAD
 # Add to Scripts, Snippets etc. 
 # Fix 6.0 problems, PSGallery, Where.exe output, PSProvider,Jump.Location load
 # Improved Get-ChildItem2, Add-ToolPath,++B,++DosKey,CleanPath,start Get-DirectoryListing,add refs,README.md
