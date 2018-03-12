@@ -22,6 +22,8 @@ $vlcPath = join-path 'C:\Program*\V*','T:\Program*\V*' 'vlc.exe' -resolve -ea 0 
 # Get string format
 # Get regex 
 # Build Help addendum
+# C:\Program Files\WinMerge\WinMergeU.exe'
+# https://sourceforge.net/projects/winmerge/files/alpha/2.15.2/WinMerge-2.15.2-x64-Setup.exe/download
 
 #requires -Module Reflection
 function Find-Dependencies {
