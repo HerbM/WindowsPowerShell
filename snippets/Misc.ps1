@@ -2,7 +2,8 @@
 # https://keepass.info
 # https://keepass.info/plugins.html
 # https://github.com/kee-org/keepassrpc/releases/tag/v1.7.3.1
-# 
+# http://winmerge.org/
+# https://sourceforge.net/projects/winmerge/files/alpha/2.15.2/WinMerge-2.15.2-x64-Setup.exe/download
 
 #Desktop site: https://www.regular-expressions.info/?id=113400&email=HerbMartin@Gmail.com
 #Mobile site: https://regular-expressions.mobi/?id=113400&email=HerbMartin@Gmail.com
