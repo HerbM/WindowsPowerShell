@@ -90,7 +90,7 @@ if (Test-Path $Out) {
     # $out to install Git"
     
     $out /verysilent
-    $Env:Path += ';C:\Program Files\Git\cmd'
+    `$Env:Path += ';C:\Program Files\Git\cmd'
     cd  $Home\Documents -ea 0 # OR:  cd `$Home\Documents\WindowsPowerShell   
     git clone https://github.com/HerbM/Profile-Utilities WindowsPowerShell
         
