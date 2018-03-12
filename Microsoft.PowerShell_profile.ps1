@@ -137,6 +137,96 @@ try {
            write-information "$(LINE) Administrator privileges enabled"
   } else { write-information "$(LINE) Administrator privileges DISABLED"}
 
+# Add to Scripts, Snippets etc. 
+# Fix 6.0 problems, PSGallery, Where.exe output, PSProvider,Jump.Location load
+# Improved Get-ChildItem2, Add-ToolPath,++B,++DosKey,CleanPath,start Get-DirectoryListing,add refs,README.md
+# Show-ConsoleColor,Get-Syntax(aliases),++Select-History,++FullHelp,++d cmds, esf (needs *,? support),++Add-ToolPath,Reduce History Saved
+# Started Add-Path(crude) -- more ToDo notes 
+
+# ToDo: Put scripts on path
+# ToDo: Move notes out of this file, Use Misc1/Work Misc/Home
+# ToDo: Test without Admin privs and skip issues
+# ToDo: Add Update-Help as background job?
+# ToDo: Updrade PowerShell to 5.1+
+# ToDo: Set console colors?  DarkGray = 80 80 80?
+# ToDo: JOIN-PATH -resolve:  NOT Test-Path -resolve , Add Server to Get-WinStaSession
+# ToDo: improve go, find alias Version numbers (at least display)
+# ToDo: need Notepad++, 7zip, Git, ??? to be on path with shortcuts (improved, not good enough yet)
+# ToDo: LogFile was being written, written now, CHECK?
+# ToDo: Clean up output -- easier to read, don't use "warnings" (colors?)
+# ToDo: Setup website for initial BootStrap scripts to get tools, Profile etc.
+#         Run scripts from "master" ????
+#         Download Tools -- as job
+#         Sync tools -- as job or scheduled job?
+#         Git, Enable Scripting/Remoting etc., 
+#         Configure new build, Firewall off,RDP On,No IPv6 etc 
+#         Split out functions etc to "Scripts" directory
+#         Speed up History loading?
+#         get-process notepad++ | select name,starttime,productversion,path
+#         gwmi win32_service -filter 'name = "everything"' | select name,StartMode,State,Status,Processid,StartName,DisplayName,PathName | ft
+
+
+# Git-Windows Git (new file), previous commit worked on JR 2 machines
+# Improve goHash, Books & Dev more general, fix S: T: not found
+# Everything? es?
+# Add rdir,cdir,mdir aliases
+# Close with Set-ProgramAlias
+# Add new set-programalias nscp 'C:\Program Files\NSClient++\nscp.exe' -force -scope
+# Fix RDP alias, Put 7-zip, Util,Unx in S:\Programs, New program searcher?  Better?
+# Boottime,ProfilePath moved up,LINE/FILE/Write-LOG,LogFilePath?,7z
+# Add/fix BootTime function
+# Move $PSProfileDirectory up
+# Move utility extract up (LINE, FILE, WRITE-LOG)
+# working on LogFilePath
+# worked on 7z  -- 
+
+# Jing imagex sharex
+# C:\Program Files\ShareX\ & 'C:\Program Files\ShareX\ShareX.exe'
+#   https://getsharex.com/docs/amazon-s3
+# PowerShell Windows Management Framework 5.1 https://www.microsoft.com/en-us/download/details.aspx?id=54616
+#   W2K12-KB3191565-x64.msu
+#   Win7AndW2K8R2-KB3191566-x64.zip
+#   Win7-KB3191566-x86.zip
+#   Win8.1AndW2K12R2-KB3191564-x64.msu
+#   Win8.1-KB3191564-x86.msu
+# Delete multiple downloads with parenthesis numbers
+#   dir '*([1-9]).*' | sort name | % { if (Test-Path ($F0=$($_.FullName -replace '\s+\(\d+\)'))) { write-host "Ok: $F0" -fore Green -back 'Black' ; "del $($_.FullName)" } } 
+# Interact with Symbolic links using improved Item cmdlets
+#   https://docs.microsoft.com/en-us/powershell/wmf/5.0/feedback_symbolic
+# How To Set Up Chocolatey For Organizational/Internal Use 
+#   https://chocolatey.org/docs/how-to-setup-offline-installation 
+# C:\ProgramData\Ditto\Ditto.exe
+# 'C:\Program Files\WinMerge2011\WinMergeU.exe'
+#  
+new-alias WinMerge 'C:\Program Files\WinMerge2011\WinMergeU.exe' -force -scope Global
+# https://null-byte.wonderhowto.com/how-to/use-google-hack-googledorks-0163566/
+# 7-Zip        http://www.7-zip.org/download.html
+# Git          https://git-scm.com/download/win
+#              https://github.com/git-for-windows/git/releases/download/v2.16.2.windows.1/Git-2.16.2-64-bit.exe
+#              https://github.com/git-tips/tips
+#              C:\Program Files\Git\mingw64\share\doc\git-doc\giteveryday.html
+# Regex        http://www.grymoire.com/Unix/Regular.html#uh-12
+#              http://www.regexlib.com/DisplayPatterns.aspx 
+# AwkRef       http://www.grymoire.com/Unix/AwkRef.html
+# Notepad++    https://notepad-plus-plus.org/download/v7.5.4.html
+# ArsClip      http://www.joejoesoft.com/vcms/97/
+# Aria2        https://github.com/aria2/aria2/releases/tag/release-1.33.1
+# Deluge       http://download.deluge-torrent.org/windows/?C=M;O=D
+# Transmission https://transmissionbt.com/download/
+# WinMerge     http://developeronfire.com/blog/configuration-of-git-on-windows-to-make-life-easy
+# NotesProfile See: NotesProfile.txt
+# docker       https://docs.docker.com/install/windows/docker-ee/#use-a-script-to-install-docker-ee
+#              https://github.com/wsargent/docker-cheat-sheet
+# Wakoopa      https://web.appstorm.net/how-to/app-management-howto/how-to-discover-new-apps-with-wakoopa/
+# ArsClip
+
+#Clean the $Env:Path 
+$SavePath = ($Env:Path -split ';' -replace '(?<=[\w\)])[\\;\s]*$' | 
+             Where-Object { $_ -and (Test-Path $_) } | 
+             select -uniq) -join ';'
+if ($SavePath) { $Env:Path, $SavePath = $SavePath, $Env:Path }
+function Get-PSVersion {"$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"}
+
 Function Add-ToolPath {
   [CmdLetBinding()]param(
     [string[]]$Path
