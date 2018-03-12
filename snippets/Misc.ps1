@@ -3,6 +3,11 @@
 # https://keepass.info/plugins.html
 # https://github.com/kee-org/keepassrpc/releases/tag/v1.7.3.1
 # 
+
+#Desktop site: https://www.regular-expressions.info/?id=113400&email=HerbMartin@Gmail.com
+#Mobile site: https://regular-expressions.mobi/?id=113400&email=HerbMartin@Gmail.com
+# Regular-ExpressionsInfo*.pdf
+
 new-alias kp 'C:\Program Files (x86)\KeePass2\KeePass.exe' -force -scope Global
 function Group-Error {
   [CmdletBinding()]param(
@@ -22,7 +27,19 @@ $vlcPath = join-path 'C:\Program*\V*','T:\Program*\V*' 'vlc.exe' -resolve -ea 0 
 # Get string format
 # Get regex 
 # Build Help addendum
+# C:\Program Files\WinMerge\WinMergeU.exe'
+# https://sourceforge.net/projects/winmerge/files/alpha/2.15.2/WinMerge-2.15.2-x64-Setup.exe/download
 
+#requires -Module Reflection
+function Find-Dependencies {
+    param($Path)
+    Get-ParseResults $Path | 
+        Find-Token { $_ -is "System.Management.Automation.Language.CommandAst" } | 
+        Get-Command -Name { $_.CommandElements[0].Value } -ea continue | # Errors will appear for commands you don't have available
+        Sort Source, Name | 
+        Group Source |
+        Select @{N="Module";e={$_.Name}}, @{N="Used Commands";E={$_.Group}}
+}
 
 Video Debugging 
 https://github.com/KirkMunro

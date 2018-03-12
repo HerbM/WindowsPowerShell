@@ -119,6 +119,23 @@ try {
 }
 
 try {
+  #Clean the $Env:Path 
+  $SavePath = ($Env:Path -split ';' -replace '(?<=[\w\)])[\\;\s]*$' | 
+  Where-Object { $_ -and (Test-Path $_) } | Select-Object -uniq) -join ';'
+  if ($SavePath) { $Env:Path, $SavePath = $SavePath, $Env:Path }
+  Function Get-PSVersion {"$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"}
+
+  Function Test-Administrator {
+    ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
+     [Security.Principal.WindowsBuiltInRole] "Administrator")
+  }
+  #write-information "$(LINE) Test-Administrator: $(Test-Administrator)"
+  #Function Test-Administrator { (whoami /all | Select-Object -string S-1-16-12288) -ne $null }
+  #if ((whoami /user /priv | Select-Object -string S-1-16-12288) -ne $null) {'Administrator privileges: ENABLED'} #else {'Administrator privileges: DISABLED'}
+  if ($AdminEnabled = Test-Administrator) {
+           write-information "$(LINE) Administrator privileges enabled"
+  } else { write-information "$(LINE) Administrator privileges DISABLED"}
+
 # Add to Scripts, Snippets etc. 
 # Fix 6.0 problems, PSGallery, Where.exe output, PSProvider,Jump.Location load
 # Improved Get-ChildItem2, Add-ToolPath,++B,++DosKey,CleanPath,start Get-DirectoryListing,add refs,README.md
@@ -209,7 +226,7 @@ $SavePath = ($Env:Path -split ';' -replace '(?<=[\w\)])[\\;\s]*$' |
 if ($SavePath) { $Env:Path, $SavePath = $SavePath, $Env:Path }
 function Get-PSVersion {"$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"}
 
-function Add-ToolPath {
+Function Add-ToolPath {
   [CmdLetBinding()]param(
     [string[]]$Path
   )
