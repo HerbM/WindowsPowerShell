@@ -17,8 +17,8 @@ If ($QuoteMatching -and $BraceMatching) { $Matching = $True }
 # [System.ConsoleKey] | gm -static | more
 # Alt-w current line to history
 
-$SaveHistory = (h -count 3000).commandline
-write-warning "History count $((h).count)"
+$SaveHistory = (Get-History -count 3000).commandline
+write-warning "History count $((Get-History).count)"
 
 $PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)" -as [double]
 if (!(Get-Module PSReadline -listavailable -ea 0)) {  
@@ -34,14 +34,14 @@ $PSHistoryDirectory = "$Home\Documents\PSHistory"
 $PSHistory          = "$PSHistoryDirectory\$PSHistoryFileName"
 
 ######### Move Old History to new location
-	if (!(Test-path $PSHistoryDirectory)) { md $PSHistoryDirectory }
+	if (!(Test-path $PSHistoryDirectory)) { mkdir $PSHistoryDirectory }
 	try {
 		$OldHistory  = @(if (($oh = (Get-PSReadLineOption).HistorySavePath) -and
 													$oh -ne $PSHistoryDirectory                   -and
 													$oh -ne $PSHistory) { $oh })
 		$OldHistory += "$(Split-Path $Profile)\$PSHistoryFileName"
 		$OldHistory  = Get-ChildItem $OldHistory -file -ea 0 | Sort-Object -uniq lastwritetime,fullname
-		$null =  $OldHistory | % { 
+		$null =  $OldHistory | ForEach-Object { 
 			Get-Content $_ -ea Stop | out-file -append $PSHistory -ea Stop
 			Remove-Item $_ -ea Stop
 		}	
@@ -386,17 +386,15 @@ Set-PSReadLineKeyHandler -Key "Ctrl+Alt+'" `
 
 # This example will replace any aliases on the command line with the resolved commands.
 Set-PSReadLineKeyHandler -Key "Alt+%" `
-             -BriefDescription ExpandAliases `
-             -LongDescription "Replace all aliases with the full command" `
-             -ScriptBlock {
+                         -BriefDescription ExpandAliases `
+                         -LongDescription "Replace all aliases with the full command" `
+                         -ScriptBlock {
   param($key, $arg)
-
-  $ast = $null
+  $ast    = $null
   $tokens = $null
   $errors = $null
   $cursor = $null
   [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$ast, [ref]$tokens, [ref]$errors, [ref]$cursor)
-
   $startAdjustment = 0
   foreach ($token in $tokens) {
     if ($token.TokenFlags -band [TokenFlags]::CommandName) {
@@ -408,9 +406,7 @@ Set-PSReadLineKeyHandler -Key "Alt+%" `
           $length = $extent.EndOffset - $extent.StartOffset
           [Microsoft.PowerShell.PSConsoleReadLine]::Replace(
             $extent.StartOffset + $startAdjustment,
-            $length,
-            $resolvedCommand)
-
+            $length, $resolvedCommand)
           # Our copy of the tokens won't have been updated, so we need to
           # adjust by the difference in length
           $startAdjustment += ($resolvedCommand.Length - $length)
@@ -426,7 +422,7 @@ Set-PSReadLineKeyHandler -Key F1,Alt+h `
                          -LongDescription "Open the help window for the current command" `
                          -ScriptBlock {
   param($key, $arg)
-  $ast = $null
+  $ast    = $null
   $tokens = $null
   $errors = $null
   $cursor = $null
@@ -451,12 +447,12 @@ Set-PSReadLineKeyHandler -Key F1,Alt+h `
 
 # Ctrl+Shift+j then type a key to mark the current directory.
 # Ctrj+j then the same key will change back to that directory without
-# needing to type cd and won't change the command line.
+# needing to type Set-Location and won't change the command line.
 $global:PSReadLineMarks = @{}
 Set-PSReadLineKeyHandler -Key Ctrl+Shift+j `
-             -BriefDescription MarkDirectory `
-             -LongDescription "Mark the current directory" `
-             -ScriptBlock {
+                         -BriefDescription MarkDirectory `
+                         -LongDescription "Mark the current directory" `
+                         -ScriptBlock {
   param($key, $arg)
 
   $key = [Console]::ReadKey($true)
@@ -472,22 +468,21 @@ Set-PSReadLineKeyHandler -Key Ctrl+j `
   $key = [Console]::ReadKey()
   $dir = $global:PSReadLineMarks[$key.KeyChar]
   if ($dir) {
-    cd $dir
+    Set-Location $dir
     [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
   }
 }
 
 Set-PSReadLineKeyHandler -Key Alt+j `
-             -BriefDescription ShowDirectoryMarks `
-             -LongDescription "Show the currently marked directories" `
-             -ScriptBlock {
+                         -BriefDescription ShowDirectoryMarks `
+                         -LongDescription "Show the currently marked directories" `
+                         -ScriptBlock {
   param($key, $arg)
-  $global:PSReadLineMarks.GetEnumerator() | % {
+  $global:PSReadLineMarks.GetEnumerator() | ForEach-Object {
     [PSCustomObject]@{Key = $_.Key; Dir = $_.Value} 
   } | Format-Table -AutoSize | Out-Host
   [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
 }
-
 Set-PSReadLineOption -CommandValidationHandler {
   param([CommandAst]$CommandAst)
   switch ($CommandAst.GetCommandName()) {
@@ -510,16 +505,15 @@ Set-PSReadLineKeyHandler -Key Alt+'(',Alt+'{',Alt+'[' `
   param($key, $arg)
   $retreat = 1
   $closeChar = switch ($key.KeyChar) {
-    '('   {      [char]')'  ;               break }
-    '{'   { "  $([char]'}')"; $retreat = 2; break }
-    '['   {      [char]']'  ;               break }
+    '(' {      [char]')'  ;               break }
+    '{' { "  $([char]'}')"; $retreat = 2; break }
+    '[' {      [char]']'  ;               break }
   }
   [Microsoft.PowerShell.PSConsoleReadLine]::Insert("$($key.KeyChar)$closeChar")
   $line = $cursor = $null   
   [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line,[ref]$cursor)
   [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor - $retreat)
 }
-
 
 if ($host.Name -eq 'ConsoleHost') {
     Import-Module PSReadline
@@ -546,17 +540,19 @@ if ($host.Name -eq 'ConsoleHost') {
 }
 
 if (Get-Module PSReadline) {
-  Set-PSReadlineKeyHandler 'Tab'          -Function TabCompleteNext
-  Set-PSReadlineKeyHandler 'Shift+Tab'    -Function TabCompletePrevious
-  Set-PSReadLineKeyHandler -Key UpArrow   -Function HistorySearchBackward
-  Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
+  Set-PSReadlineKeyHandler 'Tab'                      -Function TabCompleteNext
+  Set-PSReadlineKeyHandler 'Shift+Tab'                -Function TabCompletePrevious
+  Set-PSReadLineKeyHandler -Key UpArrow               -Function HistorySearchBackward
+  Set-PSReadLineKeyHandler -Key DownArrow             -Function HistorySearchForward
   Set-PSReadLineKeyHandler -Key 'F7','F9'             -Function HistorySearchBackward
   Set-PSReadLineKeyHandler -Key 'Shift+F7','Shift+F9' -Function HistorySearchForward
   ### if ($SaveHistory -and !(Get-History).count) { Add-History $SaveHistory };
-  if ($SaveHistory) {
-    $SaveHistory | % { [Microsoft.PowerShell.PSConsoleReadLine]::AddToHistory($_) }
-    $SaveHistory = $null
-  }
+  try {
+    if ($SaveHistory) {
+      $SaveHistory | ForEach-Object { [Microsoft.PowerShell.PSConsoleReadLine]::AddToHistory($_) }
+      $SaveHistory = $null
+    }
+  } catch { } # just ignore this for VSCode
 }
 
 

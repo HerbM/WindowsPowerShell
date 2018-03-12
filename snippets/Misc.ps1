@@ -23,6 +23,16 @@ $vlcPath = join-path 'C:\Program*\V*','T:\Program*\V*' 'vlc.exe' -resolve -ea 0 
 # Get regex 
 # Build Help addendum
 
+#requires -Module Reflection
+function Find-Dependencies {
+    param($Path)
+    Get-ParseResults $Path | 
+        Find-Token { $_ -is "System.Management.Automation.Language.CommandAst" } | 
+        Get-Command -Name { $_.CommandElements[0].Value } -ea continue | # Errors will appear for commands you don't have available
+        Sort Source, Name | 
+        Group Source |
+        Select @{N="Module";e={$_.Name}}, @{N="Used Commands";E={$_.Group}}
+}
 
 Video Debugging 
 https://github.com/KirkMunro
