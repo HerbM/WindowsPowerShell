@@ -9,7 +9,13 @@
 #https://insights.stackoverflow.com/survey/2018/
 #https://seeminglyscience.github.io/powershell/2017/09/30/invocation-operators-states-and-scopes
 #https://sourceforge.net/projects/winmerge/files/alpha/2.15.2/
-
+# Trevor SplatHelper
+# https://kevinmarquette.github.io/2017-02-19-Powershell-custom-attribute-validator-transform/
+# https://learn-powershell.net/2010/09/11/scanning-ports-on-multiple-hosts/
+# https://gallery.technet.microsoft.com/ScriptCenter/97119ed6-6fb2-446d-98d8-32d823867131/
+# https://docs.microsoft.com/en-us/powershell/scripting/core-powershell/vscode/using-vscode?view=powershell-6#debugging-with-visual-studio-code
+# 
+# 
 #Desktop site: https://www.regular-expressions.info/?id=113400&email=HerbMartin@Gmail.com
 #Mobile site: https://regular-expressions.mobi/?id=113400&email=HerbMartin@Gmail.com
 # Regular-ExpressionsInfo*.pdf

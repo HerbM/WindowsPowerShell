@@ -1,6 +1,19 @@
 <#
 Join-Path -Path (Get-PSDrive -PSProvider filesystem | ? { $_.root } | % { $_.Root }) -ChildPath Util -resolve -ea 0 2>$null
 
+(get-module azurerm* -list | group name | ? count -gt 1).name | % { get-module $_ -list | sort version | select -first 1 | % { uninstall-module $_.name -RequiredVersion $_.version -force } }
+
+Difficult Conversations
+Primal Leadership
+Necessary Endings 
+The Power of Habit by Charles Duhigg
+You've Only Got Three Seconds by Camille Lavington
+embrace DevOp culture, where it comes from, why is it important and the reality of medium big businnesses, then you definitely want to read the Phoenix project 
+Deep Work by Cal Newport. It's been a little while since I read, but what struck me most is the mindset to avoid distractions. 
+The War of Art - about overcoming that nagging resistance to getting stuff done that we all feel. 
+
+
+
 https://github.com/jamesottaway?language=powershell&tab=stars
 https://github.com/dfinke/ImportExcel  # Finke
 https://github.com/dfinke?tab=repositories
