@@ -5,6 +5,11 @@
 # http://winmerge.org/
 # https://sourceforge.net/projects/winmerge/files/alpha/2.15.2/WinMerge-2.15.2-x64-Setup.exe/download
 
+#https://sqldbawithabeard.com/2018/03/11/easily-splatting-powershell-with-vs-code/
+#https://insights.stackoverflow.com/survey/2018/
+#https://seeminglyscience.github.io/powershell/2017/09/30/invocation-operators-states-and-scopes
+#https://sourceforge.net/projects/winmerge/files/alpha/2.15.2/
+
 #Desktop site: https://www.regular-expressions.info/?id=113400&email=HerbMartin@Gmail.com
 #Mobile site: https://regular-expressions.mobi/?id=113400&email=HerbMartin@Gmail.com
 # Regular-ExpressionsInfo*.pdf
