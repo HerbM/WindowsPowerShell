@@ -99,7 +99,7 @@ if (Test-Path $Out) {
     # $out to install Git"
     
     $out /verysilent
-    $Env:Path += ';C:\Program Files\Git\cmd'
+    `$Env:Path += ';C:\Program Files\Git\cmd'
     cd  $Home\Documents -ea 0 # OR:  cd `$Home\Documents\WindowsPowerShell   
     git clone https://github.com/HerbM/Profile-Utilities WindowsPowerShell
         
@@ -111,7 +111,7 @@ if (Test-Path $Out) {
     #    $Home/.gitprofile
     #    but `$Env:Home may point somewhere else: [$($Env:Home)]
 "@
-  Write-Host $Instructions -fore white -back darkred
+  Write-Host $Instructions -fore white -back darkgreen
 } else {
   "Download FAILED to $Out"
 }

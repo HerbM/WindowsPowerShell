@@ -3,6 +3,34 @@ Join-Path -Path (Get-PSDrive -PSProvider filesystem | ? { $_.root } | % { $_.Roo
 
 (get-module azurerm* -list | group name | ? count -gt 1).name | % { get-module $_ -list | sort version | select -first 1 | % { uninstall-module $_.name -RequiredVersion $_.version -force } }
 
+https://blogs.msdn.microsoft.com/kathykam/2006/03/29/net-format-string-101/
+https://blogs.msdn.microsoft.com/kathykam/2006/09/29/net-format-string-102-datetime-format-string/
+
+Chris Dent
+  indented-automation/Start-Syslog.ps1 
+  indented-automation/Get-FunctionInfo.ps1 
+  http://www.indented.co.uk/cmdlets-without-a-dll/
+  https://gist.github.com/indented-automation/81e2dc1fa1ba06f5023e535a8e1c2a50
+  https://gist.github.com/indented-automation/81e2dc1fa1ba06f5023e535a8e1c2a50
+https://www.red-gate.com/simple-talk/dotnet/net-framework/high-performance-powershell-linq/
+https://docs.microsoft.com/en-us/powershell/wmf/5.0/feedback_symbolic
+  Symbolic Links HardLinks Reparse Points Junction Points
+
+https://www.ghacks.net/2017/11/07/search-the-group-policy-with-microsofts-gpsearch-web-service/  
+  http://wp.me/pLog8-71
+https://4sysops.com/archives/four-ways-to-search-for-group-policy-settings/
+  https://www.microsoft.com/en-us/download/details.aspx?id=25250
+  http://www.software-virtualisierung.de/nit-gposearch.html
+How to Get a Report on All GPO Settings 
+  https://community.spiceworks.com/how_to/137260-how-to-get-a-report-on-all-gpo-settings
+What you can do, should do and should NOT do with GPOs
+  http://evilgpo.blogspot.com/2016/12/legalnoticecaption-and-legalnoticetext.html  
+Function Find-GPOItem { 
+  []
+  $Search = Read-Host "What are you looking for?"
+  start "http://gpsearch.azurewebsites.net/default.aspx?search=$Search"
+}	
+
 Difficult Conversations
 Primal Leadership
 Necessary Endings 
@@ -224,11 +252,11 @@ function Get-DiskSpace {
 
 The PowerShell Square Function
 
-#It’s a straight forward pattern to get this working.
+#It's a straight forward pattern to get this working.
 #1.Create a function
 #2.Add the param keyword
 #3.Add the [Parameter(ValueFromPipeline)] attribute to the parameter
-#4.Add a Process block for your logic (here, it’s just multiplying the parameter by itself)
+#4.Add a Process block for your logic (here, it's just multiplying the parameter by itself)
 #http://www.old.dougfinke.com/blog/index.php/2014/12/23/four-steps-to-turn-powershell-one-liners-into-pipeable-functions/
 function sqr {
 	param ([Parameter(ValueFromPipeline)] $p )
@@ -294,13 +322,13 @@ function Where-UpdatedSince{
 #     http://stackoverflow.com/a/12679208/115690
 # any > $null  $null = any  any | Out-Null  [void] (any)
 # Invoke-Expression string  iex “write-host hello”  hello
-# Get-EventLog -log system –newest 1000 | where-object {$_.eventid –eq ‘1074’} | format-table machinename, username, timegenerated –autosize
+# Get-EventLog -log system –newest 1000 | where-object {$_.eventid –eq '1074'} | format-table machinename, username, timegenerated –autosize
 # Get-Hotfix -id kb2862152
 # Backup-GPO –all –path \AdminServerGPO-Backups
 # Get-WMIobject win32_networkadapterconfiguration | where {$_.IPEnabled -eq “True”} | Select-Object pscomputername,ipaddress,defaultipgateway,ipsubnet,dnsserversearchorder,winsprimaryserver | format-Table -Auto
 # Get-WMIobject –computername WS2008-DC01 win32_networkadapterconfiguration | where {$_.IPEnabled -eq “True”}| Select-Object pscomputername,ipaddress,defaultipgateway,ipsubnet,dnsserversearchorder,winsprimaryserver | format-Table –Auto
 # Parse a list of system names and use Get-CIMInstance – a newer CMDlet and faster than Get-WMIObject
-#  Get-CIMInstance Win32_NetworkAdapterConfiguration -Filter ‘IPEnabled = true’ -ComputerName (Get-Content C:SERVERLIST.TXT) | Select-Object pscomputername,ipaddress,defaultipgateway,ipsubnet,dnsserversearchorder,winsprimaryserver | Format-Table -AutoSize | out-file c:IPSettings.txt
+#  Get-CIMInstance Win32_NetworkAdapterConfiguration -Filter 'IPEnabled = true' -ComputerName (Get-Content C:SERVERLIST.TXT) | Select-Object pscomputername,ipaddress,defaultipgateway,ipsubnet,dnsserversearchorder,winsprimaryserver | Format-Table -AutoSize | out-file c:IPSettings.txt
 # Get-AdDomainController -Filter * | Select hostname,isglobalcatalog | Format-table -auto
 # Get-Content C:userlist.csv | foreach {Get-ADuser $_ | select distinguishedname,samaccountname} | export-csv –path c:newuserlist.csv
 # What is the OS version and Service Pack level for all of my Windows systems in a certain OU?

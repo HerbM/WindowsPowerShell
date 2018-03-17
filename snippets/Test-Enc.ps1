@@ -1,10 +1,12 @@
 function Get-AESKey([uint16]$length=256) {
   if ($length -gt 32) { [uint16]$length = $length / 8 }
-	$length = &{switch ($length) {
-	  {$_ -le  8 } {  8; break }
-    {$_ -le 16 } { 16; break }
-		default {32}
-	}}
+	$length = { 
+    switch ($True) {
+	    {$length -le  8 } {  8; break }
+      {$length -le 16 } { 16; break }
+		  default           { 32        }
+	  }
+  }
 	$AES = New-Object Byte[] $length
 	[Security.Cryptography.RNGCryptoServiceProvider]::Create().GetBytes($AES)
 	$AES
@@ -31,8 +33,8 @@ $password = 'AbCd4321!'
 $Username = '127.0.0.1\Administrator'
 
 [Byte[]]$key = Set-EncryptedContent $PwdFile $password 
-$securePwd = Get-EncryptedContent $PwdFile $Key 
-$credObject = New-Object System.Management.Automation.PSCredential -ArgumentList $username, $securePwd
+$securePwd   = Get-EncryptedContent   $PwdFile $Key 
+$credObject  = New-Object System.Management.Automation.PSCredential -ArgumentList $username, $securePwd
 $credObject.GetNetworkCredential().password
 
 # get DNS server for domain

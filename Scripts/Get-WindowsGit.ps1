@@ -102,7 +102,7 @@ if (Test-Path $Out) {
     #    $Home/.gitprofile
     #    but `$Env:Home may point somewhere else: [$($Env:Home)]
 "@
-  Write-Host $Instructions -fore white -back darkred
+  Write-Host $Instructions -fore white -back darkgreen
 } else {
   "Download FAILED to $Out"
 }

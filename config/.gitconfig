@@ -1,0 +1,70 @@
+[alias]
+	a = add -A
+	b = branch
+	c = checkout
+	cb = checkout -b
+	f = fetch
+	l = log --pretty=oneline --abbrev-commit
+	r = rebase --interactive HEAD~10
+	s = -p status
+	pr = pull --rebase
+	pom = push origin master
+	pos = push origin source
+	rc = rebase --continue
+	ra = rebase --abort
+	ss = -p status -s
+	lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
+	lga = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative --all
+	ll = log --pretty=oneline --abbrev-commit --max-count=15
+	lc = log --stat --summary
+	up = !git fetch --all --prune && git rebase origin/master && git submodule update && git push . origin/master:master 2> /dev/null
+	pub = !git push origin HEAD:master && git push . HEAD:master && git checkout master
+	tpr = tf pull --rebase --deep
+	tcd = tf checkin --deep
+	tprs = tf pull --rebase --shallow
+	tcds = tf checkin --shallow
+	prune = fetch --prune
+	aliases = config --get-regexp alias
+	amend = commit --amend
+	bl = blame -w -M -C
+	bra = branch -rav
+	branches = branch -rav
+	changed = status -sb
+	filelog = log -u
+	hist = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue) [%an]%Creset' --abbrev-commit --date=relative
+	last = log -p --max-count=1 --word-diff
+	lastref = rev-parse --short HEAD
+	lasttag = describe --tags --abbrev=0
+	pick = add -p
+	remotes = remote -v show
+	stage = add
+	stats = diff --stat
+	sync = ! git fetch upstream -v && git fetch origin -v && git checkout master && git merge upstream/master
+	undo = reset head~
+	unstage = reset HEAD
+	wdiff = diff --word-diff
+	who = shortlog -s -e --
+[color]
+    ui = true
+[color]
+	branch = auto
+	diff = auto
+	status = auto
+[color "branch"]
+	current = yellow reverse
+	local = yellow
+	remote = green
+[color "diff"]
+	meta = yellow bold
+	frag = magenta bold
+	old = red bold
+	new = green bold
+[color "status"]
+	added = yellow bold
+	changed = green bold
+	untracked = cyan bold
+[core]
+	editor = 'C:/util/notepad++.exe' -multiInst -notabbar -nosession -noPlugin
+[user]
+	name = HerbM
+	email = HerbMartin@GMail.com

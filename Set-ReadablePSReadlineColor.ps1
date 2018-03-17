@@ -1,3 +1,5 @@
+
+
 # set-psreadlineoption -EmphasisForegroundColor Blue -EmphasisBackgroundColor Black
 if (Get-Module 'PSReadline' -ea 0) {
       Set-PSReadLineOption -ForeGround Yellow  -Token None      

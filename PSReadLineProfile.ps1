@@ -297,31 +297,6 @@ Set-PSReadLineKeyHandler -Key Ctrl+Shift+v `
   }
 }
 
-# Sometimes you want to get a property of invoke a member on what you've entered so far
-# but you need parens to do that.  This binding will help by putting parens around the current selection,
-# or if nothing is selected, the whole line.
-Set-PSReadLineKeyHandler -Key 'Alt+(' `
-             -BriefDescription ParenthesizeSelection `
-             -LongDescription "Put parenthesis around the selection or entire line and move the cursor to after the closing parenthesis" `
-             -ScriptBlock {
-  param($key, $arg)
-
-  $selectionStart = $null
-  $selectionLength = $null
-  [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
-
-  $line = $null
-  $cursor = $null
-  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
-  if ($selectionStart -ne -1) {
-    [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, '(' + $line.SubString($selectionStart, $selectionLength) + ')')
-    [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($selectionStart + $selectionLength + 2)
-  } else  {
-    [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $line.Length, '(' + $line + ')')
-    [Microsoft.PowerShell.PSConsoleReadLine]::EndOfLine()
-  }
-}
-
 ## Stub to add new handler
 ## Set-PSReadLineKeyHandler -Key "+Alt+'" `
 ##                          -BriefDescription InsertQuotePair `
@@ -513,6 +488,55 @@ Set-PSReadLineKeyHandler -Key Alt+'(',Alt+'{',Alt+'[' `
   $line = $cursor = $null   
   [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line,[ref]$cursor)
   [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor - $retreat)
+}
+
+# Sometimes you want to get a property of invoke a member on what you've entered so far
+# but you need parens to do that.  This binding will help by putting parens around the current selection,
+# or if nothing is selected, the whole line.
+Set-PSReadLineKeyHandler -Key 'Alt+(' `
+                         -BriefDescription ParenthesizeSelectionRight `
+                         -LongDescription "Parenthesize selection, line right, or entire line, and move the cursor to after the closing parenthesis" `
+                         -ScriptBlock {
+  param($key, $arg)
+  $selectionStart = $selectionLength = $line = $cursor = $null
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+  $LeftLine  = $line.SubString(0, [Math]::Max(0,$Cursor - 1))
+  $RightLine = $Line.SubString($Cursor, $Line.Length - $Cursor)
+  if ($selectionStart -ne -1) {
+    [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, '(' + $line.SubString($selectionStart, $selectionLength) + ')')
+    [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($selectionStart + $selectionLength + 2)
+  } elseif ($line.Length -le $cursor) {
+    [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $line.Length, "($line)")
+    [Microsoft.PowerShell.PSConsoleReadLine]::EndOfLine()
+  } else {
+    $Wrapped = "$LeftLine($RightLine)"
+    [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $line.Length, $Wrapped)
+    [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($Cursor)
+  }
+}
+
+Set-PSReadLineKeyHandler -Key 'Alt+)' `
+                         -BriefDescription ParenthesizeSelectionLeft `
+                         -LongDescription "Parenthesize selection, line left, or entire line, and move the cursor to after the closing parenthesis" `
+                         -ScriptBlock {
+  param($key, $arg)
+  $selectionStart = $selectionLength = $line = $cursor = $null
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+  $LeftLine  = $line.SubString(0, [Math]::Max(0, $Cursor - 1))
+  $RightLine = $Line.SubString($Cursor, $Line.Length - $Cursor)
+  if ($selectionStart -ne -1) {
+    [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, '(' + $line.SubString($selectionStart, $selectionLength) + ')')
+    [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($selectionStart + $selectionLength + 2)
+  } elseif ($line.Length -le $cursor) {
+    [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $line.Length, "($line)")
+    [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($Cursor+2)
+  } else {
+    $Wrapped = "($LeftLine)$RightLine"
+    [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $line.Length, $Wrapped)
+    [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($Cursor+2)
+  }
 }
 
 if ($host.Name -eq 'ConsoleHost') {

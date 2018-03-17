@@ -417,6 +417,18 @@ Function Get-ChildItem2 {
               $ToOutPut = $Null
             }
           }
+          
+# Hey, I found a problem in the PS, the SimpleOutput formatting referenced the wrong object.
+# The line had 
+# $ToOutPut = "$($ ToOutPut.LastAccessTime -f 's'),$($ ToOutPut.Length),$($ ToOutPut.FullName)"
+# And I changed to
+# $ToOutPut = "$($Object.LastAccessTime -f 's'),$($Object.Length),$($Object.FullName)"
+# 
+# I like the –SimpleOutput because the date has the mm and dd padded with leading zeros.  
+# I would like to also format the file size to a fixed number of characters to make it easier for BF relevance to parse.  
+# I am researching and learning a bit.
+          
+          
           If ($ToOutPut -and $LongOnly) {
             $fullLength = $Object.Fullname.Length
             $nameLength = $Object.Name.Length

@@ -477,11 +477,11 @@ function Get-DiskSpace {
 
 The PowerShell Square Function 
 
-#It’s a straight forward pattern to get this working.
+#It's a straight forward pattern to get this working.
 #1.Create a function 
 #2.Add the param keyword 
 #3.Add the [Parameter(ValueFromPipeline)] attribute to the parameter 
-#4.Add a Process block for your logic (here, it’s just multiplying the parameter by itself) 
+#4.Add a Process block for your logic (here, it's just multiplying the parameter by itself) 
 #http://www.old.dougfinke.com/blog/index.php/2014/12/23/four-steps-to-turn-powershell-one-liners-into-pipeable-functions/
 function sqr {            
 	param ([Parameter(ValueFromPipeline)] $p )
@@ -554,13 +554,13 @@ function Where-UpdatedSince{
 #     http://stackoverflow.com/a/12679208/115690
 # any > $null  $null = any  any | Out-Null  [void] (any)
 # Invoke-Expression string  iex “write-host hello”  hello
-# Get-EventLog -log system –newest 1000 | where-object {$_.eventid –eq ‘1074’} | format-table machinename, username, timegenerated –autosize 
+# Get-EventLog -log system –newest 1000 | where-object {$_.eventid –eq '1074'} | format-table machinename, username, timegenerated –autosize 
 # Get-Hotfix -id kb2862152
 # Backup-GPO –all –path \AdminServerGPO-Backups 
 # Get-WMIobject win32_networkadapterconfiguration | where {$_.IPEnabled -eq “True”} | Select-Object pscomputername,ipaddress,defaultipgateway,ipsubnet,dnsserversearchorder,winsprimaryserver | format-Table -Auto 
 # Get-WMIobject –computername WS2008-DC01 win32_networkadapterconfiguration | where {$_.IPEnabled -eq “True”}| Select-Object pscomputername,ipaddress,defaultipgateway,ipsubnet,dnsserversearchorder,winsprimaryserver | format-Table –Auto 
 # Parse a list of system names and use Get-CIMInstance – a newer CMDlet and faster than Get-WMIObject 
-#  Get-CIMInstance Win32_NetworkAdapterConfiguration -Filter ‘IPEnabled = true’ -ComputerName (Get-Content C:SERVERLIST.TXT) | Select-Object pscomputername,ipaddress,defaultipgateway,ipsubnet,dnsserversearchorder,winsprimaryserver | Format-Table -AutoSize | out-file c:IPSettings.txt 
+#  Get-CIMInstance Win32_NetworkAdapterConfiguration -Filter 'IPEnabled = true' -ComputerName (Get-Content C:SERVERLIST.TXT) | Select-Object pscomputername,ipaddress,defaultipgateway,ipsubnet,dnsserversearchorder,winsprimaryserver | Format-Table -AutoSize | out-file c:IPSettings.txt 
 # Get-AdDomainController -Filter * | Select hostname,isglobalcatalog | Format-table -auto 
 # Get-Content C:userlist.csv | foreach {Get-ADuser $_ | select distinguishedname,samaccountname} | export-csv –path c:newuserlist.csv 
 # What is the OS version and Service Pack level for all of my Windows systems in a certain OU? 

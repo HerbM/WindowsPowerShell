@@ -224,7 +224,7 @@ Option /A says to add owner/audit info
 Option /S restores to schema default
 Add /T and it walks the entire tree downward
 CACLS (built into the system)
-ICACLS:  cacls’s replacement in Vista, LH, 2003 SP2
+ICACLS:  cacls's replacement in Vista, LH, 2003 SP2
 XCACLS (somewhat more complete, built into Support
 Tools)
 SUBINACL (a Resource Kit tool that's powerful but
@@ -253,12 +253,12 @@ eventtriggers /create /eid eventidnumber /tr
 triggername /tk actiontotake /ru
 usernametoruncommand /rp
 passwordofthataccount
-In Vista/LH, it’s the schtasks command, or just
+In Vista/LH, it's the schtasks command, or just
 right-click any event in the Event Log and choose
 “Attach Task To This Event...”
 eventtriggers /create /eid 64002 /tr
 sysalert /tk "net send jack123
-Something’s deleting system files!”
+Something's deleting system files!”
 /ru jack123 /rp swordfish
 eventtriggers or eventtriggers /query /v will list
 the triggers

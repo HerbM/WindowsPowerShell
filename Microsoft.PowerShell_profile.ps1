@@ -11,6 +11,7 @@
     [Parameter(ValueFromRemainingArguments=$true)]     [string[]]$RemArgs
   )
 
+  # Fixed Alt+(,Alt+),Get-DotNetAssembly,Get-RunTime,Add Get-Accelerator,[Accelerators]
   # Temporary Fix to Go(works without Jump), Scripts to path,find and run Local*.ps1" 
   # Fix 6.0 problems, PSGallery, Where.exe output, PSProvider,Jump.Location load
   # Improved Get-ChildItem2, Add-ToolPath,++B,++DosKey,CleanPath,start Get-DirectoryListing,add refs,README.mkdir
@@ -811,60 +812,79 @@ Function Get-WMIClassInfo {
   if ($WrapList) { $r | Format-Table -AutoSize -Wrap } else { $r }
 }
 
-Function Get-DotNetAssembly  {
-  [CmdletBinding()]param([string[]]$Include=@('.*'), [string[]]$Exclude=@('^$'), [switch]$full)
-  $Inc = '(' + ($Include -join ')|(') + ')'
-  $Exc = '(' + ($Exclude -join ')|(') + ')'
-	write-verbose "Include: $Inc"
-	write-verbose "Exclude: $Exc"
-	[appdomain]::CurrentDomain.GetAssemblies() | ForEach-Object {
-		Try {
-      # write-verbose "$($_.fullname)"
-		  $_.GetExportedTypes() |
-        Where-Object { $_.fullname -match $inc } #-and $_.fullname -notmatch $Exc }
-		} Catch  { write-verbose "CATCH: $($_.Fullname)"}
-	} | ForEach-Object {if ($full) {$_} else { "$($_.fullname)" }}
-}
-Function Get-DotNetAssembly  {
-  [CmdletBinding()]param([string[]]$Include=@('.*'), [string[]]$Exclude=@('^$'), [switch]$full)
-  $Inc = '(' + ($Include -join ')|(') + ')'
-  $Exc = '(' + ($Exclude -join ')|(') + ')'
-  write-verbose "Include: $Inc"
-  write-verbose "Exclude: $Exc"
-  [appdomain]::CurrentDomain.GetAssemblies() |
-    Where-Object { $_.fullname -match $inc } | #-and $_.fullname -notmatch $Exc } |
-      ForEach-Object {
-        write-verbose "$($_.fullname)"
-        Try {
-          if ($_.GetExportedTypes()) { $_ }
-        } Catch  { } #write-verbose "CATCH: $($_.Fullname)" }
-      } # | ForEach-Object {if ($full) {$_} else { "$($_.fullname)" }}.
-}
+# [AppDomain]::CurrentDomain.GetAssemblies() | sort FullName | Select FullName
 
+  # Fixed Get-DotNetAssembly
 Function Get-DotNetAssembly  {
-  [CmdletBinding()]param([string[]]$Include=@('.*'), [string[]]$Exclude=@('^$'), [switch]$full)
+  [CmdletBinding()]param(
+    [string[]]$Include=@('.*'), 
+    [string[]]$Exclude=@('^$'), 
+    [switch]$fullname)
   $Inc = '(' + ($Include -join ')|(') + ')'
   $Exc = '(' + ($Exclude -join ')|(') + ')'
   write-verbose "Include: $Inc"
   write-verbose "Exclude: $Exc"
   write-verbose "Full: $([boolean]$full)"
   [appdomain]::CurrentDomain.GetAssemblies() | Where-Object {
-    $a = $_.fullname -match $inc -and $_.fullname -notmatch $Exc -and ($_.IsDynamic -or ($_.GetExportedTypes()))
-    if ($full) { $a }
-    else {
-      $a | Select-Object GlobalAssemblyCache,IsDynamic,ImageRuntimeversion,Fullname,Location
-    }
-  }
+    $_.fullname -match $inc -and $_.fullname -notmatch $Exc 
+    #-and ($_.IsDynamic -or ($_.GetExportedTypes()))
+  }# | ForEach-Object {
+   # if ($fullname) {
+   #   $_ | Select-Object FullName 
+   # } else {
+   #   $_ | Select-Object GlobalAssemblyCache,IsDynamic,ImageRuntimeversion,Fullname,Location
+   # }
+   #}
 }
-    #  % {
-    #    write-verbose "$($_.fullname)"
-    #    Try {
-    #      if ($_.GetExportedTypes()) { $_ }
-    #    } Catch  { } #write-verbose "CATCH: $($_.Fullname)" }
-    #  } # | ForEach-Object {if ($full) {$_} else { "$($_.fullname)" }}.
 new-alias gdna Get-DotNetAssembly -force
 
+Function Get-TypeX {
+  [CmdletBinding()]param(
+    [string[]]$Include=@('.*'), 
+    [string[]]$Exclude=@('^$') 
+  )
+  Get-DotNetAssembly -include $Include -exclude $Exclude | ForEach-Object {
+    $Asm = $_
+    switch -wildcard ($Asm.FullName) {
+      'Anonymously Hosted DynamicMethods Assembly*'                        { break }
+      'Microsoft.PowerShell.Cmdletization.GeneratedTypes*'                 { break }
+      'Microsoft.Management.Infrastructure.UserFilteredExceptionHandling*' { break }
+      'Microsoft.GeneratedCode*'                                           { break }
+      'MetadataViewProxies*'                                               { break }
+      default {
+        try {
+          Write-Verbose "Asm: $($Asm.FullName)"
+          $Asm.GetExportedTypes() | Where-Object {
+            write-verbose "$_"
+            Select-Object @{N='Assembly';E={($_.Assembly -split '.')[0]}},
+              IsPublic, IsSerial, FullName, BaseType
+          }
+        } catch {
+          write-warning "Not Supported: $($Asm.FullName)"
+        }
+      }
+    }
+  }   
+}
 
+  #$Op    = 'match'; 
+  #$NegOp = "not$Op" 
+  #Invoke-Expression "Function ObjectFilter {
+  #  If ($_ $Op $Include -and $_ -$NegOp $Exclude) { $_ }
+  #}"
+
+[PSObject].Assembly.GetType('System.Management.Automation.TypeAccelerators')::Add('accelerators', [PSObject].Assembly.GetType('System.Management.Automation.TypeAccelerators'))  
+Function Get-Accelerator { 
+  param($Include='.', $Exclude='^$', [switch]$Like)
+  $Acc = [psobject].Assembly.GetType("System.Management.Automation.TypeAccelerators")::get  
+  ForEach ($key in $Acc.Keys) {
+    if ($key -notmatch $Include -or $key -match $Exclude) {continue}
+    [pscustomobject]@{
+      Accelerator = $key 
+      Definition  = $Acc.$key
+    }  
+  }
+}
 
 Function Get-HistoryCommandline {
   (get-history @args).commandline
@@ -874,13 +894,6 @@ new-alias gch Get-HistoryCommandLine -force
 new-alias ghc Get-HistoryCommandLine -force
 new-alias gcl Get-HistoryCommandLine -force
 new-alias hcm Get-HistoryCommandLine -force
-
-# Search books (or Search Directory Find Books Find Directory Files)  ## :HM:
-# Get-ChildItem F:\bt\Programming\Python\*,c:\users\herb\downloads\books\python\* -include *hacking*
-# join-path $Books 'Python' -resolve
-# Get-ChildItem F:\bt\Programming\Python\*,c:\users\herb\downloads\books\python\* -include *hack* | Select-Object @{Name='LastWrite';E={get-date ($_.LastWriteTime) -f 'yyyy-mm-dd HH:mm'}},Length,Name
-# $FileFormat = @{N='LastWrite';E={get-date ($_.LastWriteTime) -f 'yyyy-MM-dd HH:mm'}},'Length','Name';
-Function esf { "es '$($args -join '.*')' -dm -name -regex"; es "$($args -join '.*')" -dm -name -regex}
 
 Function Select-History {
   [CmdLetBinding()]param(
@@ -925,26 +938,33 @@ new-alias sh Select-History -force -scope Global
 
 Function Get-RunTime { 
   param(
-    [Microsoft.PowerShell.Commands.HistoryInfo[]]$historyitem, 
+    [Parameter(ValueFromPipeline=$True)]
+    [Microsoft.PowerShell.Commands.HistoryInfo[]]$historyitem=@((Get-History)[-10..-1]), 
+    $Count = 9999,
     [switch]$Full
   ) 
-  $width = +1 * "$((($HistoryItem | Measure-Object -max id).maximum))".length
-  $F1 = '{0,5:N2}'; 
-  $F2 = "ID# {1,$($Width):D}: "
-  write-verbose "$(LINE) width $Width $F2"
-  foreach ($hi in $HistoryItem) {
-    $CL = $hi.commandline
-    $ID = $hi.id
-    switch ($hi.endexecutiontime - $hi.startexecutiontime) {
-      {$Full                } { $_                                      } 
-      {$_.Days         -gt 0} {"$F1 Days  $F2 $CL" -f $_.TotalDays   ,$ID; break } 
-      {$_.Hours        -gt 0} {"$F1 Hours $F2 $CL" -f $_.TotalHours  ,$ID; break }
-      {$_.Minutes      -gt 0} {"$F1 Mins  $F2 $CL" -f $_.TotalMinutes,$ID; break }
-      {$_.Seconds      -gt 0} {"$F1 Secs  $F2 $CL" -f $_.TotalSeconds,$ID; break }
-      {$_.Milliseconds -gt 0} {"$F1 ms    $F2 $CL" -f $_.TotalSeconds,$ID; break }
+  begin {
+    $width = +1 * "$((($HistoryItem | Measure-Object -max id).maximum))".length
+    $F1 = '{0,5:N2}'; 
+    $F2 = "ID# {1,$($Width):D}: "
+    write-verbose "$(LINE) width $Width $F2"
+  }
+  process {
+    foreach ($hi in $HistoryItem) {
+      $CL = $hi.commandline
+      $ID = $hi.id
+      switch ($hi.endexecutiontime - $hi.startexecutiontime) {
+        {$Full                } { $_                                           ; break } 
+        {$_.Days         -gt 0} {"$F1 Days  $F2 {2}" -f $_.TotalDays   ,$ID,$CL; break } 
+        {$_.Hours        -gt 0} {"$F1 Hours $F2 {2}" -f $_.TotalHours  ,$ID,$CL; break }
+        {$_.Minutes      -gt 0} {"$F1 Mins  $F2 {2}" -f $_.TotalMinutes,$ID,$CL; break }
+        {$_.Seconds      -gt 0} {"$F1 Secs  $F2 {2}" -f $_.TotalSeconds,$ID,$CL; break }
+        {$_.Milliseconds -gt 0} {"$F1 ms    $F2 {2}" -f $_.TotalSeconds,$ID,$CL; break }
+      }
     }
   }
 }
+
 Function get-syntax   { 
   param(
   )
@@ -964,18 +984,13 @@ Function get-fullhelp { get-help -full @args }
 write-information "$(LINE) $home"
 write-information "$(LINE) Try: import-module -prefix cx Pscx"
 write-information "$(LINE) Try: import-module -prefix cb PowerShellCookbook"
-#echo 'Install DOSKey'
-#doskey /exename=powershell.exe /macrofile=c:\bat\macrosPS.txt
-#del alias:where -ea 0
-# Find-file
-# where.exe autohotkey.exe 2>$Null
-# $env:PathExt
+
+Function esf { "es '$($args -join '.*')' -dm -name -regex"; es "$($args -join '.*')" -dm -name -regex}
+
 Function ahk {
   if ($args[0]) { C:\util\AutoHotKey\autohotkey.exe @args               }
   else          { C:\util\AutoHotKey\autohotkey.exe /r "c:\bat\ahk.ahk" }
 }; 
-Remove-Item Alias:a -force -ea 0
-New-Alias a ahk -force -scope Global
 
 Function ahk {
   [CmdletBinding()]param([string[]]$Path=@('c:\bat\ahk.ahk'))
@@ -986,10 +1001,10 @@ Function ahk {
   write-verbose "ArgC: $($argx.count) [$($argx -join '], [')]"
   $path | ForEach-Object { C:\util\AutoHotKey\AutoHotkey.exe $_ @a }
 }  
-Remove-Item Alias:a -force -ea 0
+Remove-Item Alias:a -force -ea 0 2>$Null
 New-Alias a ahk -force -scope Global
  
-Function d   { cmd /c dir @args}
+Function d    { cmd /c dir @args}
 Function df   { Get-ChildItem @args -force -file       }
 Function da   { Get-ChildItem @args -force             }
 Function dfs  { Get-ChildItem @args -force -file -rec  }
@@ -1056,7 +1071,7 @@ Function Get-Drive {
 # https://poshtools.com/2018/02/17/building-real-time-web-apps-powershell-universal-dashboard/
 # https://docs.microsoft.com/en-us/dotnet/api/?view=netframework-4.5
 # Function invoke-clipboard {$script = ((Get-Clipboard) -join "`n") -replace '(Function\s+)', '$1 '; . ([scriptblock]::Create($script))}
-#### Because of DIFFICULT with SCOPE
+#### Because of DIFFICULTY with SCOPE
 # $PSProfileDirectory = Split-Path $PSProfile
 $ICFile = "$PSProfileDirectory\ic.ps1"
 write-information "$(LINE) Create ic file: $ICFile"
@@ -1109,6 +1124,7 @@ write-information "$(LINE) prompt='PS $($executionContext.SessionState.Path.Curr
 #Function Global:prompt { "PS '$($executionContext.SessionState.Path.CurrentLocation)' $('>.' * $nestedPromptLevel + '>') "}
 
 Function Global:prompt {
+  If (!(Get-Variable MaxPrompt -ea 0 2>$Null)) { $MaxPrompt = 45 }
   $loc = "$($executionContext.SessionState.Path.CurrentLocation)"
   $Sig = " |>$('>' * $nestedPromptLevel)"
   if ($Global:MaxPromptLength) { 
@@ -1512,6 +1528,21 @@ Looks like a match, editor says it's a match, so I tried adding the same test wi
   at Invoke-Assertion, C:\Program Files\WindowsPowerShell\Modules\Pester\4.1.1\Functions\Assertions\Should.ps1: line 209
   at <ScriptBlock>, C:\Users\A469526\Documents\WindowsPowerShell\Go\GoLocation\GoLocation.Tests.ps1: line 16
 #>
+Function Show-InternetProxy {
+  [CmdletBinding()] param()
+  $InternetSettingsKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings"
+  $urlEnvironment      = $Env:AutoConfigUrl 
+  $urlDefault          = 'http://proxyconf.my-it-solutions.net/proxy-na.pac'
+  $ProxyValues         = 'AutoConfig ProxyEnable Autodetect'
+  write-output "`$Env:AutoConfigUrl        : $($Env:AutoConfigUrl)"
+  write-output  "Default proxy             : $urlDefault"
+  $Settings = get-itemproperty $InternetSettingsKey -ea 0 | findstr /i $ProxyValues | Sort-Object
+    Write-Output "             Registry settings"
+    ForEach ($Line in $Settings) {
+    Write-Output $Line
+  }
+}
+
 Function Set-InternetProxy {
   [CmdletBinding()]
   param(
@@ -1534,7 +1565,8 @@ Function Set-InternetProxy {
   $urlSaved            = (get-itemproperty $InternetSettingsKey $AutoConfigURLSave -ea 0).$AutoConfigURLSAVE 
   $urlDefault          = 'http://proxyconf.my-it-solutions.net/proxy-na.pac'
   If ($Enable -eq $Disable) {
-    Write-Warning "Must specify either Enable or Disable (alias: On or Off)"
+    Write-Warning "Specify either Enable or Disable (alias: On or Off)"
+    $Verbose = $True
   } elseif ($Disable) {
     if ($urlCurrent) {
       set-itemproperty $InternetSettingsKey $AutoConfigURLSave $urlCurrent -force -ea 0
@@ -1560,7 +1592,7 @@ Function Set-InternetProxy {
   }
   $Settings = get-itemproperty $InternetSettingsKey -ea 0 | findstr /i $ProxyValues | Sort-Object
   ForEach ($Line in $Settings) {
-    Write-Verbose $Line
+    Write-Verbose $Line -Verbose:$Verbose
   }
 } 
 
@@ -1575,7 +1607,6 @@ Function dod { (Get-ChildItem @args) | Sort-Object -prop lastwritetime }
 Function don { (Get-ChildItem @args) | Sort-Object -prop fullname }
 Function dos { (Get-ChildItem @args) | Sort-Object -prop length }
 Function dox { (Get-ChildItem @args) | Sort-Object -prop extension }
-Function Test-Administrator { return (whoami /all | Select-Object -string S-1-16-12288) -ne $null }
 Function Privs? {
 	if ((whoami /all | Select-Object -string S-1-16-12288) -ne $null) {
 		'Administrator privileges enabled'
@@ -1715,6 +1746,17 @@ ForEach ($Path in $SearchPath) {
 Function dt {param([string[]]$datetime=(get-date)) $datetime | ForEach-Object { get-date $_ -format 'yyyy-MM-dd HH:mm:ss ddd' } }
 #Function dt {param([string[]]$datetime=(get-date)) $datetime | ForEach-Object { get-sortabledate $_) -creplace '\dT'  } }
 
+#echo 'Install DOSKey'
+#doskey /exename=powershell.exe /macrofile=c:\bat\macrosPS.txt
+#del alias:where -ea 0
+# Find-file
+# where.exe autohotkey.exe 2>$Null
+# $env:PathExt
+# Search books (or Search Directory Find Books Find Directory Files)  ## :HM:
+# Get-ChildItem F:\bt\Programming\Python\*,c:\users\herb\downloads\books\python\* -include *hacking*
+# join-path $Books 'Python' -resolve
+# Get-ChildItem F:\bt\Programming\Python\*,c:\users\herb\downloads\books\python\* -include *hack* | Select-Object @{Name='LastWrite';E={get-date ($_.LastWriteTime) -f 'yyyy-mm-dd HH:mm'}},Length,Name
+# $FileFormat = @{N='LastWrite';E={get-date ($_.LastWriteTime) -f 'yyyy-MM-dd HH:mm'}},'Length','Name';
 
 Function Find-File {
   [CmdletBinding()]param(
@@ -1724,7 +1766,6 @@ Function Find-File {
     [switch]$Recurse,
     [switch]$Details
   )
-
   Begin {
     $e = @{}
     Function Extend-File {
@@ -1732,20 +1773,21 @@ Function Find-File {
       If ($name -match '(\.[a-z0-9]{0,5})|\*$') {
         return @($name)
       } elseIf (!$e[$name]) {
-        $e[$name] = @($ext -split ';' | Select-Object -uniq |
-                  Where-Object { $_ -notmatch '^\s*$' } | ForEach-Object { "$($Name)$_" })
+        $e[$name] = @($ext -split ';' | Select-Object -uniq | Where-Object { 
+          $_ -notmatch '^\s*$' } | ForEach-Object { "$($Name)$_" }
+        )
       }
       $e[$name]
     }
-
-    $Location += $Environment | ForEach-Object { $Location += ";$((Get-ChildItem -ea 0 Env:$_).value)" }
+    $Location += $Environment | ForEach-Object { 
+      $Location += ";$((Get-ChildItem -ea 0 Env:$_).value)" 
+    }
     If ($EPath) {$Location += ";$($Env:Path)"}
     $Location = $Location | ForEach-Object { $_ -split ';' } | Select-Object -uniq | Where-Object { $_ -notmatch '^\s*$' }
     write-verbose ("$($Location.Count)`n" + ($Location -join "`n"))
     write-verbose ('-' * 72)
     write-verbose "Recurse: $Recurse"
   }
-
   Process {
     $File | ForEach-Object { 
       $F=$_; 
@@ -1760,7 +1802,6 @@ Function Find-File {
       else { $_.fullname }
     }
   }
-
   End { write-verbose ('-' * 72) }
 }
 
@@ -1772,6 +1813,7 @@ Function Make-Credential($username, $password) {
   }
   return $cred
 }
+
 Function Get-ErrorDetail {
   param($ErrorRecord = $Error[0])
   $ErrorRecord | Format-List * -Force
@@ -1783,6 +1825,7 @@ Function Get-ErrorDetail {
     $Exception = $Exception.InnerException
   }
 }
+
 Function MyPSHost {
   $bit = if ([Environment]::Is64BitProcess) {'64-bit'} else {'32-bit'}
   If ($host = get-host) {
@@ -1792,11 +1835,9 @@ Function MyPSHost {
   }
 }
 
-
 Function Get-PSVersion {
   "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"
 }
-
 
 <#
 General useful commands
