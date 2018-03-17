@@ -539,6 +539,58 @@ Set-PSReadLineKeyHandler -Key 'Alt+)' `
   }
 }
 
+Set-PSReadLineKeyHandler -Key '"',"'" `
+                         -BriefDescription InsertQuoteSelected `
+                         -LongDescription "Insert paired quotes for selections" `
+                         -ScriptBlock {
+  param($key, $arg)
+  $quote = $key.KeyChar
+  $selectionStart = $selectionLength = $line = $cursor = $null
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+  $LeftLine  = $line.SubString(0, [Math]::Max(0,$Cursor - 1))
+  $RightLine = $Line.SubString($Cursor, $Line.Length - $Cursor)
+  if ($selectionStart -ne -1) {
+    [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, $Quote + $line.SubString($selectionStart, $selectionLength) + $Quote)
+    [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($selectionStart + $selectionLength + 2)
+  } else {
+    [Microsoft.PowerShell.PSConsoleReadLine]::Insert($Quote)
+  }
+}
+
+Set-PSReadLineKeyHandler -Chord 'Alt+|','Alt+%' `
+                         -BriefDescription InsertWhereObject `
+                         -LongDescription "Insert Where-Object with scriptblock " `
+                         -ScriptBlock {
+  param($key, $arg)
+  $selectionStart = $selectionLength = $line = $cursor = $null
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+  $Selection = if ($selectionStart -ne -1) {
+    $line.SubString($selectionStart, $selectionLength)
+    [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, '')
+  } else { '' }
+  [Microsoft.PowerShell.PSConsoleReadLine]::Insert("| ForEach-Object { $Selection }")
+  [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor + 19 + $Selection.length )
+}
+
+Set-PSReadLineKeyHandler -Chord 'Ctrl+Alt+|','Ctrl+Alt+?' `
+                         -BriefDescription InsertForEachObject `
+                         -LongDescription "Insert ForEach-Object with scriptblock " `
+                         -ScriptBlock {
+  param($key, $arg)
+  $selectionStart = $selectionLength = $line = $cursor = $null
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+  $Selection = if ($selectionStart -ne -1) {
+    $line.SubString($selectionStart, $selectionLength)
+    [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, '')
+  } else { '' }
+  [Microsoft.PowerShell.PSConsoleReadLine]::Insert("| Where-Object { $Selection }")
+  [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor + 17 + $Selection.length )
+}
+
+
 if ($host.Name -eq 'ConsoleHost') {
     Import-Module PSReadline
     Set-PSReadlineKeyHandler -Key Ctrl+Delete     -Function KillWord
