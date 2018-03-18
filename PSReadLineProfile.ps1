@@ -558,7 +558,11 @@ Set-PSReadLineKeyHandler -Key '"',"'" `
   }
 }
 
+<<<<<<< HEAD
 Set-PSReadLineKeyHandler -Chord 'Alt+|','Alt+%','Ctrl+|,%' `
+=======
+Set-PSReadLineKeyHandler -Chord 'Alt+|','Alt+%' `
+>>>>>>> ac91eabe7c18d56b91f1dad2f4b4a6cb7ab8f2c1
                          -BriefDescription InsertWhereObject `
                          -LongDescription "Insert Where-Object with scriptblock " `
                          -ScriptBlock {
@@ -574,7 +578,11 @@ Set-PSReadLineKeyHandler -Chord 'Alt+|','Alt+%','Ctrl+|,%' `
   [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor + 19 + $Selection.length )
 }
 
+<<<<<<< HEAD
 Set-PSReadLineKeyHandler -Chord 'Ctrl+Alt+|','Ctrl+Alt+?','Ctrl+|,?' `
+=======
+Set-PSReadLineKeyHandler -Chord 'Ctrl+Alt+|','Ctrl+Alt+?' `
+>>>>>>> ac91eabe7c18d56b91f1dad2f4b4a6cb7ab8f2c1
                          -BriefDescription InsertForEachObject `
                          -LongDescription "Insert ForEach-Object with scriptblock " `
                          -ScriptBlock {
