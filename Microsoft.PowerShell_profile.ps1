@@ -985,7 +985,107 @@ write-information "$(LINE) $home"
 write-information "$(LINE) Try: import-module -prefix cx Pscx"
 write-information "$(LINE) Try: import-module -prefix cb PowerShellCookbook"
 
-Function esf { "es '$($args -join '.*')' -dm -name -regex"; es "$($args -join '.*')" -dm -name -regex}
+
+
+
+
+
+
+
+
+
+
+
+new-alias npdf 'C:\Program Files (x86)\Nitro\Reader 3\NitroPDFReader.exe' -force -scope Global
+
+Function esf { 
+  $parms  = @('-dm')
+  $target = @()
+  $name   = '-full-path-and-name'
+  $type   = @('-regex')
+  ForEach ($arg in $args) {
+    Switch -regex ($arg) {
+      '^-regex'    {                  break }
+      '^-...name$' { $name = $arg;    break }
+      '^-'         { $parms  += $arg; break }
+      default      { $target += $arg        }
+    }
+  }
+  $target = "$($target -join '.*')"
+  $args = $parms + $type + $name
+  write-verbose "es $target $($args -join ' ')"  
+  write-verbose "$(& 'C:\Program Files\WindowsPowerShell\Modules\Pscx\3.2.1.0\Apps\EchoArgs.exe' $target @args)"  
+  es $target @args | ForEach-Object { 
+    if ($_ -match '^(\d\d/\d\d/\d{4})\s+') {
+      $_ -replace '^(\d\d/\d\d/\d{4})\s+', "$(Get-Date $Matches[1] -format 'yyyy-MM-dd') "
+    } else { $_ }
+  }
+}
+
+<#  $foreach loop variable iterator WEIRD remove this junk
+foreach ($a in ('a','b','c','d','e')) { $a; [void]$foreach.movenext(); $foreach.gettype() }
+[]
+[SZArrayEnumerator] |gm
+foreach ($a in ('a','b','c','d','e')) { $a; [void]$foreach.movenext(); $foreach.gettype() | gm }
+foreach ($a in ('a','b','c','d','e')) { $a; [void]$foreach.movenext(); $foreach }
+foreach ($a in ('a','b','c','d','e')) { $foreach }
+foreach ($a in ('a','b','c','d','e')) { "$a $foreach" }
+foreach ($a in ('a','b','c','d','e')) { "$a $foreach"; $x++ }
+foreach ($a in ('a','b','c','d','e')) { $x++; "$a $foreach";  }
+$x
+$x; foreach ($a in ('a','b','c','d','e')) { $x++; "$a $foreach";  }
+$x; foreach ($a in ('a','b','c','d','e')) { $x++; "$a $foreach";  }
+$x
+$x=0; foreach ($a in ('a','b','c','d','e')) { $x++; "$a $foreach";  }
+$x
+$x=0; foreach ($a in ('a','b','c','d','e')) { ++$x; "$a $foreach";  }
+$x
+$x=0; foreach ($a in ('a','b','c','d','e')) { $x; $x++; "$a $foreach";  }
+$x=0; foreach ($a in ('a','b','c','d','e')) { $x; $x++; "$a $foreach"; $x+++  }
+$x=0; foreach ($a in ('a','b','c','d','e')) { $x; $x++; "$a $foreach"; $x++ }
+
+foreach ($a in ('a','b','c','d','e')) { $a; [void]$foreach.movenext(); $foreach.gettype() | gm }
+foreach ($a in ('a','b','c','d','e')) { $a; [void]$foreach.movenext(); $foreach }
+foreach ($a in ('a','b','c','d','e')) { $foreach }
+foreach ($a in ('a','b','c','d','e')) { "$a $foreach" }
+foreach ($a in ('a','b','c','d','e')) { "$a $foreach"; $x++ }
+foreach ($a in ('a','b','c','d','e')) { $x++; "$a $foreach";  }
+$x
+$x; foreach ($a in ('a','b','c','d','e')) { $x++; "$a $foreach";  }
+$x; foreach ($a in ('a','b','c','d','e')) { $x++; "$a $foreach";  }
+$x
+$x=0; foreach ($a in ('a','b','c','d','e')) { $x++; "$a $foreach";  }
+$x
+$x=0; foreach ($a in ('a','b','c','d','e')) { ++$x; "$a $foreach";  }
+$x
+$x=0; foreach ($a in ('a','b','c','d','e')) { $x; $x++; "$a $foreach";  }
+$x=0; foreach ($a in ('a','b','c','d','e')) { $x; $x++; "$a $foreach"; $x+++  }
+$x=0; foreach ($a in ('a','b','c','d','e')) { $x; $x++; "$a $foreach"; $x++ }
+h -count 20
+$x=0; foreach ($a in ('a','b','c','d','e')) { $foreach }
+$x=0; foreach ($a in ('a','b','c','d','e')) { $foreach.Current }
+$array = @(1,2,3)
+$array.GetEnumerator() |gm
+$array.GetEnumerator().gettype()
+$x=0; foreach ($a in ('a','b','c','d','e')) {[int]$foreach }
+$x=0; foreach ($a in ('a','b','c','d','e')) {$foreach.gettype() }
+$x=0; foreach ($a in ('a','b','c','d','e')) {$foreach.ToString() }
+$x=0; foreach ($a in ('a','b','c','d','e')) {$foreach.ToInt() }
+$x=0; foreach ($a in ('a','b','c','d','e')) {$foreach.ToInteger() }
+$x=0; foreach ($a in ('a','b','c','d','e')) {$foreach.ToInt32() }
+$x=0; foreach ($a in ('a','b','c','d','e')) {$foreach = get-member -static }
+$x=0; foreach ($a in ('a','b','c','d','e')) {$foreach = get-member  }
+$x=0; foreach ($a in ('a','b','c','d','e')) { [object]$foreach = gm  }
+$x=0; foreach ($a in ('a','b','c','d','e')) { $foreach.current  }
+$x=0; foreach ($a in ('a','b','c','d','e')) { $foreach.tostring()  }
+$x=0; foreach ($a in ('a','b','c','d','e')) { $foreach.getindex()  }
+$x=0; foreach ($a in ('a','b','c','d','e')) { $foreach.count  }
+$x=0; foreach ($a in ('a','b','c','d','e')) { $foreach.currentindex  }
+$x=0; foreach ($a in ('a','b','c','d','e')) { $foreach.index  }
+$x=0; foreach ($a in ('a','b','c','d','e')) { $foreach.position  }
+$x=0; foreach ($a in ('a','b','c','d','e')) { $foreach.upperbound  }
+
+#>
 
 Function ahk {
   if ($args[0]) { C:\util\AutoHotKey\autohotkey.exe @args               }
