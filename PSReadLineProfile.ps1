@@ -3,6 +3,7 @@ using namespace System.Management.Automation.Language
 [CmdletBinding()]param(
   [switch]$BraceMatching,
   [switch]$QuoteMatching,
+  [switch]$ForcePSReadLine,
   [Alias('AllMatching','BothMatching')][switch]$Matching
 )
 
@@ -619,33 +620,32 @@ Set-PSReadLineKeyHandler -Chord 'Ctrl+Alt+|','Ctrl+Alt+?','Ctrl+|,?' `
     $line.SubString($selectionStart, $selectionLength)
     [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, '')
   } else { '' }
-  [Microsoft.PowerShell.PSConsoleReadLine]::Insert("| Where-Object { $Selection }")
-  [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor + 17 + $Selection.length )
+  [Microsoft.PowerShell.PSConsoleReadLine]::InsertCursorPosition($cursor + $Selection.length )
 }
 
-
-if ($host.Name -eq 'ConsoleHost') {
+if ($ForcePSReadlineProfile -or $host.Name -match 'ConsoleHost|((ISE|Code) Host)') {
     Import-Module PSReadline
     Set-PSReadlineKeyHandler -Key Ctrl+Delete     -Function KillWord
     Set-PSReadlineKeyHandler -Key Ctrl+Backspace  -Function BackwardKillWord
     Set-PSReadlineKeyHandler -Key Shift+Backspace -Function BackwardDeleteChar  ### Kill word EVIL ####
     Set-PSReadlineKeyHandler -Key UpArrow         -Function HistorySearchBackward
     Set-PSReadlineKeyHandler -Key DownArrow       -Function HistorySearchForward    
-    
-    $Host.PrivateData.ErrorBackgroundColor   = $Host.UI.RawUI.BackgroundColor
-    $Host.PrivateData.WarningBackgroundColor = $Host.UI.RawUI.BackgroundColor
-    $Host.PrivateData.VerboseBackgroundColor = $Host.UI.RawUI.BackgroundColor
+    If ($Host.PrivateDate -and $Host.PrivateDate.ErrorBackgroundColor) {  
+      $Host.PrivateData.ErrorBackgroundColor   = $Host.UI.RawUI.BackgroundColor
+      $Host.PrivateData.WarningBackgroundColor = $Host.UI.RawUI.BackgroundColor
+      $Host.PrivateData.VerboseBackgroundColor = $Host.UI.RawUI.BackgroundColor
 
-    $Host.PrivateData.ErrorBackgroundColor   = 'Black'
-    $Host.PrivateData.WarningBackgroundColor = 'Black'
-    $Host.PrivateData.VerboseBackgroundColor = 'Black'
-    
-    $Host.PrivateData.ErrorBackgroundColor   = 'DarkRed'
-    $Host.PrivateData.ErrorForegroundColor   = 'White'
-    $Host.PrivateData.VerboseBackgroundColor = 'Black'
-    $Host.PrivateData.VerboseForegroundColor = 'Yellow'
-    $Host.PrivateData.WarningBackgroundColor = 'Black'
-    $Host.PrivateData.WarningForegroundColor = 'White'
+      $Host.PrivateData.ErrorBackgroundColor   = 'Black'
+      $Host.PrivateData.WarningBackgroundColor = 'Black'
+      $Host.PrivateData.VerboseBackgroundColor = 'Black'
+      
+      $Host.PrivateData.ErrorBackgroundColor   = 'DarkRed'
+      $Host.PrivateData.ErrorForegroundColor   = 'White'
+      $Host.PrivateData.VerboseBackgroundColor = 'Black'
+      $Host.PrivateData.VerboseForegroundColor = 'Yellow'
+      $Host.PrivateData.WarningBackgroundColor = 'Black'
+      $Host.PrivateData.WarningForegroundColor = 'White'
+    }  
 }
 
 if (Get-Module PSReadline) {

@@ -4,12 +4,18 @@
     [Alias('Modules')]                                   [switch]$ShowModules,
     [Alias('IModules')]                                  [switch]$InstallModules,
                                                          [switch]$ForceModuleInstall,
+    [ValidateSet('AllUsers','CurrentUser')]              [string]$ScopeModule='AllUsers',
+    [Parameter(ValueFromRemainingArguments=$true)]       [string[]]$RemArgs,
     [Alias('ClobberAllowed')]                            [switch]$AllowClobber,
     [Alias('SilentlyContinue')]                          [switch]$Quiet,
     [Alias('PSReadlineProfile','ReadlineProfile','psrl')][switch]$PSReadline,
-    [ValidateSet('AllUsers','CurrentUser')]              [string]$ScopeModule='AllUsers',
-    [Parameter(ValueFromRemainingArguments=$true)]     [string[]]$RemArgs
+    [Alias('ForcePSReadlineProfile','fpsrl')]            [switch]$ForcePSReadline
+    #[Alias('IAc','IAction','InfoAction')]
+    #[ValidateSet('SilentlyContinue','')]                                  [switch]$InformationAction
   )
+
+  # 'Continue', 'Ignore', 'Inquire', 'SilentlyContinue', 'Stop', 'Suspend' #'Continue'          'Inquire'           'Stop'
+  # 'Ignore'            'SilentlyContinue'  'Suspend'
 
   # Fixed Alt+(,Alt+),Get-DotNetAssembly,Get-RunTime,Add Get-Accelerator,[Accelerators]
   # Temporary Fix to Go(works without Jump), Scripts to path,find and run Local*.ps1" 
@@ -1218,6 +1224,24 @@ Function qa {
     "$Quotes$($(foreach ($a in $args) {if ($a -is [System.Array]) {qa @a } else {$a}} ) -join $OFS)$Quotes" 
   }
 }
+Function qa { 
+  [CmdLetBinding(PositionalBinding=$False)]
+  param(
+    [Parameter()]$OFS=$(Get-Variable OFS -scope 1 -ea 0 -value),
+    [Parameter()]        $Quotes="'",
+    [Parameter()][switch]$DoubleQuotes,
+    [Parameter()][switch]$SingleQuotes,
+    [Parameter()][switch]$NoQuotes,
+    [parameter(Mandatory=$true, ValueFromRemainingArguments=$true)]$Args
+  )
+  $q = Switch ($True) {
+    { $DoubleQuotes }  { '"'; break }
+    { $SingleQuotes }  { "'"; break }
+    { $NoQuotes     }  { "'"; break }
+    Default { $Quotes }
+  }
+  $args | ForEach-Object { "$q$_$q" }
+}
 
 # $ic = [scriptblock]::Create('(Get-Clipboard) -join "`n"')
 # $ic = '. ([scriptblock]::Create($((Get-Clipboard) -join "`n")))'
@@ -1750,7 +1774,7 @@ Function Get-SortableDate {
 #$PSReadLineProfile = Join-Path $myinvocation.pscommandpath 'PSReadLineProfile.ps1'
 $PSReadLineProfile = Join-Path (Split-Path $PSProfile) 'PSReadLineProfile.ps1'
 write-information $PSReadLineProfile
-if (Test-Path $PSReadLineProfile) { . $PSReadLineProfile }
+if (Test-Path $PSReadLineProfile) { . $PSReadLineProfile -Force:([Boolean]$ForceForcePSReadlineProfile) }
 
 try {   # Chocolatey profile
   $ChocolateyProfile = "$($env:ChocolateyInstall)\helpers\chocolateyProfile.psm1"
@@ -1815,7 +1839,7 @@ if (Get-Module 'PSReadline' -ea 0) {
 	Set-PSReadLineOption -ForeGround White   -Token Type      
 	Set-PSReadLineOption -ForeGround White   -Token Number    
 	Set-PSReadLineOption -ForeGround White   -Token Member    
-  If ($Host.PrivateDate.ErrorBackgroundColor) {  
+  If ($Host.PrivateDate -and $Host.PrivateDate.ErrorBackgroundColor) {  
     $Host.PrivateData.ErrorBackgroundColor   = 'DarkRed'
     $Host.PrivateData.ErrorForegroundColor   = 'White'
     $Host.PrivateData.VerboseBackgroundColor = 'Black'
