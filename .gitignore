@@ -23,3 +23,7 @@ junk
 *log.txt
 Microsoft.PowerShell_profileLOG.txt
 Local*.ps1
+/work/bat
+/work/dev
+/work/dev/*
+/work/bat/*

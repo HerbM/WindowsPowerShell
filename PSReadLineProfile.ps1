@@ -501,7 +501,7 @@ Set-PSReadLineKeyHandler -Key 'Alt+(' `
   $selectionStart = $selectionLength = $line = $cursor = $null
   [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
   [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
-  $LeftLine  = $line.SubString(0, [Math]::Max(0,$Cursor - 1))
+  $LeftLine  = $line.SubString(0, [Math]::Max(0,$Cursor))
   $RightLine = $Line.SubString($Cursor, $Line.Length - $Cursor)
   if ($selectionStart -ne -1) {
     [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, '(' + $line.SubString($selectionStart, $selectionLength) + ')')
@@ -524,7 +524,7 @@ Set-PSReadLineKeyHandler -Key 'Alt+)' `
   $selectionStart = $selectionLength = $line = $cursor = $null
   [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
   [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
-  $LeftLine  = $line.SubString(0, [Math]::Max(0, $Cursor - 1))
+  $LeftLine  = $line.SubString(0, [Math]::Max(0, $Cursor))
   $RightLine = $Line.SubString($Cursor, $Line.Length - $Cursor)
   if ($selectionStart -ne -1) {
     [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, '(' + $line.SubString($selectionStart, $selectionLength) + ')')
@@ -538,6 +538,7 @@ Set-PSReadLineKeyHandler -Key 'Alt+)' `
     [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($Cursor+2)
   }
 }
+
 
 Set-PSReadLineKeyHandler -Key '"',"'" `
                          -BriefDescription InsertQuoteSelected `
@@ -555,6 +556,38 @@ Set-PSReadLineKeyHandler -Key '"',"'" `
     [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($selectionStart + $selectionLength + 2)
   } else {
     [Microsoft.PowerShell.PSConsoleReadLine]::Insert($Quote)
+  }
+}
+
+Set-PSReadLineKeyHandler -Key '[',']','(',')','{','}','<','>' `
+                         -BriefDescription InsertQuoteSelected `
+                         -LongDescription "Insert paired quotes for selections" `
+                         -ScriptBlock {
+  param($key, $arg)
+  $char  = $key.KeyChar
+  #write-verbose "[$char]"; sleep 2
+  Switch ($char) {
+    '[' { $Open = '[';   $Close = ']' ;  break }
+    ']' { $Open = '[';   $Close = ']' ;  break }
+    '(' { $Open = '(';   $Close = ')' ;  break }
+    ')' { $Open = '(';   $Close = ')' ;  break }
+    '{' { $Open = '{ ';  $Close = ' }';  break }
+    '}' { $Open = '{ ';  $Close = ' }';  break }
+    '<' { $Open = '<# '; $Close = ' #>'; break }
+    '>' { $Open = '<# '; $Close = ' #>'; break }
+  }
+  $Width = $Open.length
+  $Extra = $Width * 2  
+  $selectionStart = $selectionLength = $line = $cursor = $null
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+  $LeftLine  = $line.SubString(0, [Math]::Max(0,$Cursor - 1))
+  $RightLine = $Line.SubString($Cursor, $Line.Length - $Cursor)
+  if ($selectionStart -ne -1) {
+    [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, $Open + $line.SubString($selectionStart, $selectionLength) + $Close)
+    [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($selectionStart + $selectionLength + $Extra)
+  } else {
+    [Microsoft.PowerShell.PSConsoleReadLine]::Insert($char)
   }
 }
 

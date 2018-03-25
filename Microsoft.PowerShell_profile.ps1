@@ -506,6 +506,8 @@ get-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive |
   Select-Object WindowArrangementActive | Format-List | findstr "WindowArrangementActive"
 set-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -value 0 -type dword -force
 
+# https://onedrive.live.com?invref=b8eb411511e1610e&invscr=90  Free one drive space
+
 Function Get-CurrentIPAddress {(ipconfig) -split "`n" | Where-Object {
   $_ -match 'IPv4' } | ForEach-Object { $_ -replace '^.*\s+' }
 }
@@ -638,8 +640,7 @@ if ($InstallModules) {
 if ($ShowModules) {
  get-module -list | Where-Object {$_.name -match 'PowerShellGet|PSReadline' -or $_.author -notmatch 'Microsoft' } |
    Format-Table version,name,author,path
-} else {
-}
+} else {}
 
 # Get .Net Constructor parameters
 # ([type]"Net.Sockets.TCPClient").GetConstructors() | ForEach-Object { $_.GetParameters() } | Select-Object Name,ParameterType
@@ -939,31 +940,46 @@ new-alias sh Select-History -force -scope Global
 Function Get-RunTime { 
   param(
     [Parameter(ValueFromPipeline=$True)]
-    [Microsoft.PowerShell.Commands.HistoryInfo[]]$historyitem=@((Get-History)[-10..-1]), 
-    $Count = 9999,
-    [switch]$Full
+    [Microsoft.PowerShell.Commands.HistoryInfo[]]$historyitem, 
+    $Count = 1,
+    [switch]$Duration,
+    [switch]$Format
   ) 
   begin {
+    If ($HistoryItem.Count -gt $Count) { 
+      $HistoryItem = $HistoryItem | Select -Last $Count 
+    }
+    If (!$HistoryItem) { $HistoryItem = Get-History -Count $Count }
     $width = +1 * "$((($HistoryItem | Measure-Object -max id).maximum))".length
     $F1 = '{0,5:N2}'; 
     $F2 = "ID# {1,$($Width):D}: "
+    $F2 = "{1,$($Width):D} "
     write-verbose "$(LINE) width $Width $F2"
   }
   process {
     foreach ($hi in $HistoryItem) {
       $CL = $hi.commandline
       $ID = $hi.id
-      switch ($hi.endexecutiontime - $hi.startexecutiontime) {
-        {$Full                } { $_                                           ; break } 
-        {$_.Days         -gt 0} {"$F1 Days  $F2 {2}" -f $_.TotalDays   ,$ID,$CL; break } 
-        {$_.Hours        -gt 0} {"$F1 Hours $F2 {2}" -f $_.TotalHours  ,$ID,$CL; break }
-        {$_.Minutes      -gt 0} {"$F1 Mins  $F2 {2}" -f $_.TotalMinutes,$ID,$CL; break }
-        {$_.Seconds      -gt 0} {"$F1 Secs  $F2 {2}" -f $_.TotalSeconds,$ID,$CL; break }
-        {$_.Milliseconds -gt 0} {"$F1 ms    $F2 {2}" -f $_.TotalSeconds,$ID,$CL; break }
+      $RunTime = $hi.endexecutiontime - $hi.startexecutiontime
+      If ($Format) {
+        switch ($RunTime) {
+          {$Full                } { $_                                           ; break } 
+          {$_.Days         -gt 0} {"$F2 $F1 Days  {2}" -f $_.TotalDays   ,$ID,$CL; break } 
+          {$_.Hours        -gt 0} {"$F2 $F1 Hours {2}" -f $_.TotalHours  ,$ID,$CL; break }
+          {$_.Minutes      -gt 0} {"$F2 $F1 Mins  {2}" -f $_.TotalMinutes,$ID,$CL; break }
+          {$_.Seconds      -gt 0} {"$F2 $F1 Secs  {2}" -f $_.TotalSeconds,$ID,$CL; break }
+          {$_.Milliseconds -gt 0} {"$F2 $F1 ms    {2}" -f $_.TotalSeconds,$ID,$CL; break }
+        }
+      } else {
+        [PSCustomObject]@{
+          Id          = $hi.Id
+          RunTime     = If ($Duration) { $RunTime } else { $RunTime.TotalSeconds }
+          CommandLine = $hi.CommandLine
+        }
       }
     }
   }
-}
+}; New-Alias rt Get-RunTime -force -scope Global
 
 Function get-syntax   { 
   param(
@@ -1976,6 +1992,9 @@ if (!(where.exe git.exe 2>$Null)) {
   where.exe git.exe
 }
 
+# Temporary Fix es in Profile \ Tools
+if (($es = Get-Alias es -ea 0) -and !(Test-Path $es)) { Remove-Item Alias:es -force -ea 0 }
+if (!(Get-Command es -ea 0)) { New-Alias es "$ProfileDirectory\Tools\es.exe" }
 if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $informationpreferenceSave }
 
 # try {    
