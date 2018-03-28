@@ -204,7 +204,10 @@ try {
 # C:\ProgramData\Ditto\Ditto.exe
 # 'C:\Program Files\WinMerge2011\WinMergeU.exe'
 #  
-new-alias WinMerge 'C:\Program Files\WinMerge2011\WinMergeU.exe' -force -scope Global
+If ($WinMerge = Join-Path -resolve -ea 0 'C:\Program*\WinMerge*' 'WinMerge*.exe' |
+  ? { $_ -notmatch 'proxy' } | select -first 1) {
+  new-alias WinMerge $WinMerge -force -scope Global
+} 
 # https://null-byte.wonderhowto.com/how-to/use-google-hack-googledorks-0163566/
 # 7-Zip        http://www.7-zip.org/download.html
 # Git          https://git-scm.com/download/win
