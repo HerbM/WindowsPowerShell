@@ -14,6 +14,12 @@
     #[ValidateSet('SilentlyContinue','')]                                  [switch]$InformationAction
   )
 
+
+Function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
+New-Alias -Name LINE -Value Get-CurrentLineNumber -Description 'Returns the caller''s current line number' -force -Scope Global -Option allscope
+write-warning "$(get-date -f 'HH:mm:ss') $(LINE) PowerShell $($psversiontable.PSVersion.tostring())" 
+
+
   # 'Continue', 'Ignore', 'Inquire', 'SilentlyContinue', 'Stop', 'Suspend' #'Continue'          'Inquire'           'Stop'
   # 'Ignore'            'SilentlyContinue'  'Suspend'
 
@@ -98,10 +104,7 @@
   # Wakoopa      https://web.appstorm.net/how-to/app-management-howto/how-to-discover-new-apps-with-wakoopa/
   # ArsClip
 
-Function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
-New-Alias -Name LINE -Value Get-CurrentLineNumber -Description 'Returns the caller''s current line number' -force -Scope Global -Option allscope
-write-warning "$(LINE) PowerShell $($psversiontable.PSVersion.tostring())" 
-
+  
 $ProfileDirectory   = Split-Path $Profile
 $PSProfile          = $MyInvocation.MyCommand.Definition
 $PSProfileDirectory = Split-Path $PSProfile
@@ -185,6 +188,7 @@ try {
 # Move utility extract up (LINE, FILE, WRITE-LOG)
 # working on LogFilePath
 # worked on 7z  -- 
+write-warning "$(get-date -f 'HH:mm:ss') $(LINE)"
 
 # Jing imagex sharex
 # C:\Program Files\ShareX\ & 'C:\Program Files\ShareX\ShareX.exe'
@@ -254,6 +258,7 @@ Function Add-ToolPath {
   Write-Warning "Unabled to put tools on path: PortCheck.exe"        
 }
 
+write-warning "$(get-date -f 'HH:mm:ss') $(LINE)"
 $PlacesToLook = 'C:\','T:\Programs\Herb','T:\Programs\Tools','T:\Programs',
                 'S:\Programs\Tools','S:\Programs\Herb''S:\Programs'        | 
                 Where-Object  { Test-Path $_ -ea 0 }
@@ -294,6 +299,7 @@ Function Add-Path {
 # Install-Module -Scope CurrentUser -Name Assert
 # Chrome key mapper?  chrome://extensions/configureCommands
 # Chrome extensions   chrome://extensions/
+write-warning "$(get-date -f 'HH:mm:ss') $(LINE)"
 Function Get-NewLine { [environment]::NewLine }; new-alias NL Get-NewLine -force
 if (! (Get-Command write-log -type Function,cmdlet,alias -ea 0)) {
   new-alias write-log write-verbose -force -scope Global -ea 0
@@ -311,6 +317,8 @@ new-alias ldir    less         -force -scope Global -ea 0
 new-alias lessdir less         -force -scope Global -ea 0
 new-alias l       less         -force -scope Global -ea 0
 
+write-warning "$(get-date -f 'HH:mm:ss') $(LINE)"
+
 try {
   $TryPath = $PSProfileDirectory,$ProfileDirectory,'C:\Bat' |
     Where-Object { Test-Path $_ -ea 0 } 
@@ -324,12 +332,14 @@ try {
   Write-Log "Failed loading Utility.ps1" -file $PSProfileLogPath 3
 } finally {}
 
+write-warning "$(get-date -f 'HH:mm:ss') $(LINE)"
+
 if ((Get-Command 'Write-Log' -type Function,cmdlet -ea 0)) { 
   remove-item alias:write-log -force -ea 0
 } else {
   New-Alias Write-Log Write-Verbose -ea 0
   Write-Warning "$(LINE) Utility.ps1 not found.  Defined alias for Write-Log" 
-  Function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
+<#  Function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
   Function Get-CurrentFileName   { split-path -leaf $MyInvocation.PSCommandPath   }   Function Get-CurrentFileLine   {
     if ($MyInvocation.PSCommandPath) {
       "$(split-path -leaf $MyInvocation.PSCommandPath):$($MyInvocation.ScriptLineNumber)"
@@ -341,11 +351,11 @@ if ((Get-Command 'Write-Log' -type Function,cmdlet -ea 0)) {
       else {'GLOBAL'}
     } else {"GLOBAL"}
   }   #$MyInvocation.ScriptName
+#>  
   New-Alias -Name   LINE   -Value Get-CurrentLineNumber -Description 'Returns the current (caller''s) line number in a script.' -force -Option allscope
   New-Alias -Name   FILE   -Value Get-CurrentFileName   -Description 'Returns the name of the current script file.' -force             -Option allscope
   New-Alias -Name   FLINE  -Value Get-CurrentFileLine   -Description 'Returns the name of the current script file.' -force             -Option allscope
   New-Alias -Name   FILE1  -Value Get-CurrentFileName1  -Description 'Returns the name of the current script file.' -force             -Option allscope
-
   remove-item alias:write-log -force -ea 0
   Function Write-Log {
     param (
@@ -534,7 +544,11 @@ If (Test-Administrator) {
   # https://github.com/PowerShell/PowerShellGet/archive/1.6.0.zip
   try {
     if ((Get-PSVersion) -lt 6.0) {
-      Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+      If (Get-Package 'Nuget' -ea 0) {
+        write-warning "$(get-date -f 'HH:mm:ss') $(LINE)"
+      } else {
+        Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+      }
     }
     $PSGallery = Get-PSRepository PSGallery -ea 0
     if ($PSGallery) { 
@@ -543,7 +557,7 @@ If (Test-Administrator) {
         Set-PSRepository -name 'PSGallery' -InstallationPolicy 'Trusted' -ea 0
         $PSGallery = Get-PSRepository -name 'PSGallery'                  -ea 0
       }
-      $PSGallery | Format-Table 
+      If ($Verbose) { $PSGallery | Format-Table } 
     }
   } catch {
     Write-Information "$(LINE) Problem with PSRepository"
@@ -643,10 +657,13 @@ if ($InstallModules) {
   # get-module -list $RecommendedModules
 }
 
+write-warning "$(get-date -f 'HH:mm:ss') $(LINE) Before Show-Module "
+
 if ($ShowModules) {
  get-module -list | Where-Object {$_.name -match 'PowerShellGet|PSReadline' -or $_.author -notmatch 'Microsoft' } |
    Format-Table version,name,author,path
 } else {}
+write-warning "$(get-date -f 'HH:mm:ss') $(LINE) After Show-Module "
 
 # Get .Net Constructor parameters
 # ([type]"Net.Sockets.TCPClient").GetConstructors() | ForEach-Object { $_.GetParameters() } | Select-Object Name,ParameterType
@@ -1007,17 +1024,6 @@ write-information "$(LINE) $home"
 write-information "$(LINE) Try: import-module -prefix cx Pscx"
 write-information "$(LINE) Try: import-module -prefix cb PowerShellCookbook"
 
-
-
-
-
-
-
-
-
-
-
-
 new-alias npdf 'C:\Program Files (x86)\Nitro\Reader 3\NitroPDFReader.exe' -force -scope Global
 
 Function esf { 
@@ -1359,6 +1365,7 @@ New-Alias tcb  Test-ClipBoard -force -scope Global
 New-Alias gcbt Test-ClipBoard -force -scope Global
 Function Get-HistoryCount {param([int]$Count) get-history -count $Count }
 New-alias count Get-HistoryCount -force -scope Global 
+write-warning "$(get-date -f 'HH:mm:ss') $(LINE) Before Go"
 $goHash = [ordered]@{
   docs       = "$home\documents"
   down       = "$home\downloads"
@@ -1502,6 +1509,7 @@ $books = switch ($true) {
   { Test-Path 'c:\books' } { Resolve-Path 'c:\books' }
   { Test-Path (Join-Path (Join-Path $Home 'Downloads')  'Books') } { Resolve-Path (Join-Path (Join-Path $Home 'Downloads')  Books) -ea 0 }
 }
+
 
 $gohash = [ordered]@{
   docs       = "$home\documents"
@@ -1771,6 +1779,7 @@ Function Get-SortableDate {
 #Resolve-Path $MyInvocation.MyCommand -ea 0
 #if ($myinvocation.pscommandpath) {$myinvocation.pscommandpath}
 
+write-warning "$(get-date -f 'HH:mm:ss') $(LINE) Before PSReadline "
 #$PSReadLineProfile = Join-Path $myinvocation.pscommandpath 'PSReadLineProfile.ps1'
 $PSReadLineProfile = Join-Path (Split-Path $PSProfile) 'PSReadLineProfile.ps1'
 write-information $PSReadLineProfile
@@ -1848,6 +1857,7 @@ if (Get-Module 'PSReadline' -ea 0) {
     $Host.PrivateData.WarningForegroundColor = 'White'
   }
 }
+write-warning "$(get-date -f 'HH:mm:ss') $(LINE) After PSReadline "
 
 
 #---------------- Snippets
@@ -1863,7 +1873,7 @@ if (Get-Module 'PSReadline' -ea 0) {
 	write-output "Changed: $($eventArgs.FullPath)"
 }
 #>
-write-information "$(LINE) Error count: $($Error.Count)"
+write-information "$(get-date -f 'HH:mm:ss') $(LINE) Error count: $($Error.Count)"
 <#
 $SearchPath = (("$PSProfile;.;" + $env:path) -split ';' | ForEach-Object { join-path $_ 'utility.ps1' } | Where-Object { test-path $_ -ea 0}) -split '\s*\n'
 ForEach ($Path in $SearchPath) {
@@ -2044,6 +2054,7 @@ if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $i
 }
 if ((Get-Location) -match '^.:\\Windows\\System32$') { Set-Location \ }
 
+write-warning "$(get-date -f 'HH:mm:ss') $(LINE) Completed: $Profile "
 
 <#
 Key                   Function                      Description                                                        

@@ -550,8 +550,8 @@ Set-PSReadLineKeyHandler -Key '"',"'" `
   $selectionStart = $selectionLength = $line = $cursor = $null
   [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
   [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
-  $LeftLine  = $line.SubString(0, [Math]::Max(0,$Cursor - 1))
-  $RightLine = $Line.SubString($Cursor, $Line.Length - $Cursor)
+  # $LeftLine  = $line.SubString(0, [Math]::Max(0,$Cursor - 1))
+  # $RightLine = $Line.SubString($Cursor, $Line.Length - $Cursor)
   if ($selectionStart -ne -1) {
     [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, $Quote + $line.SubString($selectionStart, $selectionLength) + $Quote)
     [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($selectionStart + $selectionLength + 2)
@@ -582,8 +582,8 @@ Set-PSReadLineKeyHandler -Key '[',']','(',')','{','}','<','>' `
   $selectionStart = $selectionLength = $line = $cursor = $null
   [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
   [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
-  $LeftLine  = $line.SubString(0, [Math]::Max(0,$Cursor - 1))
-  $RightLine = $Line.SubString($Cursor, $Line.Length - $Cursor)
+  # $LeftLine  = $line.SubString(0, [Math]::Max(0,$Cursor - 1))
+  # $RightLine = $Line.SubString($Cursor, $Line.Length - $Cursor)
   if ($selectionStart -ne -1) {
     [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, $Open + $line.SubString($selectionStart, $selectionLength) + $Close)
     [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($selectionStart + $selectionLength + $Extra)

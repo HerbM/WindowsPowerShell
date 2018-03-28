@@ -15,12 +15,14 @@ ForEach ($RDGFile in $RDGFiles) {
   $Credentials      = New-Object System.Collections.Arraylist
   $logonCredentials | foreach {
     [void]$Credentials.Add([pscustomobject]@{
-      Username = $_.Node.userName
-      Password = $(Try { 
+      Username  = $_.Node.userName
+      Password  = $(Try { 
         [RdcMan.Encryption]::DecryptString($_.Node.password, $EncryptionSettings)
-      } Catch { "FAILED"; Write-Warning $_.Exception.Message } )
-      Domain   = $_.Node.domain
-      File     = $RDGFile
+      } Catch { "FAILED"; Write-Verbose $_.Exception.Message } )
+      Raw       = $_.Node.password
+      Encrypted = [RdcMan.Encryption]::EncryptString($_.Node.password, $EncryptionSettings)
+      Domain    = $_.Node.domain
+      File      = $RDGFile
     })
   } | Sort UserName 
   $Credentials | Sort Username

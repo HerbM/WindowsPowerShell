@@ -1,12 +1,38 @@
 <#
 VMWare Key 5003J-6UJ4J-N8288-0V9A2-29GNM  VCenter VSphere VRealize???
 
+CodeManager for PowerShell Snippets 
+  "C:\Program Files (x86)\PowershellCodeManager\Start__CodeManager.cmd"
+  'C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Powershell CodeManager'
+  dir 'C:\Program Files\PowerShellPlus\Script Samples\'
+  ISE C:\Users\A469526\Documents\WindowsPowerShell\snippets\
+
+SearchFileCmdlet_fs
+https://blogs.msdn.microsoft.com/fsharpteam/2012/10/03/rethinking-findstr-with-f-and-powershell/
+
+High Performance PowerShell with LINQ  https://www.red-gate.com/simple-talk/dotnet/net-framework/high-performance-powershell-linq/
+
+LiveEdu.tv Live Coding vs. Twitch (gaming)  Troop editor LiveCode.com
+
 Join-Path -Path (Get-PSDrive -PSProvider filesystem | ? { $_.root } | % { $_.Root }) -ChildPath Util -resolve -ea 0 2>$null
+https://github.com/canix1/ADACLScanner
+https://github.com/jimmehc/CmdMode
+https://github.com/hugows/hf  HappyFinder 
+  fzf is a blazing fast command-line fuzzy finder written in Go
+    C:\ProgramData\chocolatey\lib\fzf\tools\fzf.exe
+  Selecta is a fuzzy text selector for files and anything else you need to select
+  Pick is "just like Selecta, but faster"
+  icepick is a reimplementation of Selecta in Rust
 
 (get-module azurerm* -list | group name | ? count -gt 1).name | % { get-module $_ -list | sort version | select -first 1 | % { uninstall-module $_.name -RequiredVersion $_.version -force } }
 
 https://blogs.msdn.microsoft.com/kathykam/2006/03/29/net-format-string-101/
 https://blogs.msdn.microsoft.com/kathykam/2006/09/29/net-format-string-102-datetime-format-string/
+
+# Hi.  Can anyone explain an odd syntax with the Call operator as seen in 
+# PowerShell In Action?    Given "$m = get-module <name>" you can then do  
+# "& $m {whatever}"  - the script block is then executed inside the module's context! 
+
 
 Chris Dent
   indented-automation/Start-Syslog.ps1 
@@ -60,125 +86,7 @@ Checking SSL status
 # https://www.ssllabs.com/ssltest/analyze.html?d=git-scm.com&s=104.20.12.91&latest
 
 
-Invoke-WebRequest fails disabled  
-DisableFirstRunCustomize DWORD value greater than 0 under one of these keys:
-    "HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Internet Explorer\Main",
-    "HKEY_CURRENT_USER\Software\Policies\Microsoft\Internet Explorer\Main",
-    "HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\Main",
-    "HKEY_LOCAL_MACHINE\Software\Microsoft\Internet Explorer\Main"
-Get-ItemProperty "HKcu:\Software\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize
-Get-ItemProperty "HKlm:\Software\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize
-Get-ItemProperty "HKCU:\Software\Policies\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize
-Get-ItemProperty "HKlm:\Software\Policies\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize
-
-Get-ItemProperty "HKcu:\Software\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize
-Get-ItemProperty "HKlm:\Software\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize
-Get-ItemProperty "HKCU:\Software\Policies\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize
-Get-ItemProperty "HKlm:\Software\Policies\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize
-
-Set-ItemProperty "HKcu:\Software\Policies\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize -value 1 
-Set-ItemProperty "HKLM:\Software\Policies\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize -value 1 
-Set-ItemProperty "HKcu:\Software\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize -value 1 
-Set-ItemProperty "HKLM:\Software\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize -value 1 
-
-Following work in reg add:
-reg add "HKLM\Software\Policies\Microsoft\Internet Explorer\Main" /v DisableFirstRunCustomize /d 1 /f /t reg_dword
-reg add "HKcu\Software\Microsoft\Internet Explorer\Main"          /v DisableFirstRunCustomize /d 1 /f /t reg_dword
-
-reg query "HKLM\SOFTWARE\Microsoft\Internet Explorer\SearchURL" /s
-req query "HKCU\SOFTWARE\Microsoft\Internet Explorer\SearchURL" /s
-Internet Explorer Atos proxy for Internet Explorer http://proxyconf.my-it-solutions.net/proxy-na.pac
-HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings
-AutoDetect = 1 (DWord value) - enables Automatically detect....
-HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings AutoDetect 0 (DWord) -disables Automatically detect....
-
-reg query  "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v AutoDetect
-reg query  "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" | findstr /i auto
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v AutoDetect /d 1 /f /t REG_DWORD
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v AutoConfigURL /d http://proxyconf.my-it-solutions.net/proxy-na.pac /f /t REG_SZ
-$url = (get-itemproperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings").'AutoConfigURL'
-
-Function Set-InternetProxy {
-  [CmdletBinding()]
-  param(
-    #[Parameter(ValidateSet='Enable','On','Disable','Off')][string]$State,
-    [string]$State,
-    [string]$Url,
-    [Alias('On' )][switch]$Enable,
-    [Alias('Off')][switch]$Disable 
-  )
-  If ($State -match '^(On|Ena)') { $Enable  = $True  }
-  If ($State -match '^(Of|Dis)') { $Disable = $True }
-  $InternetSettingsKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings"
-  $AutoConfigURL       = 'AutoConfigURL'
-  $AutoConfigURLSave   = $AutoConfigURL + 'SAVE'
-  $AutoDetect          = 'AutoDetect'
-  $ProxyEnable         = 'ProxyEnable'
-  $ProxyValues         = 'AutoConfig ProxyEnable Autodetect'
-  $urlEnvironment      = $Env:AutoConfigUrl 
-  $urlCurrent          = (get-itemproperty $InternetSettingsKey $AutoConfigURL     -ea 0).$AutoConfigURL      
-  $urlSaved            = (get-itemproperty $InternetSettingsKey $AutoConfigURLSave -ea 0).$AutoConfigURLSAVE 
-  $urlDefault          = 'http://proxyconf.my-it-solutions.net/proxy-na.pac'
-  If ($Enable -eq $Disable) {
-    Write-Warning "Must specify either Enable or Disable (alias: On or Off)"
-  } elseif ($Disable) {
-    if ($urlCurrent) {
-      set-itemproperty $InternetSettingsKey $AutoConfigURLSave $urlCurrent -force -ea 0
-      remove-itemproperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" 'AutoConfigURL' -ea 0
-    }
-    Set-ItemProperty $InternetSettingsKey $AutoDetect  0 -force -ea 0
-    Set-ItemProperty $InternetSettingsKey $ProxyEnable 0 -force -ea 0
-  } elseif ($Enable) {
-    $Url = switch ($True) {
-      { [boolean]$Url            } { $Url            ; break }
-      { [boolean]$UrlEnvironment } { $UrlEnvironment ; break }
-      { [boolean]$UrlCurrent     } { $UrlCurrent     ; break }  
-      { [boolean]$urlSaved       } { $UrlSaved       ; break } 
-      { [boolean]$urlDefault     } { $UrlDefault     ; break }
-      Default { 
-        Write-Warning "Supply URL for enabling and setting AutoConfigURL Proxy"
-        return
-      }
-    }
-    Set-Itemproperty $InternetSettingsKey $AutoConfigURL $url -force -ea 0
-    Set-ItemProperty $InternetSettingsKey $AutoDetect    1    -force -ea 0    
-    Set-ItemProperty $InternetSettingsKey $ProxyEnable   1    -force -ea 0
-  }
-  $Settings = get-itemproperty $InternetSettingsKey -ea 0 | findstr /i $ProxyValues | sort
-  ForEach ($Line in $Settings) {
-    Write-Verbose $Line
-  }
-} 
-
-reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings"  |findstr /i auto
-
-reg add    "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v AutoConfigURL-SAVE /d http://proxyconf.my-it-solutions.net/proxy-na.pac /f /t REG_SZ
-reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v AutoConfigURL /f 
-# Removes it correctly but doesn't seem to update explorer "checkbox"
-Setting AutoDetect to 0 OR 1 doesn't seem to matter
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings"  /v AutoDetect /d 0 /f /t REG_DWORD
-
-registry key "internet explorer" "local area connection" "use automatic configuration script"
-
-reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings"  |findstr /i auto
-reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings"  |findstr /i auto
-
-HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\comdlg32\Placesbar
-http://www.howtogeek.com/97824/how-to-customize-the-file-opensave-dialog-box-in-windows/
-
-Subst K: C:\Users\A469526\documents\tools
-https://code.google.com/p/psubst/#Inconstancy
-
-REGEDIT4
-[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\DOS Devices]
-"Z:"="\??\C:\Documents\All Users\Tools"
-
-[HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run]
-"K Drive"="subst K: C:\Users\A469526\documents\tools
-"L Drive"="subst L: G:\Tools"
-"M Drive"="subst M: F:\Tools"
-#>
-
+C:\ProgramData\Ditto\Ditto.exe
 
 Get-TroubleshootingPack -Path C:\Windows\Diagnostics\System\Aero
 https://blogs.technet.microsoft.com/heyscriptingguy/2011/02/09/use-powershell-troubleshooting-packs-to-diagnose-remote-problems/
@@ -380,6 +288,128 @@ function Where-UpdatedSince{
 #     slashdot reader sans the horrible submissions by mr. kdawson. Designed to be fewer than 120 chars which allows it to be used as signature on /.
 
 # gps | select ProcessName -exp Modules -ea 0 | where {$_.modulename -match 'msvc'} | sort ModuleName | Format-Table ProcessName -GroupBy ModuleName
+
+
+Invoke-WebRequest fails disabled  
+DisableFirstRunCustomize DWORD value greater than 0 under one of these keys:
+    "HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Internet Explorer\Main",
+    "HKEY_CURRENT_USER\Software\Policies\Microsoft\Internet Explorer\Main",
+    "HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\Main",
+    "HKEY_LOCAL_MACHINE\Software\Microsoft\Internet Explorer\Main"
+  Get-ItemProperty "HKcu:\Software\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize
+  Get-ItemProperty "HKlm:\Software\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize
+  Get-ItemProperty "HKCU:\Software\Policies\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize
+  Get-ItemProperty "HKlm:\Software\Policies\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize
+
+  Get-ItemProperty "HKcu:\Software\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize
+  Get-ItemProperty "HKlm:\Software\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize
+  Get-ItemProperty "HKCU:\Software\Policies\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize
+  Get-ItemProperty "HKlm:\Software\Policies\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize
+
+  Set-ItemProperty "HKcu:\Software\Policies\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize -value 1 
+  Set-ItemProperty "HKLM:\Software\Policies\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize -value 1 
+  Set-ItemProperty "HKcu:\Software\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize -value 1 
+  Set-ItemProperty "HKLM:\Software\Microsoft\Internet Explorer\Main" -name DisableFirstRunCustomize -value 1 
+
+  Following work in reg add:
+  reg add "HKLM\Software\Policies\Microsoft\Internet Explorer\Main" /v DisableFirstRunCustomize /d 1 /f /t reg_dword
+  reg add "HKcu\Software\Microsoft\Internet Explorer\Main"          /v DisableFirstRunCustomize /d 1 /f /t reg_dword
+
+  reg query "HKLM\SOFTWARE\Microsoft\Internet Explorer\SearchURL" /s
+  req query "HKCU\SOFTWARE\Microsoft\Internet Explorer\SearchURL" /s
+  Internet Explorer Atos proxy for Internet Explorer http://proxyconf.my-it-solutions.net/proxy-na.pac
+  HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings
+  AutoDetect = 1 (DWord value) - enables Automatically detect....
+  HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings AutoDetect 0 (DWord) -disables Automatically detect....
+
+  reg query  "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v AutoDetect
+  reg query  "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" | findstr /i auto
+  reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v AutoDetect /d 1 /f /t REG_DWORD
+  reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v AutoConfigURL /d http://proxyconf.my-it-solutions.net/proxy-na.pac /f /t REG_SZ
+  $url = (get-itemproperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings").'AutoConfigURL'
+
+  Function Set-InternetProxy {
+    [CmdletBinding()]
+    param(
+      #[Parameter(ValidateSet='Enable','On','Disable','Off')][string]$State,
+      [string]$State,
+      [string]$Url,
+      [Alias('On' )][switch]$Enable,
+      [Alias('Off')][switch]$Disable 
+    )
+    If ($State -match '^(On|Ena)') { $Enable  = $True  }
+    If ($State -match '^(Of|Dis)') { $Disable = $True }
+    $InternetSettingsKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings"
+    $AutoConfigURL       = 'AutoConfigURL'
+    $AutoConfigURLSave   = $AutoConfigURL + 'SAVE'
+    $AutoDetect          = 'AutoDetect'
+    $ProxyEnable         = 'ProxyEnable'
+    $ProxyValues         = 'AutoConfig ProxyEnable Autodetect'
+    $urlEnvironment      = $Env:AutoConfigUrl 
+    $urlCurrent          = (get-itemproperty $InternetSettingsKey $AutoConfigURL     -ea 0).$AutoConfigURL      
+    $urlSaved            = (get-itemproperty $InternetSettingsKey $AutoConfigURLSave -ea 0).$AutoConfigURLSAVE 
+    $urlDefault          = 'http://proxyconf.my-it-solutions.net/proxy-na.pac'
+    If ($Enable -eq $Disable) {
+      Write-Warning "Must specify either Enable or Disable (alias: On or Off)"
+    } elseif ($Disable) {
+      if ($urlCurrent) {
+        set-itemproperty $InternetSettingsKey $AutoConfigURLSave $urlCurrent -force -ea 0
+        remove-itemproperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" 'AutoConfigURL' -ea 0
+      }
+      Set-ItemProperty $InternetSettingsKey $AutoDetect  0 -force -ea 0
+      Set-ItemProperty $InternetSettingsKey $ProxyEnable 0 -force -ea 0
+    } elseif ($Enable) {
+      $Url = switch ($True) {
+        { [boolean]$Url            } { $Url            ; break }
+        { [boolean]$UrlEnvironment } { $UrlEnvironment ; break }
+        { [boolean]$UrlCurrent     } { $UrlCurrent     ; break }  
+        { [boolean]$urlSaved       } { $UrlSaved       ; break } 
+        { [boolean]$urlDefault     } { $UrlDefault     ; break }
+        Default { 
+          Write-Warning "Supply URL for enabling and setting AutoConfigURL Proxy"
+          return
+        }
+      }
+      Set-Itemproperty $InternetSettingsKey $AutoConfigURL $url -force -ea 0
+      Set-ItemProperty $InternetSettingsKey $AutoDetect    1    -force -ea 0    
+      Set-ItemProperty $InternetSettingsKey $ProxyEnable   1    -force -ea 0
+    }
+    $Settings = get-itemproperty $InternetSettingsKey -ea 0 | findstr /i $ProxyValues | sort
+    ForEach ($Line in $Settings) {
+      Write-Verbose $Line
+    }
+  } 
+
+  reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings"  |findstr /i auto
+
+  reg add    "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v AutoConfigURL-SAVE /d http://proxyconf.my-it-solutions.net/proxy-na.pac /f /t REG_SZ
+  reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v AutoConfigURL /f 
+  # Removes it correctly but doesn't seem to update explorer "checkbox"
+  Setting AutoDetect to 0 OR 1 doesn't seem to matter
+  reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings"  /v AutoDetect /d 0 /f /t REG_DWORD
+
+  registry key "internet explorer" "local area connection" "use automatic configuration script"
+
+  reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings"  |findstr /i auto
+  reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings"  |findstr /i auto
+
+  HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\comdlg32\Placesbar
+  http://www.howtogeek.com/97824/how-to-customize-the-file-opensave-dialog-box-in-windows/
+
+  Subst K: C:\Users\A469526\documents\tools
+  https://code.google.com/p/psubst/#Inconstancy
+
+  REGEDIT4
+  [HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\DOS Devices]
+  "Z:"="\??\C:\Documents\All Users\Tools"
+
+  [HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run]
+  "K Drive"="subst K: C:\Users\A469526\documents\tools
+  "L Drive"="subst L: G:\Tools"
+  "M Drive"="subst M: F:\Tools"
+  #>
+
+
 
 <#
 http://blog.cobaltstrike.com/2013/11/09/schtasks-persistence-with-powershell-one-liners/
