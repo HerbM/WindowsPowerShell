@@ -329,13 +329,13 @@ try {
   if ($Util=@(Join-Path $TryPath 'utility.ps1' -ea 0)) {
     Write-Warning "Utility: $($Util -join '; ')" 
     . $Util[0]
-    Write-Log "(LINE) Using Write-Log from Utility.ps1" -file $ProfileLogPath 3
+    Write-Log "$(LINE) Using Write-Log from Utility.ps1" -file $ProfileLogPath 3
   }
 } catch { # just ignore and take care of below
   Write-Log "Failed loading Utility.ps1" -file $PSProfileLogPath 3
 } finally {}
 
-write-warning "$(get-date -f 'HH:mm:ss') $(LINE)"
+write-warning "$(get-date -f 'HH:mm:ss') $(LINE) ##338"
 
 if ((Get-Command 'Write-Log' -type Function,cmdlet -ea 0)) { 
   remove-item alias:write-log -force -ea 0
@@ -355,65 +355,65 @@ if ((Get-Command 'Write-Log' -type Function,cmdlet -ea 0)) {
     } else {"GLOBAL"}
   }   #$MyInvocation.ScriptName
 #>  
-  New-Alias -Name   LINE   -Value Get-CurrentLineNumber -Description 'Returns the current (caller''s) line number in a script.' -force -Option allscope
-  New-Alias -Name   FILE   -Value Get-CurrentFileName   -Description 'Returns the name of the current script file.' -force             -Option allscope
-  New-Alias -Name   FLINE  -Value Get-CurrentFileLine   -Description 'Returns the name of the current script file.' -force             -Option allscope
-  New-Alias -Name   FILE1  -Value Get-CurrentFileName1  -Description 'Returns the name of the current script file.' -force             -Option allscope
-  remove-item alias:write-log -force -ea 0
-  Function Write-Log {
-    param (
-      [string]$Message,
-      [int]$Severity = 3, ## Default to a high severity. Otherwise, override
-      [string]$File
-    )
-    try {
-      if (!$LogLevel) { $LogLevel = 3 }
-      if ($Severity -lt $LogLevel) { return }
-      write-verbose $Message
-      $line = [pscustomobject]@{
-        'DateTime' = (Get-Date -f "yyyy-MM-dd-ddd-HH:mm:ss") #### (Get-Date)
-        'Severity' = $Severity
-        'Message'  = $Message
-      }
-      if (-not $LogFilePath) {
-        $LogFilePath  =  "$($MyInvocation.ScriptName)" -replace '(\.ps1)?$', ''
-        $LogFilePath += '-Log.txt'
-      }
-      if ($File) { $LogFilePath = $File }
-      if ($psversiontable.psversion.major -lt 3) {
-        $Entry = "`"$($line.DateTime)`", `"$($line.$Severity)`", `"$($line.$Message)`""
-        $null = Out-file -enc utf8 -filepath $LogFilePath -input $Entry -append -erroraction Silentlycontinue -force
-      } else {
-        $line | Export-Csv -Path $LogFilePath -Append -NoTypeInformation -erroraction Silentlycontinue -force -enc ASCII
-      }
-    } catch {
-      $ec   = ('{0:x}' -f $_.Exception.ErrorCode); $em = $_.Exception.Message; $in = $_.InvocationInfo.PositionMessage
-      $description =  "$(LINE) Catch $in $ec, $em"
-      "Logging: $description" >> $LogFilePath
-    }
-  }
-
-  Function LINE {
-    param ([string]$Format,[switch]$Label)
-    $Line = '[1]'; $Suffix = ''
-    If ($Format) { $Label = $True }
-    If (!$Format) { $Format = 'Line {0,3}:' }
-    try {
-      if (($L = get-variable MyInvocation -scope 1 -value -ea 0) -and $L.ScriptLineNumber) {
-        $Line = $L.ScriptLineNumber
-      }
-    } catch {
-      $Suffix = '(Catch in LINE)'
-    }
-    if ($Label) { $Line = $Format -f $Line }
-    "$Line$Suffix"
-  }
+#  New-Alias -Name   LINE   -Value Get-CurrentLineNumber -Description 'Returns the current (caller''s) line number in a script.' -force -Option allscope
+#  New-Alias -Name   FILE   -Value Get-CurrentFileName   -Description 'Returns the name of the current script file.' -force             -Option allscope
+#  New-Alias -Name   FLINE  -Value Get-CurrentFileLine   -Description 'Returns the name of the current script file.' -force             -Option allscope
+#  New-Alias -Name   FILE1  -Value Get-CurrentFileName1  -Description 'Returns the name of the current script file.' -force             -Option allscope
+#  remove-item alias:write-log -force -ea 0
+# Function Write-Log {
+#   param (
+#     [string]$Message,
+#     [int]$Severity = 3, ## Default to a high severity. Otherwise, override
+#     [string]$File
+#   )
+#   try {
+#     if (!$LogLevel) { $LogLevel = 3 }
+#     if ($Severity -lt $LogLevel) { return }
+#     write-verbose $Message
+#     $line = [pscustomobject]@{
+#       'DateTime' = (Get-Date -f "yyyy-MM-dd-ddd-HH:mm:ss") #### (Get-Date)
+#       'Severity' = $Severity
+#       'Message'  = $Message
+#     }
+#     if (-not $LogFilePath) {
+#       $LogFilePath  =  "$($MyInvocation.ScriptName)" -replace '(\.ps1)?$', ''
+#       $LogFilePath += '-Log.txt'
+#     }
+#     if ($File) { $LogFilePath = $File }
+#     if ($psversiontable.psversion.major -lt 3) {
+#       $Entry = "`"$($line.DateTime)`", `"$($line.$Severity)`", `"$($line.$Message)`""
+#       $null = Out-file -enc utf8 -filepath $LogFilePath -input $Entry -append -erroraction Silentlycontinue -force
+#     } else {
+#       $line | Export-Csv -Path $LogFilePath -Append -NoTypeInformation -erroraction Silentlycontinue -force -enc ASCII
+#     }
+#   } catch {
+#     $ec   = ('{0:x}' -f $_.Exception.ErrorCode); $em = $_.Exception.Message; $in = $_.InvocationInfo.PositionMessage
+#     $description =  "$(LINE) Catch $in $ec, $em"
+#     "Logging: $description" >> $LogFilePath
+#   }
+# }
+#
+# Function LINE {
+#   param ([string]$Format,[switch]$Label)
+#   $Line = '[1]'; $Suffix = ''
+#   If ($Format) { $Label = $True }
+#   If (!$Format) { $Format = 'Line {0,3}:' }
+#   try {
+#     if (($L = get-variable MyInvocation -scope 1 -value -ea 0) -and $L.ScriptLineNumber) {
+#       $Line = $L.ScriptLineNumber
+#     }
+#   } catch {
+#     $Suffix = '(Catch in LINE)'
+#   }
+#   if ($Label) { $Line = $Format -f $Line }
+#   "$Line$Suffix"
+# }
 }
 
 <#
 #>
 
-write-information "Profile loaded: $($MyInvocation.MyCommand.Path)"
+write-information "Profile loaded: $($MyInvocation.MyCommand.Path) ##416"
 
 $PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)" -as [double]
 write-information "$(LINE) PowerShell version PSVersionNumber: [$PSVersionNumber]"
