@@ -1,6 +1,5 @@
 <#
 VMWare Key 5003J-6UJ4J-N8288-0V9A2-29GNM  VCenter VSphere VRealize???
-# My cell number is 832-725-0247 if want to call me bak.
 
 CodeManager for PowerShell Snippets 
   "C:\Program Files (x86)\PowershellCodeManager\Start__CodeManager.cmd"
