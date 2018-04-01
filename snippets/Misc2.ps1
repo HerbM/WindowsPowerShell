@@ -59,6 +59,8 @@ Function Find-GPOItem {
   start "http://gpsearch.azurewebsites.net/default.aspx?search=$Search"
 }	
 
+start-transaction -whatif; Get-Process | Where-Object Path -match 'Nuance' | Stop-Process -force; Ren .\Nuance\ NuanceSave ; Complete-Transaction
+
 Difficult Conversations
 Primal Leadership
 Necessary Endings 
@@ -803,6 +805,7 @@ function New-LNKFile {
   $shortCut.save()
 } #end function new-lnkfile
 
+<#
 Poor man's grep? For searching large txt files.
 function Search-TextFile {
   param(
@@ -935,3 +938,220 @@ PS> 1..5 | % { $result = 0 } { $result += $_ } { $result } # % is an alias for F
 
 filter num2x { $_ -replace "\d","x" }
 Get-Content test.txt | num2x | add-content new.txt
+
+
+Excel VBA to PowerShell:
+Sub DisplayWorkbookPath()
+  Dim FullName, Command, Directory, Script As String
+  Directory = ActiveWorkbook.Path
+  FullName = Directory & "\" & "Testbook.xlsx" ' ActiveWorkbook.Name
+  Script = Directory & "\" & "New-PartsListTest.ps1"
+  Dim Result
+  'Command = "cmd /k EchoArgs.exe -Noexit -NoProfile -File " & Script & " -Wait 2 -path '" & FullName & "'"
+  'Result = Shell(Command, 1)
+  Command = "PowerShell -Noexit -NoProfile -File " & Script & " -Wait 2 -path '" & FullName & "'"
+  Result = Shell(Command, 1)
+  MsgBox Command, vbInformation, "Workbook Path"
+End Sub
+
+Sub CreatePartsList()
+  Dim FullName, Command, Directory, Script As String
+  Directory = ActiveWorkbook.Path
+  FullName = Directory & "\" & ActiveWorkbook.Name
+  '  WORKT CASE you replace all the SPACES or weird characters with encoding  Advant0X20Workbook
+  Script = Directory & "\" & "New-PartsList.ps1"
+  Dim Result
+  'Command = "cmd /k EchoArgs.exe -Noexit -NoProfile -File " & Script & " -Wait 2 -path '" & FullName & "'"
+  'Result = Shell(Command, 1)
+  Command = "PowerShell -Noexit -NoProfile -File " & Script & " -Wait 2 -path '" & FullName & "'"
+  Result = Shell(Command, 1)
+  MsgBox Command, vbInformation, "Workbook Path"
+End Sub
+
+
+Outlook VBA to PowerShell call Convert-Bigfix.ps1
+Private WithEvents myOlItems  As Outlook.Items
+
+Private Sub Application_Startup()
+  Dim olApp As Outlook.Application
+  Dim objNS As Outlook.NameSpace
+  Set olApp = Outlook.Application
+  Set objNS = olApp.GetNamespace("MAPI")
+  Set myOlItems = objNS.GetDefaultFolder(olFolderInbox).Items
+End Sub
+
+Private Function NeedToSaveAttachment(ByVal Sender As String, ByVal Subject As String) As Boolean
+  ' From: BigFix.Reports@dcs.state.tx.us
+  '   All Servers in BigFix report-397.csv
+  '   Windows Servers Report Notification report-478.csv
+  ' From: SevOne Mailer <SevOneReports-ITO@atos.net>
+  '   SevOne Report - Daily ICMP and SNMP Status  "Device List.csv"
+  Dim Senders(2) As String
+  'MsgBox "Sender:[" & Sender & "] Subject:[" & Subject & "]"
+  Senders(0) = "BigFix.Reports@dcs.state.tx.us"
+  Senders(1) = "SevOne Mailer" 'SevOne Mailer <SevOneReports-ITO@atos.net>
+  Dim Subjects(3) As String
+  Subjects(0) = "All Servers in BigFix"                       ' report-397.csv
+  Subjects(1) = "Windows Servers Report Notification"         ' "report-478.csv"
+  Subjects(2) = "SevOne Report - Daily ICMP and SNMP Status"  ' "Device List.csv"
+  Dim FilteredSender, FilteredSubject As Variant
+  Dim FoundSender, FoundSubject As Boolean
+  FilteredSender = Filter(Senders, Sender)
+  FilteredSubject = Filter(Subjects, Subject)
+  FoundSender = UBound(FilteredSender) >= 0
+  FoundSubject = UBound(FilteredSubject) >= 0
+  NeedToSaveAttachment = FoundSender And FoundSubject
+End Function
+Private Sub TestFound()
+  Dim Found As Boolean
+  If NeedToSaveAttachment("BigFix.Reports@dcs.state.tx.us", "All Servers in BigFix") Then
+    MsgBox ("TestFound")
+  Else
+    MsgBox ("Not found")
+  End If
+End Sub
+' https://stackoverflow.com/questions/8005713/using-vba-to-read-new-outlook-email
+' Save Attachments Slipstick https://www.slipstick.com/developer/save-attachments-to-the-hard-drive/
+' Diane Poremsky book?
+Public Function SaveItemAttachments(ByVal objMsg As Object) As String
+  Dim objAttachments  As Outlook.Attachments
+  Dim i               As Long
+  Dim lngCount        As Long
+  Dim strFile         As String
+  Dim strFolderpath   As String
+  Dim Attachments     As String
+  SaveItemAttachments = Attachments = ""
+  strFolderpath = CreateObject("WScript.Shell").SpecialFolders(16) ' Get path to Documents folder
+  Set objAttachments = objMsg.Attachments
+  lngCount = objAttachments.Count
+  If lngCount > 0 Then
+    Dim Collect() As String
+    ReDim Collect(lngCount - 1)
+    For i = lngCount To 1 Step -1                    ' Count DOWN to avoid problems removing items
+      strFile = objAttachments.Item(i).FileName
+      strFile = strFolderpath & "\" & strFile        ' Combine with the path to the Temp folder.
+      'MsgBox "Saving: " & strFile
+      objAttachments.Item(i).SaveAsFile strFile      ' Save the attachment as a file.
+      Collect(i - 1) = "'" & strFile & " '"
+      Attachments = Join(Collect, ",")
+    Next i
+  End If
+  'MsgBox ("Attachments: " & Attachments)
+  SaveItemAttachments = Attachments
+ExitSub:
+  Set objAttachments = Nothing
+End Function
+
+Private Sub myOlItems_ItemAdd(ByVal Item As Object)
+  On Error GoTo ErrorHandler
+  If TypeName(Item) = "MailItem" Then
+    Dim MessageItem As Outlook.MailItem 'Object
+    Set MessageItem = Item
+    Dim ShellCommand, PSCommand, Subject, FromName, FromEmail, Files As String
+    'Dim From as
+    Subject = MessageItem.Subject
+    'From = MessageItem.Sender
+    FromEmail = MessageItem.SenderEmailAddress        ' SenderEmailName Sender
+    FromName = MessageItem.SenderName        ' SenderEmailName
+    If (NeedToSaveAttachment(FromName, Subject)) Then
+      'From = " '" & From & "'"
+      'FromEmail = " '" & FromEmail & "'"        ' SenderEmailName Sender
+      FromName = " '" & FromName & "'"        ' SenderEmailName
+      Subject = " '" & Subject & "'"
+      'MsgBox "Calling SaveItemAttachments"
+      Files = SaveItemAttachments(MessageItem)
+      MessageItem.UnRead = False
+      MessageItem.Save
+      'PSCommand = "&{ echoargs (get-date -f 's')" & Subject & FromName & " " & Files & " cde } >> c:\dev\vbalog.txt"
+      'PSCommand = "&{ echoargs (get-date -f 's')" & Subject & From & FromName & FromEmail & " cde } >> c:\dev\vbalog.txt"
+      PSCommand = "C:\Bat\Convert-BigFix.ps1 " & Files
+      'PSCommand = "'EchoArgs.exe' " & Files & " >> $home\documents\echoargs.txt"
+      ShellCommand = "powershell -nologo -noprofile -WindowStyle hidden -command " & PSCommand
+      'MsgBox ("[" & ShellCommand & "]")
+      RetVal = Shell(ShellCommand, 0)
+      'MsgBox ("RetVal: " & RetVal)
+    End If
+  End If
+ProgramExit:
+  Exit Sub
+ErrorHandler:
+  MsgBox Err.Number & " - " & Err.Description
+  Resume ProgramExit
+End Sub
+Private Sub Application_NewMail()
+    ' Specifying 1 as the second argument opens the application in
+    ' normal size and gives it the focus.
+    Dim RetVal
+    'RetVal = Shell("powershell -nologo -noprofile -WindowStyle hidden -command &{echoargs (get-date -f 's') b c} >> c:\dev\vbalog.txt", 0)
+End Sub
+
+Public Sub SaveAttachments()
+  Dim objOL           As Outlook.Application
+  Dim objMsg          As Outlook.MailItem 'Object
+  Dim objSelection    As Outlook.Selection
+  Dim Files As String
+  On Error Resume Next
+  Set objOL = CreateObject("Outlook.Application")      ' Instantiate an Outlook Application object.
+  Set objSelection = objOL.ActiveExplorer.Selection    ' Get the collection of selected objects.
+  For Each objMsg In objSelection                      ' Check for attachments.
+    Files = SaveItemAttachments(objMsg)
+    PSCommand = "C:\Bat\Convert-BigFix.ps1 " & Files
+    PSCommand = "'EchoArgs.exe' " & Files & " >> $home\documents\echoargs.txt"
+    ShellCommand = "powershell -nologo -noprofile -WindowStyle hidden -command " & PSCommand
+    Subject = objMsg.Subject
+    FromName = objMsg.SenderName        ' SenderEmailName
+    'If NeedToSaveAttachment(FromName, Subject) Then
+    '  FromName = " '" & FromName & "'"        ' SenderEmailName
+    '  Subject = " '" & Subject & "'"
+    '  PSCommand = "C:\Bat\Convert-BigFix.ps1 " & Files
+    '  ShellCommand = "powershell -nologo -noprofile -WindowStyle hidden -command " & PSCommand
+    '  RetVal = Shell(ShellCommand, 0)
+    'End If
+    objMsg.UnRead = False
+    objMsg.Save
+    'MsgBox ("[" & ShellCommand & "]")
+    'MsgBox (Files)
+  Next
+ExitSub:
+  Set objMsg = Nothing
+  Set objSelection = Nothing
+  Set objOL = Nothing
+End Sub
+
+
+Public Sub SaveAttachmentsSave()
+  Dim objOL           As Outlook.Application
+  Dim objMsg          As Outlook.MailItem 'Object
+  Dim objAttachments  As Outlook.Attachments
+  Dim objSelection    As Outlook.Selection
+  Dim i               As Long
+  Dim lngCount        As Long
+  Dim strFile         As String
+  Dim strFolderpath   As String
+  Dim strDeletedFiles As String
+  strFolderpath = CreateObject("WScript.Shell").SpecialFolders(16) ' Get path to Documents folder
+  'strFolderpath = "C:\users\A469526\Documents\" ' Get path to Documents folder
+  On Error Resume Next
+  Set objOL = CreateObject("Outlook.Application")      ' Instantiate an Outlook Application object.
+  Set objSelection = objOL.ActiveExplorer.Selection    ' Get the collection of selected objects.
+  ' strFolderpath = strFolderpath & "\OLAttachments\"  ' folder must exist
+  For Each objMsg In objSelection                      ' Check for attachments.
+    Set objAttachments = objMsg.Attachments
+    lngCount = objAttachments.Count
+    If lngCount > 0 Then
+      For i = lngCount To 1 Step -1                    ' Count DOWN to avoid problems removing items
+        strFile = objAttachments.Item(i).FileName
+        strFile = strFolderpath & "\" & strFile        ' Combine with the path to the Temp folder.
+        'MsgBox "Saving: " & strFile
+        objAttachments.Item(i).SaveAsFile strFile      ' Save the attachment as a file.
+      Next i
+    End If
+  Next
+ExitSub:
+  Set objAttachments = Nothing
+  Set objMsg = Nothing
+  Set objSelection = Nothing
+  Set objOL = Nothing
+End Sub
+
+#>

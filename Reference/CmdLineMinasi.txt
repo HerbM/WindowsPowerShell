@@ -278,155 +278,151 @@ blat, from www.blat.net
   Even includes the source
   You can pre-store most of the parameters in the
   Registry
-Selfssl, a tool that will generate a
-cert and install it, all in one line
-It's in the IIS Resource Kit
+Selfssl, a tool that will generate a cert and install it, all in one line
+  It's in the IIS Resource Kit
 Enable Terminal Server Enable RDP
-HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server
-Change fDenyTSConnections to 0
-Reboot:
-shutdown -r -t 0
-Open the firewall:
-netsh firewall set portopening tcp 3389 "Remote
-Desktop"
-setx
-pnputil -a c:\newdrivers\scan.inf
-pnputil -e
+  HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server
+  Change fDenyTSConnections to 0
+  Reboot:
+  shutdown -r -t 0
+  Open the firewall:
+  netsh firewall set portopening tcp 3389 "RemoteDesktop"
+  setx
+PnpUtil   Microsoft PlugNPlay PnP utility Add, Delete, Install, Enumerate PnP drivers
+  pnputil.exe [-f | -i] [ -? | -a | -d | -e ] <INF name>
+  Examples:
+    pnputil.exe -a a:\usbcam\USBCAM.INF      -> Add package specified by USBCAM.INF
+    pnputil.exe -a c:\drivers\*.inf          -> Add all packages in c:\drivers\
+    pnputil.exe -i -a a:\usbcam\USBCAM.INF   -> Add and install driver package
+    pnputil.exe -e                           -> Enumerate all 3rd party packages
+    pnputil.exe -d oem0.inf                  -> Delete package oem0.inf
+    pnputil.exe -f -d oem0.inf               -> Force delete package oem0.inf
+    pnputil.exe -?                           -> This usage screen
+    pnputil -e
 WinPE use peimg
-core: ocsetup rolename
-ex: ocsetup DNS-Server-Core-Role
-w32tm, robocopy, xcopy,
-Licensingdiag
-The licensingdiag command is actually a pretty handy tool. You define an XML and a CAB file to create and Windows 8 will generate both, full of information about your Windows 8 installation, specifically product activation and registration related data.
-The most reasonable use for licensingdiag is to provide valuable activation troubleshooting information to Microsoft or some other support person.
-Pwlauncher
-The pwlauncher command is a command-line tool that can enable, disable, or show the current status of your Windows To Go startup options.
-Recimg
-The recimg command lets you create a custom recovery image and set it as the default image when using the Refresh Your PC recovery option.
-Register-cimprovider
-The register-cimprovider command does just that - it registers CIM (Common Information Model) providers in Windows 8 from the command line.
-Tpmvscmgr
-The tpmvscmgr command is a full TPM virtual smart card tool, allowing both the creation and removal of smart cards.
+core: ocsetup rolename   Optional Component Setup (in Win7)
+  ex: ocsetup DNS-Server-Core-Role
+w32tm
+robocopy
+xcopy,
+Licensingdiag The licensingdiag command is actually a pretty handy tool. You define an XML 
+              and a CAB file to create and Windows 8 will generate both, full of information about your 
+              Windows 8 installation, specifically product activation and registration related data.
+              The most reasonable use for licensingdiag is to provide valuable activation troubleshooting information to Microsoft or some other support person.
+Pwlauncher    The pwlauncher command is a command-line tool that can enable, disable, or show 
+              the current status of your Windows To Go startup options.
+Recimg        The recimg command lets you create a custom recovery image and set it as the 
+              default image when using the Refresh Your PC recovery option.
+Register-cimprovider  The register-cimprovider command does just that - it registers CIM 
+                     (Common Information Model) providers in Windows 8 from the command line.
+Tpmvscmgr     The tpmvscmgr command is a full TPM virtual smart card tool, allowing both the 
+              creation and removal of smart cards.
 ===================================================
-CERTMGR.MSC Certificates snap-in
-CERTSRV.MSC Certification Services
-CMD.EXE Command Prompt
-COMPMGMT.MSC Computer Management
-DCPOL.MSC Domain Controller Security Policy
-DEVMGMT.MSC Device Manager
-DFRG.MSC Disk Defragmenter
-DFSGUI.MSC Distributed File System
-DHCPMGMT.MSC DHCP Manager
-DISKMGMT.MSC Disk Management
-DNSMGMT.MSC DNS Manager
-DOMAIN.MSC Active Directory Domains & Trust
-DOMPOL.MSC Domain Security Policy
-DSA.MSC Active Directory Users & Computers
-  DSA.MSC /DOMAIN=domainnam
-  DSA.MSC /SERVER=servername
-DSSITE.MSC Active Directory Sites & Services
-EVENTVWR.MSC Event Viewer
-FSMGMT.MSC Shared Folders
-GPEDIT.MSC local Group Policy Editor
-IAS.MSC Internet Authentication Service
-INETMGR Internet Information Service (\Windows\system32\inetsrv)
-LUSRMGR.MSC Local Users and Groups
+CERTMGR.MSC       Certificates snap-in
+CERTSRV.MSC       Certification Services
+CMD.EXE           Command Prompt
+COMPMGMT.MSC      Computer Management
+DCPOL.MSC         Domain Controller Security Policy
+DEVMGMT.MSC       Device Manager
+DFRG.MSC          Disk Defragmenter
+DFSGUI.MSC        Distributed File System
+DHCPMGMT.MSC      DHCP Manager
+DISKMGMT.MSC      Disk Management
+DNSMGMT.MSC       DNS Manager
+DOMAIN.MSC        Active Directory Domains & Trust
+DOMPOL.MSC        Domain Security Policy
+DSA.MSC           Active Directory Users & Computers
+                    DSA.MSC /DOMAIN=domainnam
+                    DSA.MSC /SERVER=servername
+DSSITE.MSC        Active Directory Sites & Services
+EVENTVWR.MSC      Event Viewer
+FSMGMT.MSC        Shared Folders
+GPEDIT.MSC        local Group Policy Editor
+IAS.MSC           Internet Authentication Service
+INETMGR           Internet Information Service (\Windows\system32\inetsrv)
+LUSRMGR.MSC       Local Users and Groups
 MMC.EXE Microsoft Management Console
-MSINFO32.EXE Hardware and software configuration information
-PERFMON.MSC Performance Monitor
-REGEDIT.EXE Run Registry Editor
-RRASMGMT.MSC Routing and Remote Access
-RSOP.MSC Resultant Set of Policy
-SECPOL.MSC Local Security Policy
-SERVICES.MSC Service Configuration
-TSCC.MSC Terminal Services
-MSTSC Remote Desktop
-CERTMGR.MSC
-Certificates snap-in
-CERTSRV.MSC
-Certification Services
-CMD.EXE
-Command Prompt
-COMPMGMT.MSC
-Computer Management
-DCPOL.MSC
-Domain Controller Security Policy
-DEVMGMT.MSC
-Device Manager
-DFRG.MSC
-Disk Defragmenter
-DFSGUI.MSC
-Distributed File System
-DHCPMGMT.MSC
-DHCP Manager
-DISKMGMT.MSC
-Disk Management
-DNSMGMT.MSC
-DNS Manager
-DOMAIN.MSC
-Active Directory Domains & Trust
-DOMPOL.MSC
-Domain Security Policy
-DSA.MSC
-Active Directory Users & Computers
-DSA.MSC /DOMAIN=domainname
-DSA.MSC /SERVER=servername
-https://social.technet.microsoft.com/Forums/windowsserver/en-US/61b864f4-2b04-44a1-88dc-86fae0a8d592/the-most-usefull-active-directory-mmc-run-commands?forum=winservergen
-DSSITE.MSC Active Directory Sites & Services
-EVENTVWR.MSC Event Viewer
-FSMGMT.MSC Shared Folders
-GPEDIT.MSC local Group Policy Editor
-IAS.MSC Internet Authentication Service
-INETMGR Internet Information Service (\Windows\system32\inetsrv)
-LUSRMGR.MSC Local Users and Groups
-MMC.EXE Microsoft Management Console
-MSINFO32.EXE Hardware and software configuration information
-PERFMON.MSC Performance Monitor
-REGEDIT.EXE Run Registry Editor
-RRASMGMT.MSC Routing and Remote Access
-RSOP.MSC Resultant Set of Policy
-SECPOL.MSC Local Security Policy
-SERVICES.MSC Service Configuration
-TSCC.MSC Terminal Services
-MSTSC Remote Desktop
+MSINFO32.EXE      Hardware and software configuration information
+PERFMON.MSC       Performance Monitor
+REGEDIT.EXE       Run Registry Editor
+RRASMGMT.MSC      Routing and Remote Access
+RSOP.MSC          Resultant Set of Policy
+SECPOL.MSC        Local Security Policy
+SERVICES.MSC      Service Configuration
+TSCC.MSC          Terminal Services
+MSTSC             Remote Desktop
+CERTMGR.MSC       Certificates snap-in
+CERTSRV.MSC       Certification Services
+CMD.EXE           Command Prompt
+COMPMGMT.MSC      Computer Management
+DCPOL.MSC         Domain Controller Security Policy
+DEVMGMT.MSC       Device Manager
+DFRG.MSC          Disk Defragmenter
+DFSGUI.MSC        Distributed File System
+DHCPMGMT.MSC      DHCP Manager
+DISKMGMT.MSC      Disk Management
+DNSMGMT.MSC       DNS Manager
+DOMAIN.MSC        Active Directory Domains & Trust
+DOMPOL.MSC        Domain Security Policy
+DSA.MSC           Active Directory Users & Computers
+                    DSA.MSC /DOMAIN=domainname
+                    DSA.MSC /SERVER=servername
+                    https://social.technet.microsoft.com/Forums/windowsserver/en-US/61b864f4-2b04-44a1-88dc-86fae0a8d592/the-most-usefull-active-directory-mmc-run-commands?forum=winservergen
+DSSITE.MSC        Active Directory Sites & Services
+EVENTVWR.MSC      Event Viewer
+FSMGMT.MSC        Shared Folders
+GPEDIT.MSC        local Group Policy Editor
+IAS.MSC           Internet Authentication Service
+INETMGR           Internet Information Service (\Windows\system32\inetsrv)
+LUSRMGR.MSC       Local Users and Groups
+MMC.EXE           Microsoft Management Console
+MSINFO32.EXE      Hardware and software configuration information
+PERFMON.MSC       Performance Monitor
+REGEDIT.EXE       Run Registry Editor
+RRASMGMT.MSC      Routing and Remote Access
+RSOP.MSC          Resultant Set of Policy
+SECPOL.MSC        Local Security Policy
+SERVICES.MSC      Service Configuration
+TSCC.MSC          Terminal Services
+MSTSC Remote      Desktop
 ===================================================
 http://pcsupport.about.com/od/tipstricks/a/control-panel-command-line.htm
-Control Panel Applet 	Command 	OS
-Accessibility Options 	control access.cpl 	XP
-Action Center 	control /name Microsoft.ActionCenter 	8, 7
-control wscui.cpl 	8, 7
-Add Features to Windows 8 	control /name Microsoft.WindowsAnytimeUpgrade 	8
-Add Hardware 	control /name Microsoft.AddHardware 	Vista
-control hdwwiz.cpl 	XP
-Add or Remove Programs 	control appwiz.cpl 	XP
-Administrative Tools 	control /name Microsoft.AdministrativeTools 	8, 7, Vista
-control admintools 	8, 7, Vista, XP
-Automatic Updates 	control wuaucpl.cpl 	XP
-AutoPlay 	control /name Microsoft.AutoPlay 	8, 7, Vista
-Backup and Restore  ontrol /name Microsoft.BackupAndRestoreCenter 	Vista
-Backup and Restore 	control /name Microsoft.BackupAndRestore 	7
-Biometric Devices 	control /name Microsoft.BiometricDevices 	8, 7
-BitLocker Drive Encryption 	control /name Microsoft.BitLockerDriveEncryption 	8, 7, Vista
-Bluetooth Devices 	control bthprops.cpl13 	8, 7, Vista
-control /name Microsoft.BluetoothDevices 	Vista
-Color Management 	control /name Microsoft.ColorManagement 	8, 7, Vista
-Color1 	WinColor.exe2 	XP
-Credential Manager 	control /name Microsoft.CredentialManager 	8, 7
-Client Service for NetWare 	control nwc.cpl 	XP
-Date and Time 	control /name Microsoft.DateAndTime 	8, 7, Vista
-control timedate.cpl 	8, 7, Vista
-control date/time 	8, 7, Vista, XP
-Default Location 	control /name Microsoft.DefaultLocation 	7
-Default Programs 	control /name Microsoft.DefaultPrograms 	8, 7, Vista
-Desktop Gadgets 	control /name Microsoft.DesktopGadgets 	7
-Device Manager 	control /name Microsoft.DeviceManager 	8, 7, Vista
-control hdwwiz.cpl 	8, 7, Vista
-devmgmt.msc 	8, 7, Vista, XP3
-Devices and Printers 	control /name Microsoft.DevicesAndPrinters 	8, 7
-control printers 	8, 7
-Display 	control /name Microsoft.Display 	8, 7
-control desk.cpl 	XP
-control desktop 	XP
+Control Panel Applet 	      Command 	                                      OS
+Accessibility Options 	    control access.cpl 	                            XP
+Action Center 	            control /name Microsoft.ActionCenter 	          8, 7
+control wscui.cpl 	8, 7    
+Add Features to Windows 8   control /name Microsoft.WindowsAnytimeUpgrade 	 8
+Add Hardware 	              control /name Microsoft.AddHardware 	           Vista
+control hdwwiz.cpl 	XP                                                       
+Add or Remove Programs 	    control appwiz.cpl 	                             XP
+Administrative Tools 	      control /name Microsoft.AdministrativeTools 	   8, 7, Vista
+                            control admintools 	                             8, 7, Vista, XP
+Automatic Updates 	        control wuaucpl.cpl 	XP                         
+AutoPlay 	                  control /name Microsoft.AutoPlay 	               8, 7, Vista
+Backup and Restore          ontrol /name Microsoft.BackupAndRestoreCenter 	 Vista
+Backup and Restore 	        control /name Microsoft.BackupAndRestore 	       7
+Biometric Devices 	        control /name Microsoft.BiometricDevices 	       8, 7
+BitLocker Drive Encryption  control /name Microsoft.BitLockerDriveEncryption 8, 7, Vista
+Bluetooth Devices 	        control bthprops.cpl13 	                         8, 7, Vista
+                            control /name Microsoft.BluetoothDevices 	       Vista
+Color Management 	          control /name Microsoft.ColorManagement 	       8, 7, Vista
+                            Color1 WinColor.exe2                             XP
+Credential Manager 	        control /name Microsoft.CredentialManager 	     8, 7
+Client Service for NetWare 	control nwc.cpl 	                               XP
+Date and Time 	            control /name Microsoft.DateAndTime 	           8, 7, Vista
+                            control timedate.cpl 	                           8, 7, Vista
+                            control date/time 	                             8, 7, Vista, XP
+Default Location 	          control /name Microsoft.DefaultLocation 	       7
+Default Programs 	          control /name Microsoft.DefaultPrograms 	       8, 7, Vista
+Desktop Gadgets 	          control /name Microsoft.DesktopGadgets 	         7
+Device Manager 	            control /name Microsoft.DeviceManager 	         8, 7, Vista
+                            control hdwwiz.cpl 	                             8, 7, Vista
+                            devmgmt.msc 	                                   8, 7, Vista, XP3
+Devices and Printers 	      control /name Microsoft.DevicesAndPrinters 	     8, 7
+                            control printers 	                               8, 7
+Display 	                  control /name Microsoft.Display 	               8, 7
+                            control desk.cpl 	                               XP
+                            control desktop 	                               XP
 *****
 Ease of Access Center 	control /name Microsoft.EaseOfAccessCenter 	8, 7, Vista
 control access.cpl 	8, 7, Vista
@@ -1013,7 +1009,7 @@ Windows Repair Disc recdisc
 Windows Script Host wscript
 Windows Update wuapp
 Windows Update Standalone Installer wusa
-Versione Windows winver
+Version Windows winver
 WMI Management wmimgmt.msc
 WordPad write
 XPS Viewer xpsrchvw
@@ -1228,382 +1224,381 @@ Dialog Box Keyboard Shortcuts•Arrow Keys Select a button if the active option is
 •Spacebar Select or clear the check box if the active option is a check box
 •Tab Move forward through options
 Ease of Access Keyboard Shortcuts•Left Alt + Left Shift + Num Lock Turn Mouse Keys on or off
-•Left Alt + Left Shift + PrtScn Turn High Contrast on or off
-•Num Lock (hold for 8 seconds) Turn Toggle Keys on or off
-•Right Shift (hold for 8 seconds) Turn Filter Keys on and off
-•Shift (pressed 5 times) Turn Sticky Keys on or off
-•Windows Key + U Open Ease of Access Center
-Function Key Keyboard Shortcuts
-NOTE: On multimedia keyboards, you may need to press the F-Lock or Function key first. •F1 Open Help window
-•F2 Rename the selected item
-•F3 Opens Search window
-•F4 Display the Address bar drop down list in Windows Explorer and Internet Explorer
-•F5 Refresh the current active window
-•F6 Cycle through items in current active window
-•F10 Displays the menu bar in the active window and underlines the menu bar shortcut keys
-•F11 Toggle Full Screen Mode On or Off in Windows Explorer and Internet Explorer
-•Alt + F4 Close the current active window or program. From the desktop, it opens the Shut Down Windows window.
-•Ctrl + F4 Close the active document (in programs that allow you to have multiple documents open simultaneously)
-•Shift + F10 Open context menu of selected item
-General Keyboard Shortcuts•Alt + D Move focus to address bar in Windows Explorer and Internet Explorer
-•Alt + D, Tab Move focus to search bar in Windows Explorer and Internet Explorer
-•Alt + Enter or Alt + Double Click on File Open Properties window of selected item
-•Alt + Esc Cycle through all open windows.
-•Alt + P Turn Preview Pane on or off in Windows Explorer
-•Alt + Left Arrow Go back in Windows Explorer
-•Alt + Right Arrow Go forward in Windows Explorer
-•Alt + underlined letter Display the corresponding menu or Perform the menu command
-•Alt + Up Arrow Go Up a directory in Windows Explorer
-•Alt + Tab select a open items or windows to see.
-•Alt + Spacebar Open menu of the current active window
-•Ctrl + Alt + Tab Use the arrow keys to switch between open items or windows
-•Ctrl + Down Arrow Move the cursor to the beginning of the next paragraph
-•Ctrl + Up Arrow Move the cursor to the beginning of the previous paragraph
-•Ctrl + Left Arrow Move the cursor to the beginning of the previous word
-•Ctrl + Right Arrow Move the cursor to the beginning of the next word
-•Ctrl + Shift + Arrow Select a block of text
-•Ctrl + Arrow + Spacebar Select multiple individual items in a window or on the desktop
-•Ctrl + A Select all items in active open window
-•Ctrl + C Copy the selected item
-•Ctrl + Esc Open Start menu
-•Ctrl + Mouse Wheel Increase or decrease icon size in current active Windows Explorer window or desktop
-•Ctrl + N Opens new Windows Explorer or Internet Explorer window
-•Ctrl + Shift + N Creates a New Folder on the active desktop or in the active Windows Explorer window.
-•Ctrl + Shift + Esc Open Task Manager
-•Ctrl + V Paste the selected item
-•Ctrl + X Cut the selected item
-•Ctrl + Y Redo an action
-•Ctrl + Z Undo an action
-•Delete Delete the selected item and move it to the Recycle Bin
-•End Scroll to the bottom of the current active window
-•Esc Cancel the current task
-•Home Scroll to the top of the current active window
-•Right Arrow Open the next menu to the right, or open a submenu
-•Left Arrow Open the next menu to the left, or close a submenu
-•Shift + Arrow Select more than one item in a window or on the desktop, or select text within a document
-•Shift + Delete Delete selected item permanently without it going to the Recycle Bin first.
-•Shift + Left Click Select a item or multiple items
-•Shift (when you insert a CD) Prevent the CD from automatically playing
-Help and Support Keyboard Shortcuts•Alt + A Display the customer support page
-•Alt + C Display the Table of Contents
-•Alt + N Display the Connection Settings menu
-•Alt + Left Arrow Move back to the previously viewed help topic
-•Alt + Right Arrow Move forward to the next previously viewed help topic
-•Alt + Home Display the Help and Support home page
-•Ctrl + F Search the current help topic
-•Ctrl + P Print the current help topic
-•End Move to the end of a help topic
-•F3 Move focus to the Search box
-•F10 Display the Options menu
-•Home Move the to beginning of a help topic
-Magnifier Keyboard Shortcuts•Ctrl + Alt + Arrow keys Pan in the direction of the arrow keys
-•Ctrl + Alt + D Switch to docked mode
-•Ctrl + Alt + F Switch to full-screen mode
-•Ctrl + Alt + I Invert colors
-•Ctrl + Alt + L Switch to lens mode
-•Ctrl + Alt + R Resize the lens
-•Ctrl + Alt + Spacebar Show the mouse pointer
-•Windows Key + Esc Exit Magnifier
-•Windows Key + Plus Sign (+) or Minus Sign (-) Zoom in or out
-Paint Keyboard Shortcuts•Alt Display keytips
-•Alt + F4 Close a picture and its Paint window
-•Ctrl + A Select the entire picture
-•Ctrl + B Bold selected text
-•Ctrl + C Copy a selection to the Clipboard
-•Ctrl + E Open the Properties dialog box
-•Ctrl + G Show or hide gridlines
-•Ctrl + I Italicize selected text
-•Ctrl + Minus Sign (-) Decrease the width of a brush, line, or shape outline by one pixel
-•Ctrl + N Create a new picture
-•Ctrl + O Open an existing picture
-•Ctrl + P Print a picture
-•Ctrl + Page Down Zoom out
-•Ctrl + Page Up Zoom in
-•Ctrl + Plus Sign (+) Increase the width of a brush, line, or shape outline by one pixel
-•Ctrl + R Show or hide the ruler
-•Ctrl + S Save changes to a picture
-•Ctrl + U Underline selected text
-•Ctrl + V Paste a selection from the Clipboard
-•Ctrl + W Open the Resize and Skew dialog box
-•Ctrl + X Cut a selection
-•Ctrl + Y Redo a change
-•Ctrl + Z Undo a change
-•Delete Delete a selection
-•Esc Cancel a selection
-•F1 Open Paint Help
-•F10 Display keytips
-•Shift + F10 Show the current shortcut menu
-•F11 View a picture in full-screen mode
-•F12 Save the picture as a new file
-•Right Arrow Move the selection or active shape right by one pixel
-•Left Arrow Move the selection or active shape left by one pixel
-•Down Arrow Move the selection or active shape down by one pixel
-•Up Arrow Move the selection or active shape up by one pixel
-Remote Desktop Keyboard Shortcuts•Alt + Delete Display the system menu.
-•Alt + Home Display the Start menu.
-•Alt + Insert Cycle through programs in the order that they were started in.
-•Alt + Page Down Move between programs from right to left.
-•Alt + Page Up Move between programs from left to right.
-•Ctrl + Alt + Break Switch between a window and full screen.
-•Ctrl + Alt + End Display the Windows Security dialog box.
-•Ctrl + Alt + Minus Sign (-) on numeric keypad Place a copy of the active window, within the client, on the Terminal server clipboard (provides the same functionality as pressing Alt+PrtScn on a local computer).
-•Ctrl + Alt + Plus Sign (+) on numeric keypad Place a copy of the entire client window area on the Terminal server clipboard (provides the same functionality as pressing PrtScn on a local computer).
-•Ctrl + Alt + Right Arrow Tab out of the Remote Desktop controls to a control in the host program (for example, a button or a text box). Useful when the Remote Desktop controls are embedded in another (host) program.
-•Ctrl + Alt + Left Arrow Tab out of the Remote Desktop controls to a control in the host program (for example, a button or a text box). Useful when the Remote Desktop controls are embedded in another (host) program.
-Taskbar Keyboard Shortcuts •Ctrl + Left Click Use on a grouped pinned taskbar program icon to cycle through the open windows in that group.
-•Ctrl + Shift + Left Click Use on a pinned taskbar program icon to open another instance of that program with administrator privileges (run as administrator)
-•Shift + Left Click Use on a pinned taskbar program icon to open another instance of that program.
-•Shift + Right Click Use on a pinned taskbar program icon to open the context menu for the icon.
-•Shift + Right Click Use on a grouped icon on the taskbar to open the context menu for the group.
-•Windows Key + (1 to 0) Opens the pinned taskbar icon that corresponds to the order that they are in from left (1) to right (0) on the taskbar. 0 is for 10.
-•Windows Key + Alt + (1 to 0) Opens the Jump List of recently accessed items for the program pinned to the taskbar in the position indicated by the number.
-•Windows Key + Ctrl + (1 to 0) Switches to the last active window of the program pinned to the taskbar in the position indicated by the number
-•Windows Key + Shift + (1 to 0) Starts a new instance of the program pinned to the taskbar in the position indicated by the number
-•Windows Key + B Makes the focus on the system tray icons (notification area icons) on the taskbar
-•Windows Key + T Cycle through programs on the taskbar. Press Enter to open the one selected.
-•Windows Key + Shift + T Cycle backwards through programs on the taskbar. Press Enter to open the one selected.
-Windows Explorer Keyboard Shortcuts•Alt + D Select the address bar
-•Alt + Enter or Alt + Double Click on File Opens the Properties window of the selected item
-•Alt + P Toggle the preview pane on or off
-•Alt+Left Arrow View the previous folder
-•Alt + Right Arrow View the next folder
-•Alt + Up Arrow Go up one folder level in the path
-•Back Go back one folder level in the path
-•Ctrl + E Select the search box
-•Ctrl + Mouse scroll wheel Change the size and appearance of file and folder icons
-•Ctrl + N Open a new window
-•Ctrl + Shift + N Creates a New Folder on the active desktop or in the active Windows Explorer window.
-•End Display the bottom of the active window
-•F11 Maximize or minimize the active window
-•Home Display the top of the active window
-•Num Lock + Asterisk (*) on numeric keypad Display all subfolders under the selected folder
-•Num Lock + Plus Sign (+) on numeric keypad Display the contents of the selected folder
-•Num Lock + Minus Sign (-) on numeric keypad Collapse the selected folder
-•Left Arrow Collapse the current selection (if it's expanded), or select the parent folder
-•Right Arrow Display the current selection (if it's collapsed), or select the first subfolder
-•Shift+Right Click on a file Adds Copy as Path, which copies the path of a file to the clipboard.
-•Shift+Right-Click on a file Adds extra hidden items to the Send To context menu.
-•Shift+Right-Click on a folder Adds Open Command Prompt Here to the context menu.
-Windows Journal Keyboard Shortcuts•Alt + F4 Close a note and its Journal window
-•Ctrl + A Select all items on a page
-•Ctrl + C Copy a selection to the Clipboard
-•Ctrl + Shift + C Display a shortcut menu for column headings in a note list
-•Ctrl + F Start a basic find
-•Ctrl + G Go to a page
-•Ctrl + N Start a new note
-•Ctrl + O Open a recently used note
-•Ctrl + P Print a note
-•Ctrl + S Save changes to a note
-•Ctrl + V Paste a selection from the Clipboard
-•Ctrl + Shift + V Move a note to a specific folder
-•Ctrl + X Cut a selection
-•Ctrl + Y Redo a change
-•Ctrl + Z Undo a change
-•Esc Cancel a selection
-•Delete Delete a selection
-•F1 Open Journal Help
-•F5 Refresh find results or Refresh the note list
-•F6 Toggle between a note list and a note
-•F11 View a note in full-screen mode
+  •Left Alt + Left Shift + PrtScn Turn High Contrast on or off
+  •Num Lock (hold for 8 seconds) Turn Toggle Keys on or off
+  •Right Shift (hold for 8 seconds) Turn Filter Keys on and off
+  •Shift (pressed 5 times) Turn Sticky Keys on or off
+  •Windows Key + U Open Ease of Access Center
+  Function Key Keyboard Shortcuts
+  NOTE: On multimedia keyboards, you may need to press the F-Lock or Function key first. •F1 Open Help window
+  •F2 Rename the selected item
+  •F3 Opens Search window
+  •F4 Display the Address bar drop down list in Windows Explorer and Internet Explorer
+  •F5 Refresh the current active window
+  •F6 Cycle through items in current active window
+  •F10 Displays the menu bar in the active window and underlines the menu bar shortcut keys
+  •F11 Toggle Full Screen Mode On or Off in Windows Explorer and Internet Explorer
+  •Alt + F4 Close the current active window or program. From the desktop, it opens the Shut Down Windows window.
+  •Ctrl + F4 Close the active document (in programs that allow you to have multiple documents open simultaneously)
+  •Shift + F10 Open context menu of selected item
+  General Keyboard Shortcuts•Alt + D Move focus to address bar in Windows Explorer and Internet Explorer
+  •Alt + D, Tab Move focus to search bar in Windows Explorer and Internet Explorer
+  •Alt + Enter or Alt + Double Click on File Open Properties window of selected item
+  •Alt + Esc Cycle through all open windows.
+  •Alt + P Turn Preview Pane on or off in Windows Explorer
+  •Alt + Left Arrow Go back in Windows Explorer
+  •Alt + Right Arrow Go forward in Windows Explorer
+  •Alt + underlined letter Display the corresponding menu or Perform the menu command
+  •Alt + Up Arrow Go Up a directory in Windows Explorer
+  •Alt + Tab select a open items or windows to see.
+  •Alt + Spacebar Open menu of the current active window
+  •Ctrl + Alt + Tab Use the arrow keys to switch between open items or windows
+  •Ctrl + Down Arrow Move the cursor to the beginning of the next paragraph
+  •Ctrl + Up Arrow Move the cursor to the beginning of the previous paragraph
+  •Ctrl + Left Arrow Move the cursor to the beginning of the previous word
+  •Ctrl + Right Arrow Move the cursor to the beginning of the next word
+  •Ctrl + Shift + Arrow Select a block of text
+  •Ctrl + Arrow + Spacebar Select multiple individual items in a window or on the desktop
+  •Ctrl + A Select all items in active open window
+  •Ctrl + C Copy the selected item
+  •Ctrl + Esc Open Start menu
+  •Ctrl + Mouse Wheel Increase or decrease icon size in current active Windows Explorer window or desktop
+  •Ctrl + N Opens new Windows Explorer or Internet Explorer window
+  •Ctrl + Shift + N Creates a New Folder on the active desktop or in the active Windows Explorer window.
+  •Ctrl + Shift + Esc Open Task Manager
+  •Ctrl + V Paste the selected item
+  •Ctrl + X Cut the selected item
+  •Ctrl + Y Redo an action
+  •Ctrl + Z Undo an action
+  •Delete Delete the selected item and move it to the Recycle Bin
+  •End Scroll to the bottom of the current active window
+  •Esc Cancel the current task
+  •Home Scroll to the top of the current active window
+  •Right Arrow Open the next menu to the right, or open a submenu
+  •Left Arrow Open the next menu to the left, or close a submenu
+  •Shift + Arrow Select more than one item in a window or on the desktop, or select text within a document
+  •Shift + Delete Delete selected item permanently without it going to the Recycle Bin first.
+  •Shift + Left Click Select a item or multiple items
+  •Shift (when you insert a CD) Prevent the CD from automatically playing
+  Help and Support Keyboard Shortcuts•Alt + A Display the customer support page
+  •Alt + C Display the Table of Contents
+  •Alt + N Display the Connection Settings menu
+  •Alt + Left Arrow Move back to the previously viewed help topic
+  •Alt + Right Arrow Move forward to the next previously viewed help topic
+  •Alt + Home Display the Help and Support home page
+  •Ctrl + F Search the current help topic
+  •Ctrl + P Print the current help topic
+  •End Move to the end of a help topic
+  •F3 Move focus to the Search box
+  •F10 Display the Options menu
+  •Home Move the to beginning of a help topic
+  Magnifier Keyboard Shortcuts•Ctrl + Alt + Arrow keys Pan in the direction of the arrow keys
+  •Ctrl + Alt + D Switch to docked mode
+  •Ctrl + Alt + F Switch to full-screen mode
+  •Ctrl + Alt + I Invert colors
+  •Ctrl + Alt + L Switch to lens mode
+  •Ctrl + Alt + R Resize the lens
+  •Ctrl + Alt + Spacebar Show the mouse pointer
+  •Windows Key + Esc Exit Magnifier
+  •Windows Key + Plus Sign (+) or Minus Sign (-) Zoom in or out
+  Paint Keyboard Shortcuts•Alt Display keytips
+  •Alt + F4 Close a picture and its Paint window
+  •Ctrl + A Select the entire picture
+  •Ctrl + B Bold selected text
+  •Ctrl + C Copy a selection to the Clipboard
+  •Ctrl + E Open the Properties dialog box
+  •Ctrl + G Show or hide gridlines
+  •Ctrl + I Italicize selected text
+  •Ctrl + Minus Sign (-) Decrease the width of a brush, line, or shape outline by one pixel
+  •Ctrl + N Create a new picture
+  •Ctrl + O Open an existing picture
+  •Ctrl + P Print a picture
+  •Ctrl + Page Down Zoom out
+  •Ctrl + Page Up Zoom in
+  •Ctrl + Plus Sign (+) Increase the width of a brush, line, or shape outline by one pixel
+  •Ctrl + R Show or hide the ruler
+  •Ctrl + S Save changes to a picture
+  •Ctrl + U Underline selected text
+  •Ctrl + V Paste a selection from the Clipboard
+  •Ctrl + W Open the Resize and Skew dialog box
+  •Ctrl + X Cut a selection
+  •Ctrl + Y Redo a change
+  •Ctrl + Z Undo a change
+  •Delete Delete a selection
+  •Esc Cancel a selection
+  •F1 Open Paint Help
+  •F10 Display keytips
+  •Shift + F10 Show the current shortcut menu
+  •F11 View a picture in full-screen mode
+  •F12 Save the picture as a new file
+  •Right Arrow Move the selection or active shape right by one pixel
+  •Left Arrow Move the selection or active shape left by one pixel
+  •Down Arrow Move the selection or active shape down by one pixel
+  •Up Arrow Move the selection or active shape up by one pixel
+  Remote Desktop Keyboard Shortcuts•Alt + Delete Display the system menu.
+  •Alt + Home Display the Start menu.
+  •Alt + Insert Cycle through programs in the order that they were started in.
+  •Alt + Page Down Move between programs from right to left.
+  •Alt + Page Up Move between programs from left to right.
+  •Ctrl + Alt + Break Switch between a window and full screen.
+  •Ctrl + Alt + End Display the Windows Security dialog box.
+  •Ctrl + Alt + Minus Sign (-) on numeric keypad Place a copy of the active window, within the client, on the Terminal server clipboard (provides the same functionality as pressing Alt+PrtScn on a local computer).
+  •Ctrl + Alt + Plus Sign (+) on numeric keypad Place a copy of the entire client window area on the Terminal server clipboard (provides the same functionality as pressing PrtScn on a local computer).
+  •Ctrl + Alt + Right Arrow Tab out of the Remote Desktop controls to a control in the host program (for example, a button or a text box). Useful when the Remote Desktop controls are embedded in another (host) program.
+  •Ctrl + Alt + Left Arrow Tab out of the Remote Desktop controls to a control in the host program (for example, a button or a text box). Useful when the Remote Desktop controls are embedded in another (host) program.
+  Taskbar Keyboard Shortcuts •Ctrl + Left Click Use on a grouped pinned taskbar program icon to cycle through the open windows in that group.
+  •Ctrl + Shift + Left Click Use on a pinned taskbar program icon to open another instance of that program with administrator privileges (run as administrator)
+  •Shift + Left Click Use on a pinned taskbar program icon to open another instance of that program.
+  •Shift + Right Click Use on a pinned taskbar program icon to open the context menu for the icon.
+  •Shift + Right Click Use on a grouped icon on the taskbar to open the context menu for the group.
+  •Windows Key + (1 to 0) Opens the pinned taskbar icon that corresponds to the order that they are in from left (1) to right (0) on the taskbar. 0 is for 10.
+  •Windows Key + Alt + (1 to 0) Opens the Jump List of recently accessed items for the program pinned to the taskbar in the position indicated by the number.
+  •Windows Key + Ctrl + (1 to 0) Switches to the last active window of the program pinned to the taskbar in the position indicated by the number
+  •Windows Key + Shift + (1 to 0) Starts a new instance of the program pinned to the taskbar in the position indicated by the number
+  •Windows Key + B Makes the focus on the system tray icons (notification area icons) on the taskbar
+  •Windows Key + T Cycle through programs on the taskbar. Press Enter to open the one selected.
+  •Windows Key + Shift + T Cycle backwards through programs on the taskbar. Press Enter to open the one selected.
+  Windows Explorer Keyboard Shortcuts•Alt + D Select the address bar
+  •Alt + Enter or Alt + Double Click on File Opens the Properties window of the selected item
+  •Alt + P Toggle the preview pane on or off
+  •Alt+Left Arrow View the previous folder
+  •Alt + Right Arrow View the next folder
+  •Alt + Up Arrow Go up one folder level in the path
+  •Back Go back one folder level in the path
+  •Ctrl + E Select the search box
+  •Ctrl + Mouse scroll wheel Change the size and appearance of file and folder icons
+  •Ctrl + N Open a new window
+  •Ctrl + Shift + N Creates a New Folder on the active desktop or in the active Windows Explorer window.
+  •End Display the bottom of the active window
+  •F11 Maximize or minimize the active window
+  •Home Display the top of the active window
+  •Num Lock + Asterisk (*) on numeric keypad Display all subfolders under the selected folder
+  •Num Lock + Plus Sign (+) on numeric keypad Display the contents of the selected folder
+  •Num Lock + Minus Sign (-) on numeric keypad Collapse the selected folder
+  •Left Arrow Collapse the current selection (if it's expanded), or select the parent folder
+  •Right Arrow Display the current selection (if it's collapsed), or select the first subfolder
+  •Shift+Right Click on a file Adds Copy as Path, which copies the path of a file to the clipboard.
+  •Shift+Right-Click on a file Adds extra hidden items to the Send To context menu.
+  •Shift+Right-Click on a folder Adds Open Command Prompt Here to the context menu.
+  Windows Journal Keyboard Shortcuts•Alt + F4 Close a note and its Journal window
+  •Ctrl + A Select all items on a page
+  •Ctrl + C Copy a selection to the Clipboard
+  •Ctrl + Shift + C Display a shortcut menu for column headings in a note list
+  •Ctrl + F Start a basic find
+  •Ctrl + G Go to a page
+  •Ctrl + N Start a new note
+  •Ctrl + O Open a recently used note
+  •Ctrl + P Print a note
+  •Ctrl + S Save changes to a note
+  •Ctrl + V Paste a selection from the Clipboard
+  •Ctrl + Shift + V Move a note to a specific folder
+  •Ctrl + X Cut a selection
+  •Ctrl + Y Redo a change
+  •Ctrl + Z Undo a change
+  •Esc Cancel a selection
+  •Delete Delete a selection
+  •F1 Open Journal Help
+  •F5 Refresh find results or Refresh the note list
+  •F6 Toggle between a note list and a note
+  •F11 View a note in full-screen mode
 Windows Logo Keyboard Shortcuts
-Windows Logo Keyboard Shortcuts
-•Windows Key Open or close the Start menu
-•Windows Key + Pause/Break Opens the System properties window
-•Windows Key + B Moves focus to the program that displayed a message in the Notification Area on the taskbar
-•Ctrl + Windows Key + B Switch focus to the program that displayed a message in the notification area
-•Windows Key + D Toggles to Show Desktop and restore desktop
-•Windows Key + M Minimize all opened windows
-•Windows Key + Shift + M Restore minimized windows to the desktop
-•Windows Key + E Open Window Explorer to Libraries
-•Windows Key + F Open Search window
-•Ctrl + Windows Key + F Search for computers (if you are on a network)
-•Windows Key + G Displays desktop gadgets
-•Windows Key + L Lock your computer or switch users
-•Windows Key + P Displays desktop to projector display presentation switch window.
-•Windows Key + R Open Run command window
-•Windows Key + T Cycle through programs on the taskbar. Press Enter to open the one selected.
-•Windows Key + Shift + T Cycle backwards through programs on the taskbar. Press Enter to open the one selected.
-•Windows Key + Tab Cycle through open windows by using Flip 3D. Release to open the window in the front.
-•Ctrl+Windows Key + Tab Use the tab or left and right arrow keys to cycle through open windows by using Flip 3D. Press enter or click on the first window to open the window in the front.
-•Windows Key + U Open Ease of Access Center
-•Windows Key + X Open Windows Mobility Center
-•Windows Key + Spacebar Press and hold for a Desktop Preview. Also known as Aero Peak.
-•Windows Key + 1 to 0 Opens the program pinned to the taskbar that corresponds to the order that they are in from left (1) to right (0) on the taskbar. 0 is for 10.
-•Ctrl+Windows Key + 1 to 0 Switch to the last active window of the program pinned to the taskbar that corresponds to the order that they are in from left (1) to right (0) on the taskbar. 0 is for 10.
-•Shift + Windows Key + 1 to 0 Start a new instance of the program pinned to the taskbar that corresponds to the order that they are in from left (1) to right (0) on the taskbar. 0 is for 10. If the program is already running, switch to that program.
-•Windows Key + Left Arrow Docks and undocks current active window to the left side of the screen.
-•Windows Key + Shift+ Left Arrow Moves the current active window over one monitor to the left.
-•Windows Key + Right Arrow Docks and undocks current active window to the right side of the screen.
-•Windows Key, Right Arrow, Enter Shutdown
-•Windows Key, Right Arrow, Right Arrow, R Restart
-•Windows Key, Right Arrow, Right Arrow, S Sleep
-•Windows Key, Right Arrow, Right Arrow, W Switch Users
-•Windows Key + Shift+ Right Arrow Moves the current active window over one monitor to the right.
-•Windows Key + Up Arrow Maximizes current active window to full screen.
-•Windows Key + Shift + Up Arrow Maximizes current active window vertically.
-•Windows Key + Shift + Down Arrow Restores vertically maximized current active window back to the way it was before maximized vertically.
-•Windows Key + Down Arrow Minimizes current active window to taskbar.
-•Windows Key + Home Toggles minimize and restore not active open windows.
-•Windows Key + + Zoom in
-•Windows Key + - Zoom out
-•Windows Key + = Open Magnifier
+  •Windows Key               Open or close the Start menu
+  •Windows Key + Pause/Break Opens the System properties window
+  •Windows Key + B           Moves focus to the program that displayed a message in the Notification Area on the taskbar
+  •Ctrl + Windows Key + B    Switch focus to the program that displayed a message in the notification area
+  •Windows Key + D           Toggles to Show Desktop and restore desktop
+  •Windows Key + M           Minimize all opened windows
+  •Windows Key + Shift + M   Restore minimized windows to the desktop
+  •Windows Key + E           Open Window Explorer to Libraries
+  •Windows Key + F           Open Search window
+  •Ctrl + Windows Key + F    Search for computers (if you are on a network)
+  •Windows Key + G           Displays desktop gadgets
+  •Windows Key + L           Lock your computer or switch users
+  •Windows Key + P           Displays desktop to projector display presentation switch window.
+  •Windows Key + R           Open Run command window
+  •Windows Key + T           Cycle through programs on the taskbar. Press Enter to open the one selected.
+  •Windows Key + Shift + T   Cycle backwards through programs on the taskbar. Press Enter to open the one selected.
+  •Windows Key + Tab         Cycle through open windows by using Flip 3D. Release to open the window in the front.
+  •Ctrl+Windows Key + Tab    Use the tab or left and right arrow keys to cycle through open windows by using Flip 3D. Press enter or click on the first window to open the window in the front.
+    •Windows Key + U         Open Ease of Access Center
+  •Windows Key + X           Open Windows Mobility Center
+  •Windows Key + Spacebar    Press and hold for a Desktop Preview. Also known as Aero Peak.
+  •Windows Key + 1 to 0      Opens the program pinned to the taskbar that corresponds to the order that they are in from left (1) to right (0) on the taskbar. 0 is for 10.
+  •Ctrl+Windows Key + 1-0    Switch to the last active window of the program pinned to the taskbar that corresponds to the order that they are in from left (1) to right (0) on the taskbar. 0 is for 10.
+  •Shift + Windows Key + 1-0 Start a new instance of the program pinned to the taskbar that corresponds to the order that they are in from left (1) to right (0) on the taskbar. 0 is for 10. If the program is already running, switch to that program.
+  •Windows Key + Left        Docks and undocks current active window to the left side of the screen.
+  •Windows Key + Shift+ Left Moves the current active window over one monitor to the left.
+  •Windows Key + Right       Docks and undocks current active window to the right side of the screen.
+  •Windows Key Right Enter   Shutdown
+  •Windows Key Right Right   R Restart
+  •Windows Key Right Right   S Sleep
+  •Windows Key Right Right   W Switch Users
+  •Windows Key + Shift+Right Moves the current active window over one monitor to the right.
+  •Windows Key + Up Arrow           Maximizes current active window to full screen.
+  •Windows Key + Shift + Up   Maximizes current active window vertically.
+  •Windows Key + Shift + Down Restores vertically maximized current active window back to the way it was before maximized vertically.
+  •Windows Key + Down         Minimizes current active window to taskbar.
+  •Windows Key + Home         Toggles minimize and restore not active open windows.
+  •Windows Key + +            Zoom in
+  •Windows Key + -            Zoom out
+  •Windows Key + =            Open Magnifier
 Windows Media Center Basic Navigation Keyboard Shortcuts•Alt + Enter Go in or out of full-screen mode
-•Arrow keys Move left, right, up, or down
-•Backspace Go back to previous screen
-•End Go to the last item in list
-•Enter Accept a selection
-•Home Go to the first item in list
-•Windows Key + Alt + Enter Open Media Center or Return to Media Center start screen
+  •Arrow keys Move left, right, up, or down
+  •Backspace Go back to previous screen
+  •End Go to the last item in list
+  •Enter Accept a selection
+  •Home Go to the first item in list
+  •Windows Key + Alt + Enter Open Media Center or Return to Media Center start screen
 Windows Media Center Audio Keyboard Shortcuts•Ctrl + B Go to the beginning of the current song
-•Ctrl + D Display the shortcut menu
-•Ctrl + F Skip to the next song
-•Ctrl + M Go to the Music library page
-•Ctrl + P Pause a song
-•Ctrl + R Rip a CD
-•Ctrl + Shift + F Fast forward a song
-•Ctrl + Shift + P Play a song
-•Ctrl + Shift + S Stop playing a song
-•F8 Mute or unmute volume
-•F9 Turn down volume
-•F10 Turn up volume
+  •Ctrl + D Display the shortcut menu
+  •Ctrl + F Skip to the next song
+  •Ctrl + M Go to the Music library page
+  •Ctrl + P Pause a song
+  •Ctrl + R Rip a CD
+  •Ctrl + Shift + F Fast forward a song
+  •Ctrl + Shift + P Play a song
+  •Ctrl + Shift + S Stop playing a song
+  •F8 Mute or unmute volume
+  •F9 Turn down volume
+  •F10 Turn up volume
 Windows Media Center View Pictures Keyboard Shortcuts•Ctrl + D Display the shortcut menu
-•Ctrl + I Go to pictures
-•Ctrl + P Pause or resume a slide show
-•Ctrl + Shift + P Play a slide show
-•Ctrl + Shift + S Stop a slide show
-•Enter Zoom in on a picture
-•Up Arrow or Left Arrow Skip back to the previous picture
-•Down Arrow or Right Arrow Skip forward to the next picture
+  •Ctrl + I Go to pictures
+  •Ctrl + P Pause or resume a slide show
+  •Ctrl + Shift + P Play a slide show
+  •Ctrl + Shift + S Stop a slide show
+  •Enter Zoom in on a picture
+  •Up Arrow or Left Arrow Skip back to the previous picture
+  •Down Arrow or Right Arrow Skip forward to the next picture
 Windows Media Center Watch & Record TV Keyboard Shortcuts•Ctrl + B Skip back
-•Ctrl + D Display the shortcut menu
-•Ctrl + F Skip forward
-•Ctrl + G Go to the Guide
-•Ctrl + O Go to Recorded TV
-•Ctrl + P Pause or resume live TV or recorded TV
-•Ctrl + R Record a TV Show
-•Ctrl + Shift + B Rewind live TV or recorded TV
-•Ctrl + Shift + F Fast forward live TV or recorded TV
-•Ctrl + Shift + P Resume playing a TV show
-•Ctrl + Shift + S Stop recording or stop playing a TV show
-•Ctrl + Shift + Z Change the screen aspect ratio (zoom)
-•Ctrl + T Go to live TV
-•Page Up - Go to the next channel
-•Page Down - Go to the previous channel
+  •Ctrl + D Display the shortcut menu
+  •Ctrl + F Skip forward
+  •Ctrl + G Go to the Guide
+  •Ctrl + O Go to Recorded TV
+  •Ctrl + P Pause or resume live TV or recorded TV
+  •Ctrl + R Record a TV Show
+  •Ctrl + Shift + B Rewind live TV or recorded TV
+  •Ctrl + Shift + F Fast forward live TV or recorded TV
+  •Ctrl + Shift + P Resume playing a TV show
+  •Ctrl + Shift + S Stop recording or stop playing a TV show
+  •Ctrl + Shift + Z Change the screen aspect ratio (zoom)
+  •Ctrl + T Go to live TV
+  •Page Up - Go to the next channel
+  •Page Down - Go to the previous channel
 Windows Media Center Play DVDs Keyboard Shortcuts •Ctrl + B Go to previous chapter
-•Ctrl + F Go to next chapter
-•Ctrl + P Pause or resume a DVD
-•Ctrl + Shift + A Change the DVD audio selection
-•Ctrl + Shift + B Rewind a DVD
-•Ctrl + Shift + F Fast forward a DVD
-•Ctrl + Shift + M Go to the DVD menu
-•Ctrl + Shift + P Play a DVD
-•Ctrl + Shift + S Stop a DVD
-•Ctrl + Shift + Z Change the screen aspect ratio (zoom)
-Windows Media Center Play Videos Keyboard Shortcuts •Ctrl + B Skip back
-•Ctrl + E Go to Videos
-•Ctrl + F Skip forward
-•Ctrl + P Pause or resume a video
-•Ctrl + Shift + B Rewind a video
-•Ctrl + Shift + F Fast forward a video
-•Ctrl + Shift + P Play a video
-•Ctrl + Shift + S Stop a video
-•Ctrl + Shift + Z Change the screen aspect ratio (zoom)
+  •Ctrl + F Go to next chapter
+  •Ctrl + P Pause or resume a DVD
+  •Ctrl + Shift + A Change the DVD audio selection
+  •Ctrl + Shift + B Rewind a DVD
+  •Ctrl + Shift + F Fast forward a DVD
+  •Ctrl + Shift + M Go to the DVD menu
+  •Ctrl + Shift + P Play a DVD
+  •Ctrl + Shift + S Stop a DVD
+  •Ctrl + Shift + Z Change the screen aspect ratio (zoom)
+  Windows Media Center Play Videos Keyboard Shortcuts •Ctrl + B Skip back
+  •Ctrl + E Go to Videos
+  •Ctrl + F Skip forward
+  •Ctrl + P Pause or resume a video
+  •Ctrl + Shift + B Rewind a video
+  •Ctrl + Shift + F Fast forward a video
+  •Ctrl + Shift + P Play a video
+  •Ctrl + Shift + S Stop a video
+  •Ctrl + Shift + Z Change the screen aspect ratio (zoom)
 Windows Media Player Keyboard Shortcuts•Alt + 1 Video Size 50% in Now Playing or skin mode, with a video playing
-•Alt + 2 Video Size 100% in Now Playing or skin mode, with a video playing
-•Alt + 3 Video Size 200% in Now Playing or skin mode, with a video playing
-•Alt + Enter Full Screen Toggle in Now Playing, skin, or full screen mode
-•Ctrl + 1 Switches to library mode from any mode
-•Ctrl + 2 Switches to skin mode from any mode
-•Ctrl + 3 Switches to player mode from any mode except full screen
-•Ctrl + 7 Add to Play in library mode
-•Ctrl + 8 Add to Burn in library mode
-•Ctrl + 9 Add to Sync in library mode
-•Ctrl + A Selects everything in a list in the library or list
-•Ctrl + B Previous (Item or Chapter) with content playing
-•Ctrl + E Focus on Search text box and switch to library mode if not there
-•Ctrl + F Next (Item or Chapter) with content playing
-•Ctrl + H Turn on/off shuffle mode
-•Ctrl + J Eject in any mode
-•Ctrl + M Toggle menu bar in library in any mode
-•Ctrl + N Create playlist in library mode
-•Ctrl + O Shows Open Dialog in any mode
-•Ctrl + P Play/Pause Toggle with content queued up
-•Ctrl + Q Adds selected track to open list. Default is Play list.
-•Ctrl + S Stops Playback with content playing
-•Ctrl + T Turn on/off repeat mode in any mode
-•Ctrl + U Shows Open URL Dialog in any mode
-•Ctrl + W Stops playback with content playing or paused
-•Ctrl + Shift + B Rewinds playing content with DVD playing
-•Ctrl + Shift + C Caption On/Off Toggle when playing content which has captions
-•Ctrl + Shift + F Fast forwards playing content with content playing
-•Ctrl + Shift + G Play Speed Fast with content playing
-•Ctrl + Shift + N Play Speed Normal with content playing
-•Ctrl + Shift + S Play Speed Slow with content playing
-•Ctrl + Right Arrow Next playlist in playlist history when focus is not on Seek bar
-•Ctrl + Left Arrow Previous playlist in playlist history when focus is not on Seek bar
-•Ctrl + Right Arrow Skip forward (large increment) when focus is on Seek bar
-•Ctrl + Left Arrow Skip backward (large increment) when focus is on Seek bar
-•Shift + Right Arrow Skip forward (small increment) when focus is on Seek bar
-•Shift + Left Arrow Skip backward (small increment) when focus is on Seek bar
-•Right Arrow Skip forward when focus is on Seek bar
-•Left Arrow Skip backward when focus is on Seek bar
-•Ctrl + Click Resize player to image in Now Playing mode
-•Escape Return to Now Playing in Full Screen Mode
-•F1 Opens Help file in any mode
-•F2 Edit meta data column in library mode with an item selected
-•F4 Switch view mode in library mode, focus in list view
-•F5 Refresh screen when focus is on library or in online services
-•F6 Increases album art when focus is in list view
-•Shift + F6 Decreases album art when focus is in list view
-•F7 Mutes sound in any mode
-•F8 Decrease sound volume in any mode
-•F9 Increases sound volume in any mode
-•F10 Show menu bar in library from any mode
-•Shift + F10 Context menu shortcut in any mode
+  •Alt + 2 Video Size 100% in Now Playing or skin mode, with a video playing
+  •Alt + 3 Video Size 200% in Now Playing or skin mode, with a video playing
+  •Alt + Enter Full Screen Toggle in Now Playing, skin, or full screen mode
+  •Ctrl + 1 Switches to library mode from any mode
+  •Ctrl + 2 Switches to skin mode from any mode
+  •Ctrl + 3 Switches to player mode from any mode except full screen
+  •Ctrl + 7 Add to Play in library mode
+  •Ctrl + 8 Add to Burn in library mode
+  •Ctrl + 9 Add to Sync in library mode
+  •Ctrl + A Selects everything in a list in the library or list
+  •Ctrl + B Previous (Item or Chapter) with content playing
+  •Ctrl + E Focus on Search text box and switch to library mode if not there
+  •Ctrl + F Next (Item or Chapter) with content playing
+  •Ctrl + H Turn on/off shuffle mode
+  •Ctrl + J Eject in any mode
+  •Ctrl + M Toggle menu bar in library in any mode
+  •Ctrl + N Create playlist in library mode
+  •Ctrl + O Shows Open Dialog in any mode
+  •Ctrl + P Play/Pause Toggle with content queued up
+  •Ctrl + Q Adds selected track to open list. Default is Play list.
+  •Ctrl + S Stops Playback with content playing
+  •Ctrl + T Turn on/off repeat mode in any mode
+  •Ctrl + U Shows Open URL Dialog in any mode
+  •Ctrl + W Stops playback with content playing or paused
+  •Ctrl + Shift + B Rewinds playing content with DVD playing
+  •Ctrl + Shift + C Caption On/Off Toggle when playing content which has captions
+  •Ctrl + Shift + F Fast forwards playing content with content playing
+  •Ctrl + Shift + G Play Speed Fast with content playing
+  •Ctrl + Shift + N Play Speed Normal with content playing
+  •Ctrl + Shift + S Play Speed Slow with content playing
+  •Ctrl + Right Arrow Next playlist in playlist history when focus is not on Seek bar
+  •Ctrl + Left Arrow Previous playlist in playlist history when focus is not on Seek bar
+  •Ctrl + Right Arrow Skip forward (large increment) when focus is on Seek bar
+  •Ctrl + Left Arrow Skip backward (large increment) when focus is on Seek bar
+  •Shift + Right Arrow Skip forward (small increment) when focus is on Seek bar
+  •Shift + Left Arrow Skip backward (small increment) when focus is on Seek bar
+  •Right Arrow Skip forward when focus is on Seek bar
+  •Left Arrow Skip backward when focus is on Seek bar
+  •Ctrl + Click Resize player to image in Now Playing mode
+  •Escape Return to Now Playing in Full Screen Mode
+  •F1 Opens Help file in any mode
+  •F2 Edit meta data column in library mode with an item selected
+  •F4 Switch view mode in library mode, focus in list view
+  •F5 Refresh screen when focus is on library or in online services
+  •F6 Increases album art when focus is in list view
+  •Shift + F6 Decreases album art when focus is in list view
+  •F7 Mutes sound in any mode
+  •F8 Decrease sound volume in any mode
+  •F9 Increases sound volume in any mode
+  •F10 Show menu bar in library from any mode
+  •Shift + F10 Context menu shortcut in any mode
 WordPad Keyboard Shortcuts•Alt + F4 Close WordPad
-•Ctrl + 1 Set single line spacing
-•Ctrl + 2 Set double line spacing
-•Ctrl + 5 Set line spacing to 1.5
-•Ctrl + A Select the entire document
-•Ctrl + Shift + A Change characters to all capitals
-•Ctrl + B Make selected text bold
-•Ctrl + C Copy a selection to the Clipboard
-•Ctrl + D Insert a Microsoft Paint drawing
-•Ctrl + Delete Delete the next word
-•Ctrl + E Align text center
-•Ctrl + End Move to the end of the document
-•Ctrl + F Find text in a document
-•Ctrl + H Replace text in a document
-•Ctrl + Home Move to the beginning of the document
-•Ctrl + I Italicize selected text
-•Ctrl + J Justify text
-•Ctrl + L Align text left
-•Ctrl + Shift + L Change the bullet style
-•Ctrl + N Create a new document
-•Ctrl + O Open an existing document
-•Ctrl + P Print a document
-•Ctrl + Page Down Move down one page
-•Ctrl + Page Up Move up one page
-•Ctrl + R Align text right
-•Ctrl + S Save changes to a document
-•Ctrl + U Underline selected text
-•Ctrl + V Paste a selection from the Clipboard
-•Ctrl + X Cut a selection
-•Ctrl + Y Redo a change
-•Ctrl + Z Undo a change
-•Ctrl + = Make selected text subscript
-•Ctrl + Shift + = Make selected text superscript
-•Ctrl + Shift + > Increase the font size
-•Ctrl + Shift + < Decrease the font size
-•Ctrl + Left Arrow Move the cursor one word to the left
-•Ctrl + Right Arrow Move the cursor one word to the right
-•Ctrl + Up Arrow Move the cursor to the line above
-•Ctrl + Down Arrow Move the cursor to the line below
-•F1 Open WordPad Help
-•F3 Find the next instance of the text in the Find dialog box
-•F10 Display keytips
-•Shift + F10 Show the current shortcut menu
-•F12 Save the document as a new file
+  •Ctrl + 1 Set single line spacing
+  •Ctrl + 2 Set double line spacing
+  •Ctrl + 5 Set line spacing to 1.5
+  •Ctrl + A Select the entire document
+  •Ctrl + Shift + A Change characters to all capitals
+  •Ctrl + B Make selected text bold
+  •Ctrl + C Copy a selection to the Clipboard
+  •Ctrl + D Insert a Microsoft Paint drawing
+  •Ctrl + Delete Delete the next word
+  •Ctrl + E Align text center
+  •Ctrl + End Move to the end of the document
+  •Ctrl + F Find text in a document
+  •Ctrl + H Replace text in a document
+  •Ctrl + Home Move to the beginning of the document
+  •Ctrl + I Italicize selected text
+  •Ctrl + J Justify text
+  •Ctrl + L Align text left
+  •Ctrl + Shift + L Change the bullet style
+  •Ctrl + N Create a new document
+  •Ctrl + O Open an existing document
+  •Ctrl + P Print a document
+  •Ctrl + Page Down Move down one page
+  •Ctrl + Page Up Move up one page
+  •Ctrl + R Align text right
+  •Ctrl + S Save changes to a document
+  •Ctrl + U Underline selected text
+  •Ctrl + V Paste a selection from the Clipboard
+  •Ctrl + X Cut a selection
+  •Ctrl + Y Redo a change
+  •Ctrl + Z Undo a change
+  •Ctrl + = Make selected text subscript
+  •Ctrl + Shift + = Make selected text superscript
+  •Ctrl + Shift + > Increase the font size
+  •Ctrl + Shift + < Decrease the font size
+  •Ctrl + Left Arrow Move the cursor one word to the left
+  •Ctrl + Right Arrow Move the cursor one word to the right
+  •Ctrl + Up Arrow Move the cursor to the line above
+  •Ctrl + Down Arrow Move the cursor to the line below
+  •F1 Open WordPad Help
+  •F3 Find the next instance of the text in the Find dialog box
+  •F10 Display keytips
+  •Shift + F10 Show the current shortcut menu
+  •F12 Save the document as a new file
+
 http://www.curata.com/blog/content-curation-tools-the-ultimate-list/
 https://www.google.com/search?q=dealing+with+information+overload&gws_rd=ssl
-Spiceworks ticketing emails
