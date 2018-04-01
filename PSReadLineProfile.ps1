@@ -22,10 +22,10 @@ $SaveHistory = (Get-History -count 3000).commandline
 write-warning "History count $((Get-History).count)"
 
 $PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)" -as [double]
-if (!(Get-Module PSReadline -listavailable -ea 0)) {  
+if (!(Get-Module PSReadline -listavailable -ea 0)) {
   $parms = @('-force')
   if ($PSVersionNumber -ge 5.1) { $parms += '-AllowClobber' }
-  Install-Module PSReadline @Parms 
+  Install-Module PSReadline @Parms
 }
 if ( (Get-Module PSReadline -listavailable -ea 0)) {
   Import-Module PSReadLine
@@ -42,10 +42,10 @@ $PSHistory          = "$PSHistoryDirectory\$PSHistoryFileName"
 													$oh -ne $PSHistory) { $oh })
 		$OldHistory += "$(Split-Path $Profile)\$PSHistoryFileName"
 		$OldHistory  = Get-ChildItem $OldHistory -file -ea 0 | Sort-Object -uniq lastwritetime,fullname
-		$null =  $OldHistory | ForEach-Object { 
+		$null =  $OldHistory | ForEach-Object {
 			Get-Content $_ -ea Stop | out-file -append $PSHistory -ea Stop
 			Remove-Item $_ -ea Stop
-		}	
+		}
 		Set-PSReadlineOption -HistorySavePath $PSHistory
 	} catch {
 		$_
@@ -54,7 +54,7 @@ $PSHistory          = "$PSHistoryDirectory\$PSHistoryFileName"
 	} Finally {
 		write-information "HistorySavePath : $((Get-PSReadLineOption).HistorySavePath)"
 	}
-###################	
+###################
 
 <#
 Set-PSReadLineOption     -HistorySearchCursorMovesToEnd
@@ -135,14 +135,14 @@ if ($QuoteMatching) {
     [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
     [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
     if ($selectionStart -ne -1) {    # text selected, sojust quote it without any smarts
-      [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, 
+      [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength,
         $quote + $line.SubString($selectionStart, $selectionLength) + $quote)
-      [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($selectionStart + 
+      [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($selectionStart +
         $selectionLength + 2)
       return
     }
     $ast = $tokens = $parseErrors = $null
-    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$ast, 
+    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$ast,
       [ref]$tokens, [ref]$parseErrors, [ref]$null)
     function FindToken {
       param($tokens, $cursor)
@@ -189,7 +189,7 @@ if ($QuoteMatching) {
       if ($token.Kind -eq [TokenKind]::Generic -or $token.Kind -eq [TokenKind]::Identifier) {
         $end = $token.Extent.EndOffset
         $len = $end - $cursor
-        [Microsoft.PowerShell.PSConsoleReadLine]::Replace($cursor, $len, 
+        [Microsoft.PowerShell.PSConsoleReadLine]::Replace($cursor, $len,
           $quote + $line.SubString($cursor, $len) + $quote)
         [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($end + 2)
       }
@@ -212,7 +212,7 @@ If ($BraceMatching) {
       '['   {      [char]']'  ;               break }
     }
     [Microsoft.PowerShell.PSConsoleReadLine]::Insert("$($key.KeyChar)$closeChar")
-    $line = $cursor = $null   
+    $line = $cursor = $null
     [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line,[ref]$cursor)
     [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor - $retreat)
   }
@@ -303,7 +303,7 @@ Set-PSReadLineKeyHandler -Key Ctrl+Shift+v `
 ##                          -BriefDescription InsertQuotePair `
 ##                          -LongDescription "Insert pair of quotes" `
 ##                          -ScriptBlock {
-##   param($key, $arg)   
+##   param($key, $arg)
 ## }
 
 # Each time you press Alt+', this key handler will change the token
@@ -455,7 +455,7 @@ Set-PSReadLineKeyHandler -Key Alt+j `
                          -ScriptBlock {
   param($key, $arg)
   $global:PSReadLineMarks.GetEnumerator() | ForEach-Object {
-    [PSCustomObject]@{Key = $_.Key; Dir = $_.Value} 
+    [PSCustomObject]@{Key = $_.Key; Dir = $_.Value}
   } | Format-Table -AutoSize | Out-Host
   [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
 }
@@ -474,23 +474,107 @@ Set-PSReadLineOption -CommandValidationHandler {
   }
 }
 
-Set-PSReadLineKeyHandler -Key Alt+'(',Alt+'{',Alt+'[' `
+Set-PSReadLineKeyHandler -Key Alt+'(',Alt+'{',Alt+'[',Alt+'<' `
                          -BriefDescription WrapEOLWithBraces `
                          -LongDescription "Wrap EOL With matching braces" `
                          -ScriptBlock {
   param($key, $arg)
-  $retreat = 1
-  $closeChar = switch ($key.KeyChar) {
-    '(' {      [char]')'  ;               break }
-    '{' { "  $([char]'}')"; $retreat = 2; break }
-    '[' {      [char]']'  ;               break }
+  # $retreat = 1
+  # $closeChar = switch ($key.KeyChar) {
+  #   '(' {      [char]')'  ;               break }
+  #   '{' { "  $([char]'}')"; $retreat = 2; break }
+  #   '[' {      [char]']'  ;               break }
+  # }
+  Switch ($char) {
+    '[' { $Open, $Close  = '['  ,  ']' ; $retreat = 1; break }
+    ']' { $Open, $Close  = '['  ,  ']' ; $retreat = 1; break }
+    '(' { $Open, $Close  = '('  ,  ')' ; $retreat = 1; break }
+    ')' { $Open, $Close  = '('  ,  ')' ; $retreat = 1; break }
+    '{' { $Open, $Close  = '{ ' , ' }' ; $retreat = 2; break }
+    '}' { $Open, $Close  = '{ ' , ' }' ; $retreat = 2; break }
+    '<' { $Open, $Close  = '<# ', ' #>'; $retreat = 3; break }
+    '>' { $Open, $Close  = '<# ', ' #>'; $retreat = 3; break }
   }
-  [Microsoft.PowerShell.PSConsoleReadLine]::Insert("$($key.KeyChar)$closeChar")
-  $line = $cursor = $null   
+
+  [Microsoft.PowerShell.PSConsoleReadLine]::Insert("$($key.KeyChar)$Close")
+  $line = $cursor = $null
   [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line,[ref]$cursor)
   [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor - $retreat)
 }
 
+# WORKING HERE
+Set-PSReadLineKeyHandler -Key Alt+'(',Alt+'{',Alt+'[',Alt+'<' `
+                         -BriefDescription WrapEOLWithBraces `
+                         -LongDescription "Wrap EOL With matching braces" `
+                         -ScriptBlock {
+  param($key, $arg)
+  $char  = $key.KeyChar
+  Switch ($char) {
+    '[' { $Open, $Close  = '['  ,  ']' ; $retreat = 1; break }
+    ']' { $Open, $Close  = '['  ,  ']' ; $retreat = 1; break }
+    '(' { $Open, $Close  = '('  ,  ')' ; $retreat = 1; break }
+    ')' { $Open, $Close  = '('  ,  ')' ; $retreat = 1; break }
+    '{' { $Open, $Close  = '{ ' , ' }' ; $retreat = 2; break }
+    '}' { $Open, $Close  = '{ ' , ' }' ; $retreat = 2; break }
+    '<' { $Open, $Close  = '<# ', ' #>'; $retreat = 3; break }
+    '>' { $Open, $Close  = '<# ', ' #>'; $retreat = 3; break }
+  }
+  $selectionStart = $selectionLength = $line = $cursor = $null
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+  $LeftLine  = $line.SubString(0, [Math]::Max(0,$Cursor))
+  $RightLine = $Line.SubString($Cursor, $Line.Length - $Cursor)
+  if ($selectionStart -ne -1) {
+    [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, 
+      $Open + $line.SubString($selectionStart, $selectionLength) + $Close)
+    [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($selectionStart + $selectionLength + $retreat)
+  } elseif ($line.Length -le $cursor) {
+    [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $line.Length, "$Open$line$Close")
+    [Microsoft.PowerShell.PSConsoleReadLine]::EndOfLine()
+  } else {
+    $Wrapped = "$LeftLine$Open$RightLine$Close"
+    [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $line.Length, $Wrapped)
+    [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($Cursor)
+  }
+}
+
+Set-PSReadLineKeyHandler -Key Alt+')',Alt+'}',Alt+']',Alt+'>' `
+                         -BriefDescription WrapEOLWithBraces `
+                         -LongDescription "Wrap EOL With matching braces" `
+                         -ScriptBlock {
+  param($key, $arg)
+  $char  = $key.KeyChar
+  Switch ($char) {
+    '[' { $Open, $Close  = '['  ,  ']' ; $retreat = 1; break }
+    ']' { $Open, $Close  = '['  ,  ']' ; $retreat = 1; break }
+    '(' { $Open, $Close  = '('  ,  ')' ; $retreat = 1; break }
+    ')' { $Open, $Close  = '('  ,  ')' ; $retreat = 1; break }
+    '{' { $Open, $Close  = '{ ' , ' }' ; $retreat = 2; break }
+    '}' { $Open, $Close  = '{ ' , ' }' ; $retreat = 2; break }
+    '<' { $Open, $Close  = '<# ', ' #>'; $retreat = 3; break }
+    '>' { $Open, $Close  = '<# ', ' #>'; $retreat = 3; break }
+  }
+  $selectionStart = $selectionLength = $line = $cursor = $null
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+  $LeftLine  = $line.SubString(0, [Math]::Max(0, $Cursor))
+  $RightLine = $Line.SubString($Cursor, $Line.Length - $Cursor)
+  if ($selectionStart -ne -1) {
+    [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, 
+      $Open + $line.SubString($selectionStart, $selectionLength) + $Open)
+    [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($selectionStart + $selectionLength + 2)
+  } elseif ($line.Length -le $cursor) {
+    [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $line.Length, "$Open$Line$Close")
+    [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($Cursor+$Retreat)
+  } else {
+    $Wrapped = "$Open$LeftLine$Close$RightLine"
+    [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $line.Length, $Wrapped)
+    [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($Cursor+$Retreat)
+  }
+}
+
+#################
+<#
 # Sometimes you want to get a property of invoke a member on what you've entered so far
 # but you need parens to do that.  This binding will help by putting parens around the current selection,
 # or if nothing is selected, the whole line.
@@ -539,7 +623,7 @@ Set-PSReadLineKeyHandler -Key 'Alt+)' `
     [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($Cursor+2)
   }
 }
-
+#>
 
 Set-PSReadLineKeyHandler -Key '"',"'" `
                          -BriefDescription InsertQuoteSelected `
@@ -568,17 +652,17 @@ Set-PSReadLineKeyHandler -Key '[',']','(',')','{','}','<','>' `
   $char  = $key.KeyChar
   #write-verbose "[$char]"; sleep 2
   Switch ($char) {
-    '[' { $Open = '[';   $Close = ']' ;  break }
-    ']' { $Open = '[';   $Close = ']' ;  break }
-    '(' { $Open = '(';   $Close = ')' ;  break }
-    ')' { $Open = '(';   $Close = ')' ;  break }
-    '{' { $Open = '{ ';  $Close = ' }';  break }
-    '}' { $Open = '{ ';  $Close = ' }';  break }
-    '<' { $Open = '<# '; $Close = ' #>'; break }
-    '>' { $Open = '<# '; $Close = ' #>'; break }
+    '[' { $Open, $Close  = '['  ,  ']' ; break }
+    ']' { $Open, $Close  = '['  ,  ']' ; break }
+    '(' { $Open, $Close  = '('  ,  ')' ; break }
+    ')' { $Open, $Close  = '('  ,  ')' ; break }
+    '{' { $Open, $Close  = '{ ' , ' }' ; break }
+    '}' { $Open, $Close  = '{ ' , ' }' ; break }
+    '<' { $Open, $Close  = '<# ', ' #>'; break }
+    '>' { $Open, $Close  = '<# ', ' #>'; break }
   }
   $Width = $Open.length
-  $Extra = $Width * 2  
+  $Extra = $Width * 2
   $selectionStart = $selectionLength = $line = $cursor = $null
   [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
   [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
@@ -592,7 +676,7 @@ Set-PSReadLineKeyHandler -Key '[',']','(',')','{','}','<','>' `
   }
 }
 
-Set-PSReadLineKeyHandler -Chord 'Alt+|','Alt+%','Ctrl+|,%' `
+Set-PSReadLineKeyHandler -Chord 'Alt+|','Alt+%','Alt+\' `
                          -BriefDescription InsertWhereObject `
                          -LongDescription "Insert Where-Object with scriptblock " `
                          -ScriptBlock {
@@ -605,10 +689,23 @@ Set-PSReadLineKeyHandler -Chord 'Alt+|','Alt+%','Ctrl+|,%' `
     [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, '')
   } else { '' }
   [Microsoft.PowerShell.PSConsoleReadLine]::Insert("| ForEach-Object { $Selection }")
-  [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor + 19 + $Selection.length )
+  [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor + 19 )
+  $line = $cursor = $null
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+  $Length = $Line.Length
+  $Regex2Pipes = '\|\s*\|'                     # Pipe maybe-Spaces Pipe
+  If ($line -match $Regex2Pipes) {             # adjacent Pipes are present 
+    $line = $line -replace $Regex2Pipes, '|'   # replace empty pipe
+    [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $Length, $Line)
+    
+  }
+  [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition([Math]::Min($cursor, $Line.Length - 3 ))
 }
 
-Set-PSReadLineKeyHandler -Chord 'Ctrl+Alt+|','Ctrl+Alt+?','Ctrl+|,?' `
+#	[Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
+#	[Microsoft.PowerShell.PSConsoleReadLine]::Insert($Line)
+
+Set-PSReadLineKeyHandler -Chord 'Ctrl+Alt+|','Ctrl+Alt+?','Ctrl+\','Ctrl+Alt+\' `
                          -BriefDescription InsertForEachObject `
                          -LongDescription "Insert ForEach-Object with scriptblock " `
                          -ScriptBlock {
@@ -620,7 +717,60 @@ Set-PSReadLineKeyHandler -Chord 'Ctrl+Alt+|','Ctrl+Alt+?','Ctrl+|,?' `
     $line.SubString($selectionStart, $selectionLength)
     [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, '')
   } else { '' }
-  [Microsoft.PowerShell.PSConsoleReadLine]::InsertCursorPosition($cursor + $Selection.length )
+  [Microsoft.PowerShell.PSConsoleReadLine]::Insert("| Where-Object { $Selection } ")
+  [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor + 17 )
+  $line = $cursor = $null
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+  $Length = $Line.Length
+  $Regex2Pipes = '\|\s*\|'                     # Pipe maybe-Spaces Pipe
+  If ($line -match $Regex2Pipes) {             # adjacent Pipes are present 
+    $line = $line -replace $Regex2Pipes, '|'   # replace empty pipe
+    [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $Length, $Line)
+    
+  }
+  [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition([Math]::Min($cursor, $Line.Length - 3 ))
+}
+
+###   WORKING HERE
+Set-PSReadLineKeyHandler -Chord 'Ctrl+|,s','Ctrl+|,f','Ctrl+|,o','Ctrl+|,w',
+                                'Ctrl+|,a','Ctrl+|,l','Ctrl+|,t','Ctrl+|,g' `
+                         -BriefDescription InsertPipes `
+                         -LongDescription "Insert Pipe | Select Sort Format" `
+                         -ScriptBlock {
+  param($key, $arg)
+  $Insertion = Switch ($key.KeyChar) {
+    's' { '| Select-Object '              }
+    'f' { '| Select-Object -First 1 '     }
+    'o' { '| Sort-Object '                }
+    'w' { '| Sort-Object LastWriteTime '  }
+    'a' { '| Sort-Object LastAccessTime ' }
+    'l' { '| Sort-Object Length '         }
+    't' { '| Format-Table '               }
+    'g' { '| Select-String '''''          }  # g for Grep
+    default { '{NO MATCH}' }
+  }
+  #[Microsoft.PowerShell.PSConsoleReadLine]::Insert("Key: [$($key.Keychar)] arg: [$arg] Ins: [$Insertion]")
+  [Microsoft.PowerShell.PSConsoleReadLine]::Insert($Insertion)
+  If ($False) {
+    $selectionStart = $selectionLength = $line = $cursor = $null
+    [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
+    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+    $Selection = if ($selectionStart -ne -1) {
+      $line.SubString($selectionStart, $selectionLength)
+      [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, '')
+    } else { '' }
+    [Microsoft.PowerShell.PSConsoleReadLine]::Insert("| Where-Object { $Selection } ")
+    [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor + 17 )
+  }
+  $line = $cursor = $null
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+  $Length = $Line.Length
+  $Regex2Pipes = '\|\s*\|'                     # Pipe maybe-Spaces Pipe
+  If ($line -match $Regex2Pipes) {             # adjacent Pipes are present 
+    $line = $line -replace $Regex2Pipes, '|'   # replace empty pipe
+    [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $Length, $Line)
+  }
+  [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition([Math]::Min($cursor, $Line.Length))
 }
 
 if ($ForcePSReadlineProfile -or $host.Name -match 'ConsoleHost|((ISE|Code) Host)') {
@@ -629,8 +779,8 @@ if ($ForcePSReadlineProfile -or $host.Name -match 'ConsoleHost|((ISE|Code) Host)
     Set-PSReadlineKeyHandler -Key Ctrl+Backspace  -Function BackwardKillWord
     Set-PSReadlineKeyHandler -Key Shift+Backspace -Function BackwardDeleteChar  ### Kill word EVIL ####
     Set-PSReadlineKeyHandler -Key UpArrow         -Function HistorySearchBackward
-    Set-PSReadlineKeyHandler -Key DownArrow       -Function HistorySearchForward    
-    If ($Host.PrivateDate -and $Host.PrivateDate.ErrorBackgroundColor) {  
+    Set-PSReadlineKeyHandler -Key DownArrow       -Function HistorySearchForward
+    If ($Host.PrivateDate -and $Host.PrivateDate.ErrorBackgroundColor) {
       $Host.PrivateData.ErrorBackgroundColor   = $Host.UI.RawUI.BackgroundColor
       $Host.PrivateData.WarningBackgroundColor = $Host.UI.RawUI.BackgroundColor
       $Host.PrivateData.VerboseBackgroundColor = $Host.UI.RawUI.BackgroundColor
@@ -638,14 +788,14 @@ if ($ForcePSReadlineProfile -or $host.Name -match 'ConsoleHost|((ISE|Code) Host)
       $Host.PrivateData.ErrorBackgroundColor   = 'Black'
       $Host.PrivateData.WarningBackgroundColor = 'Black'
       $Host.PrivateData.VerboseBackgroundColor = 'Black'
-      
+
       $Host.PrivateData.ErrorBackgroundColor   = 'DarkRed'
       $Host.PrivateData.ErrorForegroundColor   = 'White'
       $Host.PrivateData.VerboseBackgroundColor = 'Black'
       $Host.PrivateData.VerboseForegroundColor = 'Yellow'
       $Host.PrivateData.WarningBackgroundColor = 'Black'
       $Host.PrivateData.WarningForegroundColor = 'White'
-    }  
+    }
 }
 
 if (Get-Module PSReadline) {
@@ -665,30 +815,30 @@ if (Get-Module PSReadline) {
 }
 
 
-<#        
+<#
         function prompt {
            $c = [ConsoleColor]::Cyan
            $l = [ConsoleColor]::DarkCyan
            $b = [ConsoleColor]::Gray
            $h = [ConsoleColor]::DarkGray
- 
+
            $gls = $($(Get-Location) -Split '\\')
            $drv = $gls[0]
            $fol = $gls[-1]
            $lvl = $gls.Count -2
- 
+
            Write-Host '[' -n -f $b
            Write-Host $(Get-History).Count -n -f $h
            Write-Host '] ' -n -f $b
- 
+
            Write-Host $drv -n -f $l
            Write-Host '\' -n -f $c
-           
-           for ($i = 1;$i -le $lvl;$i++) { 
+
+           for ($i = 1;$i -le $lvl;$i++) {
               Write-Host '..' -n -f $l
               Write-Host '\' -n -f $c
            }
-           
+
            Write-Host $fol -n -f $l
            Write-Host ' >' -n -f $c
            Return ' '

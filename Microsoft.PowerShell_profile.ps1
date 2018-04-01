@@ -712,6 +712,8 @@ $j2        = "$($ecs):32795"
 $ts1       = "ecs-DCts01"
 $ts2       = "ecs-DCts02"
 
+# Join-Path 'C:\Util','c:\Program*\*','C:\ProgramData\chocolatey\bin\','T:\Programs\Tools\Util','T:\Programs\Util','S:\Programs\Tools\Util','S:\Programs\Util' 'NotePad++.exe' -resolve -ea 0
+
 Function New-RDPSession {
   param(
     [Alias('Remote','Target','Server')]$ComputerName,
@@ -724,6 +726,8 @@ Function New-RDPSession {
   $argX += '/prompt'
   if ($NoProfileFile) { mstsc /v:$ComputerName /w:$Width /Get-History:$Height @argX }
   else                { mstsc /v:$ComputerName $Path @argX }
+  # PsExec64.exe -h \\REMOTECOMPUTER qwinsta | find "Active"
+  # runas /noprofile /netonly /user:"DOMAIN\USERNAME" "mstsc /v:REMOTECOMPUTER /shadow:14 /control"
 } New-Alias RDP New-RDPSession -force
 
 if ($AdminEnabled -and (get-command 'ScreenSaver.ps1' -ea 0)) { ScreenSaver.ps1 }
