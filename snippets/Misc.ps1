@@ -20,6 +20,18 @@
 #Mobile site: https://regular-expressions.mobi/?id=113400&email=HerbMartin@Gmail.com
 # Regular-ExpressionsInfo*.pdf
 
+<#
+get-psreadlinekeyhandler | ? key -eq unbound
+get-psreadlinekeyhandler | ? command -match history
+get-psreadlinekeyhandler | ? function -match history
+get-psreadlinekeyhandler | ? key -match r\b
+Set-PSReadlineKeyHandler 'Alt+r' ViSearchHistoryBackward
+get-psreadlinekeyhandler | more
+w '$Path:*' |more
+foreach ($ext in @("$($env:pathext)" -split ';') ) {w "*$ext" 2>$null >>t.txt } 
+cl  @((224..229) + 257,266)
+#>
+
 new-alias kp 'C:\Program Files (x86)\KeePass2\KeePass.exe' -force -scope Global
 function Group-Error {
   [CmdletBinding()]param(
