@@ -1292,6 +1292,37 @@ Function Global:prompt {
   ' '   # Make normal background SPACE and give PS something to show
 }
 
+<#
+# https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_prompts?view=powershell-6
+
+function prompt {
+  $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+  $principal = [Security.Principal.WindowsPrincipal] $identity
+
+  $(if (test-path variable:/PSDebugContext) { '[DBG]: ' }
+    elseif($principal.IsInRole([Security.Principal.WindowsBuiltInRole]
+      "Administrator")) { "[ADMIN]: " }
+    else { '' }
+  ) + 'PS ' + $(Get-Location) +
+    $(if ($nestedpromptlevel -ge 1) { '>>' }) + '> '
+}
+
+function prompt {   # displays the history ID of the next command
+   # The at sign creates an array in case only one history item exists.
+   $history = @(get-history)
+   if($history.Count -gt 0)
+   {
+      $lastItem = $history[$history.Count - 1]
+      $lastId = $lastItem.Id
+   }
+
+   $nextCommand = $lastId + 1
+   $currentDirectory = get-location
+   "PS: $nextCommand $currentDirectory >"
+}
+# Debuggers https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_debuggers?view=powershell-6
+
+#>
 Function Global:prompt {
   If (!(Get-Variable MaxPromptLength -ea 0 2>$Null)) { $MaxPromptLength = 45 }
   $Location = "$($executionContext.SessionState.Path.CurrentLocation)"

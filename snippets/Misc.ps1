@@ -30,6 +30,19 @@ get-psreadlinekeyhandler | more
 w '$Path:*' |more
 foreach ($ext in @("$($env:pathext)" -split ';') ) {w "*$ext" 2>$null >>t.txt } 
 cl  @((224..229) + 257,266)
+
+Sub WriteCSVFile()
+  Dim i As Integer
+  Dim WS_Count As Integer
+  WS_Count = ActiveWorkbook.Worksheets.Count
+  For i = 1 To WS_Count
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Worksheets(i)
+    PathName = "" & ThisWorkbook.Path & "\" & ws.Name & ".csv"
+    ws.Copy
+    ActiveWorkbook.SaveAs Filename:=PathName, FileFormat:=xlCSV, CreateBackup:=False
+  Next i
+End Sub
 #>
 
 new-alias kp 'C:\Program Files (x86)\KeePass2\KeePass.exe' -force -scope Global
