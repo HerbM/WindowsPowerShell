@@ -1288,8 +1288,23 @@ Function Global:prompt {
       $Excess = [Math]::Min($Excess, $LocLen)    
     }
   }
-  write-host -nonewline "'$Loc'$Sig" -fore Cyan -back DarkGray`
-  ' '
+  write-host -nonewline "'$Loc'$Sig" -fore Cyan -back DarkGray
+  ' '   # Make normal background SPACE and give PS something to show
+}
+
+Function Global:prompt {
+  If (!(Get-Variable MaxPromptLength -ea 0 2>$Null)) { $MaxPromptLength = 45 }
+  $Location = "$($executionContext.SessionState.Path.CurrentLocation)"
+  $Sigil  = ">$('>' * $nestedPromptLevel)" -replace '>$', '#>'
+  $Prompt = "$Location $Sigil"
+  $Length = $Prompt.Length    
+  If ($False -and ($Length + 5) -gt $MaxPromptLength) {
+    $Excess = $Length - $MaxPromptLength
+    $Prompt = $Prompt.SubString(0,2) + $Prompt.SubString($Excess+5, $MaxPromptLength+5)
+  }
+  $Prompt = "<# $Prompt"
+  write-host -nonewline $Prompt -fore Cyan -back DarkGray
+  ' '   # Make normal background SPACE and give PS something to show
 }
 
 Function Show-ConsoleColor {

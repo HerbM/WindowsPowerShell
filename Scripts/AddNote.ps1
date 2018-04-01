@@ -5,7 +5,7 @@
   Very simple start to adding notes to a text file but it's functional
 .Example 
   New-Note "Pickup milk on way home" ToDo
-.Parameter Content
+.Parameter Message
   Text note(s) to add to file
 .Parameter Category
   Category for filing - note will be added with each category
@@ -21,14 +21,14 @@
 #>
 Function New-Note {
   [CmdletBinding()]param(
-    [string[]]$Content,
+    [Alias('Content'][string[]]$Message,
     [string[]]$Category=@('Remember'),
-    [string[]]$Path=@("$Home\Notes.txt"),
+    [Alias('File','FullName')][string[]]$Path=@("$Home\Notes.txt"),
     [string]  $Configuration = "$Home\Categories.txt"
   )
   $Standard  = @('Remember','ToDo','Fun','Learn','PowerShell','FP') + 
                  (Import-CSV $Configuration -ea 0 | % { $_.Category } | select -uniq )
-  $Content = $Content | % { $_ -split "`n" }
+  $Message = $Message | % { $_ -split "`n" }
   $Date = Get-Date -f 's'
   $Category = $Category | % { 
     $Found = $Standard -match $_ 
@@ -36,11 +36,11 @@ Function New-Note {
   }
   ForEach ($File in $Path) {
     ForEach ($Cat in $Category) {
-      ForEach ($Line in $Content) {
+      ForEach ($Line in $Message) {
         $Out = [pscustomobject]@{
           DateTime = $Date -f 's'
           Category = $Cat
-          Content  = $Line
+          Message  = $Line
         }
         $Out | Export-Csv $File -append -notype
         $Out | Format-Table -HideTableHeader
