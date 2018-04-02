@@ -713,21 +713,28 @@ $ts1       = "ecs-DCts01"
 $ts2       = "ecs-DCts02"
 
 # Join-Path 'C:\Util','c:\Program*\*','C:\ProgramData\chocolatey\bin\','T:\Programs\Tools\Util','T:\Programs\Util','S:\Programs\Tools\Util','S:\Programs\Util' 'NotePad++.exe' -resolve -ea 0
+# PsExec64.exe -h \\REMOTECOMPUTER qwinsta | find "Active"
+# runas /noprofile /netonly /user:"DOMAIN\USERNAME" "mstsc /v:REMOTECOMPUTER /shadow:14 /control"
 
 Function New-RDPSession {
-  param(
+  [CmdLetBinding()]param(
     [Alias('Remote','Target','Server')]$ComputerName,
     [Alias('ConnectionFile','File','ProfileFile')]$path='c:\bat\good.rdp',
     [int]$Width=1350, [int]$Height:730,
-    [Alias('NoConnectionFile','NoFile','NoPath')][switch]$NoProfileFile
+    [Alias('NoConnectionFile','NoFile','NoPath')][switch]$NoProfileFile,
+    [Parameter(ValueFromRemainingArguments=$true)][string[]]$RemArgs,
+    [Alias('Assist')][switch]$Control,
+    [Alias('Watch')]$Shadow
   )
   If (!(Test-Path $Path)) { $NoProfileFile = $False }
   $argX = $args
-  $argX += '/prompt'
+  # $argX += '/prompt'
+  If (!$NoProfileFile -and (!(Test-Path $Path))) {
+    Write-Warning 'RDP Profile not found: $Path'
+    $NoProfile = $True
+  }
   if ($NoProfileFile) { mstsc /v:$ComputerName /w:$Width /Get-History:$Height @argX }
   else                { mstsc /v:$ComputerName $Path @argX }
-  # PsExec64.exe -h \\REMOTECOMPUTER qwinsta | find "Active"
-  # runas /noprofile /netonly /user:"DOMAIN\USERNAME" "mstsc /v:REMOTECOMPUTER /shadow:14 /control"
 } New-Alias RDP New-RDPSession -force
 
 if ($AdminEnabled -and (get-command 'ScreenSaver.ps1' -ea 0)) { ScreenSaver.ps1 }
@@ -835,7 +842,18 @@ Function Get-WinStaSession {
     if ($Session) { Set-DefaultPropertySet $Session @('Current','UserName','ID','State')}     
   }
 }
-
+New-Alias ws  Get-WinStaSession -force -scope Global
+New-Alias gws Get-WinStaSession -force -scope Global
+function Get-CommandPath { 
+  [CmdletBinding()]param(
+    [Alias('Clean')][switch]$Unique,
+    [Alias('Test')][switch]$Resolve
+  )
+  $paths = $Env:path -split ';' | Select -Unique:$Unique
+  If ($Resolve) { 
+    Resolve-Path $Paths 
+  } else { $Paths } 
+}
 #################################################################
 
 $InformationPreference = 'continue'

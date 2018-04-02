@@ -17,6 +17,8 @@ CodeManager for PowerShell Snippets
 SearchFileCmdlet_fs
 https://blogs.msdn.microsoft.com/fsharpteam/2012/10/03/rethinking-findstr-with-f-and-powershell/
 
+https://patrick6649.files.wordpress.com/2018/03/ad_final.zip PowerShell menu tool
+
 High Performance PowerShell with LINQ  https://www.red-gate.com/simple-talk/dotnet/net-framework/high-performance-powershell-linq/
 
 LiveEdu.tv Live Coding vs. Twitch (gaming)  Troop editor LiveCode.com
