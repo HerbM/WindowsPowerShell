@@ -1,4 +1,11 @@
+
 <#
+
+DeDuplicate History
+(gc $PSHistory | measure) | Select count 
+(gc $PSHistory | select -unique) | out-file $PSHistory
+(gc $PSHistory | measure) Select count
+
 VMWare Key 5003J-6UJ4J-N8288-0V9A2-29GNM  VCenter VSphere VRealize???
 
 CodeManager for PowerShell Snippets 

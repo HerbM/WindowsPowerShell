@@ -734,6 +734,30 @@ if ($AdminEnabled -and (get-command 'ScreenSaver.ps1' -ea 0)) { ScreenSaver.ps1 
 
 <# Testing ideas #>
 
+Function Merge-Object {
+  Param (
+    [Parameter(mandatory=$true)]$Object1, 
+    [Parameter(mandatory=$true)]$Object2  
+  )
+  foreach ($Prop in ($Object2 | gm -membertype *property)) {
+    $Object1 | 
+      Add-Member -MemberType NoteProperty -Name $Prop.name -Value $Object2.$($Prop.name) -ea 0
+  }
+  $Object1
+}
+
+Function Get-ServiceProcess {      # ToDo add params for ID,Name to find
+  $Processes = Get-Process
+  $Services  = Get-WMIObject Win32_Service  
+  $Services | ForEach-Object { 
+    $Service = $_; 
+    $Processes                               | 
+      Where-Object ID -eq $Service.ProcessID | 
+      Select -First 1                        | 
+      ForEach-Object { Merge-Object $_ $Service } 
+  } | Select-Object ID,State, Status,Name,Path
+}
+
 Function Get-HelpLink {
   $args
   "Args: $($args.count) $($args.gettype())"

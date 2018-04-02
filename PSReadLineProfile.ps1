@@ -545,29 +545,32 @@ Set-PSReadLineKeyHandler -Key Alt+')',Alt+'}',Alt+']',Alt+'>' `
   param($key, $arg)
   $char  = $key.KeyChar
   Switch ($char) {
-    '[' { $Open, $Close  = '['  ,  ']' ; $retreat = 1; break }
-    ']' { $Open, $Close  = '['  ,  ']' ; $retreat = 1; break }
-    '(' { $Open, $Close  = '('  ,  ')' ; $retreat = 1; break }
-    ')' { $Open, $Close  = '('  ,  ')' ; $retreat = 1; break }
-    '{' { $Open, $Close  = '{ ' , ' }' ; $retreat = 2; break }
-    '}' { $Open, $Close  = '{ ' , ' }' ; $retreat = 2; break }
-    '<' { $Open, $Close  = '<# ', ' #>'; $retreat = 3; break }
-    '>' { $Open, $Close  = '<# ', ' #>'; $retreat = 3; break }
+    '[' { $Open, $Close  = '['  ,  ']' ; $retreat = 1; $IsClose = $False; break }
+    ']' { $Open, $Close  = '['  ,  ']' ; $retreat = 1; $IsClose = $True;  break }
+    '(' { $Open, $Close  = '('  ,  ')' ; $retreat = 1; $IsClose = $False; break }
+    ')' { $Open, $Close  = '('  ,  ')' ; $retreat = 1; $IsClose = $True;  break }
+    '{' { $Open, $Close  = '{ ' , ' }' ; $retreat = 2; $IsClose = $False; break }
+    '}' { $Open, $Close  = '{ ' , ' }' ; $retreat = 2; $IsClose = $True;  break }
+    '<' { $Open, $Close  = '<# ', ' #>'; $retreat = 3; $IsClose = $False; break }
+    '>' { $Open, $Close  = '<# ', ' #>'; $retreat = 3; $IsClose = $True;  break }
   }
   $selectionStart = $selectionLength = $line = $cursor = $null
-  [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, 
+                                                              [ref]$selectionLength)
   [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
   $LeftLine  = $line.SubString(0, [Math]::Max(0, $Cursor))
   $RightLine = $Line.SubString($Cursor, $Line.Length - $Cursor)
   if ($selectionStart -ne -1) {
     [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selectionStart, $selectionLength, 
-      $Open + $line.SubString($selectionStart, $selectionLength) + $Open)
-    [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($selectionStart + $selectionLength + 2)
+      $Open + $line.SubString($selectionStart, $selectionLength) + $Close)
+    [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($selectionStart  + 
+                                                                $selectionLength + 2)
   } elseif ($line.Length -le $cursor) {
     [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $line.Length, "$Open$Line$Close")
     [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($Cursor+$Retreat)
   } else {
-    $Wrapped = "$Open$LeftLine$Close$RightLine"
+    $Wrapped = If ($IsClose) { "$Open$LeftLine$Close$RightLine" } 
+    else                     { "LeftLine$Open$$RightLine$Close" }  
     [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $line.Length, $Wrapped)
     [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($Cursor+$Retreat)
   }
