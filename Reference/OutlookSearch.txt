@@ -1,0 +1,81 @@
+bobby more   bobby AND moore
+bobby NOT moore
+bobby OR moore        Items containing bobby, moore, or both.
+"bobby moore"         Items containing the exact phrase bobby moore. To search for an exact string, you must use quotation marks.
+from:"bobby moore"    Items sent from bobby moore. Note the use of double quotes so that the search results match the exact phrase within the quotes.
+from:"bobby moore" about:”status report”  subject line, body, and attachment contents. Note the use of double quotes so that the search results match the exact phrase within the quotes.
+hasattachment:yes  hasattachment:true
+attachments:presentation.pptx  Items that have attachments named presentation.pptx or presentation.pptx within attachment contents.
+subject:"bobby moore" Items whose subject contains the phrase bobby moore.
+subject:bobby moore   Items with bobby in the subject line and with moore anywhere else in the document.
+cc:"bobby moore"      Items in which the display name bobby moore is on the Cc line.
+cc:bobbymoore@contoso.com  Items in which the e-mail address bobbymoore@contoso.com is on the Cc line.
+bcc:bobby                  Items in which bobby is on the Bcc line.
+category:red               Items that contain a category name that includes the word red. For example "Red category" or "Redo" or "Redundant."
+messagesize:<10 KB         Items whose size is less than 10 kilobytes. Note the use of the "less than" comparison operator (<).
+messagesize:>5 MB          Items whose size is larger than 5 megabytes. Note the use of the "greater than" comparison operator (>).
+received:=1/1/2016         Items that arrived on 1/1/2016. Note the use of the "equals" comparison operator (=).
+received:yesterday         Items that arrived yesterday. Instant Search also recognizes the follow date values:
+                           Relative dates: For example, today, tomorrow, yesterday
+                           Multi-word relative dates:    For example, this week, next month, 
+                           last week, past month, coming year
+                           Days:     Sunday, Monday ... Saturday
+                           Months:     January, February ... December 
+received:last week         Items that arrived last week. Note that if you run this 
+                           query again a month from now you will obtain different 
+                           results because it is a time relative query.
+due:last week              Items that are flagged for follow up a due date.
+messagesize:tiny           Items whose size is less than 10 kilobytes
+messagesize:small          Items whose size is between 10 and 25 kilobytes
+messagesize:medium         Items whose size is between 25 and 100 kilobytes
+messagesize:large          Items whose size is between 100 and 500 kilobytes
+messagesize:verylarge      Items whose size is between 500 kilobytes and 1 megabyte
+messagesize:enormous       Items whose size is larger than 5 megabytes
+followupflag:follow up     Items that are flagged for follow up.
+hasflag:true               Items that are flagged for follow up.
+from:bobby (received:1/7/17 OR received:1/8/17)
+                           Items from bobby that arrived on either 1/7/17 or 1/8/17. 
+                           Note the use of parentheses to group the dates.
+received:>=10/1/16 AND received:<=10/5/16  Items that arrived between 10/1/16 and 10/5/16.
+received:>10/1/16 AND received:<10/5/16    Items that arrived after 10/1/16 but before 10/5/16.
+sent: yesterday            Items that you sent yesterday.
+to:bobby                   Items that you sent to bobby when you are searching in 
+                           the Sent Items folder.
+read:no                    Items that have not been read. You can also use 
+read:false                 to get the same results.
+subject:status received:May Items received from anyone during the month of May (any year) 
+                            where the subject contains status.
+startdate:next week subject:status  Calendar items next week where the subject contains status.
+is:recurring                Calendar items that are recurring.
+organizer:bobby             Calendar items where bobby is the organizer.
+category:business           Items that are categorized as business.
+firstname:bobby             Contacts that contain bobby in the First Name field.
+lastname:moore              Contacts that contain moore in the Last Name field.
+nickname:bobby              Contacts that contain bobby in the Nickname field.
+jobtitle:physician          Contacts that contain physician in the Job Title field.
+businessphone:555-0100      Contacts that contain 555-0100 in the Business Phone field.
+homephone:555-0100          Contacts that contain 555-0100 in the Home Phone field.
+mobilephone:555-0100        Contacts that contain 555-0100 in the Mobile Phone field.
+businessfax:555-0100        Contacts that contain 555-0100 in the Business Fax field.
+businessaddress:(4567 Main St., Buffalo, NY 98052)  Contacts that contain 4567 Main St., Buffalo, NY 98052 in the Business Address field. 
+                                                    Note the use of parentheses to enclose the address.
+homeaddress:(4567 Main St., Buffalo, NY 98052) Contacts that contain 4567 Main St., Buffalo, NY 98052 in the Home Address field. 
+                                               Note the use of parentheses to enclose the address.
+businesscity:buffalo        Contacts that contain buffalo in the Business City field.
+businesspostalcode:98052    Contacts that contain 98052 in the Business Postal Code field.
+
+street:(4567 Main St)
+
+Contacts that contain 4567 Main St in the Business Address Street field. Note the use of parentheses to enclose the address.
+
+homestreet:(4567 Main St)
+
+Contacts that contain 4567 Main St in the Home Address Street field. Note the use of parentheses to enclose the address.
+
+birthday:6/4/1960
+
+Contacts that contain 6/4/1960 in the Birthday field.
+
+webpage:www.contoso.com
+
+Contacts that contain the URL www.contoso.com in the Web Page Address field.

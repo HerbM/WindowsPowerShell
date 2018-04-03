@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252" ?>
 <NotepadPlus>
     <!-- The History of opened files list -->
-    <FindHistory nbMaxFindHistoryPath="10" nbMaxFindHistoryFilter="10" nbMaxFindHistoryFind="10" nbMaxFindHistoryReplace="10" matchWord="no" matchCase="no" wrap="yes" directionDown="yes" fifRecuisive="yes" fifInHiddenFolder="no" dlgAlwaysVisible="no" fifFilterFollowsDoc="no" fifFolderFollowsDoc="no" searchMode="1" transparencyMode="1" transparency="150" dotMatchesNewline="no">
+    <FindHistory nbMaxFindHistoryPath="10" nbMaxFindHistoryFilter="10" nbMaxFindHistoryFind="10" nbMaxFindHistoryReplace="10" matchWord="no" matchCase="no" wrap="yes" directionDown="yes" fifRecuisive="yes" fifInHiddenFolder="no" dlgAlwaysVisible="no" fifFilterFollowsDoc="no" fifFolderFollowsDoc="no" searchMode="0" transparencyMode="1" transparency="150" dotMatchesNewline="no" isSearch2ButtonsMode="no">
         <Filter name="" />
         <Filter name="" />
         <Filter name="" />
@@ -10,16 +10,17 @@
         <Filter name="" />
         <Filter name="" />
         <Filter name="" />
-        <Find name="prompt" />
-        <Find name="itadder" />
-        <Find name="ApiVersion" />
-        <Find name="\s*" />
-        <Find name="github" />
-        <Find name="psreadline.*history" />
-        <Find name="history" />
-        <Find name="&lt;&lt;&lt;&lt;&lt;&lt;|&gt;&gt;&gt;&gt;&gt;|======" />
-        <Find name="login" />
-        <Find name="&#x000D; {" />
+        <Filter name="" />
+        <Find name="..." />
+        <Find name="ec2current" />
+        <Find name="cmdagent" />
+        <Find name="make-credential" />
+        <Find name="get-service m" />
+        <Find name="remaining" />
+        <Find name="rdp" />
+        <Find name="get-winstasession" />
+        <Find name="&apos;}&apos;" />
+        <Find name="insert" />
         <Replace name=" {" />
         <Replace name="  " />
         <Replace name="where.exe git.exe 2&gt;$Null" />
@@ -51,6 +52,7 @@
         <File filename="C:\Users\A469526\Downloads\CalcF.ps1" />
         <File filename="C:\books\sf\Lists.v" />
         <File filename="C:\Users\A469526\AppData\Local\Temp\Misc.ps1_LastSave1" />
+        <File filename="C:\Program Files\WindowsPowerShell\Modules\MySQL\MySQL.psm1" />
     </History>
     <GUIConfigs>
         <GUIConfig name="ToolBar" visible="yes">small</GUIConfig>
@@ -59,7 +61,7 @@
         <GUIConfig name="ScintillaViewsSplitter">vertical</GUIConfig>
         <GUIConfig name="UserDefineDlg" position="undocked">hide</GUIConfig>
         <GUIConfig name="TabSetting" replaceBySpace="yes" size="2" />
-        <GUIConfig name="AppPosition" x="161" y="2" width="1187" height="723" isMaximized="no" />
+        <GUIConfig name="AppPosition" x="24" y="2" width="1238" height="714" isMaximized="no" />
         <GUIConfig name="noUpdate" intervalDays="15" nextUpdateDate="20180415">no</GUIConfig>
         <GUIConfig name="Auto-detection">yes</GUIConfig>
         <GUIConfig name="CheckHistoryFiles">no</GUIConfig>
@@ -93,13 +95,13 @@
         <GUIConfig name="searchEngine" searchEngineChoice="2" searchEngineCustom="" />
         <GUIConfig name="SmartHighLight" matchCase="no" wholeWordOnly="no" useFindSettings="yes" onAnotherView="no">yes</GUIConfig>
         <GUIConfig name="ScintillaPrimaryView" lineNumberMargin="show" bookMarkMargin="show" indentGuideLine="show" folderMarkStyle="box" lineWrapMethod="aligned" currentLineHilitingShow="show" scrollBeyondLastLine="no" disableAdvancedScrolling="no" wrapSymbolShow="hide" Wrap="no" borderEdge="yes" edge="no" edgeNbColumn="100" zoom="0" zoom2="0" whiteSpaceShow="hide" eolShow="hide" borderWidth="2" smoothFont="yes" />
-        <GUIConfig name="DockingManager" leftWidth="200" rightWidth="151" topHeight="200" bottomHeight="203">
+        <GUIConfig name="DockingManager" leftWidth="200" rightWidth="151" topHeight="200" bottomHeight="190">
             <PluginDlg pluginName="Notepad++::InternalFunction" id="44084" curr="1" prev="-1" isVisible="yes" />
-            <PluginDlg pluginName="NppExec.dll" id="2" curr="3" prev="-1" isVisible="yes" />
+            <PluginDlg pluginName="dummy" id="0" curr="3" prev="-1" isVisible="yes" />
+            <PluginDlg pluginName="NppExec.dll" id="2" curr="3" prev="-1" isVisible="no" />
             <PluginDlg pluginName="XPatherizerNPP" id="1" curr="1" prev="-1" isVisible="no" />
             <PluginDlg pluginName="ComparePlugin.dll" id="11" curr="1" prev="-1" isVisible="no" />
             <PluginDlg pluginName="XPatherizerNPP" id="0" curr="2" prev="-1" isVisible="no" />
-            <PluginDlg pluginName="dummy" id="0" curr="3" prev="-1" isVisible="yes" />
             <PluginDlg pluginName="ComparePlugin.dll" id="9" curr="1" prev="-1" isVisible="no" />
             <PluginDlg pluginName="Notepad++::InternalFunction" id="42052" curr="1" prev="-1" isVisible="no" />
             <ActiveTabs cont="0" activeTab="-1" />

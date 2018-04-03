@@ -146,3 +146,64 @@ function Get-AllInterfaceNames {
   $connected    = $interface | ? {$_ -match 'Enabled\s+Conn'}
 }
 
+
+#$UserName  = ‘DCSAdmin’  # presumes you aren’t using a domain account
+#$SecString = Read-Host –AsSecureString –Prompt "Enter password (will be masked with *****"
+
+$sb = [scriptblock]::Create(@'
+  $file = dir 'c:\HealthCheck_Windows\Standard Tools\McAfee2018\FramePkg.exe'
+  $CmdAgent = (dir 'c:\program files\mcafee\agent\cmdagent').FullName  
+  $LastPolicyUpdateTime = $(
+    &$CmdAgent -i
+  ) -match 'LastPolicyUpdateTime:\s+(.*)' | ? { $_ } | % { 
+    $_ -replace 'LastPolicyUpdateTime:\s+' 
+  }  
+  get-service m[acf][acefst]* | Start-Service
+  [pscustomobject]@{
+    ComputerName         = hostname
+    Services             = (get-service m[acf][acefst]*) -join ','
+    Length               = $file.Length
+    LastWriteTime        = $file.lastwritetime -f 's'
+    LastPolicyUpdateTime = $LastPolicyUpdateTime
+    AdminRole            = Get-AdminRole 
+    FileName             = $file.name
+  }
+'@)
+$Servers = (gc t.txt).trim()
+$Servers = ,'127.0.0.1'
+$services = $Servers | ? { $_ } | ForEach-Object { 
+  get-service m[acf][acefst]*) | Start-Service
+  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $Username,$SecString
+  invoke-command -computer $_ -script $sb 
+} 
+$Services | ft
+
+$UserName  = ‘DCSAdmin’  # presumes you aren’t using a domain account
+$SecString = Read-Host –AsSecureString –Prompt "Enter password (will be masked with *****"
+$sb = [scriptblock]::Create(@'
+  $file = dir 'c:\HealthCheck_Windows\Standard Tools\McAfee2018\FramePkg.exe'
+  $CmdAgent = (dir 'c:\program files\mcafee\agent\cmdagent.exe').FullName  
+  $LastPolicyUpdateTime = & $CmdAgent -i | ? { 
+    $_ -match 'LastPolicyUpdateTime:\s+' } | % {
+    $_ -replace '(LastPolicyUpdateTime:\s+)'
+  }
+  get-service m[acf][acefst]* | Start-Service
+  [pscustomobject]@{
+    ComputerName         = hostname
+    Services             = (get-service m[acf][acefst]*) -join ','
+    Length               = $file.Length
+    LastWriteTime        = $file.lastwritetime -f 's'
+    LastPolicyUpdateTime = $LastPolicyUpdateTime 
+    FileName             = $file.name
+    CmdAgent             = $CmdAgent
+  }
+  & $CmdAgent -i
+'@)
+$Servers = (gc t.txt).trim()
+# $Servers = ,'127.0.0.1'
+$services = $Servers | ? { $_ } | ForEach-Object { 
+  $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $Username,$SecString
+  # invoke-command -script $sb
+  invoke-command -computer $_ -cred $credential -script $sb 
+} 
+$Services | ft

@@ -19,6 +19,7 @@ https://blogs.msdn.microsoft.com/fsharpteam/2012/10/03/rethinking-findstr-with-f
 
 https://patrick6649.files.wordpress.com/2018/03/ad_final.zip PowerShell menu tool
 
+
 High Performance PowerShell with LINQ  https://www.red-gate.com/simple-talk/dotnet/net-framework/high-performance-powershell-linq/
 
 LiveEdu.tv Live Coding vs. Twitch (gaming)  Troop editor LiveCode.com
@@ -1163,4 +1164,60 @@ ExitSub:
   Set objOL = Nothing
 End Sub
 
+
+Windows 10 Security Technical Implementation Guide
+Security Technical Implementation Guides (STIGs) that provides a methodology for standardized secure installation and maintenance of DOD IA and IA-enabled devices and systems.
+https://www.stigviewer.com/stig/windows_10/
+OSD vs GPO vs Provisioning Packs (if any). 
+https://github.com/iadgov/Secure-Host-Baseline
+GitHub iadgov/Secure-Host-Baseline
+Secure-Host-Baseline - Configuration guidance for implementing the Windows 10 and Windows Server 2016 DoD Secure Host Baseline settings. iadgov
+https://github.com/iadgov/Secure-Host-Baseline
+
+Active Directory Troubleshooting ?Znote dcdiag repadmin summary
+https://activedirectorypro.com/dcdiag-check-domain-controller-health/
+    Dcdiag: How to Check Domain Controller Health
+    https://support.microsoft.com/en-us/help/2512643/dcdiag-exe-e-or-a-or-c-expected-errors
+    To stop the RPCSS service error, you can opt out of the test with /SKIP:SERVICES. There are caveats to this, see More Information.It is better to simply ignore this specific error altogether when it is returned from Win2003 DCs.
+    All of these behaviors are expected.
+
+The Windows Server 2008/200R2 versions of DCDIAG are designed to test RPCSS for the Windows Server 2008 shared process setting -not the previous isolated process setting used in Windows Server 2003 and older operating systems. The tool does not distinguish between OSs for this service.
+The Windows Server 2008/200R2 versions of DCDIAG assume that a Windows Server 2008 domain functional level means the DCs are replicating SYSVOL with DFSR.
+The Windows Server 2008/200R2 versions of DCDIAG does not correctly test trust health
+Windows Server 2008/2008 R2 does not allow remote connectivity to the event log based on default firewall rules.
+The Windows Server 2003 version of DCDIAG does not report back an error if it cannot connect to the event log; it only reports if it connects and finds errors.
+The Windows Server 2003 version of DCDIAG does not test the RPCSS service configuration.
+Resolution
+There are multiple workarounds to these issues:
+
+Ignore all these errors when running DCDIAG.
+To stop the event log-related errors, enable the built-in incoming firewall rules on DCs so that the event logs can be accessed remotely:
+    DCDIAG.EXE /E or /A or /C expected errors
+    How do I use the DCDiag tool to check a domain controller configuration?
+    https://www.petri.com/check-domain-controller-configuration-with-dcdiag
+    http://www.computerperformance.co.uk/w2k3/utilities/windows_dcdiag.htm
+    take a full and a system state backup using a supported backup system as documented in the TechNet article below
+http://technet.microsoft.com/en-us/library/cc731188(WS.10).aspx
+    https://blogs.technet.microsoft.com/ptsblog/2011/11/14/performing-an-active-directory-health-check-before-upgrading/
+    Active Directory and Active Directory Domain Services Port Requirements
+    http://technet.microsoft.com/en-us/library/dd772723(WS.10).aspx
+    ADRAP or RAP as a service.
+    You can check this script;
+https://gallery.technet.microsoft.com/scriptcenter/Active-Directory-Health-709336cd
+and also these commands&tool;
+ad replication tool ; https://www.microsoft.com/en-us/download/details.aspx?id=30005
+What does DCDIAG actually… do?  http://blogs.technet.com/b/askds/archive/2011/03/22/what-does-dcdiag-actually-do.aspx
+Active Directory Health Checks for Domain Controllers  http://msmvps.com/blogs/ad/archive/2008/06/03/active-directory-health-checks-for-domain-controllers.aspx
+    . DCDiag /Test:DNS
+Besides replication, the other most common cause of Active Directory failure is DNS
+    Note that the Source DC list shows outbound replication and the Destination DC list shows inbound. For example, in the top list, WTEC-DC2 is a Source DC and it hasn't replicated for more than five days. This is outbound replication because WTEC-DC2 is the source when the error is reported. 
+    Repadmin and Replsum
+Repadmin, as a rule, is the most powerful command-line tool for Active Directory troubleshooting. The Replication Summary option, or Replsum command, displays an overview of the replication status of all DCs in all domains in the forest
+    https://redmondmag.com/Articles/2012/07/01/5-Free-Microsoft-Tools-for-Top-Active-Directory-Health.aspx?m=1&Page=2
+    Active Directory Best Practices Analyzer 
+With the Active Directory Best Practices Analyzer (ADBPA) tool provided by Microsoft in Windows Server 2008 R2
+    Active Directory health assessment or troubleshooting effort. It's a free download from bit.ly/LGivyL
+    https://redmondmag.com/articles/2012/07/01/5-free-microsoft-tools-for-top-active-directory-health.aspx?m=1
+
 #>
+
