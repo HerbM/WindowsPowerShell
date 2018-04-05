@@ -1896,7 +1896,7 @@ write-information ("$(LINE) Use Function Get-PSVersion or variable `$PSVersionTa
 Function down {Set-Location "$env:userprofile\downloads"}
 Function Get-SerialNumber {Get-WMIObject win32_operatingsystem  | Select-Object -prop SerialNumber}
 Function Get-ComputerDomain { Get-WMIObject win32_computersystem | Select-Object -object -prop Name,Domain,DomainRole,DNSDomainName}
-Function drive {Get-WMIObject win32_logicaldisk | Where-Object {$_.drivetype -eq 3} | ForEach-Object {"$($_.deviceid)\"}}
+Function logicaldrive {Get-WMIObject win32_logicaldisk | Where-Object {$_.drivetype -eq 3} | ForEach-Object {"$($_.deviceid)\"}}
 Function fileformat([string[]]$path = @('c:\dev'), [string[]]$include=@('*.txt')) {
   Get-ChildItem -path $path -include $include -recurse -force -ea 0 | Select-Object -Object -prop basename,extension,@{Name='WriteTime';Expression={$_.lastwritetime -f "yyyy-MM-dd-ddd-HH:mm:ss"}},length,directory,fullname | export-csv t.csv -force
 }
