@@ -24,8 +24,13 @@ Function New-Note {
     [Alias('Content')][string[]]$Message,
     [string[]]$Category=@('Remember'),
     [Alias('File','FullName')][string[]]$Path=@("$Home\Notes.txt"),
-    [string]  $Configuration = "$Home\Categories.txt"
+    [string]  $Configuration = "$Home\Categories.txt",
+    [switch]  $Force  # force configuration creation
   )
+  If (!(Test-Path $Configuration -ea 0 ) -and 
+       ($Force -or $Configuration -eq "$Home\Categories.txt")) {
+    "DateTime","Category","Content" | Out-File $Configuration -ea 0 
+  }
   $Standard  = @('Remember','ToDo','Fun','Learn','PowerShell','FP') + 
                  (Import-CSV $Configuration -ea 0 | % { $_.Category } | select -uniq )
   $Message = $Message | % { $_ -split "`n" }

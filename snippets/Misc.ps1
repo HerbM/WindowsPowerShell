@@ -5,6 +5,10 @@
 # http://winmerge.org/
 # https://sourceforge.net/projects/winmerge/files/alpha/2.15.2/WinMerge-2.15.2-x64-Setup.exe/download
 
+# LiveStream JayKul Joel Bennett
+# TipJar Streaming
+# https://mybinder.org/v2/gh/jaykul/Jupyter-PowerShell/master
+
 #https://sqldbawithabeard.com/2018/03/11/easily-splatting-powershell-with-vs-code/
 #https://insights.stackoverflow.com/survey/2018/
 #https://seeminglyscience.github.io/powershell/2017/09/30/invocation-operators-states-and-scopes

@@ -538,13 +538,14 @@ Set-PSReadLineKeyHandler -Key Alt+'(',Alt+'{',Alt+'[',Alt+'<' `
   }
 }
 
-Set-PSReadLineKeyHandler -Key Alt+')',Alt+'}',Alt+']',Alt+'>' `
+Set-PSReadLineKeyHandler -Key Alt+')',Alt+'}',Alt+']',Alt+'>',Alt+'.',Alt+'#' `
                          -BriefDescription WrapEOLWithBraces `
                          -LongDescription "Wrap EOL With matching braces" `
                          -ScriptBlock {
   param($key, $arg)
   $char  = $key.KeyChar
   Switch ($char) {
+    '.' { $Open, $Close  = '('  ,  ').'; $retreat = 3; $IsClose = $True;  break }
     '[' { $Open, $Close  = '['  ,  ']' ; $retreat = 1; $IsClose = $False; break }
     ']' { $Open, $Close  = '['  ,  ']' ; $retreat = 1; $IsClose = $True;  break }
     '(' { $Open, $Close  = '('  ,  ')' ; $retreat = 2; $IsClose = $False; break }
@@ -553,6 +554,7 @@ Set-PSReadLineKeyHandler -Key Alt+')',Alt+'}',Alt+']',Alt+'>' `
     '}' { $Open, $Close  = '{ ' , ' }' ; $retreat = 2; $IsClose = $True;  break }
     '<' { $Open, $Close  = '<# ', ' #>'; $retreat = 3; $IsClose = $False; break }
     '>' { $Open, $Close  = '<# ', ' #>'; $retreat = 3; $IsClose = $True;  break }
+    '#' { $Open, $Close  = '<# ', ' #>'; $retreat = 3; $IsClose = $True;  break }
   }
   $selectionStart = $selectionLength = $line = $cursor = $null
   [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, 
