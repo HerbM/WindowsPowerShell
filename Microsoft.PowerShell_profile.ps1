@@ -960,13 +960,17 @@ Function Get-Accelerator {
 }
 
 Function Get-HistoryCommandline {
+  [CmdLetBinding()]param(
+    #[Int64[]]$ID,
+    #[Int32]$Count,
+    #[Switch]$ShowID
+  )
   (get-history @args).commandline
-} New-Alias cl Get-HistoryCommandline -force
-
-new-alias gch Get-HistoryCommandLine -force
-new-alias ghc Get-HistoryCommandLine -force
-new-alias gcl Get-HistoryCommandLine -force
-new-alias hcm Get-HistoryCommandLine -force
+} New-Alias cl  Get-HistoryCommandline -force
+  new-alias gch Get-HistoryCommandLine -force
+  new-alias ghc Get-HistoryCommandLine -force
+  new-alias gcl Get-HistoryCommandLine -force
+  new-alias hcm Get-HistoryCommandLine -force
 
 Function Select-History {
   [CmdLetBinding()]param(
@@ -1244,6 +1248,7 @@ Function Get-Drive {
 	  [string]  $PSProvider='FileSystem')
   get-psdrive -name $name -psprovider $psprovider -scope $scope
 }
+
 
 # https://poshtools.com/2018/02/17/building-real-time-web-apps-powershell-universal-dashboard/
 # https://docs.microsoft.com/en-us/dotnet/api/?view=netframework-4.5

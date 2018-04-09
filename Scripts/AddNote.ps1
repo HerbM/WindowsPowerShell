@@ -21,7 +21,7 @@
 #>
 Function New-Note {
   [CmdletBinding()]param(
-    [Alias('Content'][string[]]$Message,
+    [Alias('Content')][string[]]$Message,
     [string[]]$Category=@('Remember'),
     [Alias('File','FullName')][string[]]$Path=@("$Home\Notes.txt"),
     [string]  $Configuration = "$Home\Categories.txt"
