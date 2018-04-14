@@ -711,6 +711,8 @@ Set-PSReadLineKeyHandler -Chord 'Alt+|','Alt+%','Alt+\' `
   [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition([Math]::Min($cursor, $Line.Length - 3 ))
 }
 
+write-warning "$(FLINE) Before Ctrl+Alt+|"
+
 #	[Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
 #	[Microsoft.PowerShell.PSConsoleReadLine]::Insert($Line)
 

@@ -1371,7 +1371,10 @@ function prompt {   # displays the history ID of the next command
 
 #>
 Function Global:prompt {
-  If (!(Get-Variable MaxPromptLength -ea 0 2>$Null)) { $MaxPromptLength = 45 }
+  If (!((Test-Path Function:\MaxPromptLength) -and
+        (Get-Variable MaxPromptLength -ea 0 2>$Null))) { 
+    $MaxPromptLength = 45 
+  }
   $Location = "$($executionContext.SessionState.Path.CurrentLocation)"
   $Sigil  = ">$('>' * $nestedPromptLevel)" -replace '>$', '#>'
   $Prompt = "$Location $Sigil"
@@ -1383,6 +1386,33 @@ Function Global:prompt {
   $Prompt = "<# $Prompt"
   write-host -nonewline $Prompt -fore Cyan -back DarkGray
   ' '   # Make normal background SPACE and give PS something to show
+}
+
+Function Format-Error {
+  [CmdletBinding()]Param(
+    [parameter(ValueFromPipeline=$True, ValueFromPipelineByPropertyName=$True)]
+      [Alias('Error')][ErrorRecord[]]$ErrorList
+  )  
+  Begin {}
+  process {
+    $ErrorList | Foreach-Object {
+      $Line = $_.invocationinfo.ScriptLineNumber
+      $Char = $_.invocationinfo.OffSetInLine
+      $Name = If ($_.invocationinfo.PSCommandPath) {
+        Split-Path -ea 0 $_.invocationinfo.PSCommandPath -Leaf 
+      }
+      $Msg  = "[$($_.tostring())]"
+      $FQID = $_.FullyQualifiedErrorId -replace ',.*'
+      $Cmd1 = $_.invocationinfo.InvocationName
+      $Cmd2 = $_.invocationinfo.MyCommand.Name
+      If ($Cmd1 -ne $Cmd2) { $Cmd1 += "/$Cmd2" } 
+      ( "LINE: $Line","CHAR:$Char",$FQID,$Cmd1,$Name,$Msg |
+        Where-Object { $_ }
+      ) -join ' '
+    }
+    write-verbose ('-' * 72)
+  }  
+  End {}
 }
 
 Function Show-ConsoleColor {
