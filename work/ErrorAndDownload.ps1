@@ -35,10 +35,48 @@ Function Format-Error {
   End {}
 }
 
+<# 
+format-error $error[0]
+LINE: 1 CHAR:28 ParseException / ic.ps1 [Exception calling "Create" with "1" argument(s): "At line:14 char:64
++     Where-Object Href -match $FileRegex | select -first 1).href
++                                                                ~
+Missing closing ')' in expression.
+
+At line:15 char:3
++   $FileName = $File -replace '.*(7z.*\.exe).*', '$1'
++   ~~~~~~~~~
+Unexpected token '$FileName' in expression or statement."]
+WARNING: ------------------------------------------------------------------------
+
+
+param (
+  [Alias('Url','Link')] [string]$uri='https://git-scm.com/download/win', # Windows Git page 
+  [Alias('Directory')][string[]]$Path="$Home\Downloads",                 # downloaded file to path 
+  [Alias('bit32','b32','old')][switch]$Bits32
+)
+                               
+  $VersionPattern = If ($bits32) { 'git-.*-32-bit.exe' } else { 'git-.*-64-bit.exe' }  
+  [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+
+
+  $page = Invoke-WebRequest -Uri $uri -UseBasicParsing -verbose:$false # get the web page 
+  $dl   = ($page.links | where outerhtml -match $VersionPattern | 
+    select -first 1 *).href                                 # download link latest 64-bit version
+  write-verbose "Link: $dl"  
+  $filename = split-path $dl -leaf                          # split out the filename
+  write-verbose "Filename: $filename"    
+  $out = Join-Path -Path $path -ChildPath $filename         # construct a filepath for the download 
+  write-verbose "Download save path: $out"    
+  if ($PSCmdlet.ShouldProcess("$dl", "Saving: $out`n")) {
+    Invoke-WebRequest -uri $dl -OutFile $out -UseBasicParsing -verbose:$false # download file 
+  }  
+  Get-item $out | ForEach { "$($_.length) $($_.lastwritetime) $($_.fullname)" }
+
+#>
 
 Function Get-7ZipInstaller  {
   [CmdletBinding()]Param(
-    [string]$Name         = '7Zip',
+    [string]$Name         = '7Z',
     [string]$URL          = 'https://www.7-zip.org',
     [string]$Type         = '',
     [string]$Architecture = 'x64'
@@ -48,8 +86,56 @@ Function Get-7ZipInstaller  {
   # 32-bit ->  a/7z1801.exe
   $FileRegex = ($Name, $Type, $Architecture, '\.exe' | ? { $_ }) -join '.*'
   Write-Verbose "$(LINE) File regex: $FileRegex"
-  $File = (((Invoke-WebRequest $URL).Links | 
-    Where-Object HRef -match $FileRegex).href)
+  $File = ((Invoke-WebRequest $URL).Links | 
+    Where-Object Href -match $FileRegex | select -first 1).href
+  $FileName = $File -replace '.*(7z.*\.exe).*', '$1'  
+  Write-Verbose "$(LINE) Downloading: Invoke-WebRequest $Url/$File -outfile $FileName"
+  $Download = Invoke-WebRequest "$Url/$File" -outfile $FileName  
+  Write-Verbose "$(LINE) Download: $($Download.StatusCode) $($Download.StatusDescription)"
+}
+
+Function Get-7ZipInstaller  {
+  [CmdletBinding()]Param(
+    [string]$Name         = 'NotePad++',
+    [string]$URL          = 'https://notepad-plus-plus.org/download/',
+    [string]$Type         = '',
+    [string]$Architecture = 'x64'
+  )
+  # https://notepad-plus-plus.org/download/
+  # https://notepad-plus-plus.org/download/v7.5.6.html
+  # ((Invoke-WebRequest https://notepad-plus-plus.org/download/v7.5.6.html).links | 
+  #    Where-Object Href -match 'npp.*bin(\.x64)?\.7z' | select innertext,href,outertext)
+  #  'npp.*bin(\.x64)?\.7z'
+  # innerText                       href                                       outerText
+  # ---------                       ----                                       ---------
+  # Notepad++ 7z package 32-bit x86 /repository/7.x/7.5.6/npp.7.5.6.bin.7z     Notepad++ 7z package 32-bit x86
+  # Notepad++ 7z package 64-bit x64 /repository/7.x/7.5.6/npp.7.5.6.bin.x64.7z Notepad++ 7z package 64-bit x64  
+  # https://notepad-plus-plus.org/download/v7.5.6.html
+  <#
+  
+    ((Invoke-WebRequest https://notepad-plus-plus.org).links |? href -match 'download/v').href
+    download/v7.5.6.html
+    
+    ((Invoke-WebRequest https://notepad-plus-plus.org).links |? href -match 'download')
+    innerHTML : Download
+    innerText : Download
+    outerHTML : <A title=Download href="download/">Download</A>
+    outerText : Download
+    tagName   : A
+    title     : Download
+    href      : download/
+
+    innerHTML : Download
+    innerText : Download
+    outerHTML : <A href="download/v7.5.6.html">Download</A>
+    outerText : Download
+    tagName   : A
+    href      : download/v7.5.6.html
+  #>
+  $FileRegex = 'npp.*bin(\.x64)?\.7z' # ($Name, $Type, $Architecture, '\.exe' | ? { $_ }) -join '.*'
+  Write-Verbose "$(LINE) File regex: $FileRegex"
+  $File = ((Invoke-WebRequest $URL).Links | 
+    Where-Object Href -match $FileRegex | select -first 1).href
   $FileName = $File -replace '.*(7z.*\.exe).*', '$1'  
   Write-Verbose "$(LINE) Downloading: Invoke-WebRequest $Url/$File -outfile $FileName"
   $Download = Invoke-WebRequest "$Url/$File" -outfile $FileName  
