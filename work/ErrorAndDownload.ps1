@@ -84,23 +84,26 @@ Function Get-7ZipInstaller  {
   # ((Invoke-WebRequest https://www.7-zip.org).links | ? Href -match '7z.*x64.*exe' | select Innerhtml,href,outertext -first 1).href
   # 64-bit ->  a/7z1801-x64.exe
   # 32-bit ->  a/7z1801.exe
+  [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
   $FileRegex = ($Name, $Type, $Architecture, '\.exe' | ? { $_ }) -join '.*'
   Write-Verbose "$(LINE) File regex: $FileRegex"
-  $File = ((Invoke-WebRequest $URL).Links | 
+  $File = ((Invoke-WebRequest $URL -UseBasicParsing).Links | 
     Where-Object Href -match $FileRegex | select -first 1).href
   $FileName = $File -replace '.*(7z.*\.exe).*', '$1'  
-  Write-Verbose "$(LINE) Downloading: Invoke-WebRequest $Url/$File -outfile $FileName"
+  Write-Verbose "$(LINE) Downloading: Invoke-WebRequest $Url/$File -UseBasicParsing -outfile $FileName"
   $Download = Invoke-WebRequest "$Url/$File" -outfile $FileName  
   Write-Verbose "$(LINE) Download: $($Download.StatusCode) $($Download.StatusDescription)"
 }
 
-Function Get-7ZipInstaller  {
+Function Get-NotePadPlusPlus {
   [CmdletBinding()]Param(
     [string]$Name         = 'NotePad++',
     [string]$URL          = 'https://notepad-plus-plus.org/download/',
     [string]$Type         = '',
     [string]$Architecture = 'x64'
   )
+   
+  [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
   # https://notepad-plus-plus.org/download/
   # https://notepad-plus-plus.org/download/v7.5.6.html
   # ((Invoke-WebRequest https://notepad-plus-plus.org/download/v7.5.6.html).links | 
@@ -149,6 +152,9 @@ Function Get-EverythingInstaller  {
     [string]$Type         = 'Portable',
     [string]$Architecture = '64'
   )
+  
+  [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+    
   # http://www.voidtools.com/downloads/
   # Target: http://www.voidtools.com/Everything-1.4.1.895.x64.zip
   $FileRegex = ('Download', $Type, $Architecture | ? { $_ }) -join '.*'
