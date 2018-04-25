@@ -102,7 +102,7 @@ write-warning "$(get-date -f 'HH:mm:ss') $(LINE) PowerShell $($psversiontable.PS
   # docker       https://docs.docker.com/install/windows/docker-ee/#use-a-script-to-install-docker-ee
   #              https://github.com/wsargent/docker-cheat-sheet
   # Wakoopa      https://web.appstorm.net/how-to/app-management-howto/how-to-discover-new-apps-with-wakoopa/
-  # ArsClip
+  # 
 
   
 $ProfileDirectory   = Split-Path $Profile
@@ -1417,6 +1417,16 @@ Function Format-Error {
   End {}
 }
 
+Function Get-ServiceVersion {
+  [CmdletBinding()]Param(
+    # Name
+  )
+  Get-Process
+  Get-WMIOBject Win32_Service -filter 'Name = "Everything"'
+  $Path = (Get-WMIOBject Win32_Service -filter 'Name = "Everything"').PathName ; & ([scriptblock]::Create("EchoArgs $Path"))
+}
+
+
 Function Show-ConsoleColor {
   param ([int]$MaxLength = 6, [int]$SkipLines = 0, [switch]$Bracket)
   $ConsoleWidth = $host.ui.rawui.WindowSize.Width
@@ -2145,7 +2155,6 @@ Function PSBoundParameter([string]$Parm) {
 }
 #>
 write-host "`nError count: $($Error.Count)"
-#if(Test-Path Function:\Prompt) {Rename-Item Function:\Prompt PrePoshGitPrompt -Force}
 
 if (!(where.exe choco.exe 2>$Null)) {
   "Get Chocolatey: iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
@@ -2378,3 +2387,5 @@ Unbound               ShellNextWord                 Move the cursor to the end o
 Unbound               ForwardWord                   Move the cursor forward to the end of the current word, or if be...
 #>
 
+
+Import-Module 'C:\tools\poshgit\dahlbyk-posh-git-4184928\src\posh-git.psd1'

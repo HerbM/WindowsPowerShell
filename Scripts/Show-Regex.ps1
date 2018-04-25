@@ -1,37 +1,45 @@
 #  Technically this is a PowerShell script
+[CmdLetBinding()]param(
+  [parameter(ValueFromRemainingArguments=$true)][string[]]$Args
+)
 
-@'
-                    .Net Framework Regular Expressions
+$Params = ForEach ($a in $Args) {
+  $a | ForEach-Object  { $_ }  
+}
 
-SINGLE CHARACTERS
+$RegexInfo = [Ordered]@{
+  Title = @'
+  .Net Framework Regular Expressions'
+'@
+SINGLE_CHARACTERS = @'
   Use      To match any character
   [set]    In that set
   [^set]   Not in that set
-  [a–z]    In the a-z range
-  [^a–z]   Not in the a-z range
+  [a-z]    In the a-z range
+  [^a-z]   Not in the a-z range
   .        Any except \n (new line)
   \char    Escaped special character
-
-CONTROL CHARACTERS
+'@
+CONTROL_CHARACTERS = @'
   Use           To match         Unicode
   \t            Horizontal tab   \u0009
   \v            Vertical tab     \u000B
-  \b            Backspace         \u0008
+  \b            Backspace        \u0008
   \e            Escape           \u001B
-  \r            Carriage return   \u000D
-  \f            Form feed         \u000C
+  \r            Carriage return  \u000D
+  \f            Form feed        \u000C
   \n            New line         \u000A
   \a            Bell (alarm)     \u0007
   \c char       ASCII control character
-
-NON-ASCII CODES
-  Use           To match  Character with
+'@
+'NON-ASCII_CODES' = @'
+  Use           To match Character with
   \octal        2-3 digit octal character code
-  \x hex        2-digit hex character code
-  \u hex        4-digit hex character code
-
-CHARACTER CLASSES
-  Use             To match character
+  \x hex        2-digit   hex   character code
+  \u hex        4-digit   hex   character code
+'@
+CHARACTER_CLASSES = @'
+  Use             To match Character
   \p{ctgry}       In that Unicode category or block
   \P{ctgry}       Not in that Unicode category or block
   \w              Word character
@@ -40,8 +48,8 @@ CHARACTER CLASSES
   \D              Not a decimal digit
   \s              White-space character
   \S              Non-white-space char
-
-QUANTIFIERS
+'@
+QUANTIFIERS = @'
   Greedy  Lazy    Matches
   *       *?      0 or more times
   +       +?      1 or more times
@@ -49,8 +57,8 @@ QUANTIFIERS
   {n}     {n}?    Exactly n times
   {n,}    {n,}?   At least n times
   {n,m}   {n,m}?  From n to m times
-
-ANCHORS
+'@
+ANCHORS = @'
   Use     To specify position
   ^       At start of string or line
   \A      At start of string
@@ -60,44 +68,42 @@ ANCHORS
   \G      Where previous match ended
   \b      On word boundary
   \B      Not on word boundary
-
-GROUPS
-  Use                 To define
-  (exp)               Indexed group
-  (?<name>exp)        Named group
-  (?<name1-name2>exp) Balancing group
-  (?:exp)             Noncapturing group
-  (?=exp)             Zero-width positive lookahead
-  (?!exp)             Zero-width negative lookahead
-  (?<=exp)            Zero-width positive lookbehind
-  (?<!exp)            Zero-width negative lookbehind
-  (?>exp)             Non-backtracking (greedy)
-
-INLINE OPTIONS
-  Option             Effect on match
-  i                  Case-insensitive
-  m                  Multiline mode
-  n                  Explicit (named)
-  s                  Single-line mode
-  x                  Ignore white space
-  Use                To
-  (?imnsx-imnsx)     Set or disable specified options
-  (?imnsx-imnsx:exp) Set or disable specified options within expression
-
-BACKREFERENCES
+'@
+GROUPS = @'
+  Use                  To define
+  (exp)                Indexed group
+  (?<name>exp)         Named group
+  (?<name1-name2>exp)  Balancing group
+  (?:exp)              Noncapturing group
+  (?=exp)              Zero-width positive lookahead
+  (?!exp)              Zero-width negative lookahead
+  (?<=exp)             Zero-width positive lookbehind
+  (?<!exp)             Zero-width negative lookbehind
+  (?>exp)              Non-backtracking (greedy)
+'@
+INLINE_OPTIONS = @'
+  Option               Effect on match
+  i                    Case-insensitive
+  m                    Multiline mode
+  n                    Explicit (named)
+  s                    Single-line mode
+  x                    Ignore white space
+  Use                  To
+  (?imnsx-imnsx)       Set or disable specified options
+  (?imnsx-imnsx:exp)   Set or disable specified options within expression
+'@
+BACKREFERENCES = @'
   Use             To match
   \n              Indexed group
   \k<name>        Named group
-
-ALTERNATION
+'@
+ALTERNATION = @'
   Use             To match
   a|b             Either a or b
-  (?(exp)yes|no)  yes if exp is matched
-                  no  if exp isn't matched
-  (?(name)yes|no) yes if name is matched
-                  no if name isn't matched
-
-SUBSTITUTION
+  (?(exp)yes|no)  yes if exp  is matched, no if exp isn't matched
+  (?(name)yes|no) yes if name is matched, no if name isn't matched
+'@
+SUBSTITUTION = @'
   Use             To substitute
   $n              Substring matched by group number n
   ${name}         Substring matched by group name
@@ -107,13 +113,13 @@ SUBSTITUTION
   $'              Text after the match
   $+              Last captured group
   $_              Entire input string
-
-COMMENTS
-  Use  To
-    (?# comment)  Add inline comment
-    #             Add x-mode comment
-
-SUPPORTED UNICODE CATEGORIES
+'@
+COMMENTS = @'
+  Use             To
+  (?# comment)    Add inline comment
+  #               Add x-mode comment
+'@
+SUPPORTED_UNICODE_CATEGORIES = @'
   Category        Description
   Lu              Letter, uppercase
   LI              Letter, lowercase
@@ -154,43 +160,55 @@ SUPPORTED UNICODE CATEGORIES
   C               Control characters, all
   For named character set blocks (e.g., Cyrillic), search for
   "supported named blocks" in the MSDN  Library.
-
-REGULAR EXPRESSION OPERATIONS
-  Class:                System.Text.RegularExpressions.Regex
-  Pattern matching with Regex objects
-  To initialize with    Use constructor
-  Regular exp           Regex(String)
-  + options             Regex(String, RegexOptions)
-  + time-out            Regex(String, RegexOptions, TimeSpan)
-
-  Pattern matching with static methods
-    Use an overload of a  method below to supply
-    the regular expression & the text you want to search.
-    Finding and replacing matched patterns
-    To                    Use method
-    Validate match        Regex.IsMatch
-    Retrieve single match Regex.Match     (first)
-                          Match.NextMatch (next)
-    Retrieve all matches  Regex.Matches
-    Replace match         Regex.Replace
-    Divide text           Regex.Split
-    Handle char escapes   Regex.Escape
-                          Regex.Unescape
-
-  Getting info about regular expression patterns
-    To get              Use Regex API
-    Group names         GetGroupNames
-                        GetGroupNameFromNumber
-    Group numbers       GetGroupNumbers
-                        GetGroupNumberFromName
-    Expression          ToString
-    Options             Options
-    Time-out            MatchTimeOut
-    Cache size          CacheSize
-    Direction           RightToLeft
-
-Reference
-  For detailed information & examples, see http://aka.ms/regex
-  To test your regular expressions, see http://regexlib.com/RETester.aspx
 '@
+REGULAR_EXPRESSION_OPERATIONS = @'
+  Class:                  System.Text.RegularExpressions.Regex
+  Pattern matching with   Regex objects
+  To initialize with      Use constructor
+  Regular exp             Regex(String)
+  + options               Regex(String, RegexOptions)
+  + time-out              Regex(String, RegexOptions, TimeSpan)
+'@
+Pattern_matching_with_static_methods = @'
+  Use an overload of a method below to supply
+  the regular expression & the text you want to search.
+  Finding and replacing matched patterns
+  To                      Use method
+  Validate match          Regex.IsMatch
+  Retrieve single match   Regex.Match     (first)
+                          Match.NextMatch (next)
+  Retrieve all matches    Regex.Matches
+  Replace match           Regex.Replace
+  Divide text             Regex.Split
+  Handle char escapes     Regex.Escape
+                          Regex.Unescape
+'@
+Getting_info_about_regular_expression_patterns = @'
+  To get              Use Regex API
+  Group names         GetGroupNames
+                      GetGroupNameFromNumber
+  Group numbers       GetGroupNumbers
+                      GetGroupNumberFromName
+  Expression          ToString
+  Options             Options
+  Time-out            MatchTimeOut
+  Cache size          CacheSize
+  Direction           RightToLeft
+'@
+Reference = @'
+  For detailed information & examples: http://aka.ms/regex
+  To test your regular expressions:    http://regexlib.com/RETester.aspx
+'@
+}
 
+$Info =  $RegexInfo.Keys | ForEach-Object { "$_`n$($RegexInfo.$_)`n" }
+If (!($Args | Where-Object { $_ } )) {
+  $Info
+} else {
+  $Patterns = @()
+  ForEach ($Parm in $Params) {
+    If ($Parm -and $RegexInfo.Contains($Parm)) { "$_`n$($RegexInfo.$_)`n" }
+    Else { $Patterns += $Parm }
+  }  
+  $Info | Select-String $Patterns
+}
