@@ -1370,6 +1370,8 @@ function prompt {   # displays the history ID of the next command
 # Debuggers https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_debuggers?view=powershell-6
 
 #>
+new-alias v 'C:\Program Files (x86)\VLC\vlc.exe' -force -scope Global
+;;
 Function Global:prompt {
   If (!((Test-Path Function:\MaxPromptLength) -and
         (Get-Variable MaxPromptLength -ea 0 2>$Null))) { 
@@ -1380,7 +1382,7 @@ Function Global:prompt {
   $Prompt = "$Location $Sigil"
   $Length = $Prompt.Length    
   If ($False -and ($Length + 5) -gt $MaxPromptLength) {
-    $Excess = $Length - $MaxPromptLength
+    $Excess = $Length - $MaxPromptLength`
     $Prompt = $Prompt.SubString(0,2) + $Prompt.SubString($Excess+5, $MaxPromptLength+5)
   }
   $Prompt = "<# $Prompt"

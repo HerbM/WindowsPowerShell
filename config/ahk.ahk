@@ -47,6 +47,8 @@ return
 <^+p::Send %Password%
 ;<+^l::Send %CID%{tab}%Password%{enter}
 ;^+o::msgbox %CID%
+^!Left::Send {Alt PageUp}
+^!Right::Send {Alt PageDown}
 
 ;;;;;;;;;;;;;  Fix capsLock
 ; capsLock::shift        ; capsLock -> shift  ; formerly: CapsLock::Ctrl       
@@ -80,9 +82,17 @@ return
 	+f7::+f8                       ; F7 is pretty worthless so map to F8 to avoid typos
 	f9::f8                         ; F9 is pretty worthless so map to F8 to avoid typos
 	+f9::+f8                       ; F9 is pretty worthless so map to F8 to avoid typos
-	^v::send {Escape}{RButton}     ; add 'paste' to console
-	^!c::RButton                   ; add special 'copy' to console 
-	^!v::send {RButton}{RButton}   ; copy & paste in one keypress
+	;^v::send {Escape}{RButton}     ; add 'paste' to console
+	;^!c::RButton                   ; add special 'copy' to console 
+	;^!v::send {RButton}{RButton}   ; copy & paste in one keypress
+}		
+#IfWinActive, ahk_class TscShellContainerClass  ; just for Remote Desktop windows
+{        
+	f7::f8                         ; F7 is pretty worthless so map to F8 to avoid typos
+	+f7::+f8                       ; F7 is pretty worthless so map to F8 to avoid typos
+	f9::f8                         ; F9 is pretty worthless so map to F8 to avoid typos
+	+f9::+f8                       ; F9 is pretty worthless so map to F8 to avoid typos
+	^!Left::send {Alt Tab}
 }		
 
 ;;;^{MButton}{Home}::send ^{Home}	
