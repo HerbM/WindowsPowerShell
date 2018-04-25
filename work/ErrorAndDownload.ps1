@@ -184,26 +184,26 @@ Function Get-EverythingInstaller  {
 # https://gallery.technet.microsoft.com/scriptcenter/Inherit-Preference-82343b9d
 
 function Rename-MyFile {
-    [CmdletBinding(SupportsShouldProcess=$true)]
-    [OutputType([System.Void])]
-    param(
-        [Parameter(Position=0, Mandatory=$true, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
-        [ValidateNotNullOrEmpty()]
-        [Alias('FullName')]
-        [String[]]
-        $Path
-    )
-    begin {
-        Set-StrictMode -Version Latest
-        $ErrorActionPreference = 'Stop'
+  [CmdletBinding(SupportsShouldProcess=$true)]
+  [OutputType([System.Void])]
+  param(
+    [Parameter(Position=0, Mandatory=$true, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
+    [ValidateNotNullOrEmpty()]
+    [Alias('FullName')]
+    [String[]]
+    $Path
+  )
+  begin {
+    Set-StrictMode -Version Latest
+    $ErrorActionPreference = 'Stop'
+  }
+  process {
+    foreach ($item in $Path) {
+      if ($PSCmdlet.ShouldProcess($item)) {
+        Rename-Item -LiteralPath $item -NewName "$($item | Split-Path -Leaf).MyFile" -WhatIf
+      }
     }
-    process {
-        foreach ($item in $Path) {
-            if ($PSCmdlet.ShouldProcess($item)) {
-                Rename-Item -LiteralPath $item -NewName "$($item | Split-Path -Leaf).MyFile" -WhatIf
-            }
-        }
-    }
+  }
 }
 
 <#

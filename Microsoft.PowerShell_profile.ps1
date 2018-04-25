@@ -2153,7 +2153,6 @@ Function PSBoundParameter([string]$Parm) {
 }
 #>
 write-host "`nError count: $($Error.Count)"
-#if(Test-Path Function:\Prompt) {Rename-Item Function:\Prompt PrePoshGitPrompt -Force}
 
 if (!(where.exe choco.exe 2>$Null)) {
   "Get Chocolatey: iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
@@ -2386,3 +2385,5 @@ Unbound               ShellNextWord                 Move the cursor to the end o
 Unbound               ForwardWord                   Move the cursor forward to the end of the current word, or if be...
 #>
 
+
+Import-Module 'C:\tools\poshgit\dahlbyk-posh-git-4184928\src\posh-git.psd1'
