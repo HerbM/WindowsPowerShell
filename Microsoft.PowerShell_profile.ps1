@@ -979,7 +979,6 @@ Function Select-History {
     [Alias('ID','Object','FullObject')][switch]$HistoryInfo,
     [Alias('JustCommandLine','Bare','String','CLine')][switch]$CommandLine,
     $Exclude='Select-History|(\bsh\b)'
-
   )
   begin {
     $LastID  = (Get-History -count 1).ID
