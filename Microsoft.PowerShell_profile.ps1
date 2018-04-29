@@ -102,7 +102,7 @@ write-warning "$(get-date -f 'HH:mm:ss') $(LINE) PowerShell $($psversiontable.PS
   # docker       https://docs.docker.com/install/windows/docker-ee/#use-a-script-to-install-docker-ee
   #              https://github.com/wsargent/docker-cheat-sheet
   # Wakoopa      https://web.appstorm.net/how-to/app-management-howto/how-to-discover-new-apps-with-wakoopa/
-  #
+  # VirusTotal   https://www.virustotal.com/#/settings/apikey 
 
 
 $ProfileDirectory   = Split-Path $Profile
@@ -449,6 +449,7 @@ $NotepadPlusPlus = (
    select -first 1).fullname
 if ($NotepadPlusPlus) { new-alias np $NotepadPlusPlus -force -scope Global }
 #>
+
 Function Set-ProgramAlias {
   param(
     [Alias('Alias')]  $Name,
@@ -458,27 +459,31 @@ Function Set-ProgramAlias {
     [switch]          $FirstPath,
     [switch]          $IgnoreAlias
   )
-  $Old = Get-Alias $Name -ea 0
-  if ($IgnoreAlias) { remove-item Alias:$Name -force -ea 0 }
+  $Old = Get-Alias $Name -ea Ignore
+  if ($IgnoreAlias) { remove-item Alias:$Name -force -ea Ignore }
   $SearchPath = if ($FirstPath) {
-    $Path + (where.exe $Command 2>$Null) + @(get-command $Name -all -ea 0).definition
+    $Path + 
+    (Invoke-Command { where.exe $Command 2>$Null } -ea Ignore) + 
+    @(get-command $Name -all -ea Ignore).definition
   } else {
-    @(get-command $Name -all -ea 0).definition + (where.exe $Command 2>$Null) + $Path
+    @(get-command $Name -all -ea Ignore).definition + 
+    (Invoke-Command { where.exe $Command 2>$Null } -ea Ignore) + 
+    $Path
   }
-  Remove-Item Alias:$Name -force -ea 0
+  Remove-Item Alias:$Name -force -ea Ignore
   ForEach ($Location in $SearchPath) {
-    if ($Location -and (Test-Path $Location -pathType Leaf -ea 0)) {
+    if ($Location -and (Test-Path $Location -pathType Leaf -ea Ignore)) {
       new-alias $Name $Location -force -scope Global
       break
     } elseif ( $Location -and $Command -and
-              ($Location = Join-Path $Location $Command -ea 0) -and
+              ($Location = Join-Path $Location $Command -ea Ignore) -and
               (Test-Path $Location -pathType Leaf)) {
       new-alias $Name (Join-Path $Location $Command) -force -scope Global
       break
     }
   }
-  if (Get-Command $Name -commandtype alias -ea 0) {
-    write-warning "$(LINE) $Name found: $Location [$((Get-Alias $Name -ea 0).definition)]"
+  if (Get-Command $Name -commandtype alias -ea Ignore) {
+    write-warning "$(LINE) $Name found: $Location [$((Get-Alias $Name -ea Ignore).definition)]"
   } else {
     write-warning "$(LINE) $Name NOT found on path or in: $($SearchPath -join '; ')"
   }
@@ -490,12 +495,12 @@ Set-ProgramAlias np notepad++.exe @('C:\Util\notepad++.exe',
    'T:\Programs\Notepad++\app\Notepad++\notepad++.exe',
    'T:\Programs\Portable\Notepad++portable.exe',
    'S:\Programs\Herb\util\notepad++.exe','T:\Programs\Herb\util\notepad++.exe',
-   'D:\wintools\Tools\hm\notepad++.exe')  -FirstPath
+   'D:\wintools\Tools\hm\notepad++.exe') -FirstPath
 Set-ProgramAlias nscp nscp.exe 'C:\Program Files\NSClient++\nscp.exe' -FirstPath
-Set-ProgramAlias 7z 7z.exe @('C:Util\7-Zip\app\7-Zip64\7z.exe',
-                             'C:\ProgramData\chocolatey\bin\7z.exe',
-                             'S:\Programs\7-Zip\app\7-Zip64\7z.exe'
-                           )  -FirstPath
+Set-ProgramAlias 7z   7z.exe @('C:Util\7-Zip\app\7-Zip64\7z.exe',
+                               'C:\ProgramData\chocolatey\bin\7z.exe',
+                               'S:\Programs\7-Zip\app\7-Zip64\7z.exe'
+                             ) -FirstPath
 
 # 'Thu, 08 Feb 2018 07:47:42 -0800 (PST)' -replace '[^\d]+$' -as [datetime] 13:47:42 -0800 (PST)'
 # 'Thu, 08 Feb 2018 07:47:42 -0800 (PST)' -replace '[^\d]+$' -as [datetime] 13:47:42 -0800 (PST)'
@@ -1323,10 +1328,10 @@ write-information "$(LINE) prompt='PS $($executionContext.SessionState.Path.Curr
 #Function Global:prompt { "PS '$($executionContext.SessionState.Path.CurrentLocation)' $('>.' * $nestedPromptLevel + '>') "}
 
 Function Global:prompt {
-  If (!(Get-Variable MaxPrompt -ea 0 2>$Null)) { $MaxPrompt = 45 }
-  $loc = "$($executionContext.SessionState.Path.CurrentLocation)"
+  If (!(Test-Path Variable:Global:MaxPromptLength -ea 0 2>$Null)) { $MaxPrompt = 45 }
+  $loc = (Get-Location).ProviderPath # -replace '^[^:]*::'
   $Sig = " |>$('>' * $nestedPromptLevel)"
-  if ($Global:MaxPromptLength) {
+  if (Test-Path Variable:Global:MaxPromptLength) {
     $LocLen = $Loc.length; $SigLen = $Sig.Length
     $Length = $LocLen + $SigLen
     $Excess = $Length - $Global:MaxPromptLength
@@ -1529,6 +1534,8 @@ Function Set-GoAlias {
     New-Alias $Alias Set-GoLocation -force -scope Global -Option allscope
   }
 }
+
+Import-Module "$Home\Documents\WindowsPowerShell\Set-LocationFile.ps1"
 
 Function Set-GoLocation {
   [CmdletBinding()]param (
