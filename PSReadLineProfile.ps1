@@ -7,25 +7,26 @@ using namespace System.Management.Automation.Language
   [Alias('AllMatching','BothMatching')][switch]$Matching
 )
 
+$Private:ErrorCount = $Error.Count 
+
 If ($Matching) {$BraceMatching = $QuoteMatching = $True }
 If ($QuoteMatching -and $BraceMatching) { $Matching = $True }
 
 # [Microsoft.PowerShell.PSConsoleReadLine]::AddToHistory($line)
-
 # $SaveHistory = $null
 # [Microsoft.PowerShell.PSConsoleReadLine]::AddToHistory('"This is a test"')
 # OEMKey https://msdn.microsoft.com/en-us/library/system.windows.forms.keys%28v=vs.110%29.aspx?f=255&MSPPError=-2147217396
 # [System.ConsoleKey] | gm -static | more
 # Alt-w current line to history
-
-$SaveHistory = (Get-History -count 3000).commandline
+#$SaveHistory = (Get-History -count 3000).commandline
 write-warning "History count $((Get-History).count)"
+write-warning "History will not be reloaded"
 
 $PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)" -as [double]
-if (!(Get-Module PSReadline -listavailable -ea 0)) {
-  $parms = @('-force')
+if (!(Get-Module PSReadline -listavailable -ea Ignore)) {
+  $parms = @('-force','-Confirm:$False')
   if ($PSVersionNumber -ge 5.1) { $parms += '-AllowClobber' }
-  Install-Module PSReadline @Parms
+  Install-Module PSReadline @Parms -ea Ignore 
 }
 if ( (Get-Module PSReadline -listavailable -ea 0)) {
   Import-Module PSReadLine
@@ -459,6 +460,21 @@ Set-PSReadLineKeyHandler -Key Alt+j `
   } | Format-Table -AutoSize | Out-Host
   [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
 }
+
+<#
+Set-PSReadLineKeyHandler -Key Ctrl+Z -Function Redo 
+Set-PSReadLineKeyHandler -Key Ctrl+Z `
+                         -BriefDescription Redo `
+                         -LongDescription "Redo most recent Undo" `
+                         -ScriptBlock {
+  param($key, $arg)
+  $global:PSReadLineMarks.GetEnumerator() | ForEach-Object {
+    [PSCustomObject]@{Key = $_.Key; Dir = $_.Value}
+  } | Format-Table -AutoSize | Out-Host
+  [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
+}
+#>
+
 Set-PSReadLineOption -CommandValidationHandler {
   param([CommandAst]$CommandAst)
   switch ($CommandAst.GetCommandName()) {
@@ -816,15 +832,16 @@ if (Get-Module PSReadline) {
   Set-PSReadLineKeyHandler -Key DownArrow             -Function HistorySearchForward
   Set-PSReadLineKeyHandler -Key 'F7','F9'             -Function HistorySearchBackward
   Set-PSReadLineKeyHandler -Key 'Shift+F7','Shift+F9' -Function HistorySearchForward
-  ### if ($SaveHistory -and !(Get-History).count) { Add-History $SaveHistory };
-  try {
-    if ($SaveHistory) {
-      $SaveHistory | ForEach-Object { [Microsoft.PowerShell.PSConsoleReadLine]::AddToHistory($_) }
-      $SaveHistory = $null
-    }
-  } catch { } # just ignore this for VSCode
+  if ($SaveHistory -and !(Get-History).count) { Add-History $SaveHistory };
+  #try {
+  #  if ($SaveHistory) {
+  #    $SaveHistory | ForEach-Object { [Microsoft.PowerShell.PSConsoleReadLine]::AddToHistory($_) }
+  #    $SaveHistory = $null
+  #  }
+  #} catch { } # just ignore this for VSCode
 }
 
+Write-Warning "$(LINE) New Errors: $($Error.Count - $Private:ErrorCount)"
 
 <#
         function prompt {

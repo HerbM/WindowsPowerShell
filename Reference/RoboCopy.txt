@@ -1,0 +1,243 @@
+# C:\bat\SyncCopy.cmd  (laptop)
+# wmic volume get /?
+# wmic volume get "Drive Letter",Capacity,"Free Space",Label
+# wmic volume get "Drive Letter",Capacity,"Free Space",Label,SystemName
+
+ROBOCOPY source destination [file [file]...] [options]
+  source      drive:\path OR \\server\share\path
+  destination drive:\path OR \\server\share\path
+  file        names/wildcards: default "*.*"
+  Copy options :
+                 /S :: copy Subdirectories, but not empty ones.
+                 /E :: copy subdirectories, including Empty ones.
+             /LEV:n :: only copy the top n LEVels of the source directory tree.
+                 /Z :: copy files in restartable mode.
+                 /B :: copy files in Backup mode.
+                /ZB :: use restartable mode; if access denied use Backup mode.
+            /EFSRAW :: copy all encrypted files in EFS RAW mode.
+
+  /COPY:copyflag[s] :: what to COPY for files (default is /COPY:DAT).
+                       (copyflags : D=Data, A=Attributes, T=Timestamps).
+                       (S=Security=NTFS ACLs, O=Owner info, U=aUditing info).
+           /DCOPY:T :: COPY Directory Timestamps.
+               /SEC :: copy files with SECurity (equivalent to /COPY:DATS).
+           /COPYALL :: COPY ALL file info (equivalent to /COPY:DATSOU).
+            /NOCOPY :: COPY NO file info (useful with /PURGE).
+            /SECFIX :: FIX file SECurity on all files, even skipped files.
+            /TIMFIX :: FIX file TIMes on all files, even skipped files.
+             /PURGE :: delete dest files/dirs that no longer exist in source.
+               /MIR :: MIRror a directory tree (equivalent to /E plus /PURGE).
+               /MOV :: MOVe files (delete from source after copying).
+              /MOVE :: MOVE files AND dirs (delete from source after copying).
+     /A+:[RASHCNET] :: add the given Attributes to copied files.
+     /A-:[RASHCNET] :: remove the given Attributes from copied files.
+            /CREATE :: CREATE directory tree and zero-length files only.
+               /FAT :: create destination files using 8.3 FAT file names only.
+               /256 :: turn off very long path (> 256 characters) support.
+             /MON:n :: MONitor source; run again when more than n changes seen.
+             /MOT:m :: MOnitor source; run again in m minutes Time, if changed.
+      /RH:hhmm-hhmm :: Run Hours - times when new copies may be started.
+                /PF :: check run hours on a Per File (not per pass) basis.
+             /IPG:n :: Inter-Packet Gap (ms), to free bandwidth on slow lines.
+                /SL :: copy symbolic links versus the target.
+            /MT[:n] :: Do multi-threaded copies with n threads (default 8).
+                       n must be at least 1 and not greater than 128.
+                       This option is incompatible with the /IPG and /EFSRAW options.
+                       Redirect output using /LOG option for better performance.
+:: File Selection Options :
+                 /A :: copy only files with the Archive attribute set.
+                 /M :: copy only files with the Archive attribute and reset it.
+    /IA:[RASHCNETO] :: Include only files with any of the given Attributes set.
+    /XA:[RASHCNETO] :: eXclude files with any of the given Attributes set.
+ /XF file [file]... :: eXclude Files matching given names/paths/wildcards.
+ /XD dirs [dirs]... :: eXclude Directories matching given names/paths.
+                /XC :: eXclude Changed files.
+                /XN :: eXclude Newer files.
+                /XO :: eXclude Older files.
+                /XX :: eXclude eXtra files and directories.
+                /XL :: eXclude Lonely files and directories.
+                /IS :: Include Same files.
+                /IT :: Include Tweaked files.
+             /MAX:n :: MAXimum file size - exclude files bigger than n bytes.
+             /MIN:n :: MINimum file size - exclude files smaller than n bytes.
+          /MAXAGE:n :: MAXimum file AGE - exclude files older than n days/date.
+          /MINAGE:n :: MINimum file AGE - exclude files newer than n days/date.
+          /MAXLAD:n :: MAXimum Last Access Date - exclude files unused since n.
+          /MINLAD:n :: MINimum Last Access Date - exclude files used since n.
+                       (If n < 1900 then n = n days, else n = YYYYMMDD date).
+                /XJ :: eXclude Junction points. (normally included by default).
+               /FFT :: assume FAT File Times (2-second granularity).
+               /DST :: compensate for one-hour DST time differences.
+               /XJD :: eXclude Junction points for Directories.
+               /XJF :: eXclude Junction points for Files.
+:: Retry Options :
+               /R:n :: number of Retries on failed copies: default 1 million.
+               /W:n :: Wait time between retries: default is 30 seconds.
+               /REG :: Save /R:n and /W:n in the Registry as default settings.
+               /TBD :: wait for sharenames To Be Defined (retry error 67).
+:: Logging Options :
+                 /L :: List only - don't copy, timestamp or delete any files.
+                 /X :: report all eXtra files, not just those selected.
+                 /V :: produce Verbose output, showing skipped files.
+                /TS :: include source file Time Stamps in the output.
+                /FP :: include Full Pathname of files in the output.
+             /BYTES :: Print sizes as bytes.
+                /NS :: No Size - don't log file sizes.
+                /NC :: No Class - don't log file classes.
+               /NFL :: No File List - don't log file names.
+               /NDL :: No Directory List - don't log directory names.                /NP :: No Progress - don't display percentage copied.
+               /ETA :: show Estimated Time of Arrival of copied files.
+          /LOG:file :: output status to LOG file (overwrite existing log).
+         /LOG+:file :: output status to LOG file (append to existing log).
+       /UNILOG:file :: output status to LOG file as UNICODE (overwrite existing log).
+      /UNILOG+:file :: output status to LOG file as UNICODE (append to existing log).
+               /TEE :: output to console window, as well as the log file.
+               /NJH :: No Job Header.
+               /NJS :: No Job Summary.
+           /UNICODE :: output status as UNICODE.
+:: Job Options :
+       /JOB:jobname :: take parameters from the named JOB file.
+      /SAVE:jobname :: SAVE parameters to the named job file
+              /QUIT :: QUIT after processing command line (to view parameters). 
+              /NOSD :: NO Source Directory is specified.
+              /NODD :: NO Destination Directory is specified.
+                /IF :: Include the following Files.
+
+                
+Guide for using Robocopy https://it.engineering.oregonstate.edu/guide-using-robocopy
+  Robocopy is a robust file copying program built into Windows similar to UNIX rsync. It 
+  is a much better method of copying large datasets or lots of files across volumes, and 
+  is a great tool for backing up data. It has the ability to resume copies if 
+  inturrupted, various options and logging during copying.
+
+Full Microsoft robocopy documentation can be found here: https://technet.microsoft.com/en-us/library/cc733145.aspx
+
+COE IT has created a script (below) that can be modified and used to your 
+specificatations to aid graduate students who wish to have an easy way to back up 
+files from local computer storage to external disks, or to our backup server "attic". 
+----------------------------- 
+@ECHO OFF 
+SETLOCAL SET _source=C:\temp 
+SET _dest=E:\backup 
+SET _what=/COPYALL /B /E 
+:: /COPYALL :: COPY ALL file info 
+:: /E :: copy all subdirs, even empty ones 
+:: /B :: copy files in Backup mode. 
+:: /SEC :: copy files with SECurity 
+:: /XD <Directory>[...] :: excludes directories that match the specified names and 
+paths 
+:: /XF <FileName>[...] :: excludes files that match the specified names or paths. Note 
+that FileName can include wildcard characters (* and ?) 
+SET _options=/LOG:C:\temp\robocopy-example-log.txt /NFL /NDL 
+:: /R:n :: number of Retries 
+:: /W:n :: Wait time between retries 
+:: /LOG :: Output log file 
+:: /NFL :: No file logging 
+:: /NDL :: No dir logging  
+ROBOCOPY %_source% %_dest% %_what% %_options% 
+-----------------------------end-------------------------
+
+Each SET line applies options to a variable. The values of each of those variables is 
+applied to the robocopy command in the last line of the script, to run the program 
+with the options specified.
+
+@ECHO OFF
+SETLOCAL
+
+Above are the first two lines of the script. Don't modify them, they are needed for 
+the script to run properly.
+
+SET _source=C:\temp
+
+This is where you set the source directory that you want robocopy to copy from.
+
+SET _dest=E:\backup
+
+This is where you set the destination directory that you want robocopy to copy 
+files/folders to. You can also specify a UNC path such as: \\server\folder
+
+SET _what=/COPYALL /B /E
+
+This is where you set switches on want robocopy to copy, how to deal with security 
+settings and how to deal with specific files. Common switches are:
+
+/COPYALL	Copy all file information
+/E	Copy all subdirectories, even empty ones
+/B	Copy files in Backup mode
+/SEC	Copy files with SECurity
+/XD <Directory>[...]	Excludes directories that match the specified names and paths
+/XF <FileName>[...]	Excludes files that match the specified names or paths
+Note that FileName can include wildcard characters (* and ?)
+
+Additional Examples:
+
+a) SET _what=/COPYALL /B /E /XD $RECYCLE.BIN /XD "System Volume Information" /XF 
+Thumbs.db /XF pagefile.sys
+
+/XD $RECYCLE.BIN	Excludes the directory $RECYCLE.BIN (this is where Windows puts 
+recycled files)
+/XD "System Volume Information"	Excludes the direcotry "System Volume Information"
+/XF Thumbs.db	Excludes files named Thumbs.db
+/XF pagefile.sys	Excludes files named pagefiles.sys
+b) SET _options=/LOG:C:\temp\robocopy-example-log.txt /NFL /NDL
+
+This is where you specify the log file that robocopy will create and what you want 
+robocopy to log. The log file (robocopy-example-log.txt in this example) will be 
+created in the same directory that the script is stored. The folder path specified 
+must already exist or your will get an error. Also avoid spaces in the path name. 
+Depending on how verbose you specify in the log options and how much you are copying, 
+this file can get very large. Common switches include:
+
+/R:n	Number of Retries
+/W:n	Wait time between retries
+/LOG	Output log file
+/NFL	No file logging
+/NDL	No dir logging
+c) ROBOCOPY %_source% %_dest% %_what% %_options%
+
+This line will call robocopy with the options you specified in the SET lines.
+
+Create a Scheduled Task
+
+Search for and open "Computer Management"
+Expand "Task Scheduler" 
+robocopy-task-scheduler1.jpg
+Task Scheduler
+Right click inside the tasks list and choose "Create New Task"
+General Tab
+Give your task a name and description on what it does, for the Security options, make 
+sure that your user account is set to run the task, and that the radio button for "Run 
+only when user is logged on" is selected
+
+robocopy-task-scheduler2.jpg
+General Tab
+
+
+Triggers Tab 
+Create a new trigger 
+Select when you want the task to begin, "On a schedule" is a good option to start 
+Change the Settings to how often you want to run the task and when (date and time) you 
+want it to start and reoccur 
+Advanced settings allow some additional options 
+Click OK when finished to create the task 
+robocopy-task-scheduler3.jpg
+Triggers
+Actions Tab 
+Create a new action 
+Action: Choose "Start a program" 
+Settings: Program/script: "C:\temp\robocopy-example.bat" 
+This is telling Windows to run "C:\temp\robocopy-example.bat" in Windows command 
+prompt. Change the path and filename inside the quotes to match where your script is 
+located and what it is named. It is recommended to keep the path/filename short and 
+avoid spaces. 
+robocopy-task-scheduler4.jpg
+Actions
+Conditions Tab 
+Additional options should you choose to use them. Defaults generally are fine for most 
+tasks. 
+robocopy-task-scheduler5.jpg
+Conditions
+
+Settings Tab 
+Additional options should you choose to use them. Defaults generally are fine for most 
+tasks.                 

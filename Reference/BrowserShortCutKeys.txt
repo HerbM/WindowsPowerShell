@@ -1,0 +1,62 @@
+Browser Keyboard Shortcuts For Chrome, Firefox, And Edge
+
+    CTRL + T
+    Open a New Tab.
+    CTRL + W
+    Close current tab.
+    CTRL + SHIFT + T
+    Open previously closed tab.
+    CTRL + TAB
+    Switch between open tabs.
+    CTRL + 1 to 8
+    Switch to the tab of the corresponding number from left to right.
+    CTRL + 1
+    Switch to the first tab.
+    CTRL + 9
+    Switch to the last tab.
+    CTRL + N
+    Open a new browser window.
+    ALT + F4
+    Close the current browser window. This keyboard shortcut works across Windows.
+    F11
+    Go Fullscreen.
+    ALT + Home
+    Open the home page.
+    Backspace or ALT + Left Arrow
+    Go back.
+    ALT + Right Arrow
+    Go forward.
+    F5 or CTRL + R
+    Reload the current page.
+    Esc
+    Stop the loading of the web page.
+    CTRL + P
+    Print the web page.
+    CTRL + S
+    Save the web page to your computer. Read about downloading a complete website for offline use.
+    CTRL + O
+    Open a file stored on your computer. Modern browsers support PDF files. So, you can use this shortcut to open a PDF file, or any other file such as an image, on your web browser.
+    CTRL + H
+    Open browser history.
+    CTRL + J
+    Open downloads history.
+    CTRL + D
+    Add the current web page to the bookmarks.
+    CTRL + Enter
+    Adds www and .com to the name of the website typed in the address bar. For example, type Fossbytes in the address bar and press CTRL + Enter. It will autocomplete to www.fossbytes.com
+    CTRL +
+    Zoom-in.
+    CTRL –
+    Zoom-out.
+    CTRL + 0
+    Reset zoom.
+    Home
+    Go to the top of the web page.
+    End
+    Go to the bottom of the web page.
+    CTRL + F
+    Search the web page.
+    CTRL + L or F6 or ALT + D
+    Jump to the address bar. You can also use ALT + Enter to open the web address typed in the address bar in a new tab.
+    CTRL + SHIFT + Delete
+    Open the Clear Browsing Data option.
