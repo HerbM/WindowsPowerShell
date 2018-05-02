@@ -30,7 +30,8 @@ write-warning "$(get-date -f 'HH:mm:ss') $(LINE) PowerShell $($psversiontable.PS
   # Show-ConsoleColor,Get-Syntax(aliases),++Select-History,++FullHelp,++d cmds, esf (needs *,? support),++Add-ToolPath,Reduce History Saved
   # Started Add-Path(crude) -- more ToDo notes
 
-  # ToDo: Add support for local-only PS1 files -- started
+  # ToDo: Use -EA IGNORE for most handled errors
+  # ToDo: Add support for local-only PS1 files -- started  ???
   # ToDo: Move notes out of this file
   # ToDo: Test without Admin privs and skip issues -- partial
   # ToDo: Add Update-Help as background job?
@@ -48,7 +49,7 @@ write-warning "$(get-date -f 'HH:mm:ss') $(LINE) PowerShell $($psversiontable.PS
   #         Git, Enable Scripting/Remoting etc.,
   #         Configure new build, Firewall off,RDP On,No IPv6 etc
   #         Split out functions etc to "Scripts" directory
-  #         Speed up History loading?
+  #         Speed up History loading?  
   #         get-process notepad++ | Select-Object name,starttime,productversion,path
   #         Get-WMIObject win32_service -filter 'name = "everything"' | Select-Object name,StartMode,State,Status,Processid,StartName,DisplayName,PathName | Format-Table
 
@@ -56,9 +57,9 @@ write-warning "$(get-date -f 'HH:mm:ss') $(LINE) PowerShell $($psversiontable.PS
   # Git-Windows Git (new file), previous commit worked on JR 2 machines
   # Improve goHash, Books & Dev more general, fix S: T: not found
   # Everything? es?
-  # Add rdir,cdir,mdir aliases
+  # Added rdir,cdir,mdir aliases  DONE ???
   # Close with Set-ProgramAlias
-  # Add new set-programalias nscp 'C:\Program Files\NSClient++\nscp.exe' -force -scope
+  # Add new set-programalias nscp 'C:\Program Files\NSClient++\nscp.exe' -force -scope DONE???
   # Fix RDP alias, Put 7-zip, Util,Unx in S:\Programs, New program searcher?  Better?
   # Boottime,ProfilePath moved up,LINE/FILE/Write-LOG,LogFilePath?,7z
   # Add/fix BootTime Function
@@ -103,6 +104,11 @@ write-warning "$(get-date -f 'HH:mm:ss') $(LINE) PowerShell $($psversiontable.PS
   #              https://github.com/wsargent/docker-cheat-sheet
   # Wakoopa      https://web.appstorm.net/how-to/app-management-howto/how-to-discover-new-apps-with-wakoopa/
   # VirusTotal   https://www.virustotal.com/#/settings/apikey 
+  # XPDF & Tools PDFToText is the main reason I am adopting this tool:
+  #              GUI Program:	https://xpdfreader-dl.s3.amazonaws.com/XpdfReader-win64-4.00.01.exe
+  #              CLI Tools: 	https://xpdfreader-dl.s3.amazonaws.com/xpdf-tools-win-4.00.zip
+  #              Extra Fonts:	https://xpdfreader-dl.s3.amazonaws.com/xpdf-t1fonts.tar.gz
+  #              Source code:	https://xpdfreader-dl.s3.amazonaws.com/xpdf-4.00.tar.gz
 
 
 $ProfileDirectory   = Split-Path $Profile
@@ -1099,7 +1105,7 @@ Function esf {
   $target = "$($target -join '.*')"
   $args = $parms + $type + $name
   write-verbose "es $target $($args -join ' ')"
-  write-verbose "$(& 'C:\Program Files\WindowsPowerShell\Modules\Pscx\3.2.1.0\Apps\EchoArgs.exe' $target @args)"
+  # write-verbose "$(& 'C:\Program Files\WindowsPowerShell\Modules\Pscx\3.2.1.0\Apps\EchoArgs.exe' $target @args)"
   es $target @args | ForEach-Object {
     if ($_ -match '^(\d\d/\d\d/\d{4})\s+') {
       $_ -replace '^(\d\d/\d\d/\d{4})\s+', "$(Get-Date $Matches[1] -format 'yyyy-MM-dd') "

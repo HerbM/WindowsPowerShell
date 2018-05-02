@@ -18,7 +18,7 @@ If ($QuoteMatching -and $BraceMatching) { $Matching = $True }
 # OEMKey https://msdn.microsoft.com/en-us/library/system.windows.forms.keys%28v=vs.110%29.aspx?f=255&MSPPError=-2147217396
 # [System.ConsoleKey] | gm -static | more
 # Alt-w current line to history
-#$SaveHistory = (Get-History -count 3000).commandline
+$SaveHistory = (Get-History -count 3000).commandline
 write-warning "History count $((Get-History).count)"
 write-warning "History will not be reloaded"
 
@@ -833,12 +833,12 @@ if (Get-Module PSReadline) {
   Set-PSReadLineKeyHandler -Key 'F7','F9'             -Function HistorySearchBackward
   Set-PSReadLineKeyHandler -Key 'Shift+F7','Shift+F9' -Function HistorySearchForward
   if ($SaveHistory -and !(Get-History).count) { Add-History $SaveHistory };
-  #try {
-  #  if ($SaveHistory) {
-  #    $SaveHistory | ForEach-Object { [Microsoft.PowerShell.PSConsoleReadLine]::AddToHistory($_) }
-  #    $SaveHistory = $null
-  #  }
-  #} catch { } # just ignore this for VSCode
+  try {
+    if ($SaveHistory) {
+      $SaveHistory | ForEach-Object { [Microsoft.PowerShell.PSConsoleReadLine]::AddToHistory($_) }
+      $SaveHistory = $null
+    }
+  } catch { } # just ignore this for VSCode
 }
 
 Write-Warning "$(LINE) New Errors: $($Error.Count - $Private:ErrorCount)"

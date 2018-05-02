@@ -1,10 +1,17 @@
-Function Get-ServiceVersion {
+Function Get-ServiceVersion {    #  :TODO:  :HM:
   [CmdletBinding()]Param(
-    Name
+    $Name
   )
-  Get-Process
-  Get-WMIOBject Win32_Service -filter 'Name = "Everything"'
-  $Path = (Get-WMIOBject Win32_Service -filter 'Name = "Everything"').PathName ; & ([scriptblock]::Create("EchoArgs $Path"))
+  # Get-Process
+  # Get-WMIOBject Win32_Service -filter 'Name = "Everything"'
+  # 'Name = "Everything"'
+  $Filter = "Name = `"$Name`""
+  $Path = (Get-WMIOBject Win32_Service -filter $Filter).PathName
+  ($Path | % { 
+    Write-Verbose "Path: $_" 
+    $_ | Get-ChildItem 
+  }).VersionInfo  
+  # & ([scriptblock]::Create("EchoArgs $Path"))
 }
 
 
