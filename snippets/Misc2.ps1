@@ -1,5 +1,7 @@
 
 <#
+XpdfReader-win64-4.00.01.exe
+
 https://www.fosshub.com/IrfanView.html/iview451_plugins_x64_setup.exe
 
 Just wrote a little (3 Lines 🤣)script to extract stored credentials from Edge && IE
