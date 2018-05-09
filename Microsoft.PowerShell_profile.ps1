@@ -14,10 +14,12 @@
     #[ValidateSet('SilentlyContinue','')]                                  [switch]$InformationAction
   )
 
-
+$StartTime  = Get-Date
+$ErrorCount = $Error.Count
 Function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
 New-Alias -Name LINE -Value Get-CurrentLineNumber -Description 'Returns the caller''s current line number' -force -Scope Global -Option allscope
-write-warning "$(get-date -f 'HH:mm:ss') $(LINE) PowerShell $($psversiontable.PSVersion.tostring())"
+write-warning "$(LINE) $(get-date -f 'HH:mm:ss') PowerShell $($psversiontable.PSVersion.tostring())"
+write-warning "$(LINE) Staring error count: $ErrorCount"
 
 
   # 'Continue', 'Ignore', 'Inquire', 'SilentlyContinue', 'Stop', 'Suspend' #'Continue'          'Inquire'           'Stop'
@@ -114,7 +116,7 @@ write-warning "$(get-date -f 'HH:mm:ss') $(LINE) PowerShell $($psversiontable.PS
 $ProfileDirectory   = Split-Path $Profile
 $PSProfile          = $MyInvocation.MyCommand.Definition
 $PSProfileDirectory = Split-Path $PSProfile
-$ProfileLogPath = $Profile -replace '\.ps1$','LOG.txt'
+$ProfileLogPath     = $Profile -replace '\.ps1$','LOG.txt'
 write-information "$(LINE) Use `$Profile   for path to Profile: $Profile"
 write-information "$(LINE) Use `$PSProfile for path to Profile: $PSProfile"
 Write-Information "$(LINE) ProfileLogPath: $ProfileLogPath"
@@ -122,7 +124,7 @@ Write-Information "$(LINE) ProfileLogPath: $ProfileLogPath"
 try {
   $ProfileScriptDirectories = $ProfileDirectory, $PSProfileDirectory,
             "$ProfileDirectory\Scripts*", "$PSProfileDirectory\Scripts*"
-  Join-Path $ProfileScriptDirectories Local*.ps1 -resolve -ea 0 2>$Null |
+  Join-Path $ProfileScriptDirectories Local*.ps1 -resolve -ea Ignore 2>$Null |
     Select-Object -uniq | ForEach-Object {
     try {
       . $_  2>&1
@@ -308,11 +310,12 @@ Function Add-Path {
 # Install-Module -Scope CurrentUser -Name Assert
 # Chrome key mapper?  chrome://extensions/configureCommands
 # Chrome extensions   chrome://extensions/
-write-warning "$(get-date -f 'HH:mm:ss') $(LINE)"
+
 Function Get-NewLine { [environment]::NewLine }; new-alias NL Get-NewLine -force
 if (! (Get-Command write-log -type Function,cmdlet,alias -ea 0)) {
   new-alias write-log write-verbose -force -scope Global -ea 0
 }
+#(dir C:\Util\*64.???).fullname | Where { $_ -replace '64(?=\.)' | dir -name -ea ignore } | ForEach-Object { New-Alias $($Name -replace '\.exe') $_ -force -Scope Global }
 new-alias kp      'C:\Program Files (x86)\KeePass2\KeePass.exe' -force -scope Global
 new-alias KeePass 'C:\Program Files (x86)\KeePass2\KeePass.exe' -force -scope Global
 new-alias rdir    Remove-Item  -force -scope Global -ea 0
@@ -2120,14 +2123,33 @@ Function Get-ErrorDetail {
   }
 }
 
-Function MyPSHost {
+Function Get-PSHost {
   $bit = if ([Environment]::Is64BitProcess) {'64-bit'} else {'32-bit'}
-  If ($host = get-host) {
-    return "$($host.name) $($host.version) $bit process"
+  If ($Host) {
+    return "$($Host.name) $($host.version) $bit process"
   } else {
     return 'PowerShell host not found'
   }
 }
+
+Function Get-Property { 
+  [CmdletBinding()]param(
+    [Parameter(ValueFromPipeline)][psobject]$object,
+    [switch]$AsHash
+  ) 
+  Process {
+    If ($AsHash) {
+      $Property = [ordered]@{}
+      $Object.psobject.get_properties() | ForEach-Object {
+        $Property += @{ $_.Name = $_.Value }
+      }   
+      $Property
+    } else {
+      $Object.psobject.get_properties() 
+    }
+  }
+}
+
 
 Function Get-PSVersion {
   "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"
@@ -2198,7 +2220,9 @@ if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $i
 }
 if ((Get-Location) -match '^.:\\Windows\\System32$') { Set-Location \ }
 
-write-warning "$(get-date -f 'HH:mm:ss') $(LINE) Completed: $Profile "
+$Duration = ((Get-Date) - $StartTime).TotalSeconds
+Write-Warning "$(LINE) $(get-date -f 'HH:mm:ss') New errors: $($Error.Count - $ErrorCount)"
+Write-Warning "$(LINE) Duration: $Duration Completed: $Profile"
 
 <#
 Key                   Function                      Description

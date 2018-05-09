@@ -81,6 +81,17 @@ Function Find-GPOItem {
 
 start-transaction -whatif; Get-Process | Where-Object Path -match 'Nuance' | Stop-Process -force; Ren .\Nuance\ NuanceSave ; Complete-Transaction
 
+https://blogs.technet.microsoft.com/poshchap/2017/09/22/one-liner-query-the-ad-schema-for-user-object-attributes/
+Get-ADObject -SearchBase (Get-ADRootDSE).SchemaNamingContext -Filter {name -like "User"} -Properties MayContain,SystemMayContain |
+Select-Object @{n="Attributes";e={$_.maycontain + $_.systemmaycontain}} | 
+Select-Object -ExpandProperty Attributes |
+Sort-Object
+
+Get-ADObject -SearchBase (Get-ADRootDSE).SchemaNamingContext -ldapfilter '(systemFlags:1.2.840.113556.1.4.803:=4)' -Properties systemFlags |
+Select-Object Name |
+Sort-Object Name
+
+
 Difficult Conversations
 Primal Leadership
 Necessary Endings 

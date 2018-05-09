@@ -21,6 +21,16 @@ nslookup from each DC to himself EXPLICITLY and to his configured DNS (as a clie
 Check your sites if you have significant sites or sitelinks etc.  Make sure everyone has a connection whether auto or manual that WORKS.
 If you continue to have a sick DC, "dcpromo cycle him"  (non-DC and back to DC) once you are sure the DNS setting are all correct.
 
+
+# Find Terminal Server Licensing Servers in domain
+# https://dimitri.janczak.net/2015/08/21/find-the-rds-licensing-servers-in-your-domain/
+dsquery * -filter "(&(CN=TermServLicensing)(objectClass=serviceConnectionPoint))"
+# 2016 Active Directory module from feature
+Get-ADObject -LDAPFilter "(&(CN=TermServLicensing)(objectClass=serviceConnectionPoint))"
+# for pscx
+Get-ADObject -Filter "(&(CN=TermServLicensing)(objectClass=serviceConnectionPoint))"
+# xxx Get-ADObject -Filter {objectClass -eq 'serviceConnectionPoint' -and Name -eq 'TermServLicensing'}
+
 Set IP attribs:
   netsh int ip set address local static 10.10.1.3
   255.255.255.0 10.10.1.1 2
