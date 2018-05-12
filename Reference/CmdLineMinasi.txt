@@ -14,6 +14,10 @@ Sounds like you know how to use repadmin so that and DCDiag are your friend.
 I like to force syncs, especially from the problem DC, with these:
 repadmin /syncall /AdeP     # PUSH
 repadmin /syncall /Ade        # PULL 
+`Repadmin /replsum /sort:delta`
+Brett Miller [12:05 PM]
+Also love `Get-ADReplicationAttributeMetadata` as I used to use `/showobjmeta` quite regularly.
+
 ## And read all the errors for both that and DCDiag on every domain controller.  If you don't have a giant forest you can use /E for enterprise (every DC in forest) to check  them all at once.
 (Never did find a /d or similar switch for "all in domain" which irritates me.)
 Check DNS carefully with EXPLICIT nslookup.
@@ -168,6 +172,13 @@ net statistics workstation | findstr /c:"Statistics since"
 for /f "tokens=3-4" %a in ('net statistics workstation ^| findstr /c:"Statistics since"') do @echo Up since: %a %b
 dsadd, dsmod, dsget, dsquery, dsrm
 Use /? to get help, /listhelp for syntax on writing lists of DCs and, if ye be brave, matey, /experthelp
+
+Repadmin /replsum /sort:delta`
+Brett Miller [12:05 PM] Also love 
+Get-ADReplicationAttributeMetadata 
+used to use `/showobjmeta` quite regularly.
+
+
 repadmin /kcc dcname forces a topology and
   replication partner check
 repadmin /rebuildgc dcname causes a GC server
@@ -1612,3 +1623,14 @@ WordPad Keyboard Shortcuts•Alt + F4 Close WordPad
 
 http://www.curata.com/blog/content-curation-tools-the-ultimate-list/
 https://www.google.com/search?q=dealing+with+information+overload&gws_rd=ssl
+
+
+
+Brett Miller [1:54 PM] I'd maybe tweet Ashley McGlone.
+https://blogs.technet.microsoft.com/ashleymcglone/2012/10/17/ad-group-history-mystery-powershell-v3-repadmin/
+The first link he references in the above doesn't work anymore but is a good read about using replicated attributed to track group changes iirc
+Or keywords searching the adds team blog to see if any references pop up
+https://social.msdn.microsoft.com/Search/en-US?query=Repadmin&beta=0&rn=Ask+the+Directory+Services+Team&rq=site:https://blogs.technet.microsoft.com/askds&ac=4#refinementChanges=&pageNumber=3&showMore=false (edited)
+https://blogs.technet.microsoft.com/askds/
+blogs.technet.microsoft.com
+Ask the Directory Services Team | Microsoft's official enterprise support blog for AD DS and more

@@ -886,11 +886,44 @@ Function Get-DriveTypeName ($type) {
   if (($type -le 0) -or ($type -ge $typename.count)) {return 'INVALID'}
   $typename[$type]
 }
+
 Function Get-Volume {
- (Get-WMIObject win32_volume ) | Where-Object {$_.DriveLetter -match '[A-Z]:'} |
-  ForEach-Object { "{0:2} {0:2} {0:9} {S:9} "-f $_.DriveLetter, $_.DriveType, (Get-DriveTypeName $_.DriveType), $_.Label, ($_.Freespace / 1GB)}
-  # % {"$($_.DriveLetter) $($_.DriveType) $(Get-DriveTypeName $_.DriveType) $($_.Label) $($_.Freespace / 1GB)GB"}
+  [CmdletBinding(DefaultParameterSetName='Name')]Param(
+    [String[]]$Name,
+    [String]$Scope = 'Local',
+    [switch]$UseTransaction
+  )
+  If ($PSBoundParameters.ContainsKey('Name'))  {  
+    $Name = $Name | ForEach-Object { 
+      If (Test-Path $_ -ea Ignore) { (Resolve-Path $Name).Drive } Else { $Name } 
+    }
+    $PSBoundParameters.Name = $Name -replace '(:.*)' 
+  } 
+  $PSBoundParameters.PSProvider = 'FileSystem'
+  Get-PSDrive @PSBoundParameters
 }
+
+Function Get-Free {
+  [CmdletBinding(DefaultParameterSetName='Name')]Param(
+    [String[]]$Name,
+    [String]$Scope = 'Local',
+    [switch]$UseTransaction
+  )
+  If ($PSBoundParameters.ContainsKey('Name'))  {  
+    $Name = $Name | ForEach-Object { 
+      If (Test-Path $_ -ea Ignore) { (Resolve-Path $Name).Drive } Else { $Name } 
+    }
+    $PSBoundParameters.Name = $Name -replace '(:.*)' 
+  } 
+  $PSBoundParameters.PSProvider = 'FileSystem'
+  Get-PSDrive @PSBoundParameters | Where-Object Used -ne ''
+}
+
+#  Get-PSVolume
+# (Get-WMIObject win32_volume ) | Where-Object {$_.DriveLetter -match '[A-Z]:'} |
+#  ForEach-Object { "{0:2} {0:2} {0:9} {S:9} "-f $_.DriveLetter, $_.DriveType, (Get-DriveTypeName $_.DriveType), $_.Label, ($_.Freespace / 1GB)}
+#  # % {"$($_.DriveLetter) $($_.DriveType) $(Get-DriveTypeName $_.DriveType) $($_.Label) $($_.Freespace / 1GB)GB"}
+#}
 
 Function Get-WMIClassInfo {
   [CmdletBinding()] param([string]$className, [switch]$WrapList)

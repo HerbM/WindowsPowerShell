@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
 By modifying this file, you can customize your context menu popuped as right clicking on the edit zone.
-It may be more convinient to access to your frequent used commands via context menu than via the top menu.
+It may be more convenient to access to your frequent used commands via context menu than via the top menu.
 
 Please check "How to Customize the Context Menu" on:
 http://sourceforge.net/apps/mediawiki/notepad-plus/index.php?title=Context_Menu
@@ -20,6 +20,9 @@ http://sourceforge.net/apps/mediawiki/notepad-plus/index.php?title=Context_Menu
         <Item MenuEntryName="Edit" MenuItemName="Select all" />
         <Item MenuEntryName="Edit" MenuItemName="Begin/End Select" />
         <!-- id="0" is the separator -->
+        <Item id="0" />
+        <Item MenuEntryName="Edit" MenuItemName="Trim Trailing Spaces" />
+        <Item MenuEntryName="Edit" MenuItemName="Remove Blank Lines (Containing Blank characters)" />
         <Item id="0" />
         <!-- You can use command id to add the commands you want. 
 		Check english.xml to get commands id:
