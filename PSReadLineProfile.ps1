@@ -28,7 +28,7 @@ if (!(Get-Module PSReadline -listavailable -ea Ignore)) {
   if ($PSVersionNumber -ge 5.1) { $parms += '-AllowClobber' }
   Install-Module PSReadline @Parms -ea Ignore 
 }
-if ( (Get-Module PSReadline -listavailable -ea 0)) {
+if ( (Get-Module PSReadline -listavailable -ea ignore)) {
   Import-Module PSReadLine
 }
 $PSHistoryFileName  = 'PSReadLine_history.txt'
@@ -42,7 +42,7 @@ $PSHistory          = "$PSHistoryDirectory\$PSHistoryFileName"
 													$oh -ne $PSHistoryDirectory                   -and
 													$oh -ne $PSHistory) { $oh })
 		$OldHistory += "$(Split-Path $Profile)\$PSHistoryFileName"
-		$OldHistory  = Get-ChildItem $OldHistory -file -ea 0 | Sort-Object -uniq lastwritetime,fullname
+		$OldHistory  = Get-ChildItem $OldHistory -file -ea ignore | Sort-Object -uniq lastwritetime,fullname
 		$null =  $OldHistory | ForEach-Object {
 			Get-Content $_ -ea Stop | out-file -append $PSHistory -ea Stop
 			Remove-Item $_ -ea Stop
