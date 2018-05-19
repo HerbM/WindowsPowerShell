@@ -25,8 +25,8 @@ If ($Host.PrivateData.ErrorBackgroundColor) {
   $Host.PrivateData.ErrorForegroundColor = 'White'
 }
 
-  # 'Continue', 'Ignore', 'Inquire', 'SilentlyContinue', 'Stop', 'Suspend' 
-  
+  # 'Continue', 'Ignore', 'Inquire', 'SilentlyContinue', 'Stop', 'Suspend'
+
   # Fixed Alt+(,Alt+),Get-DotNetAssembly,Get-RunTime,Add Get-Accelerator,[Accelerators]
   # Temporary Fix to Go(works without Jump), Scripts to path,find and run Local*.ps1"
   # Fix 6.0 problems, PSGallery, Where.exe output, PSProvider,Jump.Location load
@@ -53,7 +53,7 @@ If ($Host.PrivateData.ErrorBackgroundColor) {
   #         Git, Enable Scripting/Remoting etc.,
   #         Configure new build, Firewall off,RDP On,No IPv6 etc
   #         Split out functions etc to "Scripts" directory
-  #         Speed up History loading?  
+  #         Speed up History loading?
   #         get-process notepad++ | Select-Object name,starttime,productversion,path
   #         Get-WMIObject win32_service -filter 'name = "everything"' | Select-Object name,StartMode,State,Status,Processid,StartName,DisplayName,PathName | Format-Table
 
@@ -107,7 +107,7 @@ If ($Host.PrivateData.ErrorBackgroundColor) {
   # docker       https://docs.docker.com/install/windows/docker-ee/#use-a-script-to-install-docker-ee
   #              https://github.com/wsargent/docker-cheat-sheet
   # Wakoopa      https://web.appstorm.net/how-to/app-management-howto/how-to-discover-new-apps-with-wakoopa/
-  # VirusTotal   https://www.virustotal.com/#/settings/apikey 
+  # VirusTotal   https://www.virustotal.com/#/settings/apikey
   # XPDF & Tools PDFToText is the main reason I am adopting this tool:
   #              GUI Program:	https://xpdfreader-dl.s3.amazonaws.com/XpdfReader-win64-4.00.01.exe
   #              CLI Tools: 	https://xpdfreader-dl.s3.amazonaws.com/xpdf-tools-win-4.00.zip
@@ -138,12 +138,18 @@ try {
   write-warning "2: Caught error in loading local profile scripts"
 }
 
-try {            
+try {
   # Clean the $Env:Path
   $Script:AddPath = "$PSScriptRoot\Tools", "$PSScriptRoot\Scripts"
   $SavePath = (($Env:Path -split ';' -replace '(?<=[\w\)])[\\;\s]*$') + $Script:AddPath |
     Where-Object { $_ -and (Test-Path $_) } | Select-Object -uniq) -join ';'
   if ($SavePath) { $Env:Path, $SavePath = $SavePath, $Env:Path }
+  Function Measure-CommandPath {
+    $env:pathext -split ';' | ForEach-Object {
+      (Join-Path ($env:path -split ';') "*$_" -resolve -ea 0) |
+      ForEach-Object { Get-Item -literal $_ }
+    } | Group-Object DirectoryName -noelement | Sort-Object Count,Name
+  }
   Function Get-PSVersion {"$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"}
 
   Function Test-Administrator {
@@ -473,12 +479,12 @@ Function Set-ProgramAlias {
   $Old = Get-Alias $Name -ea Ignore
   if ($IgnoreAlias) { remove-item Alias:$Name -force -ea Ignore }
   $SearchPath = if ($FirstPath) {
-    $Path + 
-    (Invoke-Command { where.exe $Command 2>$Null } -ea Ignore) + 
+    $Path +
+    (Invoke-Command { where.exe $Command 2>$Null } -ea Ignore) +
     @(get-command $Name -all -ea Ignore).definition
   } else {
-    @(get-command $Name -all -ea Ignore).definition + 
-    (Invoke-Command { where.exe $Command 2>$Null } -ea Ignore) + 
+    @(get-command $Name -all -ea Ignore).definition +
+    (Invoke-Command { where.exe $Command 2>$Null } -ea Ignore) +
     $Path
   }
   Remove-Item Alias:$Name -force -ea Ignore
@@ -895,12 +901,12 @@ Function Get-Volume {
     [String]$Scope = 'Local',
     [switch]$UseTransaction
   )
-  If ($PSBoundParameters.ContainsKey('Name'))  {  
-    $Name = $Name | ForEach-Object { 
-      If (Test-Path $_ -ea Ignore) { (Resolve-Path $Name).Drive } Else { $Name } 
+  If ($PSBoundParameters.ContainsKey('Name'))  {
+    $Name = $Name | ForEach-Object {
+      If (Test-Path $_ -ea Ignore) { (Resolve-Path $Name).Drive } Else { $Name }
     }
-    $PSBoundParameters.Name = $Name -replace '(:.*)' 
-  } 
+    $PSBoundParameters.Name = $Name -replace '(:.*)'
+  }
   $PSBoundParameters.PSProvider = 'FileSystem'
   Get-PSDrive @PSBoundParameters
 }
@@ -911,12 +917,12 @@ Function Get-Free {
     [String]$Scope = 'Local',
     [switch]$UseTransaction
   )
-  If ($PSBoundParameters.ContainsKey('Name'))  {  
-    $Name = $Name | ForEach-Object { 
-      If (Test-Path $_ -ea Ignore) { (Resolve-Path $Name).Drive } Else { $Name } 
+  If ($PSBoundParameters.ContainsKey('Name'))  {
+    $Name = $Name | ForEach-Object {
+      If (Test-Path $_ -ea Ignore) { (Resolve-Path $Name).Drive } Else { $Name }
     }
-    $PSBoundParameters.Name = $Name -replace '(:.*)' 
-  } 
+    $PSBoundParameters.Name = $Name -replace '(:.*)'
+  }
   $PSBoundParameters.PSProvider = 'FileSystem'
   Get-PSDrive @PSBoundParameters | Where-Object Used -ne ''
 }
@@ -1105,7 +1111,7 @@ Function Get-RunTime {
   }
 }; New-Alias rt Get-RunTime -force -scope Global
 
-Function get-syntax   {
+Function Get-Syntax   {
   param(
   )
   $Result = get-command -syntax @args
@@ -2167,20 +2173,20 @@ Function Get-PSHost {
   }
 }
 
-Function Get-Property { 
+Function Get-Property {
   [CmdletBinding()]param(
     [Parameter(ValueFromPipeline)][psobject]$object,
     [switch]$AsHash
-  ) 
+  )
   Process {
     If ($AsHash) {
       $Property = [ordered]@{}
       $Object.psobject.get_properties() | ForEach-Object {
         $Property += @{ $_.Name = $_.Value }
-      }   
+      }
       $Property
     } else {
-      $Object.psobject.get_properties() 
+      $Object.psobject.get_properties()
     }
   }
 }
