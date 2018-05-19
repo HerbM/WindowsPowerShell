@@ -64,6 +64,7 @@ https://www.red-gate.com/simple-talk/dotnet/net-framework/high-performance-power
 https://docs.microsoft.com/en-us/powershell/wmf/5.0/feedback_symbolic
   Symbolic Links HardLinks Reparse Points Junction Points
 
+http://gpsearch.azurewebsites.net/  Azure GPO Group Search Find Azure Policy Search Find  
 https://www.ghacks.net/2017/11/07/search-the-group-policy-with-microsofts-gpsearch-web-service/  
   http://wp.me/pLog8-71
 https://4sysops.com/archives/four-ways-to-search-for-group-policy-settings/
@@ -79,13 +80,19 @@ Function Find-GPOItem {
   start "http://gpsearch.azurewebsites.net/default.aspx?search=$Search"
 }	
 
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns")]
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingCmdletAliases",Justification="Resolution in progress.")]
+   
 start-transaction -whatif; Get-Process | Where-Object Path -match 'Nuance' | Stop-Process -force; Ren .\Nuance\ NuanceSave ; Complete-Transaction
+"powershell.scriptAnalysis.settingsPath": "C:\\Users\\A469526\\Documents\\WindowsPowerShell\\Config\\ScriptAnalyzerProfile.txt",
 
 https://blogs.technet.microsoft.com/poshchap/2017/09/22/one-liner-query-the-ad-schema-for-user-object-attributes/
 Get-ADObject -SearchBase (Get-ADRootDSE).SchemaNamingContext -Filter {name -like "User"} -Properties MayContain,SystemMayContain |
 Select-Object @{n="Attributes";e={$_.maycontain + $_.systemmaycontain}} | 
 Select-Object -ExpandProperty Attributes |
 Sort-Object
+
+$obj.PSObject.Properties.Remove('Foo')
 
 Get-ADObject -SearchBase (Get-ADRootDSE).SchemaNamingContext -ldapfilter '(systemFlags:1.2.840.113556.1.4.803:=4)' -Properties systemFlags |
 Select-Object Name |

@@ -81,6 +81,7 @@ Function Set-Location {
   Param(
     [Parameter(ParameterSetName='Path', Position=0, ValueFromPipeline=$true, 
       ValueFromPipelineByPropertyName=$true)][string]$Path,
+    [Parameter(ParameterSetName='Path', ValueFromRemainingArguments)][string[]]$PathArgs,
     [Parameter(ParameterSetName='LiteralPath', Mandatory=$true, ValueFromPipelineByPropertyName=$true)]
     [Alias('PSPath')][string]$LiteralPath, 
     [switch]$PassThru,
@@ -94,14 +95,23 @@ Function Set-Location {
         Split-Path $PSBoundParameters.LiteralPath -ea ignore
       Write-Verbose "Begin LiteralPath: $($PSBoundParameters.LiteralPath)" 
     }
+    If ($PSBoundParameters.ContainsKey('PathArgs')) {
+      $P = (@($Path) + $PathArgs) -Join ' ' 
+      If (Test-Path $P -ea ignore) {
+        $Path = $PSBoundParameters.Path = $P
+      }
+      Write-Verbose "Path: [$Path] P: [$P]  PathArgs: [$PathArgs]"
+      [Void]$PSBoundParameters.Remove('PathArgs')
+    }
     If ($PSBoundParameters.ContainsKey('Path') -and 
         (Test-Path $PSBoundParameters.Path -PathType Leaf -ea Ignore)) {
-      $PSBoundParameters.Path = Split-Path $PSBoundParameters.Path -ea ignore
+      $PSBoundParameters.Path = Split-Path $Path -ea ignore
       Write-Verbose "Begin Path: $($PSBoundParameters.Path)"  
     }
     Write-Verbose "[BEGIN  ] Starting $($MyInvocation.Mycommand)"
     Write-Verbose "[BEGIN  ] Using parameter set $($PSCmdlet.ParameterSetName)"
     Write-Verbose ($PSBoundParameters | Out-String)
+    $MyInvocation
     try {
       $outBuffer = $null
       if ($PSBoundParameters.TryGetValue('OutBuffer', [ref]$outBuffer)) {

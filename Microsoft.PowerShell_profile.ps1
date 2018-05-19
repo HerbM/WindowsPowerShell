@@ -14,13 +14,16 @@
     #[ValidateSet('SilentlyContinue','')]                                  [switch]$InformationAction
   )
 
-$StartTime  = Get-Date
+$Private:StartTime  = Get-Date
 $ErrorCount = $Error.Count
 Function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
 New-Alias -Name LINE -Value Get-CurrentLineNumber -Description 'Returns the caller''s current line number' -force -Scope Global -Option allscope
 write-warning "$(LINE) $(get-date -f 'HH:mm:ss') PowerShell $($psversiontable.PSVersion.tostring())"
-write-warning "$(LINE) Staring error count: $ErrorCount"
-
+write-warning "$(LINE) Starting error count: $ErrorCount"
+If ($Host.PrivateData.ErrorBackgroundColor) {
+  $Host.PrivateData.ErrorBackgroundColor = 'Red'
+  $Host.PrivateData.ErrorForegroundColor = 'White'
+}
 
   # 'Continue', 'Ignore', 'Inquire', 'SilentlyContinue', 'Stop', 'Suspend' 
   
@@ -135,18 +138,18 @@ try {
   write-warning "2: Caught error in loading local profile scripts"
 }
 
-try {
-  #Clean the $Env:Path
-  $SavePath = ($Env:Path -split ';' -replace '(?<=[\w\)])[\\;\s]*$' |
-  Where-Object { $_ -and (Test-Path $_) } | Select-Object -uniq) -join ';'
+try {            
+  # Clean the $Env:Path
+  $Script:AddPath = "$PSScriptRoot\Tools", "$PSScriptRoot\Scripts"
+  $SavePath = (($Env:Path -split ';' -replace '(?<=[\w\)])[\\;\s]*$') + $Script:AddPath |
+    Where-Object { $_ -and (Test-Path $_) } | Select-Object -uniq) -join ';'
   if ($SavePath) { $Env:Path, $SavePath = $SavePath, $Env:Path }
   Function Get-PSVersion {"$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"}
 
   Function Test-Administrator {
-    ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
-     [Security.Principal.WindowsBuiltInRole] "Administrator")
+  ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
+    [Security.Principal.WindowsBuiltInRole] "Administrator")
   }
-  #write-information "$(LINE) Test-Administrator: $(Test-Administrator)"
   #Function Test-Administrator { (whoami /all | Select-Object -string S-1-16-12288) -ne $null }
   #if ((whoami /user /priv | Select-Object -string S-1-16-12288) -ne $null) {'Administrator privileges: ENABLED'} #else {'Administrator privileges: DISABLED'}
   if ($AdminEnabled = Test-Administrator) {
@@ -464,8 +467,8 @@ Function Set-ProgramAlias {
     [Alias('Program')]$Command,
             [string[]]$Path,
             [string[]]$Preferred,
-    [switch]          $FirstPath,
-    [switch]          $IgnoreAlias
+              [switch]$FirstPath,
+              [switch]$IgnoreAlias
   )
   $Old = Get-Alias $Name -ea Ignore
   if ($IgnoreAlias) { remove-item Alias:$Name -force -ea Ignore }
@@ -2243,18 +2246,19 @@ if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $i
   }
   if ((Get-Location) -match '^.:\\Windows') {
     If (Test-Path $PSProfileDirectory) {
-      Set-Location $PSProfileDirectory
+      pushd $PSProfileDirectory
     } else {
-      Set-Location $Home
+      pushd $Home
     }
-    if ((Get-Location) -match '^.:\\Windows') { Set-Location \ }
+    if ((Get-Location) -match '^.:\\Windows') { pushd \ }
   }
 }
-if ((Get-Location) -match '^.:\\Windows\\System32$') { Set-Location \ }
+if ((Get-Location) -match '^.:\\Windows\\System32$') { pushd \ }
+$PSDefaultParameterValues['Get-ChildItem:Force'] = $True
 
-$Duration = ((Get-Date) - $StartTime).TotalSeconds
+$Private:Duration = ((Get-Date) - $Private:StartTime).TotalSeconds
 Write-Warning "$(LINE) $(get-date -f 'HH:mm:ss') New errors: $($Error.Count - $ErrorCount)"
-Write-Warning "$(LINE) Duration: $Duration Completed: $Profile"
+Write-Warning "$(LINE) Duration: $Private:Duration Completed: $Profile"
 
 <#
 Key                   Function                      Description
@@ -2445,4 +2449,3 @@ Unbound               NextLine                      Move the cursor to the next 
 Unbound               ShellNextWord                 Move the cursor to the end of the current token
 Unbound               ForwardWord                   Move the cursor forward to the end of the current word, or if be...
 #>
-
