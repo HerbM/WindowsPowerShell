@@ -111,7 +111,7 @@ Function Set-Location {
     Write-Verbose "[BEGIN  ] Starting $($MyInvocation.Mycommand)"
     Write-Verbose "[BEGIN  ] Using parameter set $($PSCmdlet.ParameterSetName)"
     Write-Verbose ($PSBoundParameters | Out-String)
-    $MyInvocation
+    Write-Verbose $MyInvocation
     try {
       $outBuffer = $null
       if ($PSBoundParameters.TryGetValue('OutBuffer', [ref]$outBuffer)) {
