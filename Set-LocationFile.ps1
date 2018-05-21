@@ -9,6 +9,7 @@
    Author : Herb Martin
 #>
 
+function x86 { '(x86)' }
 
 Function Set-Location {
 <#  
@@ -96,7 +97,7 @@ Function Set-Location {
       Write-Verbose "Begin LiteralPath: $($PSBoundParameters.LiteralPath)" 
     }
     If ($PSBoundParameters.ContainsKey('PathArgs')) {
-      $P = (@($Path) + $PathArgs) -Join ' ' 
+      $P = (@($Path) + $PathArgs).Where{$_} -Join ' ' 
       If (Test-Path $P -ea ignore) {
         $Path = $PSBoundParameters.Path = $P
       }

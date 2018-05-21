@@ -1585,7 +1585,8 @@ Function Set-GoAlias {
   }
 }
 
-Import-Module "$Home\Documents\WindowsPowerShell\Set-LocationFile.ps1"
+# Import-Module "$Home\Documents\WindowsPowerShell\Set-LocationFile.ps1"
+. "$Home\Documents\WindowsPowerShell\Set-LocationFile.ps1"
 
 Function Set-GoLocation {
   [CmdletBinding()]param (
