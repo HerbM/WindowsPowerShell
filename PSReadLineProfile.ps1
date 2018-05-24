@@ -760,7 +760,7 @@ Set-PSReadLineKeyHandler -Chord 'Ctrl+Alt+|','Ctrl+Alt+?','Ctrl+\','Ctrl+Alt+\' 
 
 ###   WORKING HERE
 Set-PSReadLineKeyHandler -Chord 'Ctrl+|,s','Ctrl+|,f','Ctrl+|,o','Ctrl+|,w',
-                                'Ctrl+|,a','Ctrl+|,l','Ctrl+|,t','Ctrl+|,g' `
+                                'Ctrl+|,a','Ctrl+|,l','Ctrl+|,t','Ctrl+|,g','Ctrl+|,c' `
                          -BriefDescription InsertPipes `
                          -LongDescription "Insert Pipe | Select Sort Format" `
                          -ScriptBlock {
@@ -774,6 +774,7 @@ Set-PSReadLineKeyHandler -Chord 'Ctrl+|,s','Ctrl+|,f','Ctrl+|,o','Ctrl+|,w',
     'l' { '| Sort-Object Length '         }
     't' { '| Format-Table '               }
     'g' { '| Select-String '''''          }  # g for Grep
+    'c' { '| Sort-Object CreationTime '   }  # g for Grep
     default { '{NO MATCH}' }
   }
   #[Microsoft.PowerShell.PSConsoleReadLine]::Insert("Key: [$($key.Keychar)] arg: [$arg] Ins: [$Insertion]")
@@ -841,7 +842,7 @@ if (Get-Module PSReadline) {
   } catch { } # just ignore this for VSCode
 }
 
-Write-Warning "$(LINE) New Errors: $($Error.Count - $Private:ErrorCount)"
+Write-Warning "$(FLINE) New Errors: $($Error.Count - $Private:ErrorCount)"
 
 <#
         function prompt {
