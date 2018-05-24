@@ -64,6 +64,15 @@ https://www.red-gate.com/simple-talk/dotnet/net-framework/high-performance-power
 https://docs.microsoft.com/en-us/powershell/wmf/5.0/feedback_symbolic
   Symbolic Links HardLinks Reparse Points Junction Points
 
+  
+Get-ADObject -Filter 'objectClass -eq "siteLink"' -Searchbase (
+    Get-ADRootDSE).ConfigurationNamingContext -Property Options, Cost, 
+    ReplInterval, SiteList, Schedule | 
+  Select-Object Name, @{Name="SiteCount";Expression={$_.SiteList.Count}}, Cost, 
+  ReplInterval, @{Name="Schedule";Expression={If($_.Schedule) { 
+    If (($_.Schedule -Join " ").Contains("240")) {"NonDefault"} 
+    Else {"24x7"}}Else{"24x7"}}}, Options | Format-Table * -AutoSize
+  
 http://gpsearch.azurewebsites.net/  Azure GPO Group Search Find Azure Policy Search Find  
 https://www.ghacks.net/2017/11/07/search-the-group-policy-with-microsofts-gpsearch-web-service/  
   http://wp.me/pLog8-71

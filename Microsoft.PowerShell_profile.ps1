@@ -20,9 +20,11 @@ Function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
 New-Alias -Name LINE -Value Get-CurrentLineNumber -Description 'Returns the caller''s current line number' -force -Scope Global -Option allscope
 write-warning "$(LINE) $(get-date -f 'HH:mm:ss') PowerShell $($psversiontable.PSVersion.tostring())"
 write-warning "$(LINE) Starting error count: $ErrorCount"
-If ($Host.PrivateData.ErrorBackgroundColor) {
-  $Host.PrivateData.ErrorBackgroundColor = 'Red'
-  $Host.PrivateData.ErrorForegroundColor = 'White'
+If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])) {
+  $host.PrivateData.errorbackgroundcolor   = 'Red'
+  $host.PrivateData.errorForeGroundColor   = 'White'
+# $host.PrivateData.verbosebackgroundcolor = 'black'
+  $host.PrivateData.debugbackgroundcolor   = 'black'
 }
 
   # 'Continue', 'Ignore', 'Inquire', 'SilentlyContinue', 'Stop', 'Suspend'
@@ -2037,14 +2039,14 @@ if (Get-Module 'PSReadline' -ea ignore) {
 	Set-PSReadLineOption -ForeGround White   -Token Type
 	Set-PSReadLineOption -ForeGround White   -Token Number
 	Set-PSReadLineOption -ForeGround White   -Token Member
-  If ($Host.PrivateDate -and $Host.PrivateDate.ErrorBackgroundColor) {
-    $Host.PrivateData.ErrorBackgroundColor   = 'DarkRed'
-    $Host.PrivateData.ErrorForegroundColor   = 'White'
-    $Host.PrivateData.VerboseBackgroundColor = 'Black'
-    $Host.PrivateData.VerboseForegroundColor = 'Yellow'
-    $Host.PrivateData.WarningBackgroundColor = 'Black'
-    $Host.PrivateData.WarningForegroundColor = 'White'
-  }
+}
+If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])) {
+  $Host.PrivateData.ErrorBackgroundColor   = 'DarkRed'
+  $Host.PrivateData.ErrorForegroundColor   = 'White'
+  $Host.PrivateData.VerboseBackgroundColor = 'Black'
+  $Host.PrivateData.VerboseForegroundColor = 'Yellow'
+  $Host.PrivateData.WarningBackgroundColor = 'Black'
+  $Host.PrivateData.WarningForegroundColor = 'White'
 }
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE) After PSReadline "
 
