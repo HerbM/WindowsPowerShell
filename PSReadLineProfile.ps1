@@ -768,13 +768,17 @@ Set-PSReadLineKeyHandler -Chord 'Ctrl+|,s','Ctrl+|,f','Ctrl+|,o','Ctrl+|,w',
   $Insertion = Switch ($key.KeyChar) {
     's' { '| Select-Object '              }
     'f' { '| Select-Object -First 1 '     }
+    'z' { '| Select-Object -Last 1 '      }
     'o' { '| Sort-Object '                }
+    'n' { '| Sort-Object name '           }
+    'e' { '| Sort-Object extension '      }
     'w' { '| Sort-Object LastWriteTime '  }
     'a' { '| Sort-Object LastAccessTime ' }
     'l' { '| Sort-Object Length '         }
     't' { '| Format-Table '               }
+    'd' { 'Get-ChildItem  | Sort-Object -LastWriteTime ' }
     'g' { '| Select-String '''''          }  # g for Grep
-    'c' { '| Sort-Object CreationTime '   }  # g for Grep
+    'c' { '| Sort-Object CreationTime '   }  
     default { '{NO MATCH}' }
   }
   #[Microsoft.PowerShell.PSConsoleReadLine]::Insert("Key: [$($key.Keychar)] arg: [$arg] Ins: [$Insertion]")
