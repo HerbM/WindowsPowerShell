@@ -924,7 +924,8 @@ Function Get-Free {
     $PSBoundParameters.Name = $Name -replace '(:.*)'
   }
   $PSBoundParameters.PSProvider = 'FileSystem'
-  Get-PSDrive @PSBoundParameters | Where-Object Used -ne ''
+  Get-PSDrive @PSBoundParameters | Where-Object Used -ne '' |
+    select used,free,root,currentlocation
 }
 
 #  Get-PSVolume
@@ -1111,7 +1112,7 @@ Function Get-RunTime {
   }
 }; New-Alias rt Get-RunTime -force -scope Global
 
-Function Get-Syntax   {
+Function Get-Syntax {
   param(
   )
   $Result = get-command -syntax @args
