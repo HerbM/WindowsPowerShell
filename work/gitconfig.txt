@@ -64,9 +64,9 @@
 	changed = green
 	untracked = cyan
 [color "status"]
-    changed = red bold
-    untracked = red bold
-    added = green bold
+  changed = red bold
+  untracked = red bold
+  added = green bold
 [user]
 	name = HerbM
 	email = HerbMartin@GMail.com

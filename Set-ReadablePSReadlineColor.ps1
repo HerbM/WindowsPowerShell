@@ -45,14 +45,16 @@ if (Get-Module 'PSReadline' -ea 0) {
 	Set-PSReadLineOption -ForeGround White   -Token Number    
 	Set-PSReadLineOption -ForeGround White   -Token Member    
 
-	$Host.PrivateData.ErrorBackgroundColor   = 'DarkRed'
-	$Host.PrivateData.ErrorForegroundColor   = 'White'
-	$Host.PrivateData.VerboseBackgroundColor = 'Black'
-	$Host.PrivateData.VerboseForegroundColor = 'Yellow'
-	$Host.PrivateData.WarningBackgroundColor = 'Black'
-	$Host.PrivateData.WarningForegroundColor = 'White'
 }
 
+If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])) {
+  $Host.PrivateData.ErrorBackgroundColor   = 'DarkRed'
+  $Host.PrivateData.ErrorForegroundColor   = 'White'
+  $Host.PrivateData.VerboseBackgroundColor = 'Black'
+  $Host.PrivateData.VerboseForegroundColor = 'Yellow'
+  $Host.PrivateData.WarningBackgroundColor = 'Black'
+  $Host.PrivateData.WarningForegroundColor = 'White'
+}
 
 <#
 DefaultTokenForegroundColor            : Yellow

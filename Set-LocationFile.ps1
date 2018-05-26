@@ -9,7 +9,7 @@
    Author : Herb Martin
 #>
 
-function x86 { '(x86)' }
+Function x86 { '(x86)' }
 
 Function Set-Location {
 <#  
