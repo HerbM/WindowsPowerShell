@@ -158,7 +158,7 @@ function Write-Log {
       'Severity' = $Severity
       'Message'  = $Message
     }
-    if (-not $LogFilePath) { 
+    if (-not (Test-Variable LogFilePath)) { 
       $LogFilePath  =  "$($MyInvocation.ScriptName)" -replace '(\.ps1)?$', ''    
       $LogFilePath += '-Log.txt'
     }
@@ -170,11 +170,35 @@ function Write-Log {
       $line | Export-Csv -Path $LogFilePath -Append -NoTypeInformation -erroraction Silentlycontinue -force -enc ASCII
     }
   } catch {
-    $ec   = ('{0:x}' -f $_.Exception.ErrorCode); $em = $_.Exception.Message; $in = $_.InvocationInfo.PositionMessage
+    $ec   = $_.ScriptStackTrace; $em = $_.Exception.Message; $in = $_.InvocationInfo.PositionMessage
     $description =  "$(FLINE) Catch $in $ec, $em"
-    "Logging: $description" >> $LogFilePath
+    # "Logging: $description" >> $LogFilePath
   }  
 }
+
+Function Test-Variable {
+  [CmdletBinding()]param(
+    [string]$Name
+  )
+  Get-Variable -name $Name -ea Ignore -valueOnly # -Scope $Scope
+}
+New-Alias TVN Test-Variable -Force -ea Ignore
+
+Function Write-LogSeparator {
+  param(
+    [string]$Separator = '=',
+    [uint16]$Width = 60,
+    [Alias('Repeat')][uint16]$Count = 2
+  )
+  if ( (Test-Variable LogFilePath) -and 
+      ((Test-Variable LogLevel)    -and $LogLevel -gt 0) -and 
+      (Test-Path $LogFilePath -ea Ignore)
+  ) {
+    For ($i=0; $i -lt $Count; $i++) {
+      write-log ($Separator * $Width)
+    }
+  }
+} 
 
 function Log-ComputerInfo {
   param([string]$CorrelationID='', [string]$IPAddress='', [string]$ComputerName='', 
@@ -1062,10 +1086,10 @@ function Get-UnusedDriveLetter($LetterSet) {
   $LetterSet
 }
 
-if ($LogFilePath -and ($LogLevel -gt 0) -and (Test-Path $LogFilePath -ea 0)) {
-  write-log ('=' * 60)
-  write-log ('=' * 60)
-}
+                                                                              
+                      
+                      
+ 
 
 function Get-ServiceStatus ($Name) {
   $Service = get-service $Name -ea 0
@@ -1145,3 +1169,63 @@ function Sort-ConnectionSpeed {
     write-log "$(FLINE) Caught error in Sort-Connectionspeed"
   }  
 } 
+
+Function ConvertTo-QuotedElementString {
+  [CmdLetBinding(PositionalBinding=$False)]
+  param(
+    [Alias('Separator','Delimiter')][Parameter()]$OFS=$(Get-Variable OFS -scope 1 -ea ignore -value),
+    [Parameter()]        $Quotes="'",
+    [Parameter()][switch]$DoubleQuotes,
+    [Parameter()][switch]$SingleQuotes,
+    [Parameter()][switch]$NoQuotes,
+    [Parameter()][switch]$WrapSingle,
+    [Parameter()][switch]$WrapDouble,
+    [Alias('OppositeQuote','OtherQuote')][Parameter()][switch]$WrapOpposite,
+    [parameter(Mandatory=$true, ValueFromRemainingArguments=$true)]$Args
+  )
+  If (!$OFS) { $OFS = ', ' }
+  $q = Switch ($True) {
+    { $DoubleQuotes }  { '"'; break }
+    { $SingleQuotes }  { "'"; break }
+    { $NoQuotes     }  { "";  break }
+    Default { $Quotes }
+  }
+  If ($WrapOpposite) {
+    $Wrapper = If ($q -eq "'") { '"' } else { "'" }
+  } else {
+    $Wrapper = Switch ($True) {
+      { $WrapDouble }  { '"'; break }
+      { $WrapSingle }  { "'"; break }
+      Default { '' }
+    }
+  }
+  if ($args.count -eq 1 -and $args[0] -is [object[]]) {
+    $args = $args[0]
+  }
+  "$Wrapper$(($args | ForEach-Object { "$q$_$q" }) -join $OFS)$Wrapper"
+}
+<#
+ConvertTo-QuotedElementString '' -wrapsingle -opp
+convertto-quotedelementstring (dir *.ps1).name
+convertto-quotedelementstring (dir *.ps1).name -sep ';'
+convertto-quotedelementstring (dir *.ps1).name -sep ';' -quote ''
+ConvertTo-QuotedElementString 1, 2, 3 
+ConvertTo-QuotedElementString 1, 2, 3  x y z -opp -sep ", "
+ConvertTo-QuotedElementString 1, 2, 3 -opp -sep ", "
+ConvertTo-QuotedElementString 1, 2, 3 -opp -sep ",`t"
+ConvertTo-QuotedElementString a 
+ConvertTo-QuotedElementString a b c 
+ConvertTo-QuotedElementString a b c -wrapdouble
+ConvertTo-QuotedElementString a b c -wrapdouble -opp
+ConvertTo-QuotedElementString a b c -wrapsingle -opp
+ConvertTo-QuotedElementString a -wrapsingle -opp
+ConvertTo-QuotedElementString -OFS '|' a b c 
+ConvertTo-QuotedElementString -OFS '|' a b c -quote ''
+ConvertTo-QuotedElementString 'the string' 1 2 3 -opp -sep ",`t"
+ConvertTo-QuotedElementString 'the string' 1 2 3 -wrapsingle -opp
+ConvertTo-QuotedElementString 'the string' 1 2 3 -wrapsingle -opp -sep ",`t"
+ConvertTo-QuotedElementString 'the string' 1 2 3 -wrapsingle -opp -sep "`t"
+ConvertTo-QuotedElementString 'the string' 1 2 3 -wrapsingle -opp -sep '===='
+ConvertTo-QuotedElementString 'the string' -wrapsingle -opp
+
+#>

@@ -96,13 +96,15 @@ Function Set-Location {
         Split-Path $PSBoundParameters.LiteralPath -ea ignore
       Write-Verbose "Begin LiteralPath: $($PSBoundParameters.LiteralPath)" 
     }
-    If ($PSBoundParameters.ContainsKey('PathArgs')) {
-      $P = (@($Path) + $PathArgs).Where{$_} -Join ' ' 
+    If ($PSBoundParameters.ContainsKey('PathArgs' -or $PathArgs)) {
+      $P = ($Path + $PathArgs).Where{$_} -Join ' ' 
       If (Test-Path $P -ea ignore) {
-        $Path = $PSBoundParameters.Path = $P
+        $Path = $PSBoundParameters.Path = (Resolve-Path $P).path
       }
       Write-Verbose "Path: [$Path] P: [$P]  PathArgs: [$PathArgs]"
       [Void]$PSBoundParameters.Remove('PathArgs')
+    } else {
+      Write-Verbose "Path: [$Path] NO PathArgs: [$PathArgs]"
     }
     If ($PSBoundParameters.ContainsKey('Path') -and 
         (Test-Path $PSBoundParameters.Path -PathType Leaf -ea Ignore)) {
