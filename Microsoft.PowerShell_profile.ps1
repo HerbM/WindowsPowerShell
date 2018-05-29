@@ -293,6 +293,22 @@ Function DosKey {
 }
 Function B { if (!$Args) { $args = ,95}  DisplayBrightnessConsole @Args }
 
+Function Get-PSHistory {
+  param(
+    $UserName = $Env:UserName
+  )
+  If ($PSHistory) {
+    $psh = $PSHistory -replace $Env:UserName, $UserName
+    If ($psh -and (Test-Path $psh -ea 0)) { 
+      (Resolve-Path $psh -ea ignore).path
+    } Else {
+      Write-Warning "PSHistory for $Username not found '$psh'"
+    }
+  } Else {
+    Write-Warning "PSHistory not found"
+  }
+}
+
 <#
 Function Add-Path {
   [CmdLetBinding()]param(
@@ -1019,11 +1035,17 @@ Function Get-Accelerator {
 
 Function Get-HistoryCommandline {
   [CmdLetBinding()]param(
-    #[Int64[]]$ID,
-    #[Int32]$Count,
-    #[Switch]$ShowID
+    [string]$Pattern,
+    [uint16]$Count,
+    $Exclude,
+    [Switch]$ShowID,
+    [Alias('ID','Object','FullObject')][switch]$HistoryInfo
   )
-  (get-history @args).commandline
+  If ($PSBoundParameters.Contains('ShowID')) { 
+    $ShowID = [boolean]$ShowID
+    $PSBoundParameters.Remove('ShowID')
+  }
+  (get-history @PSBoundParameters).commandline
 } New-Alias cl  Get-HistoryCommandline -force
   new-alias gch Get-HistoryCommandLine -force
   new-alias ghc Get-HistoryCommandLine -force
