@@ -86,35 +86,34 @@ Function Set-Location {
     [Parameter(ParameterSetName='LiteralPath', Mandatory=$true, ValueFromPipelineByPropertyName=$true)]
     [Alias('PSPath')][string]$LiteralPath, 
     [switch]$PassThru,
+    [Alias('s','pp','providerpath','string')][switch]$Simple,
     [Parameter(ParameterSetName='Stack', ValueFromPipelineByPropertyName=$true)]
       [string]$StackName
   )
   Begin {
-    If ($PSBoundParameters.ContainsKey('LiteralPath') -and 
-        (Test-Path $PSBoundParameters.LiteralPath -PathType Leaf -ea Ignore)) {
-      $PSBoundParameters.LiteralPath = 
-        Split-Path $PSBoundParameters.LiteralPath -ea ignore
-      Write-Verbose "Begin LiteralPath: $($PSBoundParameters.LiteralPath)" 
+    If (!(Get-Command LINE -ea Ignore)) { Function LINE { $MyInvocation.ScriptLineNumber }}
+    Set-StrictMode -version Latest
+    Write-Verbose ("$(LINE) BEGIN Set:$($PSCmdlet.ParameterSetName) " + 
+                   ($PSBoundParameters | Out-String))
+    If ($PSBoundParameters.ContainsKey('Simple')) {
+      [Void]$PSBoundParameters.Remove('Simple')
+      $Simple = $True
     }
-    If ($PSBoundParameters.ContainsKey('PathArgs' -or $PathArgs)) {
-      $P = ($Path + $PathArgs).Where{$_} -Join ' ' 
+    If ($PSBoundParameters.ContainsKey('PathArgs')) {
+      $P = ((@($Path) + $PathArgs).Where{$_} -Join ' ').trim(' \') 
       If (Test-Path $P -ea ignore) {
         $Path = $PSBoundParameters.Path = (Resolve-Path $P).path
       }
-      Write-Verbose "Path: [$Path] P: [$P]  PathArgs: [$PathArgs]"
+      Write-Verbose "$(LINE) Path: [$Path] P: [$P]  PathArgs: [$PathArgs]"
       [Void]$PSBoundParameters.Remove('PathArgs')
-    } else {
-      Write-Verbose "Path: [$Path] NO PathArgs: [$PathArgs]"
     }
-    If ($PSBoundParameters.ContainsKey('Path') -and 
-        (Test-Path $PSBoundParameters.Path -PathType Leaf -ea Ignore)) {
-      $PSBoundParameters.Path = Split-Path $Path -ea ignore
-      Write-Verbose "Begin Path: $($PSBoundParameters.Path)"  
+    ForEach ($Dir in 'Path','LiteralPath') {
+      If ($PSBoundParameters.ContainsKey($Dir) -and 
+          (Test-Path $PSBoundParameters.$Dir -PathType Leaf -ea Ignore)) {
+        $PSBoundParameters.$Dir = Split-Path $PSBoundParameters.$Dir -ea ignore
+        Write-Verbose "$(LINE) Begin $($Dir): $($PSBoundParameters.$Dir)" 
+      }
     }
-    Write-Verbose "[BEGIN  ] Starting $($MyInvocation.Mycommand)"
-    Write-Verbose "[BEGIN  ] Using parameter set $($PSCmdlet.ParameterSetName)"
-    Write-Verbose ($PSBoundParameters | Out-String)
-    Write-Verbose $MyInvocation
     try {
       $outBuffer = $null
       if ($PSBoundParameters.TryGetValue('OutBuffer', [ref]$outBuffer)) {
@@ -125,29 +124,49 @@ Function Set-Location {
       $steppablePipeline = $scriptCmd.GetSteppablePipeline($myInvocation.CommandOrigin)
       $steppablePipeline.Begin($PSCmdlet)
     } catch {
+      Write-Verbose ("$(LINE)`n" + ($_           | FL * -Force | Out-String))
+      Write-Verbose ("$(LINE)`n" + ($_.Exception | FL * -Force | Out-String))
       throw
     }
   } #begin
   Process {
     try {
-      If ($PSBoundParameters.ContainsKey('LiteralPath') -and 
-          (Test-Path $PSBoundParameters.LiteralPath -PathType Leaf -ea Ignore)) {
-        $PSBoundParameters.LiteralPath = 
-          Split-Path $PSBoundParameters.LiteralPath -ea ignore
-        Write-Verbose "Process LiteralPath: $($PSBoundParameters.LiteralPath)"  
+      Write-Verbose ("$(LINE) PROCESS Set:$($PSCmdlet.ParameterSetName) `$_=[$_] " + 
+                     ($PSBoundParameters | Out-String))
+      If ($Path -and !$LiteralPath) { $_ = $Path}
+      Write-Verbose ("$(LINE) `$_: $($_)" + ($PSBoundParameters | Out-String))
+      If ($_ -and ($Dir = (Resolve-Path $_ | 
+          Where-Object { Test-Path $_ -PathType container } | 
+          Select-Object -first 1))
+      ) {
+        $PSBoundParameters.Path = $Path = $_ = $dir.Path
+      } ElseIf ($_ -and (!(Test-Path $_ -PathType Container -ea Ignore)) -and (
+                 (Test-Path -literalpath  $_                      -PathType Leaf -ea Ignore) #-or
+                 #(Test-Path -literalpath (Resolve-Path $_ -ea 0) -PathType Leaf -ea Ignore)
+               )
+      ) {
+        $_ = (Split-Path $_ -ea ignore) 
+        Write-Verbose"$(LINE) Process `$_: $_   P:[$P]" 
       }
-      If ($PSBoundParameters.ContainsKey('Path') -and 
-          (Test-Path $PSBoundParameters.Path -PathType Leaf -ea Ignore)) {
-        $PSBoundParameters.Path = Split-Path $PSBoundParameters.Path -ea ignore
-        Write-Verbose "Process Path: $($PSBoundParameters.Path)"  
+      # $_ = $_ -replace '^[^:]::'
+      Write-Verbose "$(LINE) `$_: $($_)"
+      Write-Verbose ("$(LINE)" + ($PSBoundParameters | Out-String))
+      $Path = 
+      try { $p = $steppablePipeline.Process($_) } catch {
+        Write-Warning $_
       }
-      $steppablePipeline.Process($_)
+      If ($Path) { Microsoft.PowerShell.Management\Set-Location -literalpath $Path -ea Ignore }
+      If ($p -and $Simple) { 
+        Write-Verbose "$(LINE) P: $P  `$_: $($_)"
+        $p.providerpath 
+      } else { $p }
     } catch {
+      Write-Verbose ("$(LINE)`n" + ($_           | FL * -Force | Out-String))
+      Write-Verbose ("$(LINE)`n" + ($_.Exception | FL * -Force | Out-String))
       throw
     }
   } #process
   End {
-    Write-Verbose "[END  ] Ending $($MyInvocation.Mycommand)"
     try {
       $steppablePipeline.End()
     } catch {
