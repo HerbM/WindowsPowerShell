@@ -2288,10 +2288,11 @@ if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $i
 if ((Get-Location) -match '^.:\\Windows\\System32$') { pushd \ }
 $PSDefaultParameterValues['Get-ChildItem:Force'] = $True
 
-$ExtraProfiles = @($Env:UserDomain, $Env:ComputerName, $Env:ComputerName)
+$ExtraProfiles = @($Env:UserDomain, $Env:ComputerName, $Env:UserName)
 ForEach ($ProfileName in $ExtraProfiles) {
-  If (Test-path (Join-Path $ProfileDirectory "Profile$ProfileName.ps1")) {
-    . (Join-Path $ProfileDirectory "Profile$ProfileName.ps1") 
+  Write-Verbose "$(Join-Path $ProfileDirectory `"Profile$($ProfileName).ps1`")"
+  If (Test-path (Join-Path $ProfileDirectory "Profile$($ProfileName).ps1")) {
+    . (Join-Path $ProfileDirectory "Profile$($ProfileName).ps1") 
   }
 } 
 
