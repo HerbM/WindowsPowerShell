@@ -2288,9 +2288,19 @@ if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $i
 if ((Get-Location) -match '^.:\\Windows\\System32$') { pushd \ }
 $PSDefaultParameterValues['Get-ChildItem:Force'] = $True
 
+$ExtraProfiles = @($Env:UserDomain, $Env:ComputerName, $Env:ComputerName)
+ForEach ($ProfileName in $ExtraProfiles) {
+  If (Test-path (Join-Path $ProfileDirectory "Profile$ProfileName.ps1")) {
+    . (Join-Path $ProfileDirectory "Profile$ProfileName.ps1") 
+  }
+} 
+
+
 $Private:Duration = ((Get-Date) - $Private:StartTime).TotalSeconds
 Write-Warning "$(LINE) $(get-date -f 'HH:mm:ss') New errors: $($Error.Count - $ErrorCount)"
 Write-Warning "$(LINE) Duration: $Private:Duration Completed: $Profile"
+
+
 
 <#
 Key                   Function                      Description
