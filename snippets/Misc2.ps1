@@ -64,7 +64,23 @@ https://www.red-gate.com/simple-talk/dotnet/net-framework/high-performance-power
 https://docs.microsoft.com/en-us/powershell/wmf/5.0/feedback_symbolic
   Symbolic Links HardLinks Reparse Points Junction Points
 
-  
+$ArrayList = New-Object System.Collections.ArrayList
+[void]$ArrayList.Add((get-random))
+#or
+$GenericList = New-Object 'System.Collections.Generic.List[System.Object]'
+[void]$GenericList.Add((get-random))  
+$GenericList.Add($x)
+
+Git Log Display Git Display Log Colors
+https://stackoverflow.com/questions/1838873/visualizing-branch-topology-in-git/34467298#34467298
+git log --format=oneline
+git lg
+git log --graph --oneline  
+git log --graph --full-history --all --pretty=format:"%h%x09%d%x20%s"
+& 'C:\Program Files\Git\bin\bash.exe' 
+  git log --graph --full-history --all --color \
+        --pretty=format:"%x1b[31m%h%x09%x1b[32m%d%x1b[0m%x20%s"
+        
 Get-ADObject -Filter 'objectClass -eq "siteLink"' -Searchbase (
     Get-ADRootDSE).ConfigurationNamingContext -Property Options, Cost, 
     ReplInterval, SiteList, Schedule | 
