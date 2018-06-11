@@ -28,7 +28,7 @@ if (!(Get-Module PSReadline -listavailable -ea Ignore)) {
   if ($PSVersionNumber -ge 5.1) { $parms += '-AllowClobber' }
   Install-Module PSReadline @Parms -ea Ignore 
 }
-if ( (Get-Module PSReadline -listavailable -ea ignore)) {
+if (!(Get-Module PSReadline -listavailable -ea ignore) -and (Get-Module PSReadline -listavailable -ea ignore)) {
   Import-Module PSReadLine
 }
 $PSHistoryFileName  = 'PSReadLine_history.txt'
@@ -759,10 +759,12 @@ Set-PSReadLineKeyHandler -Chord 'Ctrl+Alt+|','Ctrl+Alt+?','Ctrl+\','Ctrl+Alt+\' 
 }
 
 ###   WORKING HERE
-Set-PSReadLineKeyHandler -Chord 'Ctrl+|,s','Ctrl+|,f','Ctrl+|,o','Ctrl+|,w',
-                                'Ctrl+|,a','Ctrl+|,l','Ctrl+|,t','Ctrl+|,g','Ctrl+|,c' `
-                         -BriefDescription InsertPipes `
-                         -LongDescription "Insert Pipe | Select Sort Format" `
+Set-PSReadLineKeyHandler -Chord 'Ctrl+|,s','Ctrl+|,f','Ctrl+|,o','Ctrl+|,w', 
+                                'Ctrl+|,a','Ctrl+|,l','Ctrl+|,t','Ctrl+|,g', 
+                                'Ctrl+|,c','Ctrl+|,d','Ctrl+|,v','Ctrl+|,p',
+                                'Ctrl+|,n','Ctrl+|,z'                       `                               `
+                         -BriefDescription InsertPipes                       `
+                         -LongDescription 'Insert Pipe | Select Sort Format' `
                          -ScriptBlock {
   param($key, $arg)
   $Insertion = Switch ($key.KeyChar) {
@@ -805,14 +807,15 @@ Set-PSReadLineKeyHandler -Chord 'Ctrl+|,s','Ctrl+|,f','Ctrl+|,o','Ctrl+|,w',
   [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition([Math]::Min($cursor, $Line.Length))
 }
 
-if ($ForcePSReadlineProfile -or $host.Name -match 'ConsoleHost|((ISE|Code) Host)') {
-    Import-Module PSReadline
+# if ($ForcePSReadline -or $host.Name -match 'ConsoleHost|((ISE|Code) Host)') {
+if (Get-Module PSReadline -ea Ignore) {
+    #Import-Module PSReadline
     Set-PSReadlineKeyHandler -Key Ctrl+Delete     -Function KillWord
     Set-PSReadlineKeyHandler -Key Ctrl+Backspace  -Function BackwardKillWord
     Set-PSReadlineKeyHandler -Key Shift+Backspace -Function BackwardDeleteChar  ### Kill word EVIL ####
     Set-PSReadlineKeyHandler -Key UpArrow         -Function HistorySearchBackward
     Set-PSReadlineKeyHandler -Key DownArrow       -Function HistorySearchForward
-    If ($Host.PrivateDate -and $Host.PrivateDate.ErrorBackgroundColor) {
+    If ($Host.PrivateData -and $Host.PrivateData.ErrorBackgroundColor) {
       $Host.PrivateData.ErrorBackgroundColor   = $Host.UI.RawUI.BackgroundColor
       $Host.PrivateData.WarningBackgroundColor = $Host.UI.RawUI.BackgroundColor
       $Host.PrivateData.VerboseBackgroundColor = $Host.UI.RawUI.BackgroundColor
@@ -828,9 +831,7 @@ if ($ForcePSReadlineProfile -or $host.Name -match 'ConsoleHost|((ISE|Code) Host)
       $Host.PrivateData.WarningBackgroundColor = 'Black'
       $Host.PrivateData.WarningForegroundColor = 'White'
     }
-}
 
-if (Get-Module PSReadline) {
   Set-PSReadlineKeyHandler 'Tab'                      -Function TabCompleteNext
   Set-PSReadlineKeyHandler 'Shift+Tab'                -Function TabCompletePrevious
   Set-PSReadLineKeyHandler -Key UpArrow               -Function HistorySearchBackward
