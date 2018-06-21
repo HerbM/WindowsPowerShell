@@ -855,8 +855,14 @@ Function Set-DefaultPropertySet { param([Object]$Object,
     [System.Management.Automation.PSMemberInfo[]]@($defaultDisplayPropertySet)
   $OBject | Add-Member MemberSet PSStandardMembers $PSStandardMembers -PassThru
 }
+
 Function Get-WinStaSession {
-  [CmdletBinding()]param($UserName, [Alias('Me','My','Mine')][switch]$Current)
+  [CmdletBinding()]param(
+    $UserName, 
+    [Alias('RemoteComputer','TargetComputer','ServerComputer')]
+      $ComputerName=$Env:ComputerName, # /SERVER:servername
+    [Alias('Me','My','Mine')][switch]$Current
+  )
   $WinSta = qwinsta | Select-Object -skip 1
   write-verbose "Winsta count: $($WinSta.count)"
   $WinSta | ForEach-Object {
@@ -867,20 +873,53 @@ Function Get-WinStaSession {
       $_ = $_ -replace "^(.{$($COL)})\s{3}", '$1###'
     }
     write-verbose "WinStaLine: $_"
-    $S=[ordered]@{};
-    $O=[ordered]@{};
+    $S=[ordered]@{ ComputerName = $ComputerName };
+    $O=[ordered]@{ ComputerName = $ComputerName };
     [boolean]$O.Current =  $_ -match '^>'
     $null,$S.Name,$S.UserName,$S.ID,$S.State,$S.Type,$S.Device,$null = $_ -split '[>\s]+'
     ForEach ($Key in $S.Keys) { $O.$Key = $S.$Key -replace '^###$' }
-    $SelectUser = [boolean]$UserName
     $Session = [PSCustomObject]$O
-    if ($Current)    { $Session = $Session | Where-Object Current  -eq    $True     }
-    if ($SelectUser) { $Session = $Session | Where-Object UserName -match $UserName }
-    if ($Session) { Set-DefaultPropertySet $Session @('Current','UserName','ID','State')}
+    if ($Current)  { $Session = $Session | Where-Object Current  -eq    $True     }
+    if ($UserName) {
+      if ($UserName -match '(^|\w)\*') { 
+        $Session = $Session | Where-Object UserName -like  $UserName 
+      } else {
+        $Session = $Session | Where-Object UserName -match $UserName 
+      }
+    }  
+    if ($Session)  { Set-DefaultPropertySet $Session @('Current','UserName','ID','State')}
   }
 }
 New-Alias ws  Get-WinStaSession -force -scope Global
 New-Alias gws Get-WinStaSession -force -scope Global
+Function Start-Shadow {
+  [CmdLetBinding()]param(
+    [Alias('SessionID','ID','UserId')]$UserName,
+    [Alias('Remote','Target','Server')]$ComputerName=$Env:Computername, # /SERVER:servername
+    [int]$Width=1350, 
+    [int]$Height=730,
+    [Alias('NoAssist','NoRemoteControl')][switch]$NoControl,
+    [Parameter(ValueFromRemainingArguments=$true)][string[]]$RemArgs
+  )
+  $argX = $args
+  If ($ID = $UserName -as [uint16]) {
+  } else {
+    If ($session = Get-WinStaSession $UserName $ComputerName -verbose:$False | Select -first 1) {
+      $Id = $Session.ID    
+    }
+  }
+  If ($ID) {
+    $Parameters = @("/v:$ComputerName", "/Shadow:$Id") + 
+                  @("/w:$Width", "/h:$Height")         +
+                  $argX
+    If (!$NoControl) { $Parameters += '/Control' }
+    Write-Verbose "mstsc $Parameters"
+    mstsc @Parameters
+  }
+} 
+New-Alias rs     Start-Shadow -force
+New-Alias Shadow Start-Shadow -force
+
 function Get-CommandPath {
   [CmdletBinding()]param(
     [Alias('Clean')][switch]$Unique,
@@ -1992,21 +2031,21 @@ if ($Private:PSRealineModule = Get-Module 'PSReadline' -ea ignore) {
   set-psreadlinekeyhandler -chord 'Shift+SpaceBar' -Func Complete             ### !!!!!
   If ($Private:PSRealineModule.Version  -ge [version]'2.0.0') {
     Set-PSReadlineOption -Colors @{
-      ContinuationPrompt = [ConsoleColor]::Magenta            ##  color of the
+      ContinuationPrompt = [ConsoleColor]::Magenta     ##  color of the
       Emphasis           = [ConsoleColor]::Magenta     ##  emphasis color, e.g. th
       Error              = [ConsoleColor]::Magenta     ##  error color, e.g. in the p
       Selection          = [ConsoleColor]::Magenta     ##  color to highlight the
-      Default            = [ConsoleColor]::yellow            ##  default token color.
-      Comment            = [ConsoleColor]::green             ##  comment token color.
-      Keyword            = [ConsoleColor]::Yellow            ##  keyword token color.
-      String             = [ConsoleColor]::white             ##  string token color.
-      Operator           = [ConsoleColor]::cyan              ##  operator token color.
-      Variable           = [ConsoleColor]::Green             ##  variable token color.
-      Command            = [ConsoleColor]::Yellow            ##  command token color.
-      Parameter          = [ConsoleColor]::green             ##  parameter token color.
-      Type               = [ConsoleColor]::White             ##  type token color.
-      Number             = [ConsoleColor]::White             ##  number token color.
-      Member             = [ConsoleColor]::White             ##  member name token color.     
+      Default            = [ConsoleColor]::yellow      ##  default token color.
+      Comment            = [ConsoleColor]::green       ##  comment token color.
+      Keyword            = [ConsoleColor]::Yellow      ##  keyword token color.
+      String             = [ConsoleColor]::white       ##  string token color.
+      Operator           = [ConsoleColor]::cyan        ##  operator token color.
+      Variable           = [ConsoleColor]::Green       ##  variable token color.
+      Command            = [ConsoleColor]::Yellow      ##  command token color.
+      Parameter          = [ConsoleColor]::green       ##  parameter token color.
+      Type               = [ConsoleColor]::White       ##  type token color.
+      Number             = [ConsoleColor]::White       ##  number token color.
+      Member             = [ConsoleColor]::White       ##  member name token color.     
     }
   } Else {
     Set-PSReadLineOption -ForeGround Yellow  -Token None

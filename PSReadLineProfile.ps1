@@ -815,6 +815,7 @@ if (Get-Module PSReadline -ea Ignore) {
     Set-PSReadlineKeyHandler -Key Shift+Backspace -Function BackwardDeleteChar  ### Kill word EVIL ####
     Set-PSReadlineKeyHandler -Key UpArrow         -Function HistorySearchBackward
     Set-PSReadlineKeyHandler -Key DownArrow       -Function HistorySearchForward
+    set-psreadlineoption -WordDelimiters ' !"%&''()*+,-/<=>?@[\]^`~'
     If ($Host.PrivateData -and $Host.PrivateData.ErrorBackgroundColor) {
       $Host.PrivateData.ErrorBackgroundColor   = $Host.UI.RawUI.BackgroundColor
       $Host.PrivateData.WarningBackgroundColor = $Host.UI.RawUI.BackgroundColor
@@ -832,6 +833,26 @@ if (Get-Module PSReadline -ea Ignore) {
       $Host.PrivateData.WarningForegroundColor = 'White'
     }
 
+  <#
+
+    WordDelimiters                         : ;:,.[]{}()/\|^&*-=+'"–—―
+    CommandColor                           : ←[93m"$([char]0x1b)[93m"←[0m
+    CommentColor                           : ←[92m"$([char]0x1b)[92m"←[0m
+    ContinuationPromptColor                : ←[95m"$([char]0x1b)[95m"←[0m
+    DefaultTokenColor                      : ←[93m"$([char]0x1b)[93m"←[0m
+    EmphasisColor                          : ←[95m"$([char]0x1b)[95m"←[0m
+    ErrorColor                             : ←[95m"$([char]0x1b)[95m"←[0m
+    KeywordColor                           : ←[93m"$([char]0x1b)[93m"←[0m
+    MemberColor                            : ←[97m"$([char]0x1b)[97m"←[0m
+    NumberColor                            : ←[97m"$([char]0x1b)[97m"←[0m
+    OperatorColor                          : ←[96m"$([char]0x1b)[96m"←[0m
+    ParameterColor                         : ←[92m"$([char]0x1b)[92m"←[0m
+    SelectionColor                         : ←[95m"$([char]0x1b)[95m"←[0m
+    StringColor                            : ←[97m"$([char]0x1b)[97m"←[0m
+    TypeColor                              : ←[97m"$([char]0x1b)[97m"←[0m
+    VariableColor                          : ←[92m"$([char]0x1b)[92m"←[0m
+  #>
+  
   Set-PSReadlineKeyHandler 'Tab'                      -Function TabCompleteNext
   Set-PSReadlineKeyHandler 'Shift+Tab'                -Function TabCompletePrevious
   Set-PSReadLineKeyHandler -Key UpArrow               -Function HistorySearchBackward
@@ -850,36 +871,9 @@ if (Get-Module PSReadline -ea Ignore) {
 Write-Warning "$(FLINE) New Errors: $($Error.Count - $Private:ErrorCount)"
 
 <#
-        function prompt {
-           $c = [ConsoleColor]::Cyan
-           $l = [ConsoleColor]::DarkCyan
-           $b = [ConsoleColor]::Gray
-           $h = [ConsoleColor]::DarkGray
-
-           $gls = $($(Get-Location) -Split '\\')
-           $drv = $gls[0]
-           $fol = $gls[-1]
-           $lvl = $gls.Count -2
-
-           Write-Host '[' -n -f $b
-           Write-Host $(Get-History).Count -n -f $h
-           Write-Host '] ' -n -f $b
-
-           Write-Host $drv -n -f $l
-           Write-Host '\' -n -f $c
-
-           for ($i = 1;$i -le $lvl;$i++) {
-              Write-Host '..' -n -f $l
-              Write-Host '\' -n -f $c
-           }
-
-           Write-Host $fol -n -f $l
-           Write-Host ' >' -n -f $c
-           Return ' '
-        }
-    } else {
-        write-host "Not running Powershell v3 (CUrr = $($host.version))" -foregroundcolor yellow
-    }
-}
+    $c = [ConsoleColor]::Cyan
+    $l = [ConsoleColor]::DarkCyan
+    $b = [ConsoleColor]::Gray
+    $h = [ConsoleColor]::DarkGray
 
 #>
