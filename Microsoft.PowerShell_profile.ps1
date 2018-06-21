@@ -1,19 +1,20 @@
+#region    Parameters
 [CmdLetBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
-  param (
-    [Alias('DotNet')]                                    [switch]$ShowDotNetVersions,
-    [Alias('Modules')]                                   [switch]$ShowModules,
-    [Alias('IModules')]                                  [switch]$InstallModules,
-                                                         [switch]$ForceModuleInstall,
-    [ValidateSet('AllUsers','CurrentUser')]              [string]$ScopeModule='AllUsers',
-    [Parameter(ValueFromRemainingArguments=$true)]       [string[]]$RemArgs,
-    [Alias('ClobberAllowed')]                            [switch]$AllowClobber,
-    [Alias('SilentlyContinue')]                          [switch]$Quiet,
-    [Alias('PSReadlineProfile','ReadlineProfile','psrl')][switch]$PSReadline,
-    [Alias('ForcePSReadlineProfile','fpsrl')]            [switch]$ForcePSReadline
-    #[Alias('IAc','IAction','InfoAction')]
-    #[ValidateSet('SilentlyContinue','')]                                  [switch]$InformationAction
-  )
-
+param (
+  [Alias('DotNet')]                                    [switch]$ShowDotNetVersions,
+  [Alias('Modules')]                                   [switch]$ShowModules,
+  [Alias('IModules')]                                  [switch]$InstallModules,
+                                                       [switch]$ForceModuleInstall,
+  [ValidateSet('AllUsers','CurrentUser')]              [string]$ScopeModule='AllUsers',
+  [Parameter(ValueFromRemainingArguments=$true)]       [string[]]$RemArgs,
+  [Alias('ClobberAllowed')]                            [switch]$AllowClobber,
+  [Alias('SilentlyContinue')]                          [switch]$Quiet,
+  [Alias('PSReadlineProfile','ReadlineProfile','psrl')][switch]$PSReadline,
+  [Alias('ForcePSReadlineProfile','fpsrl')]            [switch]$ForcePSReadline
+  #[Alias('IAc','IAction','InfoAction')]
+  #[ValidateSet('SilentlyContinue','')]                                  [switch]$InformationAction
+)
+#region    Parameters
 $Private:StartTime  = Get-Date
 $ErrorCount = $Error.Count
 Function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
@@ -26,16 +27,14 @@ If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])
 # $host.PrivateData.verbosebackgroundcolor = 'black'
   $host.PrivateData.debugbackgroundcolor   = 'black'
 }
-
   # 'Continue', 'Ignore', 'Inquire', 'SilentlyContinue', 'Stop', 'Suspend'
-
+  # Begin adding regions, Add cc, c alias/functions
   # Fixed Alt+(,Alt+),Get-DotNetAssembly,Get-RunTime,Add Get-Accelerator,[Accelerators]
   # Temporary Fix to Go(works without Jump), Scripts to path,find and run Local*.ps1"
   # Fix 6.0 problems, PSGallery, Where.exe output, PSProvider,Jump.Location load
   # Improved Get-ChildItem2, Add-ToolPath,++B,++DosKey,CleanPath,start Get-DirectoryListing,add refs,README.mkdir
   # Show-ConsoleColor,Get-Syntax(aliases),++Select-History,++FullHelp,++d cmds, esf (needs *,? support),++Add-ToolPath,Reduce History Saved
   # Started Add-Path(crude) -- more ToDo notes
-
   # ToDo: Use -EA IGNORE for most handled errors
   # ToDo: Add support for local-only PS1 files -- started  ???
   # ToDo: Move notes out of this file
@@ -58,8 +57,6 @@ If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])
   #         Speed up History loading?
   #         get-process notepad++ | Select-Object name,starttime,productversion,path
   #         Get-WMIObject win32_service -filter 'name = "everything"' | Select-Object name,StartMode,State,Status,Processid,StartName,DisplayName,PathName | Format-Table
-
-
   # Git-Windows Git (new file), previous commit worked on JR 2 machines
   # Improve goHash, Books & Dev more general, fix S: T: not found
   # Everything? es?
@@ -73,7 +70,6 @@ If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])
   # Move utility extract up (LINE, FILE, WRITE-LOG)
   # working on LogFilePath
   # worked on 7z  --
-
   # Jing imagex sharex
   # C:\Program Files\ShareX\ & 'C:\Program Files\ShareX\ShareX.exe'
   #   https://getsharex.com/docs/amazon-s3
@@ -89,7 +85,6 @@ If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])
   #   https://docs.microsoft.com/en-us/powershell/wmf/5.0/feedback_symbolic
   # How To Set Up Chocolatey For Organizational/Internal Use
   #   https://chocolatey.org/docs/how-to-setup-offline-installation
-
   # https://null-byte.wonderhowto.com/how-to/use-google-hack-googledorks-0163566/
   # 7-Zip        http://www.7-zip.org/download.html
   # Git          https://git-scm.com/download/win
@@ -115,8 +110,6 @@ If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])
   #              CLI Tools: 	https://xpdfreader-dl.s3.amazonaws.com/xpdf-tools-win-4.00.zip
   #              Extra Fonts:	https://xpdfreader-dl.s3.amazonaws.com/xpdf-t1fonts.tar.gz
   #              Source code:	https://xpdfreader-dl.s3.amazonaws.com/xpdf-4.00.tar.gz
-
-
 $ProfileDirectory   = Split-Path $Profile
 $PSProfile          = $MyInvocation.MyCommand.Definition
 $PSProfileDirectory = Split-Path $PSProfile
@@ -124,7 +117,6 @@ $ProfileLogPath     = $Profile -replace '\.ps1$','LOG.txt'
 write-information "$(LINE) Use `$Profile   for path to Profile: $Profile"
 write-information "$(LINE) Use `$PSProfile for path to Profile: $PSProfile"
 Write-Information "$(LINE) ProfileLogPath: $ProfileLogPath"
-
 try {
   $ProfileScriptDirectories = $ProfileDirectory, $PSProfileDirectory,
             "$ProfileDirectory\Scripts*", "$PSProfileDirectory\Scripts*"
@@ -139,7 +131,6 @@ try {
 } catch {
   write-warning "2: Caught error in loading local profile scripts"
 }
-
 try {
   # Clean the $Env:Path
   $Script:AddPath = "$PSScriptRoot\Tools", "$PSScriptRoot\Scripts"
@@ -153,7 +144,6 @@ try {
     } | Group-Object DirectoryName -noelement | Sort-Object Count,Name
   }
   Function Get-PSVersion {"$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"}
-
   Function Test-Administrator {
   ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
     [Security.Principal.WindowsBuiltInRole] "Administrator")
@@ -163,13 +153,11 @@ try {
   if ($AdminEnabled = Test-Administrator) {
            write-information "$(LINE) Administrator privileges enabled"
   } else { write-information "$(LINE) Administrator privileges DISABLED"}
-
 # Add to Scripts, Snippets etc.
 # Fix 6.0 problems, PSGallery, Where.exe output, PSProvider,Jump.Location load
 # Improved Get-ChildItem2, Add-ToolPath,++B,++DosKey,CleanPath,start Get-DirectoryListing,add refs,README.md
 # Show-ConsoleColor,Get-Syntax(aliases),++Select-History,++FullHelp,++d cmds, esf (needs *,? support),++Add-ToolPath,Reduce History Saved
 # Started Add-Path(crude) -- more ToDo notes
-
 # ToDo: Put scripts on path
 # ToDo: Move notes out of this file, Use Misc1/Work Misc/Home
 # ToDo: Test without Admin privs and skip issues
@@ -191,8 +179,6 @@ try {
 #         Speed up History loading?
 #         get-process notepad++ | select name,starttime,productversion,path
 #         gwmi win32_service -filter 'name = "everything"' | select name,StartMode,State,Status,Processid,StartName,DisplayName,PathName | ft
-
-
 # Git-Windows Git (new file), previous commit worked on JR 2 machines
 # Improve goHash, Books & Dev more general, fix S: T: not found
 # Everything? es?
@@ -207,7 +193,6 @@ try {
 # working on LogFilePath
 # worked on 7z  --
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE)"
-
 # Jing imagex sharex
 # C:\Program Files\ShareX\ & 'C:\Program Files\ShareX\ShareX.exe'
 #   https://getsharex.com/docs/amazon-s3
@@ -250,14 +235,12 @@ If ($WinMerge = Join-Path -resolve -ea ignore 'C:\Program*\WinMerge*' 'WinMerge*
 #              https://github.com/wsargent/docker-cheat-sheet
 # Wakoopa      https://web.appstorm.net/how-to/app-management-howto/how-to-discover-new-apps-with-wakoopa/
 # ArsClip
-
 #Clean the $Env:Path
 $SavePath = ($Env:Path -split ';' -replace '(?<=[\w\)])[\\;\s]*$' |
              Where-Object { $_ -and (Test-Path $_) } |
              select -uniq) -join ';'
 if ($SavePath) { $Env:Path, $SavePath = $SavePath, $Env:Path }
 function Get-PSVersion {"$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"}
-
 Function Add-ToolPath {
   [CmdLetBinding()]param(
     [string[]]$Path
@@ -278,13 +261,11 @@ Function Add-ToolPath {
   }
   Write-Warning "Unabled to put tools on path: PortCheck.exe"
 }
-
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE)"
 $PlacesToLook = 'C:\','T:\Programs\Herb','T:\Programs\Tools','T:\Programs',
                 'S:\Programs\Tools','S:\Programs\Herb''S:\Programs'        |
                 Where-Object  { Test-Path $_ -ea ignore }
 try { Add-ToolPath $PlacesToLook } catch { Write-Warning "Caught:  Add-Path"}
-
 Function DosKey {
   param($Pattern='=')
   if ($macros = where.exe 'macros.txt' 2>$Null) {
@@ -292,7 +273,6 @@ Function DosKey {
   }
 }
 Function B { if (!$Args) { $args = ,95}  DisplayBrightnessConsole @Args }
-
 Function Get-PSHistory {
   param(
     $UserName = $Env:UserName
@@ -308,7 +288,6 @@ Function Get-PSHistory {
     Write-Warning "PSHistory not found"
   }
 }
-
 <#
 Function Add-Path {
   [CmdLetBinding()]param(
@@ -322,12 +301,10 @@ Function Add-Path {
     #If (! ())
     if (!(Test-Path 'C:\Util')) {
       # $env:path += ';T:\Programs\Herb\util;T:\Programs\Herb\Unx;T:\programs\Herb\Bat'
-
     }
   }
 }
 #>
-
 # "line1","line2" -join (NL)
 # "line1","line2" -join [environment]::NewLine
 # https://github.com/FriedrichWeinmann/PSReadline-Utilities
@@ -336,7 +313,6 @@ Function Add-Path {
 # Install-Module -Scope CurrentUser -Name Assert
 # Chrome key mapper?  chrome://extensions/configureCommands
 # Chrome extensions   chrome://extensions/
-
 Function Get-NewLine { [environment]::NewLine }; new-alias NL Get-NewLine -force
 if (! (Get-Command write-log -type Function,cmdlet,alias -ea ignore)) {
   new-alias write-log write-verbose -force -scope Global -ea ignore
@@ -347,16 +323,84 @@ new-alias KeePass 'C:\Program Files (x86)\KeePass2\KeePass.exe' -force -scope Gl
 new-alias rdir    Remove-Item  -force -scope Global -ea ignore
 new-alias cdir    Set-Location -force -scope Global -ea ignore
 new-alias mdir    mkdir        -force -scope Global -ea ignore
-new-alias modir   modir        -force -scope Global -ea ignore
-new-alias moredir modir        -force -scope Global -ea ignore
+new-alias mvdir   move-item    -force -scope Global -ea ignore
+new-alias modir   more         -force -scope Global -ea ignore
+new-alias moredir more         -force -scope Global -ea ignore
 new-alias tdir    Get-Content  -force -scope Global -ea ignore
 new-alias typedir Get-Content  -force -scope Global -ea ignore
 new-alias ldir    less         -force -scope Global -ea ignore
 new-alias lessdir less         -force -scope Global -ea ignore
 new-alias l       less         -force -scope Global -ea ignore
-
+Function Set-ItemTime {
+  [CmdletBinding(DefaultParameterSetName='Path', SupportsShouldProcess, SupportsTransactions)]
+ 	param(
+ 	  [Parameter(ParameterSetName='Path',Position=0,
+               ValueFromPipeline,ValueFromPipelineByPropertyName)]
+ 	  [string[]]$Path=@(Get-ChildItem | Where-Object PSIsContainer -eq $False),
+ 	  [Parameter(ParameterSetName='LiteralPath', Mandatory=$true, ValueFromPipelineByPropertyName=$true)]
+ 	  [Alias('PSPath')][string[]]$LiteralPath,
+    [Alias('WriteTime','Time','DateTime')]
+    [Parameter(Position=1)][DateTime]$Date=(Get-Date),
+    [string[]]$Property = @('LastWriteTime'),
+ 	  [switch]$PassThru,
+ 	  [string]$Filter,
+ 	  [string[]]$Include,
+ 	  [string[]]$Exclude
+ 	  #[switch]${Force},
+ 	  #[Parameter(ValueFromPipelineByPropertyName=$true)]
+ 	  #[pscredential]
+ 	  #[System.Management.Automation.CredentialAttribute()]
+ 	  #${Credential})
+  ) 
+  Begin   { 
+    $DateString = Get-Date $Date -f 'yyyy-MM-dd HH:mm:ss'
+    Set-StrictMode -Version Latest 
+    Write-Verbose "Property set: $($PSCmdlet.ParameterSetName)"
+  } 
+  Process {
+    If ($PSBoundParameters.ContainsKey('LiteralPath')) {
+      $Path = @($PSBoundParameters.LiteralPath)
+    }
+    ForEach ($Item in $Path) {
+      $ShouldProcess = $True
+      If (!(Test-Path $Item -ea Ignore)) {
+        $NewMessage = "Create $Item to set $($Property -join ', ') to $DateString"
+        If ($ShouldProcess = $PSCmdlet.ShouldProcess($Item, $NewMessage)) {
+          Write-Verbose "Creating item: $Item - ShouldNew: [$ShouldProcess]"
+          New-Item $Item
+          $ItemPath = Resolve-Path $Item
+          Write-Verbose "Created new item: $ItemPath"
+        } else {
+          $ItemPath = $Item
+          Write-Warning "ShouldNew: [$ShouldProcess]"
+          Write-Verbose "Skipped Creation of new item: $ItemPath"
+          $ShouldProcess = $False
+        }
+      } else {
+        $ItemPath = Resolve-Path $Item
+      }
+      $SetMessage =  "Set $($Property -join ', ') to $DateString"
+      If ($ShouldProcess -and ($ShouldProcess2 = $PSCmdlet.ShouldProcess($Item, $SetMessage))) {
+        Write-Verbose "Setting itemproperty: $ItemPath"
+        ForEach ($Prop in $Property) {
+          Set-ItemProperty $ItemPath -Name $Prop -Value $Date
+        }  
+        If ($PassThru) { Get-Item $ItemPath }
+      } else {
+        Write-Verbose "Skipped Setting itemproperty: $ItemPath"
+      }
+    }
+  }  
+  End { }
+}
+    ####If ($Date -as [DateTime]) {
+    ####} else {
+    ####  $ErrorMessage = "Date parameter must be convertible to a valid DateTime"
+    ####  Throw $ErrorMessage
+    ####  Write-Warning $ErrorMessage
+    ####  Get-Date
+    ####}
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE)"
-
 try {
   $TryPath = $PSProfileDirectory,$ProfileDirectory,'C:\Bat' |
     Where-Object { Test-Path $_ -ea ignore }
@@ -369,9 +413,7 @@ try {
 } catch { # just ignore and take care of below
   Write-Log "Failed loading Utility.ps1" -file $PSProfileLogPath 3
 } finally {}
-
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE) ##338"
-
 if ((Get-Command 'Write-Log' -type Function,cmdlet -ea ignore)) {
   remove-item alias:write-log -force -ea ignore
 } else {
@@ -444,26 +486,20 @@ if ((Get-Command 'Write-Log' -type Function,cmdlet -ea ignore)) {
 #   "$Line$Suffix"
 # }
 }
-
 <#
 #>
-
 write-information "Profile loaded: $($MyInvocation.MyCommand.Path) ##416"
-
 $PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)" -as [double]
 write-information "$(LINE) PowerShell version PSVersionNumber: [$PSVersionNumber]"
-
 $ForceModuleInstall = [boolean]$ForceModuleInstall
 $AllowClobber       = [boolean]$AllowClobber
 $Confirm            = [boolean]$Confirm
-
 # 'C:\util\notepad++.exe' -force
 # 'S:\Programs\Portable\Notepad++Portable\Notepad++Portable.exe' -force -scope global
 # 'C:\Program Files (x86)\Notepad++\Note*.exe'   # ECS-DCTS02  Dec 2017 7.5.4
 #  S:\Programs\Notepad++ # 1/2/2018 Notepad++Portable.exe
 #  S:\Programs\Notepad++\app\Notepad++\   # Dec 2017
 #  S:\Programs\Herb\util\notepad++Portable.exe
-
 ### $SearchNotePadPlusPlus = @('S:\Programs' )
 <#
 $NotepadPlusPlus = (
@@ -484,7 +520,6 @@ $NotepadPlusPlus = (
    select -first 1).fullname
 if ($NotepadPlusPlus) { new-alias np $NotepadPlusPlus -force -scope Global }
 #>
-
 Function Set-ProgramAlias {
   param(
     [Alias('Alias')]  $Name,
@@ -497,9 +532,12 @@ Function Set-ProgramAlias {
   $Old = Get-Alias $Name -ea Ignore
   if ($IgnoreAlias) { remove-item Alias:$Name -force -ea Ignore }
   $SearchPath = if ($FirstPath) {
-    $Path +
+    $cmdnames = @(If ($cmd = @(get-command $Name -all -ea Ignore)) {
+      $cmd.definition
+    })  
+    $Path                                                      +
     (Invoke-Command { where.exe $Command 2>$Null } -ea Ignore) +
-    @(get-command $Name -all -ea Ignore).definition
+    $cmdnames
   } else {
     @(get-command $Name -all -ea Ignore).definition +
     (Invoke-Command { where.exe $Command 2>$Null } -ea Ignore) +
@@ -536,13 +574,11 @@ Set-ProgramAlias 7z   7z.exe @('C:Util\7-Zip\app\7-Zip64\7z.exe',
                                'C:\ProgramData\chocolatey\bin\7z.exe',
                                'S:\Programs\7-Zip\app\7-Zip64\7z.exe'
                              ) -FirstPath
-
 # 'Thu, 08 Feb 2018 07:47:42 -0800 (PST)' -replace '[^\d]+$' -as [datetime] 13:47:42 -0800 (PST)'
 # 'Thu, 08 Feb 2018 07:47:42 -0800 (PST)' -replace '[^\d]+$' -as [datetime] 13:47:42 -0800 (PST)'
 #$raw = 'Thu, 08 Feb 2018 13:47:42 -0800 (PST)'
 #$pattern = 'ddd, dd MMM yyyy Get-History:mm:ss zzz \(PST)'
 #[DateTime]::ParseExact($raw, $pattern, $null)
-
 if ($MyInvocation.HistoryID -eq 1) {
   if (Get-Command write-information -type cmdlet,Function -ea ignore) {
     $InformationPreference = 'Continue'
@@ -553,25 +589,20 @@ if ($MyInvocation.HistoryID -eq 1) {
     new-alias write-information write-warning -force # -option allscope
   }
 }
-
 if ($Quiet -and $global:informationpreference) {
   $informationpreferenceSave = $global:informationpreference
   $global:informationpreference = 'SilentlyContinue'
   $script:informationpreference = 'SilentlyContinue'
   write-information "SHOULD NOT WRITE"
 }
-
 get-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive |
   Select-Object WindowArrangementActive | Format-List | findstr "WindowArrangementActive"
 set-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -value 0 -type dword -force
-
 # https://onedrive.live.com?invref=b8eb411511e1610e&invscr=90  Free one drive space
-
 Function Get-CurrentIPAddress {(ipconfig) -split "`n" | Where-Object {
   $_ -match 'IPv4' } | ForEach-Object { $_ -replace '^.*\s+' }
 }
 Function Get-WhoAmI { "[$PID]",(whoami),(hostname) + (Get-CurrentIPAddress) -join ' ' }
-
 If ($ShowDotNetVersions) {
   write-information ".NET dotnet versions installed"
   $DotNetKey = @('HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP',
@@ -580,7 +611,6 @@ If ($ShowDotNetVersions) {
     Select-Object @{N='Name';E={$_.pspath -replace '.*\\([^\\]+)$','$1'}},version,
       InstallPath,@{N='Path';E={($_.pspath -replace '^[^:]*::') -replace '^HKEY[^\\]*','HKLM:'}}
 }
-
 $DefaultConsoleTitle = 'Windows PowerShell'
 If (Test-Administrator) {
   $DefaultConsoleTitle = 'Administrator: Windows PowerShell'
@@ -606,24 +636,20 @@ If (Test-Administrator) {
     Write-Information "$(LINE) Problem with PSRepository"
   }
 }
-
 $PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)" -as [double]
 $CurrentWindowTitle = $Host.ui.RawUI.WindowTitle
 if ($CurrentWindowTitle -match 'Windows PowerShell([\(\)\s\d]*)$') {
   $Host.ui.RawUI.WindowTitle += " $(Get-WhoAmI) OS:" +
     (Get-WMIObject win32_operatingsystem).version + "PS: $PSVersionNumber"
 }
-
 if (!(Get-Module 'Jump.Location' -listavailable -ea ignore) -and $PSVersionNumber -lt 6) {
   $parms = @('-force')
   if ($PSVersionNumber -ge 5.1) { $parms += '-AllowClobber' }
   Install-Module 'Jump.Location' ### @Parms
 }
-
 If (((Get-PSVersion) -lt 6.0 ) -and (Get-Module -list Jump.Location -ea ignore)) {
   Import-Module jump.location -ea ignore
 }
-
 Function Update-ModuleList {
   [CmdLetBinding(SupportsShouldProcess = $true,ConfirmImpact='Medium')]
   param(
@@ -668,7 +694,6 @@ Function Update-ModuleList {
   }  ## Process block
   end {}
 }
-
 $RecommendedModules = @(
   'pester',
   'carbon',
@@ -684,7 +709,6 @@ $RecommendedModules = @(
   'PSReadLine',
   'PSUtil'
 )
-
 # DSC_PowerCLISnapShotCheck  PowerCLITools  PowerCLI.SessionManager PowerRestCLI
 # PowerShell CodeManager https://bytecookie.wordpress.com/
 # ChocolateyGet
@@ -692,22 +716,17 @@ $RecommendedModules = @(
 # https://github.com/FriedrichWeinmann/functions
 # PSFramework
 # Install-Module -Scope CurrentUser -Name Assert
-
-
 if ($InstallModules) {
   Install-ModuleList $RecommendedModules
 } else {
   # get-module -list $RecommendedModules
 }
-
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE) Before Show-Module "
-
 if ($ShowModules) {
  get-module -list | Where-Object {$_.name -match 'PowerShellGet|PSReadline' -or $_.author -notmatch 'Microsoft' } |
    Format-Table version,name,author,path
 } else {}
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE) After Show-Module "
-
 # Get .Net Constructor parameters
 # ([type]"Net.Sockets.TCPClient").GetConstructors() | ForEach-Object { $_.GetParameters() } | Select-Object Name,ParameterType
 Function Get-Constructor {
@@ -718,30 +737,25 @@ Function Get-Constructor {
     } | Select-Object -Object Name, ParameterType
   }
 }
-
 write-information "Useful modules: https://blogs.technet.microsoft.com/pstips/2014/05/26/useful-powershell-modules/"
 $PSCXprofile = 'C:\Users\hmartin\Documents\WindowsPowerShell\Pscx.UserPreferences'
 write-information "import-module -noclobber PSCX $PSCXprofile"
 if ($psversiontable.psversion.major -lt 6) {
   write-information "import-module -noclobber PowerShellCookbook"
 }
-
 <#
 [System.Windows.Forms.Screen]::AllScreens
 [System.Windows.Forms.Screen]::PrimaryScreen
 # Make nicely formatted simple directory for notes:
 Get-ChildItem | Sort-Object LastWriteTime -desc | ForEach-Object { '{0,23} {1,11} {2}' -f $_.lastwritetime,$_.length,$_.name }
 #>
-
 <#
 ts.ecs-support.com:32793  terminal server 10.10.11.80
 ts.ecs-support.com:32795 FS02
 #>
 # Get-WindowsFeature 'RSAT-DNS-Server'
 # Import-Module ServerManager
-
 if (Join-Path $PSProfileDirectory "$($env:UserName).ps1" -ea ignore -ev $Null) {
-
 }
 # (Get-IPAddress).ipaddresstostring -match '^10.10'
 $ecs       = 'ts.ecs-support.com'
@@ -751,11 +765,9 @@ $j1        = "$($ecs):32793"
 $j2        = "$($ecs):32795"
 $ts1       = "ecs-DCts01"
 $ts2       = "ecs-DCts02"
-
 # Join-Path 'C:\Util','c:\Program*\*','C:\ProgramData\chocolatey\bin\','T:\Programs\Tools\Util','T:\Programs\Util','S:\Programs\Tools\Util','S:\Programs\Util' 'NotePad++.exe' -resolve -ea ignore
 # PsExec64.exe -h \\REMOTECOMPUTER qwinsta | find "Active"
 # runas /noprofile /netonly /user:"DOMAIN\USERNAME" "mstsc /v:REMOTECOMPUTER /shadow:14 /control"
-
 Function New-RDPSession {
   [CmdLetBinding()]param(
     [Alias('Remote','Target','Server')]$ComputerName,
@@ -776,11 +788,8 @@ Function New-RDPSession {
   if ($NoProfileFile) { mstsc /v:$ComputerName /w:$Width /Get-History:$Height @argX }
   else                { mstsc /v:$ComputerName $Path @argX }
 } New-Alias RDP New-RDPSession -force
-
 if ($AdminEnabled -and (get-command 'ScreenSaver.ps1' -ea ignore)) { ScreenSaver.ps1 }
-
 <# Testing ideas #>
-
 Function Merge-Object {
   Param (
     [Parameter(mandatory=$true)]$Object1,
@@ -792,7 +801,6 @@ Function Merge-Object {
   }
   $Object1
 }
-
 Function Get-ServiceProcess {      # ToDo add params for ID,Name to find
   $Processes = Get-Process
   $Services  = Get-WMIObject Win32_Service
@@ -804,7 +812,6 @@ Function Get-ServiceProcess {      # ToDo add params for ID,Name to find
       ForEach-Object { Merge-Object $_ $Service }
   } | Select-Object ID,State, Status,Name,Path
 }
-
 Function Get-HelpLink {
   $args
   "Args: $($args.count) $($args.gettype())"
@@ -812,7 +819,6 @@ Function Get-HelpLink {
   (((help @a -full) -join ' ## ') -split '(\s+##\s+){2,}' | Select-Object -String '.*http.*' -all |
     Select-Object -expand matches).value -replace ' ## ',"`n" | ForEach-Object {"$_`n"} | Format-List
 }; New-Alias ghl Get-HelpLink -force
-
 Function Get-HelpLink {
   $a = $args
   #$outputEncoding=[System.Console]::OutputEncoding
@@ -821,7 +827,6 @@ Function Get-HelpLink {
 }
 ; New-Alias ghl Get-HelpLink -force
 # get-help about_* -full | ForEach-Object { '{0,-38}{1,6}  {2}' -f $_.Name,$_.Length,$_.Synopsis }
-
 if (Test-Path "$Home\Documents\WindowsPowerShell\tt.xml") {
 	if ($hc = import-clixml -first 1 "$Home\Documents\WindowsPowerShell\tt.xml" -ea ignore) {
 		$hc | ForEach-Object {$_.commandline = @'
@@ -830,23 +835,16 @@ if (Test-Path "$Home\Documents\WindowsPowerShell\tt.xml") {
 		$testclip = "Clip test4"
 '@
 		}
-
 		$hc = import-clixml -first 1 "$Home\Documents\WindowsPowerShell\tt.xml"
 		#$hid = ($hc | ForEach-Object {$_.commandline = gcb } | add-history -passthru).id; ihy $hid
 	}
 }
-
 ### gcb | ForEach-Object { $a = $_ -split '\.'; [array]::reverse($a); $a -join '.'}
-
 #C:\Windows\Microsoft.NET\Framework64\v4.0.30319\config\machine.config
 if ($psversiontable.psversion.major -lt 6) {
   [System.Runtime.InteropServices.RuntimeEnvironment]::SystemConfigurationFile
 }
-
-
 #> # End testing ideas
-
-
 Function Set-DefaultPropertySet { param([Object]$Object,
   [Alias('Properties','Property','Members')][string[]]$DefaultProperties)
   If (!$Object) { return $Null }
@@ -857,7 +855,6 @@ Function Set-DefaultPropertySet { param([Object]$Object,
     [System.Management.Automation.PSMemberInfo[]]@($defaultDisplayPropertySet)
   $OBject | Add-Member MemberSet PSStandardMembers $PSStandardMembers -PassThru
 }
-
 Function Get-WinStaSession {
   [CmdletBinding()]param($UserName, [Alias('Me','My','Mine')][switch]$Current)
   $WinSta = qwinsta | Select-Object -skip 1
@@ -895,12 +892,10 @@ function Get-CommandPath {
   } else { $Paths }
 }
 #################################################################
-
 $InformationPreference = 'continue'
 write-information "$(LINE) InformationPreference: $InformationPreference"
 write-information "$(LINE) Test hex format: $("{0:X}" -f -2068774911)"
 # "{0:X}" -f -2068774911
-
 Function Get-DriveTypeName ($type) {
 	$typename = @('UNKNOWN',     # 0 # The drive type cannot be determined.
 					  		'NOROOTDIR',   # 1 # The root path is invalid; for example, there is no volume mounted at the specified path.
@@ -912,7 +907,6 @@ Function Get-DriveTypeName ($type) {
   if (($type -le 0) -or ($type -ge $typename.count)) {return 'INVALID'}
   $typename[$type]
 }
-
 Function Get-Volume {
   [CmdletBinding(DefaultParameterSetName='Name')]Param(
     [String[]]$Name,
@@ -928,7 +922,6 @@ Function Get-Volume {
   $PSBoundParameters.PSProvider = 'FileSystem'
   Get-PSDrive @PSBoundParameters
 }
-
 Function Get-Free {
   [CmdletBinding(DefaultParameterSetName='Name')]Param(
     [String[]]$Name,
@@ -945,22 +938,18 @@ Function Get-Free {
   Get-PSDrive @PSBoundParameters | Where-Object Used -ne '' |
     select used,free,root,currentlocation
 }
-
 #  Get-PSVolume
 # (Get-WMIObject win32_volume ) | Where-Object {$_.DriveLetter -match '[A-Z]:'} |
 #  ForEach-Object { "{0:2} {0:2} {0:9} {S:9} "-f $_.DriveLetter, $_.DriveType, (Get-DriveTypeName $_.DriveType), $_.Label, ($_.Freespace / 1GB)}
 #  # % {"$($_.DriveLetter) $($_.DriveType) $(Get-DriveTypeName $_.DriveType) $($_.Label) $($_.Freespace / 1GB)GB"}
 #}
-
 Function Get-WMIClassInfo {
   [CmdletBinding()] param([string]$className, [switch]$WrapList)
   #https://www.darkoperator.com/blog/2013/2/6/introduction-to-wmi-basics-with-powershell-part-2-exploring.html
   $r = (Get-WmiObject -list $className -Amended).qualifiers | Select-Object -Object name, value
   if ($WrapList) { $r | Format-Table -AutoSize -Wrap } else { $r }
 }
-
 # [AppDomain]::CurrentDomain.GetAssemblies() | sort FullName | Select FullName
-
   # Fixed Get-DotNetAssembly
 Function Get-DotNetAssembly  {
   [CmdletBinding()]param(
@@ -984,7 +973,6 @@ Function Get-DotNetAssembly  {
    #}
 }
 new-alias gdna Get-DotNetAssembly -force
-
 Function Get-TypeX {
   [CmdletBinding()]param(
     [string[]]$Include=@('.*'),
@@ -1013,13 +1001,11 @@ Function Get-TypeX {
     }
   }
 }
-
   #$Op    = 'match';
   #$NegOp = "not$Op"
   #Invoke-Expression "Function ObjectFilter {
   #  If ($_ $Op $Include -and $_ -$NegOp $Exclude) { $_ }
   #}"
-
 [PSObject].Assembly.GetType('System.Management.Automation.TypeAccelerators')::Add('accelerators', [PSObject].Assembly.GetType('System.Management.Automation.TypeAccelerators'))
 Function Get-Accelerator {
   param($Include='.', $Exclude='^$', [switch]$Like)
@@ -1032,7 +1018,6 @@ Function Get-Accelerator {
     }
   }
 }
-
 Function Get-HistoryCommandline {
   [CmdLetBinding()]param(
     [string]$Pattern,
@@ -1051,7 +1036,6 @@ Function Get-HistoryCommandline {
   new-alias ghc Get-HistoryCommandLine -force
   new-alias gcl Get-HistoryCommandLine -force
   new-alias hcm Get-HistoryCommandLine -force
-
 Function Select-History {
   [CmdLetBinding()]param(
     [string]$Pattern,
@@ -1091,7 +1075,6 @@ Function Select-History {
   }
 }
 new-alias sh Select-History -force -scope Global
-
 Function Get-RunTime {
   param(
     [Parameter(ValueFromPipeline=$True)]
@@ -1135,7 +1118,6 @@ Function Get-RunTime {
     }
   }
 }; New-Alias rt Get-RunTime -force -scope Global
-
 Function Get-Syntax {
   param(
   )
@@ -1151,13 +1133,10 @@ Function Get-Syntax {
 Function syn { get-command @args -syntax }
 Function get-fullhelp { get-help -full @args }
 'hf','full','fh','fhelp','helpf' | ForEach-Object { new-alias $_ get-fullhelp -force -ea continue }
-
 write-information "$(LINE) $home"
 write-information "$(LINE) Try: import-module -prefix cx Pscx"
 write-information "$(LINE) Try: import-module -prefix cb PowerShellCookbook"
-
 new-alias npdf 'C:\Program Files (x86)\Nitro\Reader 3\NitroPDFReader.exe' -force -scope Global
-
 Function esf {
   $parms  = @('-dm')
   $target = @()
@@ -1181,7 +1160,6 @@ Function esf {
     } else { $_ }
   }
 }
-
 <#  $foreach loop variable iterator WEIRD remove this junk
 foreach ($a in ('a','b','c','d','e')) { $a; [void]$foreach.movenext(); $foreach.gettype() }
 []
@@ -1203,7 +1181,6 @@ $x
 $x=0; foreach ($a in ('a','b','c','d','e')) { $x; $x++; "$a $foreach";  }
 $x=0; foreach ($a in ('a','b','c','d','e')) { $x; $x++; "$a $foreach"; $x+++  }
 $x=0; foreach ($a in ('a','b','c','d','e')) { $x; $x++; "$a $foreach"; $x++ }
-
 foreach ($a in ('a','b','c','d','e')) { $a; [void]$foreach.movenext(); $foreach.gettype() | gm }
 foreach ($a in ('a','b','c','d','e')) { $a; [void]$foreach.movenext(); $foreach }
 foreach ($a in ('a','b','c','d','e')) { $foreach }
@@ -1244,14 +1221,11 @@ $x=0; foreach ($a in ('a','b','c','d','e')) { $foreach.currentindex  }
 $x=0; foreach ($a in ('a','b','c','d','e')) { $foreach.index  }
 $x=0; foreach ($a in ('a','b','c','d','e')) { $foreach.position  }
 $x=0; foreach ($a in ('a','b','c','d','e')) { $foreach.upperbound  }
-
 #>
-
 Function ahk {
   if ($args[0]) { C:\util\AutoHotKey\autohotkey.exe @args               }
   else          { C:\util\AutoHotKey\autohotkey.exe /r "c:\bat\ahk.ahk" }
 };
-
 Function ahk {
   [CmdletBinding()]param([string[]]$Path=@('c:\bat\ahk.ahk'))
   $argx = $args
@@ -1263,7 +1237,6 @@ Function ahk {
 }
 Remove-Item Alias:a -force -ea ignore 2>$Null
 New-Alias a ahk -force -scope Global
-
 Function d    { cmd /c dir @args}
 Function df   { Get-ChildItem @args -force -file       }
 Function da   { Get-ChildItem @args -force             }
@@ -1327,8 +1300,6 @@ Function Get-Drive {
 	  [string]  $PSProvider='FileSystem')
   get-psdrive -name $name -psprovider $psprovider -scope $scope
 }
-
-
 # https://poshtools.com/2018/02/17/building-real-time-web-apps-powershell-universal-dashboard/
 # https://docs.microsoft.com/en-us/dotnet/api/?view=netframework-4.5
 # Function invoke-clipboard {$script = ((Get-Clipboard) -join "`n") -replace '(Function\s+)', '$1 '; . ([scriptblock]::Create($script))}
@@ -1381,13 +1352,10 @@ Function qa {
   }
   $args | ForEach-Object { "$q$_$q" }
 }
-
 # $ic = [scriptblock]::Create('(Get-Clipboard) -join "`n"')
 # $ic = '. ([scriptblock]::Create($((Get-Clipboard) -join "`n")))'
 # $ic = [scriptblock]::Create('. ([scriptblock]::Create($((Get-Clipboard) -join "`n")))')
-
 # https://weblogs.asp.net/jongalloway/working-around-a-powershell-call-depth-disaster-with-trampolines
-
 write-information "$(LINE) set Prompt Function"
 try {
   if (!$global:PromptStack) {
@@ -1397,11 +1365,9 @@ try {
 } catch {
 	[string[]]$global:PromptStack  = @((Get-Command prompt).ScriptBlock)
 }
-
 write-information "$(LINE) Pushed previous prompt onto `$PromptStack: $($PromptStack.count) entries"
 write-information "$(LINE) prompt='PS $($executionContext.SessionState.Path.CurrentLocation) $('>' * $nestedPromptLevel + '>')'"
 #Function Global:prompt { "PS '$($executionContext.SessionState.Path.CurrentLocation)' $('>.' * $nestedPromptLevel + '>') "}
-
 Function Global:prompt {
   If (!(Test-Path Variable:Global:MaxPromptLength -ea ignore 2>$Null)) { $MaxPrompt = 45 }
   $loc = (Get-Location).ProviderPath # -replace '^[^:]*::'
@@ -1417,14 +1383,11 @@ Function Global:prompt {
   write-host -nonewline "'$Loc'$Sig" -fore Cyan -back DarkGray
   ' '   # Make normal background SPACE and give PS something to show
 }
-
 <#
 # https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_prompts?view=powershell-6
-
 function prompt {
   $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
   $principal = [Security.Principal.WindowsPrincipal] $identity
-
   $(if (test-path variable:/PSDebugContext) { '[DBG]: ' }
     elseif($principal.IsInRole([Security.Principal.WindowsBuiltInRole]
       "Administrator")) { "[ADMIN]: " }
@@ -1432,7 +1395,6 @@ function prompt {
   ) + 'PS ' + $(Get-Location) +
     $(if ($nestedpromptlevel -ge 1) { '>>' }) + '> '
 }
-
 function prompt {   # displays the history ID of the next command
    # The at sign creates an array in case only one history item exists.
    $history = @(get-history)
@@ -1441,13 +1403,11 @@ function prompt {   # displays the history ID of the next command
       $lastItem = $history[$history.Count - 1]
       $lastId = $lastItem.Id
    }
-
    $nextCommand = $lastId + 1
    $currentDirectory = get-location
    "PS: $nextCommand $currentDirectory >"
 }
 # Debuggers https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_debuggers?view=powershell-6
-
 #>
 new-alias v 'C:\Program Files (x86)\VLC\vlc.exe' -force -scope Global
 ;;
@@ -1468,7 +1428,6 @@ Function Global:prompt {
   write-host -nonewline $Prompt -fore Cyan -back DarkGray
   ' '   # Make normal background SPACE and give PS something to show
 }
-
 Function Format-Error {
   [CmdletBinding()]Param(
     [parameter(ValueFromPipeline=$True, ValueFromPipelineByPropertyName=$True)]
@@ -1495,7 +1454,6 @@ Function Format-Error {
   }
   End {}
 }
-
 Function Show-ConsoleColor {
   param ([int]$MaxLength = 6, [int]$SkipLines = 0, [switch]$Bracket)
   $ConsoleWidth = $host.ui.rawui.WindowSize.Width
@@ -1520,7 +1478,23 @@ Function Show-ConsoleColor {
     else          { Write-Host "$NewLines" }
   }
 }
-
+Function Get-Property {
+  [CmdletBinding()]param(
+    [Parameter(ValueFromPipeline)][psobject]$object,
+    [switch]$AsHash
+  )
+  Process {
+    If ($AsHash) {
+      $Property = [ordered]@{}
+      $Object.psobject.get_properties() | ForEach-Object {
+        $Property += @{ $_.Name = $_.Value }
+      }
+      $Property
+    } else {
+      $Object.psobject.get_properties()
+    }
+  }
+}
 # Function docs {
 #   [CmdletBinding()]param (
 #     [Parameter(Position='0')][string]$path="$Home\Documents",
@@ -1539,7 +1513,6 @@ Function Show-ConsoleColor {
 #     write-error $_
 #   }
 # }
-
 # Function books {
 #   if (Test-Path "$($env:userprofile)\downloads\books") {
 #     Set-Location "$($env:userprofile)\downloads\books"
@@ -1548,7 +1521,6 @@ Function Show-ConsoleColor {
 # 	}
 # 	if ($args[0]) {Set-Location $args[0]}
 # }
-
 $ECSTraining = "\Training"
 $SearchPath  = 'C:\',"$Home\Downloads","T:$ECSTraining","S:$ECSTraining"
 ForEach ($Path in $SearchPath) {
@@ -1570,7 +1542,6 @@ ForEach ($Path in $SearchPath) {
   } catch {}  # just ignore
   $Dev = $PSProfile
 }
-
 Function Test-Clipboard { Get-Clipboard | Test-Script };
 New-Alias tcb  Test-ClipBoard -force -scope Global
 New-Alias gcbt Test-ClipBoard -force -scope Global
@@ -1597,7 +1568,6 @@ $goHash = [ordered]@{
   esb        = 'c:\esb'
   dev        = 'c:\dev'
 }
-
 Function Set-GoAlias {
   [CmdletBinding()]param([string]$Alias, [string]$Path)
   if ($Alias) {
@@ -1609,10 +1579,8 @@ Function Set-GoAlias {
     New-Alias $Alias Set-GoLocation -force -scope Global -Option allscope
   }
 }
-
 # Import-Module "$Home\Documents\WindowsPowerShell\Set-LocationFile.ps1"
 . "$Home\Documents\WindowsPowerShell\Set-LocationFile.ps1"
-
 Function Set-GoLocation {
   [CmdletBinding()]param (
     [Parameter(Position='0')][string[]]$path=@(),
@@ -1682,7 +1650,6 @@ Function Set-GoLocation {
   }
   write-verbose "$(LINE) Current: $((Get-Location).path)"
 } New-Alias Go Set-GoLocation -force -scope global; New-Alias G Set-GoLocation -force -scope global
-
 Function Set-GoLocation {
   [CmdletBinding()]param (
     [Parameter(Position='0')][string[]]$path=@(),
@@ -1717,14 +1684,11 @@ Function Set-GoLocation {
 }
 New-Alias Go Set-GoLocation -force -scope global;
 New-Alias G  Set-GoLocation -force -scope global
-
 Set-GoAlias
 $books = switch ($true) {
   { Test-Path 'c:\books' } { Resolve-Path 'c:\books' }
   { Test-Path (Join-Path (Join-Path $Home 'Downloads')  'Books') } { Resolve-Path (Join-Path (Join-Path $Home 'Downloads')  Books) -ea ignore }
 }
-
-
 $gohash = [ordered]@{
   docs       = "$home\documents"
   down       = "$home\downloads"
@@ -1740,7 +1704,6 @@ $gohash = [ordered]@{
   esb        = 'c:\esb'
   dev        = 'c:\dev'
 }
-
 Function Set-GoAlias {
   [CmdletBinding()]param([string]$Alias, [string]$Path)
   if ($Alias) {
@@ -1752,7 +1715,6 @@ Function Set-GoAlias {
     New-Alias $Alias Set-GoLocation -force -scope Global -Option allscope
   }
 }
-
 Function Set-GoLocation {
   [CmdletBinding()]param (
     [Parameter(Position='0')][string[]]$path=@(),
@@ -1870,9 +1832,7 @@ Function Set-GoLocation {
 }
 New-Alias Go Set-GoLocation -force -scope global; New-Alias G Set-GoLocation -force -scope global
 New-Alias G  Set-GoLocation -force -scope global; New-Alias G Set-GoLocation -force -scope global
-
 <#
-
 Ok, I finally got around to starting to learn Pester version 4.1.1
 PSVersion 5.1.14409.1012
 Got this:
@@ -1882,7 +1842,6 @@ Looks like a match, editor says it's a match, so I tried adding the same test wi
 (get-location).gettype();  (resolve-path .).gettype()
 (get-location)  -eq (resolve-path .)
 (get-location).path  -eq (resolve-path .).path
-
 [-] Uses books to change directory to C:\books 90ms
   Expected: {C:\books}
   But was:  {C:\books}
@@ -1904,7 +1863,6 @@ Function Show-InternetProxy {
     Write-Output $Line
   }
 }
-
 Function Set-InternetProxy {
   [CmdletBinding()]
   param(
@@ -1957,8 +1915,6 @@ Function Set-InternetProxy {
     Write-Verbose $Line -Verbose:$Verbose
   }
 }
-
-
 # Utility Functions (small)
 filter Test-Odd  { param([Parameter(valuefrompipeline)][int]$n) [boolean]($n % 2)}
 filter Test-Even { param([Parameter(valuefrompipeline)][int]$n) -not (Test-Odd $n)}
@@ -1976,29 +1932,24 @@ Function Privs? {
 		'Administrator privileges NOT available'
 	}
 }
-
 Function Get-DayOfYear([DateTime]$date=(Get-Date)) {"{0:D3}" -f ($date).DayofYear}
-
 Function Get-FormattedDate ([DateTime]$Date = (Get-Date)) {
   Get-date "$date" ?f "yyyy-MM-ddTHH:mm:ss-ddd"
 }
 #([System.TimeZoneInfo]::Local.StandardName) -replace '([A-Z])\w+\s*', '$1'
-
 Function Get-SortableDate {
   [CmdletBinding()]param([DateTime]$Date = (Get-Date))
   Get-Date $date -format 's'
 }
-
 #$Myinvocation
 #Resolve-Path $MyInvocation.MyCommand -ea ignore
 #if ($myinvocation.pscommandpath) {$myinvocation.pscommandpath}
-
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE) Before PSReadline "
 #$PSReadLineProfile = Join-Path $myinvocation.pscommandpath 'PSReadLineProfile.ps1'
 $PSReadLineProfile = Join-Path (Split-Path $PSProfile) 'PSReadLineProfile.ps1'
 write-information $PSReadLineProfile
-if (Test-Path $PSReadLineProfile) { . $PSReadLineProfile -Force:([Boolean]$ForceForcePSReadlineProfile) }
-
+$ForcePSReadline = $PSBoundParameters.ContainsKey('ForcePSReadline') -and ([Boolean]$ForcePSReadline)
+if (Test-Path $PSReadLineProfile) { . $PSReadLineProfile -ForcePSReadline:$ForcePSReadline }
 try {   # Chocolatey profile
   $ChocolateyProfile = "$($env:ChocolateyInstall)\helpers\chocolateyProfile.psm1"
   write-information "$(LINE) Chocolatey profile: $ChocolateyProfile"
@@ -2008,7 +1959,6 @@ try {   # Chocolatey profile
 } catch {
   write-information "$(LINE) Chocolatey not available."
 }
-
 new-alias alias new-alias -force
 Function 4rank ($n, $d1, $d2, $d) {"{0:P2}   {1:P2}" -f ($n/$d),(1 - $n/$d)}
 write-information ("$(LINE) Use Function Get-PSVersion or variable `$PSVersionTable: $(Get-PSVersion)")
@@ -2033,35 +1983,44 @@ Function fileformat([string[]]$path = @('c:\dev'), [string[]]$include=@('*.txt')
         # Function Get-ErrorDetail
         # Function MyPSHost
 #endregion
-
 Function PSBoundParameter([string]$Parm) {
   return ($PSCmdlet -and $PSCmdlet.MyInvocation.BoundParameters[$Parm].IsPresent)
 }
-
-if (Get-Module 'PSReadline' -ea ignore) {
+if ($Private:PSRealineModule = Get-Module 'PSReadline' -ea ignore) {
   set-psreadlinekeyhandler -chord 'Tab'            -Func TabCompleteNext      ### !!!!!
   set-psreadlinekeyhandler -chord 'Shift+Tab'      -Func TabCompletePrevious  ### !!!!!
   set-psreadlinekeyhandler -chord 'Shift+SpaceBar' -Func Complete             ### !!!!!
-
-  Set-PSReadlineOption -token string    -fore white
-  Set-PSReadlineOption -token None      -fore yellow
-  Set-PSReadlineOption -token Operator  -fore cyan
-  Set-PSReadlineOption -token Comment   -fore green
-  Set-PSReadlineOption -token Parameter -fore green
-  Set-PSReadlineOption -token Comment   -fore Yellow -back DarkBlue
-
-	Set-PSReadLineOption -ForeGround Yellow  -Token None
-	Set-PSReadLineOption -ForeGround Green   -Token Comment
-
-	Set-PSReadLineOption -ForeGround Green   -Token Keyword
-	Set-PSReadLineOption -ForeGround Cyan    -Token String
-	Set-PSReadLineOption -ForeGround White   -Token Operator
-	Set-PSReadLineOption -ForeGround Green   -Token Variable
-	Set-PSReadLineOption -ForeGround Yellow  -Token Command
-	Set-PSReadLineOption -ForeGround Cyan    -Token Parameter
-	Set-PSReadLineOption -ForeGround White   -Token Type
-	Set-PSReadLineOption -ForeGround White   -Token Number
-	Set-PSReadLineOption -ForeGround White   -Token Member
+  If ($Private:PSRealineModule.Version  -ge [version]'2.0.0') {
+    Set-PSReadlineOption -Colors @{
+      ContinuationPrompt = [ConsoleColor]::Magenta            ##  color of the
+      Emphasis           = [ConsoleColor]::Magenta     ##  emphasis color, e.g. th
+      Error              = [ConsoleColor]::Magenta     ##  error color, e.g. in the p
+      Selection          = [ConsoleColor]::Magenta     ##  color to highlight the
+      Default            = [ConsoleColor]::yellow            ##  default token color.
+      Comment            = [ConsoleColor]::green             ##  comment token color.
+      Keyword            = [ConsoleColor]::Yellow            ##  keyword token color.
+      String             = [ConsoleColor]::white             ##  string token color.
+      Operator           = [ConsoleColor]::cyan              ##  operator token color.
+      Variable           = [ConsoleColor]::Green             ##  variable token color.
+      Command            = [ConsoleColor]::Yellow            ##  command token color.
+      Parameter          = [ConsoleColor]::green             ##  parameter token color.
+      Type               = [ConsoleColor]::White             ##  type token color.
+      Number             = [ConsoleColor]::White             ##  number token color.
+      Member             = [ConsoleColor]::White             ##  member name token color.     
+    }
+  } Else {
+    Set-PSReadLineOption -ForeGround Yellow  -Token None
+    Set-PSReadLineOption -ForeGround Green   -Token Comment  -back DarkBlue
+    Set-PSReadLineOption -ForeGround Green   -Token Keyword
+    Set-PSReadLineOption -ForeGround Cyan    -Token String
+    Set-PSReadLineOption -ForeGround Cyan    -Token Operator
+    Set-PSReadLineOption -ForeGround Green   -Token Variable
+    Set-PSReadLineOption -ForeGround Yellow  -Token Command
+    Set-PSReadLineOption -ForeGround Green   -Token Parameter
+    Set-PSReadLineOption -ForeGround White   -Token Type
+    Set-PSReadLineOption -ForeGround White   -Token Number
+    Set-PSReadLineOption -ForeGround White   -Token Member
+  }
 }
 If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])) {
   $Host.PrivateData.ErrorBackgroundColor   = 'DarkRed'
@@ -2072,8 +2031,6 @@ If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])
   $Host.PrivateData.WarningForegroundColor = 'White'
 }
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE) After PSReadline "
-
-
 #---------------- Snippets
 # Set-Location (split-path -parent $PSProfile )
 # Get-Command *zip*,*7z*,*archive*  | Where-Object {$_.Source -notmatch '\.(cmd|exe|bat)'}
@@ -2109,7 +2066,6 @@ ForEach ($Path in $SearchPath) {
 #filter dt { if (get-variable _ -scope 0) { get-sortabledate $_ -ea ignore } else { get-sortabledate $args[1] } }
 Function dt {param([string[]]$datetime=(get-date)) $datetime | ForEach-Object { get-date $_ -format 'yyyy-MM-dd HH:mm:ss ddd' } }
 #Function dt {param([string[]]$datetime=(get-date)) $datetime | ForEach-Object { get-sortabledate $_) -creplace '\dT'  } }
-
 #echo 'Install DOSKey'
 #doskey /exename=powershell.exe /macrofile=c:\bat\macrosPS.txt
 #del alias:where -ea ignore
@@ -2121,7 +2077,6 @@ Function dt {param([string[]]$datetime=(get-date)) $datetime | ForEach-Object { 
 # join-path $Books 'Python' -resolve
 # Get-ChildItem F:\bt\Programming\Python\*,c:\users\herb\downloads\books\python\* -include *hack* | Select-Object @{Name='LastWrite';E={get-date ($_.LastWriteTime) -f 'yyyy-mm-dd HH:mm'}},Length,Name
 # $FileFormat = @{N='LastWrite';E={get-date ($_.LastWriteTime) -f 'yyyy-MM-dd HH:mm'}},'Length','Name';
-
 Function Find-File {
   [CmdletBinding()]param(
     [Parameter(Mandatory=$true)][string[]]$File,
@@ -2168,7 +2123,6 @@ Function Find-File {
   }
   End { write-verbose ('-' * 72) }
 }
-
 Function Make-Credential($username, $password) {
   $cred = $null
   $secstr = ConvertTo-SecureString -String $password -AsPlainText -Force
@@ -2177,7 +2131,6 @@ Function Make-Credential($username, $password) {
   }
   return $cred
 }
-
 Function Get-ErrorDetail {
   param($ErrorRecord = $Error[0])
   $ErrorRecord | Format-List * -Force
@@ -2189,7 +2142,6 @@ Function Get-ErrorDetail {
     $Exception = $Exception.InnerException
   }
 }
-
 Function Get-PSHost {
   $bit = if ([Environment]::Is64BitProcess) {'64-bit'} else {'32-bit'}
   If ($Host) {
@@ -2198,30 +2150,9 @@ Function Get-PSHost {
     return 'PowerShell host not found'
   }
 }
-
-Function Get-Property {
-  [CmdletBinding()]param(
-    [Parameter(ValueFromPipeline)][psobject]$object,
-    [switch]$AsHash
-  )
-  Process {
-    If ($AsHash) {
-      $Property = [ordered]@{}
-      $Object.psobject.get_properties() | ForEach-Object {
-        $Property += @{ $_.Name = $_.Value }
-      }
-      $Property
-    } else {
-      $Object.psobject.get_properties()
-    }
-  }
-}
-
-
 Function Get-PSVersion {
   "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"
 }
-
 <#
 General useful commands
  Get-Command *-rsjob*
@@ -2247,7 +2178,6 @@ Function PSBoundParameter([string]$Parm) {
 #>
 write-host "`nError count: $($Error.Count)"
 #if(Test-Path Function:\Prompt) {Rename-Item Function:\Prompt PrePoshGitPrompt -Force}
-
 if (!(where.exe choco.exe 2>$Null)) {
   "Get Chocolatey: iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
 } else {
@@ -2258,12 +2188,10 @@ if (!(where.exe git.exe 2>$Null)) {
 } else {
   where.exe git.exe
 }
-
 # Temporary Fix es in Profile \ Tools
 if (($es = Get-Alias es -ea ignore) -and !(Test-Path $es)) { Remove-Item Alias:es -force -ea ignore }
 if (!(Get-Command es -ea ignore)) { New-Alias es "$ProfileDirectory\Tools\es.exe" }
 if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $informationpreferenceSave }
-
 # try {
 # try is at start of script, use for testing
 } catch {  #try from top
@@ -2287,21 +2215,16 @@ if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $i
 }
 if ((Get-Location) -match '^.:\\Windows\\System32$') { pushd \ }
 $PSDefaultParameterValues['Get-ChildItem:Force'] = $True
-
-$ExtraProfiles = @($Env:UserDomain, $Env:ComputerName, $Env:ComputerName)
+$ExtraProfiles = @($Env:UserDomain, $Env:ComputerName, $Env:UserName)
 ForEach ($ProfileName in $ExtraProfiles) {
-  If (Test-path (Join-Path $ProfileDirectory "Profile$ProfileName.ps1")) {
-    . (Join-Path $ProfileDirectory "Profile$ProfileName.ps1") 
+  Write-Verbose "$(Join-Path $ProfileDirectory `"Profile$($ProfileName).ps1`")"
+  If (Test-path (Join-Path $ProfileDirectory "Profile$($ProfileName).ps1")) {
+    . (Join-Path $ProfileDirectory "Profile$($ProfileName).ps1") 
   }
 } 
-
-
 $Private:Duration = ((Get-Date) - $Private:StartTime).TotalSeconds
 Write-Warning "$(LINE) $(get-date -f 'HH:mm:ss') New errors: $($Error.Count - $ErrorCount)"
 Write-Warning "$(LINE) Duration: $Private:Duration Completed: $Profile"
-
-
-
 <#
 Key                   Function                      Description
 ---                   --------                      -----------

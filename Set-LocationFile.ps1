@@ -9,6 +9,8 @@
    Author : Herb Martin
 #>
 
+Set-StrictMode -Version Latest
+
 Function x86 { '(x86)' }
 
 Function Set-Location {
@@ -91,6 +93,8 @@ Function Set-Location {
       [string]$StackName
   )
   Begin {
+    Set-StrictMode -Version Latest
+    $P = ''
     If (!(Get-Command LINE -ea Ignore)) { Function LINE { $MyInvocation.ScriptLineNumber }}
     Set-StrictMode -version Latest
     Write-Verbose ("$(LINE) BEGIN Set:$($PSCmdlet.ParameterSetName) " + 
@@ -119,8 +123,11 @@ Function Set-Location {
       if ($PSBoundParameters.TryGetValue('OutBuffer', [ref]$outBuffer)) {
         $PSBoundParameters['OutBuffer'] = 1
       }
-      $wrappedCmd = $ExecutionContext.InvokeCommand.GetCommand('Microsoft.PowerShell.Management\Set-Location', [System.Management.Automation.CommandTypes]::Cmdlet)
-      $scriptCmd = {& $wrappedCmd @PSBoundParameters }
+      $wrappedCmd = $ExecutionContext.InvokeCommand.GetCommand(
+                      'Microsoft.PowerShell.Management\Set-Location', 
+                      [System.Management.Automation.CommandTypes]::Cmdlet
+                    )
+      $scriptCmd  = {& $wrappedCmd @PSBoundParameters }
       $steppablePipeline = $scriptCmd.GetSteppablePipeline($myInvocation.CommandOrigin)
       $steppablePipeline.Begin($PSCmdlet)
     } catch {
@@ -146,7 +153,7 @@ Function Set-Location {
                )
       ) {
         $_ = (Split-Path $_ -ea ignore) 
-        Write-Verbose"$(LINE) Process `$_: $_   P:[$P]" 
+        Write-Verbose "$(LINE) Process `$_: $_   P:[$P]" 
       }
       # $_ = $_ -replace '^[^:]::'
       Write-Verbose "$(LINE) `$_: $($_)"
@@ -155,7 +162,7 @@ Function Set-Location {
       try { $p = $steppablePipeline.Process($_) } catch {
         Write-Warning $_
       }
-      If ($Path) { Microsoft.PowerShell.Management\Set-Location -literalpath $Path -ea Ignore }
+      # If ($Path) { Microsoft.PowerShell.Management\Set-Location -literalpath $Path -ea Ignore }
       If ($p -and $Simple) { 
         Write-Verbose "$(LINE) P: $P  `$_: $($_)"
         $p.providerpath 
