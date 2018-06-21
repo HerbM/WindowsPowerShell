@@ -19,8 +19,11 @@ If ($QuoteMatching -and $BraceMatching) { $Matching = $True }
 # [System.ConsoleKey] | gm -static | more
 # Alt-w current line to history
 $SaveHistory = (Get-History -count 3000) | ForEach-Object commandline
-write-warning "History count $((Get-History).count)"
-write-warning "History will not be reloaded"
+If ($SaveHistory) {
+  write-warning "History count $((Get-History).count)"
+} else {
+  write-warning "No history to load"
+}
 
 $PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)" -as [double]
 if (!(Get-Module PSReadline -listavailable -ea Ignore)) {
