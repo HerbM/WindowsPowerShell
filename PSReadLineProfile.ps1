@@ -28,7 +28,7 @@ if (!(Get-Module PSReadline -listavailable -ea Ignore)) {
   if ($PSVersionNumber -ge 5.1) { $parms += '-AllowClobber' }
   Install-Module PSReadline @Parms -ea Ignore 
 }
-if (!(Get-Module PSReadline -listavailable -ea ignore) -and (Get-Module PSReadline -listavailable -ea ignore)) {
+if (!(Get-Module PSReadline -ea ignore) -and (Get-Module PSReadline -listavailable -ea ignore)) {
   Import-Module PSReadLine
 }
 $PSHistoryFileName  = 'PSReadLine_history.txt'
@@ -832,6 +832,7 @@ if (Get-Module PSReadline -ea Ignore) {
       $Host.PrivateData.WarningBackgroundColor = 'Black'
       $Host.PrivateData.WarningForegroundColor = 'White'
     }
+}
 
   <#
 
@@ -853,6 +854,7 @@ if (Get-Module PSReadline -ea Ignore) {
     VariableColor                          : ←[92m"$([char]0x1b)[92m"←[0m
   #>
   
+if (Get-Module PSReadline) {
   Set-PSReadlineKeyHandler 'Tab'                      -Function TabCompleteNext
   Set-PSReadlineKeyHandler 'Shift+Tab'                -Function TabCompletePrevious
   Set-PSReadLineKeyHandler -Key UpArrow               -Function HistorySearchBackward

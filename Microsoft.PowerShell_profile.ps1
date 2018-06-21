@@ -905,7 +905,11 @@ Function Start-Shadow {
   If ($ID = $UserName -as [uint16]) {
   } else {
     If ($session = Get-WinStaSession $UserName $ComputerName -verbose:$False | Select -first 1) {
-      $Id = $Session.ID    
+      If ($Session.Current -and ($Env:Computername -eq $Session.ComputerName)) {
+        throw "You cannot shadow yourself ($UserName) on same machine: $($Session.ComputerName)"
+      } else {
+        $Id = $Session.ID    
+      }
     }
   }
   If ($ID) {
