@@ -642,11 +642,14 @@ if ($CurrentWindowTitle -match 'Windows PowerShell([\(\)\s\d]*)$') {
   $Host.ui.RawUI.WindowTitle += " $(Get-WhoAmI) OS:" +
     (Get-WMIObject win32_operatingsystem).version + "PS: $PSVersionNumber"
 }
+<#
 if (!(Get-Module 'Jump.Location' -listavailable -ea ignore) -and $PSVersionNumber -lt 6) {
   $parms = @('-force')
   if ($PSVersionNumber -ge 5.1) { $parms += '-AllowClobber' }
   Install-Module 'Jump.Location' ### @Parms
 }
+#>
+
 If (((Get-PSVersion) -lt 6.0 ) -and (Get-Module -list Jump.Location -ea ignore)) {
   Import-Module jump.location -ea ignore
 }
