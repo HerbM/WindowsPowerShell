@@ -7,7 +7,7 @@ using namespace System.Management.Automation.Language
   [Alias('AllMatching','BothMatching')][switch]$Matching
 )
 
-$Private:ErrorCount = $Error.Count 
+$Private:ErrorCount = if ($Error) { $Error.Count } else { 0 }
 
 If ($Matching) {$BraceMatching = $QuoteMatching = $True }
 If ($QuoteMatching -and $BraceMatching) { $Matching = $True }
@@ -27,8 +27,8 @@ If ($SaveHistory) {
 
 $PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)" -as [double]
 if (!(Get-Module PSReadline -listavailable -ea Ignore)) {
-  $parms = @('-force','-Confirm:$False')
-  if ($PSVersionNumber -ge 5.1) { $parms += '-AllowClobber' }
+  $parms = @{force = $true; Confirm = $False}
+  if ($PSVersionNumber -ge 5.1) { $parms += @{ AllowClobber = $True } }
   Install-Module PSReadline @Parms -ea Ignore 
 }
 if (!(Get-Module PSReadline -ea ignore) -and (Get-Module PSReadline -listavailable -ea ignore)) {

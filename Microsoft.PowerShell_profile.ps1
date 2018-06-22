@@ -772,7 +772,7 @@ Function New-RDPSession {
   [CmdLetBinding()]param(
     [Alias('Remote','Target','Server')]$ComputerName,
     [Alias('ConnectionFile','File','ProfileFile')]$path='c:\bat\good.rdp',
-    [int]$Width=1350, [int]$Height:730,
+    [int]$Width=1350, [int]$Height=730,
     [Alias('NoConnectionFile','NoFile','NoPath')][switch]$NoProfileFile,
     [Parameter(ValueFromRemainingArguments=$true)][string[]]$RemArgs,
     [Alias('Assist')][switch]$Control,
@@ -2221,12 +2221,12 @@ Function PSBoundParameter([string]$Parm) {
 #>
 write-host "`nError count: $($Error.Count)"
 #if(Test-Path Function:\Prompt) {Rename-Item Function:\Prompt PrePoshGitPrompt -Force}
-if (!(where.exe choco.exe 2>$Null)) {
+if (!(Invoke-Command { where.exe choco.exe 2>$Null } -ea Ignore)) {
   "Get Chocolatey: iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
 } else {
   where.exe choco.exe 2>$Null
 }
-if (!(where.exe git.exe 2>$Null)) {
+if (!(Invoke-Command { where.exe git.exe 2>$Null } -ea Ignore)) {
   "Get WindowsGit: & '$PSProfile\Scripts\Get-WindowsGit.ps1'"
 } else {
   where.exe git.exe
