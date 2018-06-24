@@ -2326,7 +2326,9 @@ Get-ExtraProfile 'Post' | ForEach-Object {
   }
 }
 
-If (Get-Module PSReadLine -ea 0) { Remove-PSReadLineKeyHandler ' ' }
+If (($PSRL = Get-Module PSReadLine -ea 0) -and ($PSRL.version -ge [version]'2.0.0')) { 
+  Remove-PSReadLineKeyHandler ' ' -ea Ignore 
+}
 
 $Private:Duration = ((Get-Date) - $Private:StartTime).TotalSeconds
 Write-Warning "$(LINE) $(get-date -f 'HH:mm:ss') New errors: $($Error.Count - $ErrorCount)"

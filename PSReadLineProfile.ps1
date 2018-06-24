@@ -37,7 +37,10 @@ if (!(Get-Module PSReadline -ea ignore) -and (Get-Module PSReadline -listavailab
 $PSHistoryFileName  = 'PSReadLine_history.txt'
 $PSHistoryDirectory = "$Home\Documents\PSHistory"
 $PSHistory          = "$PSHistoryDirectory\$PSHistoryFileName"
-Remove-PSReadLineKeyHandler ' '
+
+If (($PSRL = Get-Module PSReadLine -ea 0) -and ($PSRL.version -ge [version]'2.0.0')) { 
+  Remove-PSReadLineKeyHandler ' ' -ea Ignore 
+}
 
 ######### Move Old History to new location
 	if (!(Test-path $PSHistoryDirectory)) { mkdir $PSHistoryDirectory }
@@ -869,7 +872,7 @@ if (Get-Module PSReadline -ea Ignore) {
     VariableColor                          : ←[92m"$([char]0x1b)[92m"←[0m
   #>
   
-if (Get-Module PSReadline) {
+if ($PSRL = Get-Module PSReadline -ea Ignore) {
   Set-PSReadlineKeyHandler 'Tab'                      -Function TabCompleteNext
   Set-PSReadlineKeyHandler 'Shift+Tab'                -Function TabCompletePrevious
   Set-PSReadLineKeyHandler -Key UpArrow               -Function HistorySearchBackward
@@ -883,7 +886,10 @@ if (Get-Module PSReadline) {
       $SaveHistory = $null
     }
   } catch { } # just ignore this for VSCode
-  Remove-PSReadLineKeyHandler ' '
+  set-psreadlinekeyhandler -key Spacebar -Function SelfInsert
+  If ($PSRL.version -ge [version]'2.0.0') { 
+    Remove-PSReadLineKeyHandler ' ' -ea Ignore 
+  }
 }
 
 Write-Warning "$(FLINE) New Errors: $($Error.Count - $Private:ErrorCount)"
