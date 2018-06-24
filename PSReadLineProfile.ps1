@@ -736,6 +736,17 @@ write-warning "$(FLINE) Before Ctrl+Alt+|"
 #	[Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
 #	[Microsoft.PowerShell.PSConsoleReadLine]::Insert($Line)
 
+Set-PSReadLineKeyHandler -Chord Escape `
+                         -BriefDescription RevertLineWithSave `
+                         -LongDescription "Save Curent line then revert" `
+                         -ScriptBlock {
+  param($key, $arg)
+  $line = $cursor = $null
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)                         
+  [Microsoft.PowerShell.PSConsoleReadLine]::AddToHistory($line)
+  [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
+}
+
 Set-PSReadLineKeyHandler -Chord 'Ctrl+Alt+|','Ctrl+Alt+?','Ctrl+\','Ctrl+Alt+\' `
                          -BriefDescription InsertForEachObject `
                          -LongDescription "Insert ForEach-Object with scriptblock " `
