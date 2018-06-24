@@ -17,10 +17,75 @@ param (
 #region    Parameters
 $Private:StartTime  = Get-Date
 $ErrorCount = $Error.Count
+Function Get-Defined {
+  [CmdletBinding()][OutputType([Object])]
+  Param(
+    [Parameter(Mandatory)][Alias('VariableName','VN')]
+    [ValidateNotNullorEmpty()][string]$Name
+  )
+  [boolean](Get-Variable $Name -ea Ignore )
+}
+
+Function Get-Value {
+  [CmdletBinding()][OutputType([Object])]
+  Param(
+    [Parameter(Mandatory)][Alias('VariableName','VN')]
+    [ValidateNotNullorEmpty()][string]$Name
+  )
+  If (Get-Variable $Name -ea Ignore) {
+     (Get-Variable $Name -ea Ignore -value)
+  }  
+}
+
 Function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
-New-Alias -Name LINE -Value Get-CurrentLineNumber -Description 'Returns the caller''s current line number' -force -Scope Global -Option allscope
-write-warning "$(LINE) $(get-date -f 'HH:mm:ss') PowerShell $($psversiontable.PSVersion.tostring())"
-write-warning "$(LINE) Starting error count: $ErrorCount"
+remove-item Alias:LINE -ea Ignore -force
+New-Alias -Name LINE -Value Get-CurrentLineNumber -Description 'Returns the caller''s current line number' 
+$Private:Colors     = @{ForeGroundColor = 'White'; BackGroundColor = 'DarkGreen'}
+Write-Host "$(LINE) $(get-date -f 'yyyy-MM-dd HH:mm:ss') PowerShell $($psversiontable.PSVersion.tostring())" @Private:Colors
+Write-Host "$(LINE) Starting error count: $ErrorCount" @Private:Colors
+$ProfileDirectory   = Split-Path $Profile
+$PSProfile          = Resolve-Path -ea Ignore $( 
+  If ($MyInvocation.MyCommand) { $MyInvocation.MyCommand } else { $Profile }
+)
+$PSProfile          = If (Get-Value PSProfile) { $PSprofile } else { $Profile }  
+$PSProfileDirectory = Split-Path $PSProfile
+$ProfileLogPath     = $Profile   -replace '\.ps1$','LOG.txt'
+$PSProfileLogPath   = $PSProfile -replace '\.ps1$','LOG.txt'
+Write-Host "$(LINE) Use `$Profile   for path to Profile: $Profile"   @Private:Colors
+Write-Host "$(LINE) Use `$PSProfile for path to Profile: $PSProfile" @Private:Colors
+Write-Host "$(LINE) ProfileLogPath: $ProfileLogPath"                 @Private:Colors
+
+Function Get-ExtraProfile {
+  [CmdletBinding()]param(
+    [String]$Suffix,
+    [String[]]$Name=@($Env:UserDomain, $Env:ComputerName, $Env:UserName)
+  )
+  $Name | ForEach-Object {
+    $Extra = Join-Path $ProfileDirectory "Profile$($_)$($Suffix).ps1"
+    Write-Verbose $Extra
+    If (Test-path $Extra -ea Ignore) {
+      $Extra 
+    }
+  } 
+}
+
+Get-ExtraProfile 'Pre' | ForEach-Object {
+  try { 
+    $Private:Separator = "`n$('=' * 72)`n"
+    $Private:Colors    = @{ForeGroundColor = 'Blue'; BackGroundColor = 'White'}
+    $Private:StartTimeProfile  = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
+    $Private:ErrorCountProfile = $Error.Count
+    Write-Host "$($Private:Separator)$($Private:EndTimeProfile) Extra Profile`n$_$($Private:Separator)" @Private:Colors
+    . $_ 
+  } catch {
+    Write-Error "ERROR sourcing: $_`n`n$_"
+  } finally {
+    $Private:EndTimeProfile  = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
+    $Private:Duration = ((Get-Date $Private:EndTimeProfile) - (Get-Date $Private:StartTimeProfile)).TotalSeconds
+    Write-Host "$($Private:Separator)$($Private:EndTimeProfile) Duration:$($Private:Duration) seconds Extra Profile`n$_$($Private:Separator)" @Private:Colors
+  }
+}
+
 If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])) {
   $host.PrivateData.errorbackgroundcolor   = 'Red'
   $host.PrivateData.errorForeGroundColor   = 'White'
@@ -88,7 +153,7 @@ If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])
   # https://null-byte.wonderhowto.com/how-to/use-google-hack-googledorks-0163566/
   # 7-Zip        http://www.7-zip.org/download.html
   # Git          https://git-scm.com/download/win
-  #              https://github.com/git-for-windows/git/releases/download/v2.16.2.windows.1/Git-2.16.2-64-bit.exe
+  #              https://github.com/git-for-windows/git/releases/download/v2.18.0.windows.1/Git-2.18.0-64-bit.exe
   #              https://github.com/git-tips/tips
   #              C:\Program Files\Git\mingw64\share\doc\git-doc\giteveryday.html
   # Regex        http://www.grymoire.com/Unix/Regular.html#uh-12
@@ -110,13 +175,8 @@ If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])
   #              CLI Tools: 	https://xpdfreader-dl.s3.amazonaws.com/xpdf-tools-win-4.00.zip
   #              Extra Fonts:	https://xpdfreader-dl.s3.amazonaws.com/xpdf-t1fonts.tar.gz
   #              Source code:	https://xpdfreader-dl.s3.amazonaws.com/xpdf-4.00.tar.gz
-$ProfileDirectory   = Split-Path $Profile
-$PSProfile          = $MyInvocation.MyCommand.Definition
-$PSProfileDirectory = Split-Path $PSProfile
-$ProfileLogPath     = $Profile -replace '\.ps1$','LOG.txt'
-write-information "$(LINE) Use `$Profile   for path to Profile: $Profile"
-write-information "$(LINE) Use `$PSProfile for path to Profile: $PSProfile"
-Write-Information "$(LINE) ProfileLogPath: $ProfileLogPath"
+  # https://null-byte.wonderhowto.com/how-to/use-google-hack-googledorks-0163566/
+  
 try {
   $ProfileScriptDirectories = $ProfileDirectory, $PSProfileDirectory,
             "$ProfileDirectory\Scripts*", "$PSProfileDirectory\Scripts*"
@@ -215,26 +275,7 @@ If ($WinMerge = Join-Path -resolve -ea ignore 'C:\Program*\WinMerge*' 'WinMerge*
   ? { $_ -notmatch 'proxy' } | select -first 1) {
   new-alias WinMerge $WinMerge -force -scope Global
 }
-# https://null-byte.wonderhowto.com/how-to/use-google-hack-googledorks-0163566/
-# 7-Zip        http://www.7-zip.org/download.html
-# Git          https://git-scm.com/download/win
-#              https://github.com/git-for-windows/git/releases/download/v2.16.2.windows.1/Git-2.16.2-64-bit.exe
-#              https://github.com/git-tips/tips
-#              C:\Program Files\Git\mingw64\share\doc\git-doc\giteveryday.html
-# Regex        http://www.grymoire.com/Unix/Regular.html#uh-12
-#              http://www.regexlib.com/DisplayPatterns.aspx
-# AwkRef       http://www.grymoire.com/Unix/AwkRef.html
-# Notepad++    https://notepad-plus-plus.org/download/v7.5.4.html
-# ArsClip      http://www.joejoesoft.com/vcms/97/
-# Aria2        https://github.com/aria2/aria2/releases/tag/release-1.33.1
-# Deluge       http://download.deluge-torrent.org/windows/?C=M;O=D
-# Transmission https://transmissionbt.com/download/
-# WinMerge     http://developeronfire.com/blog/configuration-of-git-on-windows-to-make-life-easy
-# NotesProfile See: NotesProfile.txt
-# docker       https://docs.docker.com/install/windows/docker-ee/#use-a-script-to-install-docker-ee
-#              https://github.com/wsargent/docker-cheat-sheet
-# Wakoopa      https://web.appstorm.net/how-to/app-management-howto/how-to-discover-new-apps-with-wakoopa/
-# ArsClip
+
 #Clean the $Env:Path
 $SavePath = ($Env:Path -split ';' -replace '(?<=[\w\)])[\\;\s]*$' |
              Where-Object { $_ -and (Test-Path $_) } |
@@ -404,7 +445,7 @@ write-warning "$(get-date -f 'HH:mm:ss') $(LINE)"
 try {
   $TryPath = $PSProfileDirectory,$ProfileDirectory,'C:\Bat' |
     Where-Object { Test-Path $_ -ea ignore }
-  Write-Warning "$(LINE) Try Utility path: $($TryPath -join '; ')"
+  Write-Warning "$(get-date -f 'HH:mm:ss') $(LINE) Try Utility path: $($TryPath -join '; ')"
   if ($Util=@(Join-Path $TryPath 'utility.ps1' -ea ignore)) {
     Write-Warning "Utility: $($Util -join '; ')"
     . $Util[0]
@@ -1995,7 +2036,13 @@ write-warning "$(get-date -f 'HH:mm:ss') $(LINE) Before PSReadline "
 $PSReadLineProfile = Join-Path (Split-Path $PSProfile) 'PSReadLineProfile.ps1'
 write-information $PSReadLineProfile
 $ForcePSReadline = $PSBoundParameters.ContainsKey('ForcePSReadline') -and ([Boolean]$ForcePSReadline)
-if (Test-Path $PSReadLineProfile) { . $PSReadLineProfile -ForcePSReadline:$ForcePSReadline }
+if (Test-Path $PSReadLineProfile) { 
+  try {
+    . $PSReadLineProfile -ForcePSReadline:$ForcePSReadline 
+  } catch {
+    Write-Error "Caught error in PSReadlineProfile: $PSReadlineProfile`n$_"
+  }  
+}
 try {   # Chocolatey profile
   $ChocolateyProfile = "$($env:ChocolateyInstall)\helpers\chocolateyProfile.psm1"
   write-information "$(LINE) Chocolatey profile: $ChocolateyProfile"
@@ -2261,13 +2308,26 @@ if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $i
 }
 if ((Get-Location) -match '^.:\\Windows\\System32$') { pushd \ }
 $PSDefaultParameterValues['Get-ChildItem:Force'] = $True
-$ExtraProfiles = @($Env:UserDomain, $Env:ComputerName, $Env:UserName)
-ForEach ($ProfileName in $ExtraProfiles) {
-  Write-Verbose "$(Join-Path $ProfileDirectory `"Profile$($ProfileName).ps1`")"
-  If (Test-path (Join-Path $ProfileDirectory "Profile$($ProfileName).ps1")) {
-    . (Join-Path $ProfileDirectory "Profile$($ProfileName).ps1") 
+
+Get-ExtraProfile 'Post' | ForEach-Object {
+  try { 
+    $Private:Separator = "`n$('=' * 72)`n"
+    $Private:Colors    = @{ForeGroundColor = 'Blue'; BackGroundColor = 'White'}
+    $Private:StartTimeProfile  = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
+    $Private:ErrorCountProfile = $Error.Count
+    Write-Host "$($Private:Separator)$($Private:EndTimeProfile) Extra Profile`n$_$($Private:Separator)" @Private:Colors
+    . $_ 
+  } catch {
+    Write-Error "ERROR sourcing: $_`n`n$_"
+  } finally {
+    $Private:EndTimeProfile  = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
+    $Private:Duration = ((Get-Date $Private:EndTimeProfile) - (Get-Date $Private:StartTimeProfile)).TotalSeconds
+    Write-Host "$($Private:Separator)$($Private:EndTimeProfile) Duration:$($Private:Duration) seconds Extra Profile`n$_$($Private:Separator)" @Private:Colors
   }
-} 
+}
+
+If (Get-Module PSReadLine -ea 0) { Remove-PSReadLineKeyHandler ' ' }
+
 $Private:Duration = ((Get-Date) - $Private:StartTime).TotalSeconds
 Write-Warning "$(LINE) $(get-date -f 'HH:mm:ss') New errors: $($Error.Count - $ErrorCount)"
 Write-Warning "$(LINE) Duration: $Private:Duration Completed: $Profile"

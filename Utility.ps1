@@ -142,7 +142,9 @@ function Get-FormattedDate ([DateTime]$Date = (Get-Date)) {
   Get-date "$date" ?f "yyyy-MM-ddTHH:mm:ss-ddd"
 }
 
-if (Get-Command Write-Log -alias -ea 0) { remove-item Alias:Write-Log -force -ea 0 }
+if (Get-Command Write-Log -CommandType alias -ea ignore) { 
+  remove-item Alias:Write-Log -force -ea ignore 
+}
 function Write-Log {
   param (
     [string]$Message,

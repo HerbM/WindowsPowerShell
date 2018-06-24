@@ -37,6 +37,7 @@ if (!(Get-Module PSReadline -ea ignore) -and (Get-Module PSReadline -listavailab
 $PSHistoryFileName  = 'PSReadLine_history.txt'
 $PSHistoryDirectory = "$Home\Documents\PSHistory"
 $PSHistory          = "$PSHistoryDirectory\$PSHistoryFileName"
+Remove-PSReadLineKeyHandler ' '
 
 ######### Move Old History to new location
 	if (!(Test-path $PSHistoryDirectory)) { mkdir $PSHistoryDirectory }
@@ -871,6 +872,7 @@ if (Get-Module PSReadline) {
       $SaveHistory = $null
     }
   } catch { } # just ignore this for VSCode
+  Remove-PSReadLineKeyHandler ' '
 }
 
 Write-Warning "$(FLINE) New Errors: $($Error.Count - $Private:ErrorCount)"
