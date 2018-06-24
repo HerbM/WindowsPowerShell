@@ -42,6 +42,7 @@ git remote -v      # will show:
 param (
   [Alias('Url','Link')] [string]$uri='https://git-scm.com/download/win', # Windows Git page 
   [Alias('Directory')][string[]]$Path="$Home\Downloads",                 # downloaded file to path 
+  [Alias('GitInstall')][switch]$Install,
   [Alias('bit32','b32','old')][switch]$Bits32
 )
                                
@@ -49,8 +50,8 @@ $VersionPattern = If ($bits32) { 'git-.*-32-bit.exe' } else { 'git-.*-64-bit.exe
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 $VimHelp = @'
   
-  #
-  # Exiting Vim - Git brings up Vim by default to edit
+  # Git brings up Vim by to edit commits etc. default
+  # Exiting Vim (with & without saving changes)
   #   :w - write (save) the file, but don't exit
   #   :w !sudo tee % - write out the current file using sudo
   #   :wq or :x or ZZ - write (save) and quit
@@ -85,20 +86,29 @@ if ($PSCmdlet.ShouldProcess("$dl", "Saving: $out`n")) {
 Get-item $out | ForEach { "$($_.length) $($_.lastwritetime) $($_.fullname)" }
 
 if (Test-Path $Out) {
+  If ($Install) {
+    Write-Warning "Running git install: $out /verysilent"
+    & $out /verysilent
+    If (!(Get-Command git -CommandType Application -ea Ignore) -and
+         ($Env:Path -notmatch 'C:.Program Files.*\bGit.cmd')) {
+      If ($Bits32) { $Env:Path += ';C:\Program Files\Git\cmd' }
+      Else         { $Env:Path += ';C:\Program Files (x86)\Git\cmd' } 
+    }
+  }
   $Instructions = @"
     
     # $out to install Git"
     
     $out /verysilent
     `$Env:Path += ';C:\Program Files\Git\cmd'
-    cd  $Home\Documents -ea 0 # OR:  cd `$Home\Documents\WindowsPowerShell   
+    cd  $Home\Documents -ea ignore # OR:  cd `$Home\Documents\WindowsPowerShell   
     git clone https://github.com/HerbM/Profile-Utilities WindowsPowerShell
         
     git remote -v      # will show:
     #  origin     https://github.com/HerbM/Profile-Utilities
     #  origin     https://github.com/HerbM/Profile-Utilities
  
-    #  You will need a decent .gitprofile, usually in `$Home 
+    #  You will need a decent .gitprofile, usually in `:$Home 
     #    $Home/.gitprofile
     #    but `$Env:Home may point somewhere else: [$($Env:Home)]
 "@
