@@ -17,6 +17,7 @@ param (
 #region    Parameters
 $Private:StartTime  = Get-Date
 $ErrorCount = $Error.Count
+
 Function Get-Defined {
   [CmdletBinding()][OutputType([Object])]
   Param(
@@ -43,6 +44,7 @@ New-Alias -Name LINE -Value Get-CurrentLineNumber -Description 'Returns the call
 $Private:Colors     = @{ForeGroundColor = 'White'; BackGroundColor = 'DarkGreen'}
 Write-Host "$(LINE) $(get-date -f 'yyyy-MM-dd HH:mm:ss') PowerShell $($psversiontable.PSVersion.tostring())" @Private:Colors
 Write-Host "$(LINE) Starting error count: $ErrorCount" @Private:Colors
+
 $ProfileDirectory   = Split-Path $Profile
 $PSProfile          = Resolve-Path -ea Ignore $( 
   If ($MyInvocation.MyCommand) { $MyInvocation.MyCommand } else { $Profile }
@@ -89,7 +91,7 @@ Get-ExtraProfile 'Pre' | ForEach-Object {
 If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])) {
   $host.PrivateData.errorbackgroundcolor   = 'Red'
   $host.PrivateData.errorForeGroundColor   = 'White'
-# $host.PrivateData.verbosebackgroundcolor = 'black'
+ #$host.PrivateData.verbosebackgroundcolor = 'black'
   $host.PrivateData.debugbackgroundcolor   = 'black'
 }
   # 'Continue', 'Ignore', 'Inquire', 'SilentlyContinue', 'Stop', 'Suspend'
@@ -100,8 +102,8 @@ If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])
   # Improved Get-ChildItem2, Add-ToolPath,++B,++DosKey,CleanPath,start Get-DirectoryListing,add refs,README.mkdir
   # Show-ConsoleColor,Get-Syntax(aliases),++Select-History,++FullHelp,++d cmds, esf (needs *,? support),++Add-ToolPath,Reduce History Saved
   # Started Add-Path(crude) -- more ToDo notes
-  # ToDo: Use -EA IGNORE for most handled errors
-  # ToDo: Add support for local-only PS1 files -- started  ???
+  # Used -EA IGNORE for most handled errors
+  # Added support for local-only PS1 files: ProfileXPre and ProfileXPost.ps1
   # ToDo: Move notes out of this file
   # ToDo: Test without Admin privs and skip issues -- partial
   # ToDo: Add Update-Help as background job?
@@ -112,20 +114,20 @@ If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])
   # ToDo: need Notepad++, 7zip, Git, ??? to be on path with shortcuts (improved, not good enough yet)
   # ToDo: LogFile was being written, written now, CHECK?
   # ToDo: Clean up output -- easier to read, don't use "warnings" (colors?)
-  # ToDo: Setup website for initial BootStrap scripts to get tools, Profile etc.
-  #         Run scripts from "master" ????
-  #         Download Tools -- as job
-  #         Sync tools -- as job or scheduled job?
-  #         Git, Enable Scripting/Remoting etc.,
-  #         Configure new build, Firewall off,RDP On,No IPv6 etc
-  #         Split out functions etc to "Scripts" directory
-  #         Speed up History loading?
-  #         get-process notepad++ | Select-Object name,starttime,productversion,path
-  #         Get-WMIObject win32_service -filter 'name = "everything"' | Select-Object name,StartMode,State,Status,Processid,StartName,DisplayName,PathName | Format-Table
-  # Git-Windows Git (new file), previous commit worked on JR 2 machines
+  # Setup website for initial BootStrap scripts to get tools, Profile etc.
+  #       Run scripts from "master" ????
+  #       Download Tools -- as job
+  #       Sync tools -- as job or scheduled job?
+  #       Git, Enable Scripting/Remoting etc.,
+  #       Configure new build, Firewall off,RDP On,No IPv6 etc
+  #       Split out functions etc to "Scripts" directory
+  #       Speed up History loading?
+  #       get-process notepad++ | Select-Object name,starttime,productversion,path
+  #       Get-WMIObject win32_service -filter 'name = "everything"' | Select-Object name,StartMode,State,Status,Processid,StartName,DisplayName,PathName | Format-Table
+  # Git-Windows Git (new file), previous commit: works generally
   # Improve goHash, Books & Dev more general, fix S: T: not found
   # Everything? es?
-  # Added rdir,cdir,mdir aliases  DONE ???
+  # Added rdir,cdir,mdir aliases
   # Close with Set-ProgramAlias
   # Add new set-programalias nscp 'C:\Program Files\NSClient++\nscp.exe' -force -scope DONE???
   # Fix RDP alias, Put 7-zip, Util,Unx in S:\Programs, New program searcher?  Better?
@@ -2082,8 +2084,20 @@ Function PSBoundParameter([string]$Parm) {
 if ($Private:PSRealineModule = Get-Module 'PSReadline' -ea ignore) {
   set-psreadlinekeyhandler -chord 'Tab'            -Func TabCompleteNext      ### !!!!!
   set-psreadlinekeyhandler -chord 'Shift+Tab'      -Func TabCompletePrevious  ### !!!!!
-  set-psreadlinekeyhandler -chord 'Shift+SpaceBar' -Func Complete             ### !!!!!
-  If ($Private:PSRealineModule.Version  -ge [version]'2.0.0') {
+  If ($Private:PSRealineModule.Version  -lt [version]'2.0.0') {
+    set-psreadlinekeyhandler -chord 'Shift+SpaceBar' -Func Complete             ### !!!!!
+    Set-PSReadLineOption -ForeGround Yellow  -Token None
+    Set-PSReadLineOption -ForeGround Green   -Token Comment  -back DarkBlue
+    Set-PSReadLineOption -ForeGround Green   -Token Keyword
+    Set-PSReadLineOption -ForeGround Cyan    -Token String
+    Set-PSReadLineOption -ForeGround Cyan    -Token Operator
+    Set-PSReadLineOption -ForeGround Green   -Token Variable
+    Set-PSReadLineOption -ForeGround Yellow  -Token Command
+    Set-PSReadLineOption -ForeGround Green   -Token Parameter
+    Set-PSReadLineOption -ForeGround White   -Token Type
+    Set-PSReadLineOption -ForeGround White   -Token Number
+    Set-PSReadLineOption -ForeGround White   -Token Member
+  } else {  
     Set-PSReadlineOption -Colors @{
       ContinuationPrompt = [ConsoleColor]::Magenta     ##  color of the
       Emphasis           = [ConsoleColor]::Magenta     ##  emphasis color, e.g. th
@@ -2101,20 +2115,9 @@ if ($Private:PSRealineModule = Get-Module 'PSReadline' -ea ignore) {
       Number             = [ConsoleColor]::White       ##  number token color.
       Member             = [ConsoleColor]::White       ##  member name token color.     
     }
-  } Else {
-    Set-PSReadLineOption -ForeGround Yellow  -Token None
-    Set-PSReadLineOption -ForeGround Green   -Token Comment  -back DarkBlue
-    Set-PSReadLineOption -ForeGround Green   -Token Keyword
-    Set-PSReadLineOption -ForeGround Cyan    -Token String
-    Set-PSReadLineOption -ForeGround Cyan    -Token Operator
-    Set-PSReadLineOption -ForeGround Green   -Token Variable
-    Set-PSReadLineOption -ForeGround Yellow  -Token Command
-    Set-PSReadLineOption -ForeGround Green   -Token Parameter
-    Set-PSReadLineOption -ForeGround White   -Token Type
-    Set-PSReadLineOption -ForeGround White   -Token Number
-    Set-PSReadLineOption -ForeGround White   -Token Member
   }
 }
+
 If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])) {
   $Host.PrivateData.ErrorBackgroundColor   = 'DarkRed'
   $Host.PrivateData.ErrorForegroundColor   = 'White'
@@ -2333,192 +2336,3 @@ If (($PSRL = Get-Module PSReadLine -ea 0) -and ($PSRL.version -ge [version]'2.0.
 $Private:Duration = ((Get-Date) - $Private:StartTime).TotalSeconds
 Write-Warning "$(LINE) $(get-date -f 'HH:mm:ss') New errors: $($Error.Count - $ErrorCount)"
 Write-Warning "$(LINE) Duration: $Private:Duration Completed: $Profile"
-<#
-Key                   Function                      Description
----                   --------                      -----------
-Enter                 AcceptLine                    Accept the input or move to the next line if input is missing a ...
-Shift+Enter           AddLine                       Move the cursor to the next line without attempting to execute t...
-Ctrl+Enter            InsertLineAbove               Inserts a new empty line above the current line without attempti...
-Ctrl+Shift+Enter      InsertLineBelow               Inserts a new empty line below the current line without attempti...
-Escape                RevertLine                    Equivalent to undo all edits (clears the line except lines impor...
-LeftArrow             BackwardChar                  Move the cursor back one character
-RightArrow            ForwardChar                   Move the cursor forward one character
-Ctrl+LeftArrow        BackwardWord                  Move the cursor to the beginning of the current or previous word
-Ctrl+RightArrow       NextWord                      Move the cursor forward to the start of the next word
-Shift+LeftArrow       SelectBackwardChar            Adjust the current selection to include the previous character
-Shift+RightArrow      SelectForwardChar             Adjust the current selection to include the next character
-Ctrl+Shift+LeftArrow  SelectBackwardWord            Adjust the current selection to include the previous word
-Ctrl+Shift+RightArrow SelectNextWord                Adjust the current selection to include the next word
-UpArrow               HistorySearchBackward         Search for the previous item in the history that starts with the...
-DownArrow             HistorySearchForward          Search for the next item in the history that starts with the cur...
-Home                  BeginningOfLine               Move the cursor to the beginning of the line
-End                   EndOfLine                     Move the cursor to the end of the line
-Shift+Home            SelectBackwardsLine           Adjust the current selection to include from the cursor to the e...
-Shift+End             SelectLine                    Adjust the current selection to include from the cursor to the s...
-Delete                DeleteChar                    Delete the character under the cusor
-Backspace             SmartBackspace                Delete previous character or matching quotes/parens/braces
-Ctrl+Spacebar         MenuComplete                  Complete the input if there is a single completion, otherwise co...
-Tab                   TabCompleteNext               Complete the input using the next completion
-Shift+Tab             TabCompleteNext               Complete the input using the next completion
-Ctrl+a                SelectAll                     Select the entire line. Moves the cursor to the end of the line
-Ctrl+c                CopyOrCancelLine              Either copy selected text to the clipboard, or if no text is sel...
-Ctrl+C                CopyAllLines                  Copies the all lines of the current command into the clipboard
-Ctrl+l                ClearScreen                   Clear the screen and redraw the current line at the top of the s...
-Ctrl+r                ReverseSearchHistory          Search history backwards interactively
-Ctrl+s                ForwardSearchHistory          Search history forward interactively
-Ctrl+v                Paste                         Paste text from the system clipboard
-Ctrl+x                Cut                           Delete selected region placing deleted text in the system clipboard
-Ctrl+y                Redo                          Redo an undo
-Ctrl+z                Undo                          Undo a previous edit
-Ctrl+Backspace        BackwardKillWord              Move the text from the start of the current or previous word to ...
-Ctrl+Delete           KillWord                      Move the text from the cursor to the end of the current or next ...
-Ctrl+End              ForwardDeleteLine             Delete text from the cursor to the end of the line
-Ctrl+Home             BackwardDeleteLine            Delete text from the cursor to the start of the line
-Ctrl+]                GotoBrace                     Go to matching brace
-Ctrl+Alt+?            ShowKeyBindings               Show all key bindings
-Alt+.                 YankLastArg                   Copy the text of the last argument to the input
-Alt+0                 DigitArgument                 Start or accumulate a numeric argument to other functions
-Alt+1                 DigitArgument                 Start or accumulate a numeric argument to other functions
-Alt+2                 DigitArgument                 Start or accumulate a numeric argument to other functions
-Alt+3                 DigitArgument                 Start or accumulate a numeric argument to other functions
-Alt+4                 DigitArgument                 Start or accumulate a numeric argument to other functions
-Alt+5                 DigitArgument                 Start or accumulate a numeric argument to other functions
-Alt+6                 DigitArgument                 Start or accumulate a numeric argument to other functions
-Alt+7                 DigitArgument                 Start or accumulate a numeric argument to other functions
-Alt+8                 DigitArgument                 Start or accumulate a numeric argument to other functions
-Alt+9                 DigitArgument                 Start or accumulate a numeric argument to other functions
-Alt+-                 DigitArgument                 Start or accumulate a numeric argument to other functions
-Alt+?                 WhatIsKey                     Show the key binding for the next chord entered
-Alt+F7                ClearHistory                  Remove all items from the command line history (not PowerShell Get-History...
-F3                    CharacterSearch               Read a character and move the cursor to the next occurence of th...
-Shift+F3              CharacterSearchBackward       Read a character and move the cursor to the previous occurence o...
-F8                    HistorySearchBackward         Search for the previous item in the history that starts with the...
-Shift+F8              HistorySearchForward          Search for the next item in the history that starts with the cur...
-PageUp                ScrollDisplayUp               Scroll the display up one screen
-PageDown              ScrollDisplayDown             Scroll the display down one screen
-Ctrl+PageUp           ScrollDisplayUpLine           Scroll the display up one line
-Ctrl+PageDown         ScrollDisplayDownLine         Scroll the display down one line
-Shift+Spacebar        ExpandAlias                   Converts aliases into the resolved command / parameter
-F7                    History                       Show command history
-Ctrl+Alt+s            CaptureScreen                 Allows you to select multiple lines from the console using Shift...
-Alt+d                 ShellKillWord                 Move the text from the cursor to the end of the current or next ...
-Alt+Backspace         ShellBackwardKillWord         Move the text from the cursor to the start of the current or pre...
-Alt+b                 ShellBackwardWord             Move the cursor to the beginning of the current or previous toke...
-Alt+f                 ShellForwardWord              Move the cursor to the beginning of the next token or end of line
-Alt+B                 SelectShellBackwardWord       Adjust the current selection to include the previous word using ...
-Alt+F                 SelectShellForwardWord        Adjust the current selection to include the next word using Shel...
-"                     SmartInsertQuote              Insert paired quotes if not already on a quote
-'                     SmartInsertQuote              Insert paired quotes if not already on a quote
-(                     InsertPairedBraces            Insert matching braces
-{                     InsertPairedBraces            Insert matching braces
-[                     InsertPairedBraces            Insert matching braces
-)                     SmartCloseBraces              Insert closing brace or skip
-]                     SmartCloseBraces              Insert closing brace or skip
-}                     SmartCloseBraces              Insert closing brace or skip
-Alt+w                 SaveInHistory                 Save current line in history but do not execute
-Ctrl+V                PasteAsHereString             Paste the clipboard text as a here string
-Alt+(                 ParenthesizeSelection         Put parenthesis around the selection or entire line and move the...
-Alt+'                 ToggleQuoteArgument           Toggle quotes on the argument under the cursor
-Alt+%                 ExpandAliases                 Replace all aliases with the full command
-F1                    CommandHelp                   Open the help window for the current command
-Ctrl+J                MarkDirectory                 Mark the current directory
-Ctrl+j                JumpDirectory                 Goto the marked directory
-Alt+j                 ShowDirectoryMarks            Show the currently marked directories
-Shift+Backspace       BackwardKillWord              Move the text from the start of the current or previous word to ...
-Unbound               RepeatLastCommand             Repeats the last modification command.
-Unbound               ViDigitArgumentInChord        Handles the processing of a number argument after the first key ...
-Unbound               ViAcceptLineOrExit            If the line is empty, exit, otherwise accept the line as input.
-Unbound               ViInsertLine                  Inserts a new multi-line edit mode line in front of the current ...
-Unbound               ViAppendLine                  Appends a new multi-line edit mode line to the current line.
-Unbound               ViJoinLines                   Joins the current multi-line edit mode line with the next.
-Unbound               ScrollDisplayTop              Scroll the display to the top
-Unbound               ScrollDisplayToCursor         Scroll the display to the cursor
-Unbound               UndoAll                       Undoes all commands for this line.
-Unbound               ViEditVisually                Invokes the console compatible editor specified by $env:VISUAL o...
-Unbound               PasteAfter                    Write the contents of the local clipboard after the cursor.
-Unbound               PasteBefore                   Write the contents of the local clipboard before the cursor.
-Unbound               ViYankLine                    Place all characters in the current line into the local clipboard.
-Unbound               ViYankRight                   Place the character at the cursor into the local clipboard.
-Unbound               ViYankLeft                    Place the character to the left of the cursor into the local cli...
-Unbound               ViYankToEndOfLine             Place all characters at and after the cursor into the local clip...
-Unbound               ViYankPreviousWord            Place all characters from before the cursor to the beginning of ...
-Unbound               ViYankNextWord                Place all characters from the cursor to the end of the word, as ...
-Unbound               ViYankEndOfWord               Place the characters from the cursor to the end of the next word...
-Unbound               ViYankEndOfGlob               Place the characters from the cursor to the end of the next whit...
-Unbound               ViYankBeginningOfLine         Place the characters before the cursor into the local clipboard.
-Unbound               ViYankToFirstChar             Place all characters before the cursor and to the 1st non-white ...
-Unbound               ViYankPercent                 Place all characters between the matching brace and the cursor i...
-Unbound               ViYankPreviousGlob            Place all characters from before the cursor to the beginning of ...
-Unbound               ViYankNextGlob                Place all characters from the cursor to the end of the word, as ...
-Unbound               ViNextWord                    Move the cursor to the beginning of the next word, as delimited ...
-Unbound               ViBackwardWord                Delete backward to the beginning of the previous word, as delimi...
-Unbound               ViBackwardGlob                Move the cursor to the beginning of the previous word, as delimi...
-Unbound               MoveToEndOfLine               Move to the end of the line.
-Unbound               NextWordEnd                   Moves the cursor forward to the end of the next word.
-Unbound               GotoColumn                    Moves the cursor to the perscribed column.
-Unbound               GotoFirstNonBlankOfLine       Positions the cursor at the first non-blank character.
-Unbound               ViGotoBrace                   Move the cursor to the matching brace.
-Unbound               Abort                         Abort the current operation, e.g. incremental history search
-Unbound               InvokePrompt                  Erases the current prompt and calls the prompt Function to redis...
-Unbound               RepeatLastCharSearch          Repeat the last recorded character search.
-Unbound               RepeatLastCharSearchBackwards Repeat the last recorded character search in the opposite direct...
-Unbound               SearchChar                    Move to the next occurance of the specified character.
-Unbound               SearchCharBackward            Move to the previous occurance of the specified character.
-Unbound               SearchCharWithBackoff         Move to he next occurance of the specified character and then ba...
-Unbound               SearchCharBackwardWithBackoff Move to the previous occurance of the specified character and th...
-Unbound               ViExit                        Exit the shell.
-Unbound               DeleteToEnd                   Deletes from the cursor to the end of the line.
-Unbound               DeleteWord                    Deletes the current word.
-Unbound               ViDeleteGlob                  Delete the current word, as delimited by white space.
-Unbound               DeleteEndOfWord               Delete to the end of the current word, as delimited by white spa...
-Unbound               ViDeleteEndOfGlob             Delete to the end of this word, as delimited by white space.
-Unbound               ViCommandMode                 Switch to VI's command mode.
-Unbound               ViInsertMode                  Switches to insert mode.
-Unbound               ViInsertAtBegining            Moves the cursor to the beginning of the line and switches to in...
-Unbound               ViInsertAtEnd                 Moves the cursor to the end of the line and switches to insert m...
-Unbound               ViInsertWithAppend            Switch to insert mode, appending at the current line position.
-Unbound               ViInsertWithDelete            Deletes the current character and switches to insert mode.
-Unbound               ViAcceptLine                  Accept the line and switch to Vi's insert mode.
-Unbound               PrependAndAccept              Inserts the entered character at the beginning and accepts the l...
-Unbound               InvertCase                    Inverts the case of the current character and advances the cursor.
-Unbound               SwapCharacters                Swap the current character with the character before it.
-Unbound               DeleteLineToFirstChar         Deletes all of the line except for leading whitespace.
-Unbound               DeleteLine                    Deletes the current line.
-Unbound               BackwardDeleteWord            Delete the previous word in the line.
-Unbound               ViBackwardDeleteGlob          Delete backward to the beginning of the previous word, as delimi...
-Unbound               ViDeleteBrace                 Deletes all characters between the cursor position and the match...
-Unbound               ViSearchHistoryBackward       Starts a new seach backward in the history.
-Unbound               SearchForward                 Prompts for a search string and initiates a search upon AcceptLine.
-Unbound               RepeatSearch                  Repeat the last search.
-Unbound               RepeatSearchBackward          Repeat the last search, but in the opposite direction.
-Unbound               CancelLine                    Abort editing the current line and re-evaluate the prompt
-Unbound               BackwardDeleteChar            Delete the charcter before the cursor
-Unbound               DeleteCharOrExit              Delete the character under the cusor, or if the line is empty, e...
-Unbound               ValidateAndAcceptLine         Accept the input or move to the next line if input is missing a ...
-Unbound               AcceptAndGetNext              Accept the current line and recall the next line from history af...
-Unbound               TabCompletePrevious           Complete the input using the previous completion
-Unbound               Complete                      Complete the input if there is a single completion, otherwise co...
-Unbound               PossibleCompletions           Display the possible completions without changing the input
-Unbound               ViTabCompleteNext             Invokes TabCompleteNext after doing some vi-specific clean up.
-Unbound               ViTabCompletePrevious         Invokes TabCompletePrevious after doing some vi-specific clean up.
-Unbound               PreviousHistory               Replace the input with the previous item in the history
-Unbound               NextHistory                   Replace the input with the next item in the history
-Unbound               BeginningOfHistory            Move to the first item in the history
-Unbound               EndOfHistory                  Move to the last item (the current input) in the history
-Unbound               SetMark                       Mark the location of the cursor
-Unbound               ExchangePointAndMark          Mark the location of the cursor and move the cursor to the posit...
-Unbound               KillLine                      Move the text from the cursor to the end of the input to the kil...
-Unbound               BackwardKillLine              Move the text from the cursor to the beginning of the line to th...
-Unbound               UnixWordRubout                Move the text from the cursor to the start of the current or pre...
-Unbound               KillRegion                    Kill the text between the cursor and the mark
-Unbound               Yank                          Copy the text from the current kill ring position to the input
-Unbound               YankPop                       Replace the previously yanked text with the text from the next k...
-Unbound               YankNthArg                    Copy the text of the first argument to the input
-Unbound               SelectForwardWord             Adjust the current selection to include the next word using Forw...
-Unbound               SelectShellNextWord           Adjust the current selection to include the next word using Shel...
-Unbound               Copy                          Copy selected region to the system clipboard.  If no region is s...
-Unbound               PreviousLine                  Move the cursor to the previous line if the input has multiple l...
-Unbound               NextLine                      Move the cursor to the next line if the input has multiple lines.
-Unbound               ShellNextWord                 Move the cursor to the end of the current token
-Unbound               ForwardWord                   Move the cursor forward to the end of the current word, or if be...
-#>

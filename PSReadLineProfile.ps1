@@ -738,7 +738,7 @@ write-warning "$(FLINE) Before Ctrl+Alt+|"
 
 #	[Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
 #	[Microsoft.PowerShell.PSConsoleReadLine]::Insert($Line)
-
+Set-PSReadLineOption -HistorySearchCursorMovesToEnd 
 Set-PSReadLineKeyHandler -Chord Escape `
                          -BriefDescription RevertLineWithSave `
                          -LongDescription "Save Curent line then revert" `
@@ -888,7 +888,7 @@ if ($PSRL = Get-Module PSReadline -ea Ignore) {
   } catch { } # just ignore this for VSCode
   set-psreadlinekeyhandler -key Spacebar -Function SelfInsert
   If ($PSRL.version -ge [version]'2.0.0') { 
-    Remove-PSReadLineKeyHandler ' ' -ea Ignore 
+    Remove-PSReadLineKeyHandler SpaceBar -ea Ignore 
   }
 }
 
