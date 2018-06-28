@@ -1025,6 +1025,16 @@ https://github.com/manojlds/pslinq
 
 https://en.wikiversity.org/wiki/Windows_PowerShell/Functions
 
+Get-WMIobject win32_networkadapterconfiguration | where {$_.IPEnabled -eq “True”} | Select-Object pscomputername,ipaddress,defaultipgateway,ipsubnet,dnsserversearchorder,winsprimaryserver | format-Table -Auto
+Get-AdDomainController -Filter * | Select hostname,isglobalcatalog | Format-table -auto
+Search-ADAccount -PasswordNeverExpires | Select-Object Name, Enabled 
+cls;while($true){get-date;$t = New-Object Net.Sockets.TcpClient;try {$t.connect("10.45.2.68",3389);write-host "RDP is up"}catch{write-Host "RDP is down"}finally{$t.close();sleep 30}}
+cls;$idxA = (get-eventlog -LogName Application -Newest 1).Index;while($true){$idxA2 = (Get-EventLog -LogName Application -newest 1).index;get-eventlog -logname Application -newest ($idxA2 - $idxA) |  sort index;$idxA = $idxA2;sleep 10}
+Gwmi Win32_Share|%{"\\$($_|% P*e)\$($_.Name)"}
+https://github.com/PowerShell/Phosphor 
+[boolean](whoami /all | sls S-1-5-32-544)  # Admin?
+gwmi win32_logonsession | % { $_.GetRelated('Win32_UserAccount') } | % {$_} | ft
+
 http://stackoverflow.com/questions/138144/what-s-in-your-powershell-profile-ps1-file
 https://github.com/tomasr/dotfiles/blob/master/.profile.ps1
 https://github.com/tomasr/dotfiles

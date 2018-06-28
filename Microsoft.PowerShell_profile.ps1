@@ -35,21 +35,21 @@ Function Get-Value {
   )
   If (Get-Variable $Name -ea Ignore) {
      (Get-Variable $Name -ea Ignore -value)
-  }  
+  }
 }
 
 Function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
 remove-item Alias:LINE -ea Ignore -force
-New-Alias -Name LINE -Value Get-CurrentLineNumber -Description 'Returns the caller''s current line number' 
+New-Alias -Name LINE -Value Get-CurrentLineNumber -Description 'Returns the caller''s current line number'
 $Private:Colors     = @{ForeGroundColor = 'White'; BackGroundColor = 'DarkGreen'}
 Write-Host "$(LINE) $(get-date -f 'yyyy-MM-dd HH:mm:ss') PowerShell $($psversiontable.PSVersion.tostring())" @Private:Colors
 Write-Host "$(LINE) Starting error count: $ErrorCount" @Private:Colors
 
 $ProfileDirectory   = Split-Path $Profile
-$PSProfile          = Resolve-Path -ea Ignore $( 
+$PSProfile          = Resolve-Path -ea Ignore $(
   If ($MyInvocation.MyCommand) { $MyInvocation.MyCommand } else { $Profile }
 )
-$PSProfile          = If (Get-Value PSProfile) { $PSprofile } else { $Profile }  
+$PSProfile          = If (Get-Value PSProfile) { $PSprofile } else { $Profile }
 $PSProfileDirectory = Split-Path $PSProfile
 $ProfileLogPath     = $Profile   -replace '\.ps1$','LOG.txt'
 $PSProfileLogPath   = $PSProfile -replace '\.ps1$','LOG.txt'
@@ -66,19 +66,19 @@ Function Get-ExtraProfile {
     $Extra = Join-Path $ProfileDirectory "Profile$($_)$($Suffix).ps1"
     Write-Verbose $Extra
     If (Test-path $Extra -ea Ignore) {
-      $Extra 
+      $Extra
     }
-  } 
+  }
 }
 
 Get-ExtraProfile 'Pre' | ForEach-Object {
-  try { 
+  try {
     $Private:Separator = "`n$('=' * 72)`n"
     $Private:Colors    = @{ForeGroundColor = 'Blue'; BackGroundColor = 'White'}
     $Private:StartTimeProfile  = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
     $Private:ErrorCountProfile = $Error.Count
     Write-Host "$($Private:Separator)$($Private:EndTimeProfile) Extra Profile`n$_$($Private:Separator)" @Private:Colors
-    . $_ 
+    . $_
   } catch {
     Write-Error "ERROR sourcing: $_`n`n$_"
   } finally {
@@ -94,65 +94,17 @@ If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])
  #$host.PrivateData.verbosebackgroundcolor = 'black'
   $host.PrivateData.debugbackgroundcolor   = 'black'
 }
+
   # 'Continue', 'Ignore', 'Inquire', 'SilentlyContinue', 'Stop', 'Suspend'
   # Begin adding regions, Add cc, c alias/functions
   # Fixed Alt+(,Alt+),Get-DotNetAssembly,Get-RunTime,Add Get-Accelerator,[Accelerators]
   # Temporary Fix to Go(works without Jump), Scripts to path,find and run Local*.ps1"
-  # Fix 6.0 problems, PSGallery, Where.exe output, PSProvider,Jump.Location load
+  # Fix 6.0 problems, PSGallery, Where.exe output, PSProvider
   # Improved Get-ChildItem2, Add-ToolPath,++B,++DosKey,CleanPath,start Get-DirectoryListing,add refs,README.mkdir
   # Show-ConsoleColor,Get-Syntax(aliases),++Select-History,++FullHelp,++d cmds, esf (needs *,? support),++Add-ToolPath,Reduce History Saved
   # Started Add-Path(crude) -- more ToDo notes
   # Used -EA IGNORE for most handled errors
   # Added support for local-only PS1 files: ProfileXPre and ProfileXPost.ps1
-  # ToDo: Move notes out of this file
-  # ToDo: Test without Admin privs and skip issues -- partial
-  # ToDo: Add Update-Help as background job?
-  # ToDo: Updrade PowerShell to 5.1+
-  # ToDo: Set console colors?  DarkGray = 80 80 80?
-  # ToDo: JOIN-PATH -resolve:  NOT Test-Path -resolve , Add Server to Get-WinStaSession
-  # ToDo: improve go, find alias Version numbers (at least display)
-  # ToDo: need Notepad++, 7zip, Git, ??? to be on path with shortcuts (improved, not good enough yet)
-  # ToDo: LogFile was being written, written now, CHECK?
-  # ToDo: Clean up output -- easier to read, don't use "warnings" (colors?)
-  # Setup website for initial BootStrap scripts to get tools, Profile etc.
-  #       Run scripts from "master" ????
-  #       Download Tools -- as job
-  #       Sync tools -- as job or scheduled job?
-  #       Git, Enable Scripting/Remoting etc.,
-  #       Configure new build, Firewall off,RDP On,No IPv6 etc
-  #       Split out functions etc to "Scripts" directory
-  #       Speed up History loading?
-  #       get-process notepad++ | Select-Object name,starttime,productversion,path
-  #       Get-WMIObject win32_service -filter 'name = "everything"' | Select-Object name,StartMode,State,Status,Processid,StartName,DisplayName,PathName | Format-Table
-  # Git-Windows Git (new file), previous commit: works generally
-  # Improve goHash, Books & Dev more general, fix S: T: not found
-  # Everything? es?
-  # Added rdir,cdir,mdir aliases
-  # Close with Set-ProgramAlias
-  # Add new set-programalias nscp 'C:\Program Files\NSClient++\nscp.exe' -force -scope DONE???
-  # Fix RDP alias, Put 7-zip, Util,Unx in S:\Programs, New program searcher?  Better?
-  # Boottime,ProfilePath moved up,LINE/FILE/Write-LOG,LogFilePath?,7z
-  # Add/fix BootTime Function
-  # Move $PSProfileDirectory up
-  # Move utility extract up (LINE, FILE, WRITE-LOG)
-  # working on LogFilePath
-  # worked on 7z  --
-  # Jing imagex sharex
-  # C:\Program Files\ShareX\ & 'C:\Program Files\ShareX\ShareX.exe'
-  #   https://getsharex.com/docs/amazon-s3
-  # PowerShell Windows Management Framework 5.1 https://www.microsoft.com/en-us/download/details.aspx?id=54616
-  #   W2K12-KB3191565-x64.msu
-  #   Win7AndW2K8R2-KB3191566-x64.zip
-  #   Win7-KB3191566-x86.zip
-  #   Win8.1AndW2K12R2-KB3191564-x64.msu
-  #   Win8.1-KB3191564-x86.msu
-  # Delete multiple downloads with parenthesis numbers
-  #   Get-ChildItem '*([1-9]).*' | Sort-Object name | ForEach-Object { if (Test-Path ($F0=$($_.FullName -replace '\s+\(\d+\)'))) { write-host "Ok: $F0" -fore Green -back 'Black' ; "del $($_.FullName)" } }
-  # Interact with Symbolic links using improved Item cmdlets
-  #   https://docs.microsoft.com/en-us/powershell/wmf/5.0/feedback_symbolic
-  # How To Set Up Chocolatey For Organizational/Internal Use
-  #   https://chocolatey.org/docs/how-to-setup-offline-installation
-  # https://null-byte.wonderhowto.com/how-to/use-google-hack-googledorks-0163566/
   # 7-Zip        http://www.7-zip.org/download.html
   # Git          https://git-scm.com/download/win
   #              https://github.com/git-for-windows/git/releases/download/v2.18.0.windows.1/Git-2.18.0-64-bit.exe
@@ -178,6 +130,70 @@ If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])
   #              Extra Fonts:	https://xpdfreader-dl.s3.amazonaws.com/xpdf-t1fonts.tar.gz
   #              Source code:	https://xpdfreader-dl.s3.amazonaws.com/xpdf-4.00.tar.gz
   # https://null-byte.wonderhowto.com/how-to/use-google-hack-googledorks-0163566/
+  # Add to Scripts, Snippets etc.
+  # ToDo: Put scripts on path
+  # ToDo: Move notes out of this file, Use Misc1/Work Misc/Home
+  # ToDo: Test without Admin privs and skip issues
+  # ToDo: Add Update-Help as background job?
+  # ToDo: Updrade PowerShell to 5.1+
+  # ToDo: Set console colors?  DarkGray = 80 80 80?
+  # ToDo: JOIN-PATH -resolve:  NOT Test-Path -resolve , Add Server to Get-WinStaSession
+  # ToDo: improve go, find alias Version numbers (at least display)
+  # ToDo: need Notepad++, 7zip, Git, ??? to be on path with shortcuts (improved, not good enough yet)
+  # ToDo: LogFile was being written, written now, CHECK?
+  # ToDo: Clean up output -- easier to read, don't use "warnings" (colors?)
+  # ToDo: Setup website for initial BootStrap scripts to get tools, Profile etc.
+  #         Run scripts from "master" ????
+  #         Download Tools -- as job
+  #         Sync tools -- as job or scheduled job?
+  #         Git, Enable Scripting/Remoting etc.,
+  #         Configure new build, Firewall off,RDP On,No IPv6 etc
+  #         Split out functions etc to "Scripts" directory
+  #         Speed up History loading?
+  #         get-process notepad++ | select name,starttime,productversion,path
+  #         gwmi win32_service -filter 'name = "everything"' | select name,StartMode,State,Status,Processid,StartName,DisplayName,PathName | ft
+  # Git-Windows Git (new file), previous commit worked on JR 2 machines
+  # Improve goHash, Books & Dev more general, fix S: T: not found
+  # Everything? es?
+  # Add rdir,cdir,mdir aliases
+  # Close with Set-ProgramAlias
+  # Add new set-programalias nscp 'C:\Program Files\NSClient++\nscp.exe' -force -scope
+  # Fix RDP alias, Put 7-zip, Util,Unx in S:\Programs, New program searcher?  Better?
+  # Boottime,ProfilePath moved up,LINE/FILE/Write-LOG,LogFilePath?,7z
+  # Add/fix BootTime function
+  # Move $PSProfileDirectory up
+  # Move utility extract up (LINE, FILE, WRITE-LOG)
+  # working on LogFilePath
+  # worked on 7z  --
+  # Jing imagex sharex
+  # C:\Program Files\ShareX\ & 'C:\Program Files\ShareX\ShareX.exe'
+  #   https://getsharex.com/docs/amazon-s3
+  # PowerShell Windows Management Framework 5.1 https://www.microsoft.com/en-us/download/details.aspx?id=54616
+  #   W2K12-KB3191565-x64.msu
+  #   Win7AndW2K8R2-KB3191566-x64.zip
+  #   Win7-KB3191566-x86.zip
+  #   Win8.1AndW2K12R2-KB3191564-x64.msu
+  #   Win8.1-KB3191564-x86.msu
+  # Delete multiple downloads with parenthesis numbers
+  #   dir '*([1-9]).*' | sort name | % { if (Test-Path ($F0=$($_.FullName -replace '\s+\(\d+\)'))) { write-host "Ok: $F0" -fore Green -back 'Black' ; "del $($_.FullName)" } }
+  # Interact with Symbolic links using improved Item cmdlets
+  #   https://docs.microsoft.com/en-us/powershell/wmf/5.0/feedback_symbolic
+  # How To Set Up Chocolatey For Organizational/Internal Use
+  #   https://chocolatey.org/docs/how-to-setup-offline-installation
+  # C:\ProgramData\Ditto\Ditto.exe
+  # 'C:\Program Files\WinMerge2011\WinMergeU.exe'
+  #
+  # "line1","line2" -join (NL)
+  # "line1","line2" -join [environment]::NewLine
+  # https://github.com/FriedrichWeinmann/PSReadline-Utilities
+  # https://github.com/FriedrichWeinmann/functions
+  # PSFramework
+  # Install-Module -Scope CurrentUser -Name Assert
+  # Chrome key mapper?  chrome://extensions/configureCommands
+  # Chrome extensions   chrome://extensions/
+  # DSC_PowerCLISnapShotCheck  PowerCLITools  PowerCLI.SessionManager PowerRestCLI
+  # PowerShell CodeManager https://bytecookie.wordpress.com/
+  # ChocolateyGet
   
 try {
   $ProfileScriptDirectories = $ProfileDirectory, $PSProfileDirectory,
@@ -215,64 +231,7 @@ try {
   if ($AdminEnabled = Test-Administrator) {
            write-information "$(LINE) Administrator privileges enabled"
   } else { write-information "$(LINE) Administrator privileges DISABLED"}
-# Add to Scripts, Snippets etc.
-# Fix 6.0 problems, PSGallery, Where.exe output, PSProvider,Jump.Location load
-# Improved Get-ChildItem2, Add-ToolPath,++B,++DosKey,CleanPath,start Get-DirectoryListing,add refs,README.md
-# Show-ConsoleColor,Get-Syntax(aliases),++Select-History,++FullHelp,++d cmds, esf (needs *,? support),++Add-ToolPath,Reduce History Saved
-# Started Add-Path(crude) -- more ToDo notes
-# ToDo: Put scripts on path
-# ToDo: Move notes out of this file, Use Misc1/Work Misc/Home
-# ToDo: Test without Admin privs and skip issues
-# ToDo: Add Update-Help as background job?
-# ToDo: Updrade PowerShell to 5.1+
-# ToDo: Set console colors?  DarkGray = 80 80 80?
-# ToDo: JOIN-PATH -resolve:  NOT Test-Path -resolve , Add Server to Get-WinStaSession
-# ToDo: improve go, find alias Version numbers (at least display)
-# ToDo: need Notepad++, 7zip, Git, ??? to be on path with shortcuts (improved, not good enough yet)
-# ToDo: LogFile was being written, written now, CHECK?
-# ToDo: Clean up output -- easier to read, don't use "warnings" (colors?)
-# ToDo: Setup website for initial BootStrap scripts to get tools, Profile etc.
-#         Run scripts from "master" ????
-#         Download Tools -- as job
-#         Sync tools -- as job or scheduled job?
-#         Git, Enable Scripting/Remoting etc.,
-#         Configure new build, Firewall off,RDP On,No IPv6 etc
-#         Split out functions etc to "Scripts" directory
-#         Speed up History loading?
-#         get-process notepad++ | select name,starttime,productversion,path
-#         gwmi win32_service -filter 'name = "everything"' | select name,StartMode,State,Status,Processid,StartName,DisplayName,PathName | ft
-# Git-Windows Git (new file), previous commit worked on JR 2 machines
-# Improve goHash, Books & Dev more general, fix S: T: not found
-# Everything? es?
-# Add rdir,cdir,mdir aliases
-# Close with Set-ProgramAlias
-# Add new set-programalias nscp 'C:\Program Files\NSClient++\nscp.exe' -force -scope
-# Fix RDP alias, Put 7-zip, Util,Unx in S:\Programs, New program searcher?  Better?
-# Boottime,ProfilePath moved up,LINE/FILE/Write-LOG,LogFilePath?,7z
-# Add/fix BootTime function
-# Move $PSProfileDirectory up
-# Move utility extract up (LINE, FILE, WRITE-LOG)
-# working on LogFilePath
-# worked on 7z  --
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE)"
-# Jing imagex sharex
-# C:\Program Files\ShareX\ & 'C:\Program Files\ShareX\ShareX.exe'
-#   https://getsharex.com/docs/amazon-s3
-# PowerShell Windows Management Framework 5.1 https://www.microsoft.com/en-us/download/details.aspx?id=54616
-#   W2K12-KB3191565-x64.msu
-#   Win7AndW2K8R2-KB3191566-x64.zip
-#   Win7-KB3191566-x86.zip
-#   Win8.1AndW2K12R2-KB3191564-x64.msu
-#   Win8.1-KB3191564-x86.msu
-# Delete multiple downloads with parenthesis numbers
-#   dir '*([1-9]).*' | sort name | % { if (Test-Path ($F0=$($_.FullName -replace '\s+\(\d+\)'))) { write-host "Ok: $F0" -fore Green -back 'Black' ; "del $($_.FullName)" } }
-# Interact with Symbolic links using improved Item cmdlets
-#   https://docs.microsoft.com/en-us/powershell/wmf/5.0/feedback_symbolic
-# How To Set Up Chocolatey For Organizational/Internal Use
-#   https://chocolatey.org/docs/how-to-setup-offline-installation
-# C:\ProgramData\Ditto\Ditto.exe
-# 'C:\Program Files\WinMerge2011\WinMergeU.exe'
-#
 If ($WinMerge = Join-Path -resolve -ea ignore 'C:\Program*\WinMerge*' 'WinMerge*.exe' |
   ? { $_ -notmatch 'proxy' } | select -first 1) {
   new-alias WinMerge $WinMerge -force -scope Global
@@ -322,7 +281,7 @@ Function Get-PSHistory {
   )
   If ($PSHistory) {
     $psh = $PSHistory -replace $Env:UserName, $UserName
-    If ($psh -and (Test-Path $psh -ea 0)) { 
+    If ($psh -and (Test-Path $psh -ea 0)) {
       (Resolve-Path $psh -ea ignore).path
     } Else {
       Write-Warning "PSHistory for $Username not found '$psh'"
@@ -348,14 +307,7 @@ Function Add-Path {
   }
 }
 #>
-# "line1","line2" -join (NL)
-# "line1","line2" -join [environment]::NewLine
-# https://github.com/FriedrichWeinmann/PSReadline-Utilities
-# https://github.com/FriedrichWeinmann/functions
-# PSFramework
-# Install-Module -Scope CurrentUser -Name Assert
-# Chrome key mapper?  chrome://extensions/configureCommands
-# Chrome extensions   chrome://extensions/
+
 Function Get-NewLine { [environment]::NewLine }; new-alias NL Get-NewLine -force
 if (! (Get-Command write-log -type Function,cmdlet,alias -ea ignore)) {
   new-alias write-log write-verbose -force -scope Global -ea ignore
@@ -394,12 +346,12 @@ Function Set-ItemTime {
  	  #[pscredential]
  	  #[System.Management.Automation.CredentialAttribute()]
  	  #${Credential})
-  ) 
-  Begin   { 
+  )
+  Begin   {
     $DateString = Get-Date $Date -f 'yyyy-MM-dd HH:mm:ss'
-    Set-StrictMode -Version Latest 
+    Set-StrictMode -Version Latest
     Write-Verbose "Property set: $($PSCmdlet.ParameterSetName)"
-  } 
+  }
   Process {
     If ($PSBoundParameters.ContainsKey('LiteralPath')) {
       $Path = @($PSBoundParameters.LiteralPath)
@@ -427,13 +379,13 @@ Function Set-ItemTime {
         Write-Verbose "Setting itemproperty: $ItemPath"
         ForEach ($Prop in $Property) {
           Set-ItemProperty $ItemPath -Name $Prop -Value $Date
-        }  
+        }
         If ($PassThru) { Get-Item $ItemPath }
       } else {
         Write-Verbose "Skipped Setting itemproperty: $ItemPath"
       }
     }
-  }  
+  }
   End { }
 }
     ####If ($Date -as [DateTime]) {
@@ -577,7 +529,7 @@ Function Set-ProgramAlias {
   $SearchPath = if ($FirstPath) {
     $cmdnames = @(If ($cmd = @(get-command $Name -all -ea Ignore)) {
       $cmd.definition
-    })  
+    })
     $Path                                                      +
     (Invoke-Command { where.exe $Command 2>$Null } -ea Ignore) +
     $cmdnames
@@ -685,17 +637,6 @@ if ($CurrentWindowTitle -match 'Windows PowerShell([\(\)\s\d]*)$') {
   $Host.ui.RawUI.WindowTitle += " $(Get-WhoAmI) OS:" +
     (Get-WMIObject win32_operatingsystem).version + "PS: $PSVersionNumber"
 }
-<#
-if (!(Get-Module 'Jump.Location' -listavailable -ea ignore) -and $PSVersionNumber -lt 6) {
-  $parms = @('-force')
-  if ($PSVersionNumber -ge 5.1) { $parms += '-AllowClobber' }
-  Install-Module 'Jump.Location' ### @Parms
-}
-#>
-
-If (((Get-PSVersion) -lt 6.0 ) -and (Get-Module -list Jump.Location -ea ignore)) {
-  Import-Module jump.location -ea ignore
-}
 Function Update-ModuleList {
   [CmdLetBinding(SupportsShouldProcess = $true,ConfirmImpact='Medium')]
   param(
@@ -750,18 +691,11 @@ $RecommendedModules = @(
   'ThreadJob',
   'PSScriptAnalyzer',
   'PSGit',
-  'Jump.Location',
   'Veeam.PowerCLI-Interactions',
   'PSReadLine',
   'PSUtil'
 )
-# DSC_PowerCLISnapShotCheck  PowerCLITools  PowerCLI.SessionManager PowerRestCLI
-# PowerShell CodeManager https://bytecookie.wordpress.com/
-# ChocolateyGet
-# https://github.com/FriedrichWeinmann/PSReadline-Utilities
-# https://github.com/FriedrichWeinmann/functions
-# PSFramework
-# Install-Module -Scope CurrentUser -Name Assert
+
 if ($InstallModules) {
   Install-ModuleList $RecommendedModules
 } else {
@@ -904,7 +838,7 @@ Function Set-DefaultPropertySet { param([Object]$Object,
 
 Function Get-WinStaSession {
   [CmdletBinding()]param(
-    $UserName, 
+    $UserName,
     [Alias('RemoteComputer','TargetComputer','ServerComputer')]
       $ComputerName=$Env:ComputerName, # /SERVER:servername
     [Alias('Me','My','Mine')][switch]$Current
@@ -927,12 +861,12 @@ Function Get-WinStaSession {
     $Session = [PSCustomObject]$O
     if ($Current)  { $Session = $Session | Where-Object Current  -eq    $True     }
     if ($UserName) {
-      if ($UserName -match '(^|\w)\*') { 
-        $Session = $Session | Where-Object UserName -like  $UserName 
+      if ($UserName -match '(^|\w)\*') {
+        $Session = $Session | Where-Object UserName -like  $UserName
       } else {
-        $Session = $Session | Where-Object UserName -match $UserName 
+        $Session = $Session | Where-Object UserName -match $UserName
       }
-    }  
+    }
     if ($Session)  { Set-DefaultPropertySet $Session @('Current','UserName','ID','State')}
   }
 }
@@ -942,7 +876,7 @@ Function Start-Shadow {
   [CmdLetBinding()]param(
     [Alias('SessionID','ID','UserId')]$UserName,
     [Alias('Remote','Target','Server')]$ComputerName=$Env:Computername, # /SERVER:servername
-    [int]$Width=1350, 
+    [int]$Width=1350,
     [int]$Height=730,
     [Alias('NoAssist','NoRemoteControl')][switch]$NoControl,
     [Parameter(ValueFromRemainingArguments=$true)][string[]]$RemArgs
@@ -954,19 +888,19 @@ Function Start-Shadow {
       If ($Session.Current -and ($Env:Computername -eq $Session.ComputerName)) {
         throw "You cannot shadow yourself ($UserName) on same machine: $($Session.ComputerName)"
       } else {
-        $Id = $Session.ID    
+        $Id = $Session.ID
       }
     }
   }
   If ($ID) {
-    $Parameters = @("/v:$ComputerName", "/Shadow:$Id") + 
+    $Parameters = @("/v:$ComputerName", "/Shadow:$Id") +
                   @("/w:$Width", "/h:$Height")         +
                   $argX
     If (!$NoControl) { $Parameters += '/Control' }
     Write-Verbose "mstsc $Parameters"
     mstsc @Parameters
   }
-} 
+}
 New-Alias rs     Start-Shadow -force
 New-Alias Shadow Start-Shadow -force
 
@@ -1115,7 +1049,7 @@ Function Get-HistoryCommandline {
     [Switch]$ShowID,
     [Alias('ID','Object','FullObject')][switch]$HistoryInfo
   )
-  If ($PSBoundParameters.Contains('ShowID')) { 
+  If ($PSBoundParameters.Contains('ShowID')) {
     $ShowID = [boolean]$ShowID
     $PSBoundParameters.Remove('ShowID')
   }
@@ -1750,9 +1684,6 @@ Function Set-GoLocation {
   write-verbose "$(LINE) Start In: $((Get-Location).path)"
   if ($showInvocation) { write-warning "$($Myinvocation | out-string )" }
   $InvocationName = $MyInvocation.InvocationName
-  if (Get-Command set-jumplocation -module Jump.Location -ea ignore) {
-           new-alias jpushd Set-JumpLocation -force -scope Global
-  } else { new-alias jpushd pushd            -force -scope Global }
   if (!(get-variable gohash -ea ignore)) { $goHash = @{} }
   write-verbose "$(LINE) Path: $Path InvocationName: $InvocationName"
   $Target = @(if ($goHash.Contains($InvocationName)) {
@@ -1919,6 +1850,43 @@ Function Set-GoLocation {
   }
   write-verbose "$(LINE) Current: $((Get-Location).path)"
 }
+
+Function Set-GoLocation {
+  [CmdletBinding()]param (
+    [Parameter(Position='0')][string[]]$path=@(),
+    [Parameter(Position='1')][string[]]$subdirectory=@(),
+    [Parameter(ValueFromRemainingArguments=$true)][string[]]$args,
+    [switch]$pushd,
+    [switch]$showInvocation   # for testing
+  )
+  write-verbose "$(LINE) Start In: $((Get-Location).path)"
+  if ($showInvocation) { write-warning "$($Myinvocation | out-string )" }
+  $InvocationName = $MyInvocation.InvocationName
+  if (!(get-variable gohash -ea ignore)) { $goHash = @{} }
+  write-verbose "$(LINE) Path: $Path InvocationName: $InvocationName"
+  try {
+    if ($goHash.Contains($InvocationName) -and
+        (Test-Path $goHash.$InvocationName -ea Ignore)
+       ) {
+      cd $goHash.$InvocationName
+      If ($Path -and ($p = Resolve-Path $Path[0] -ea 0)) {
+        write-verbose "$(LINE) $p"
+        cd $p.path
+      }
+    } elseif ($goHash.Contains($Path[0]) -and
+        (Test-Path $goHash.$($Path[0]) -ea Ignore)) {
+      cd $goHash.$($Path[0])
+      If ($Subdirectory -and ($p = Resolve-Path $Subdirectory[0] -ea ignore)) {
+        write-verbose "$(LINE) $p"
+        cd $p.path
+      }
+    }  
+  }	catch {
+    write-error $_
+  }
+  write-verbose "$(LINE) Current: $((Get-Location).path)"
+}
+
 New-Alias Go Set-GoLocation -force -scope global; New-Alias G Set-GoLocation -force -scope global
 New-Alias G  Set-GoLocation -force -scope global; New-Alias G Set-GoLocation -force -scope global
 <#
@@ -2038,12 +2006,12 @@ write-warning "$(get-date -f 'HH:mm:ss') $(LINE) Before PSReadline "
 $PSReadLineProfile = Join-Path (Split-Path $PSProfile) 'PSReadLineProfile.ps1'
 write-information $PSReadLineProfile
 $ForcePSReadline = $PSBoundParameters.ContainsKey('ForcePSReadline') -and ([Boolean]$ForcePSReadline)
-if (Test-Path $PSReadLineProfile) { 
+if (Test-Path $PSReadLineProfile) {
   try {
-    . $PSReadLineProfile -ForcePSReadline:$ForcePSReadline 
+    . $PSReadLineProfile -ForcePSReadline:$ForcePSReadline
   } catch {
     Write-Error "Caught error in PSReadlineProfile: $PSReadlineProfile`n$_"
-  }  
+  }
 }
 try {   # Chocolatey profile
   $ChocolateyProfile = "$($env:ChocolateyInstall)\helpers\chocolateyProfile.psm1"
@@ -2097,7 +2065,7 @@ if ($Private:PSRealineModule = Get-Module 'PSReadline' -ea ignore) {
     Set-PSReadLineOption -ForeGround White   -Token Type
     Set-PSReadLineOption -ForeGround White   -Token Number
     Set-PSReadLineOption -ForeGround White   -Token Member
-  } else {  
+  } else {
     Set-PSReadlineOption -Colors @{
       ContinuationPrompt = [ConsoleColor]::Magenta     ##  color of the
       Emphasis           = [ConsoleColor]::Magenta     ##  emphasis color, e.g. th
@@ -2113,7 +2081,7 @@ if ($Private:PSRealineModule = Get-Module 'PSReadline' -ea ignore) {
       Parameter          = [ConsoleColor]::green       ##  parameter token color.
       Type               = [ConsoleColor]::White       ##  type token color.
       Number             = [ConsoleColor]::White       ##  number token color.
-      Member             = [ConsoleColor]::White       ##  member name token color.     
+      Member             = [ConsoleColor]::White       ##  member name token color.
     }
   }
 }
@@ -2127,22 +2095,12 @@ If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])
   $Host.PrivateData.WarningForegroundColor = 'White'
 }
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE) After PSReadline "
-#---------------- Snippets
-# Set-Location (split-path -parent $PSProfile )
-# Get-Command *zip*,*7z*,*archive*  | Where-Object {$_.Source -notmatch '\.(cmd|exe|bat)'}
-<#
-	$watcher = New-Object System.IO.FileSystemWatcher
-	$watcher.Path = 'C:\temp\'
-	$watcher.Filter = 'test1.txt'
-	$watcher.EnableRaisingEvents = $true
-	$changed = Register-ObjectEvent
-	$watcher 'Changed' -Action {
-	write-output "Changed: $($eventArgs.FullPath)"
-}
-#>
+
 write-information "$(get-date -f 'HH:mm:ss') $(LINE) Error count: $($Error.Count)"
 <#
-$SearchPath = (("$PSProfile;.;" + $env:path) -split ';' | ForEach-Object { join-path $_ 'utility.ps1' } | Where-Object { test-path $_ -ea ignore}) -split '\s*\n'
+$SearchPath = (("$PSProfile;.;" + $env:path) -split ';' | 
+   ForEach-Object { join-path $_ 'utility.ps1' } | 
+   Where-Object { test-path $_ -ea ignore}) -split '\s*\n'
 ForEach ($Path in $SearchPath) {
   try {
     $Utility = Join-Path $Path 'utility.ps1'
@@ -2313,13 +2271,13 @@ if ((Get-Location) -match '^.:\\Windows\\System32$') { pushd \ }
 $PSDefaultParameterValues['Get-ChildItem:Force'] = $True
 
 Get-ExtraProfile 'Post' | ForEach-Object {
-  try { 
+  try {
     $Private:Separator = "`n$('=' * 72)`n"
     $Private:Colors    = @{ForeGroundColor = 'Blue'; BackGroundColor = 'White'}
     $Private:StartTimeProfile  = Get-Date -f 'yyyy-MM-dd HH:mm:ss'
     $Private:ErrorCountProfile = $Error.Count
     Write-Host "$($Private:Separator)$($Private:EndTimeProfile) Extra Profile`n$_$($Private:Separator)" @Private:Colors
-    . $_ 
+    . $_
   } catch {
     Write-Error "ERROR sourcing: $_`n`n$_"
   } finally {
@@ -2329,8 +2287,8 @@ Get-ExtraProfile 'Post' | ForEach-Object {
   }
 }
 
-If (($PSRL = Get-Module PSReadLine -ea 0) -and ($PSRL.version -ge [version]'2.0.0')) { 
-  Remove-PSReadLineKeyHandler ' ' -ea Ignore 
+If (($PSRL = Get-Module PSReadLine -ea 0) -and ($PSRL.version -ge [version]'2.0.0')) {
+  Remove-PSReadLineKeyHandler ' ' -ea Ignore
 }
 
 $Private:Duration = ((Get-Date) - $Private:StartTime).TotalSeconds
