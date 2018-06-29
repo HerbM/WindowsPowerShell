@@ -843,7 +843,7 @@ Function Get-WinStaSession {
       $ComputerName=$Env:ComputerName, # /SERVER:servername
     [Alias('Me','My','Mine')][switch]$Current
   )
-  $WinSta = qwinsta | Select-Object -skip 1
+  $WinSta = qwinsta /server:$ComputerName | Select-Object -skip 1
   write-verbose "Winsta count: $($WinSta.count)"
   $WinSta | ForEach-Object {
     write-verbose "WinStaLine: $_"
