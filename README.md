@@ -3,7 +3,7 @@
 ## Use the following to download Git if not present:
 
 ```
-https://raw.githubusercontent.com/HerbM/Profile-Utilities/master/Scripts/Get-WindowsGit.ps1
+https://raw.githubusercontent.com/HerbM/WindowsPowerShell/master/Scripts/Get-WindowsGit.ps1
 ```
 
 ```
