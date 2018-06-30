@@ -836,6 +836,7 @@ Function Set-DefaultPropertySet { param([Object]$Object,
   $OBject | Add-Member MemberSet PSStandardMembers $PSStandardMembers -PassThru
 }
 
+
 Function Get-WinStaSession {
   [CmdletBinding()]param(
     $UserName,
