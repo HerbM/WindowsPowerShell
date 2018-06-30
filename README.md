@@ -9,7 +9,7 @@ invoke-webrequest https://raw.githubusercontent.com/HerbM/WindowsPowerShell/mast
 ```
 <#
 .Synopsis 
-  Get git for Windows and clone Profile-Utilities to profile directory
+  Get git for Windows and clone WindowsPowerShell to profile directory
 
 .Notes
 # INITIAL git clone repo from GitHub
@@ -19,13 +19,13 @@ invoke-webrequest https://raw.githubusercontent.com/HerbM/WindowsPowerShell/mast
 
   Get-WindowsGit.ps1  ## will download it (to $Home\Downloads by default)
   
-#   Find project on GitHub -- search "Herb Martin" USERS Profile-Utilities
+#   Find project on GitHub -- search "Herb Martin" USERS WindowsPowerShell
 #    Clone (green button) copy URL, which is also on next line:
-#      https://github.com/HerbM/Profile-Utilities
+#      https://github.com/HerbM/WindowsPowerShell
 
   md  (Split-Path) $Profile -ea 0 # OR:  md $Home\Documents\WindowsPowerShell -ea 0
   cd  (Split-Path) $Profile -ea 0 # OR:  cd $Home\Documents\WindowsPowerShell   
-  git clone https://github.com/HerbM/Profile-Utilities . # DOT IF in Profile directory
+  git clone https://github.com/HerbM/WindowsPowerShell . # DOT IF in Profile directory
 
 # Subsequent git merge:  
 
@@ -38,11 +38,11 @@ invoke-webrequest https://raw.githubusercontent.com/HerbM/WindowsPowerShell/mast
 #  C:\ProgramData\chocolatey\bin\notepad++.exe
 #  Is git installed? URL?
 #  C:\ProgramData\chocolatey\bin\notepad++.exe  
-#  What's the repo URL?  (https://github.com/HerbM/Profile-Utilities but how to find it)
+#  What's the repo URL?  (https://github.com/HerbM/WindowsPowerShell but how to find it)
 
 git remote -v      # will show:
-#  HerbProfile     https://github.com/HerbM/Profile-Utilities
-#  HerbProfile     https://github.com/HerbM/Profile-Utilities
+#  HerbProfile     https://github.com/HerbM/WindowsPowerShell
+#  HerbProfile     https://github.com/HerbM/WindowsPowerShell
 
 #  where.exe git # to find git, 'Where' alias points to 'Where-Object', so where.exe is hidden by default  
 
@@ -111,11 +111,11 @@ if (Test-Path $Out) {
     $out /verysilent
     `$Env:Path += ';C:\Program Files\Git\cmd'
     cd  $Home\Documents -ea ignore # OR:  cd `$Home\Documents\WindowsPowerShell   
-    git clone https://github.com/HerbM/Profile-Utilities WindowsPowerShell
+    git clone https://github.com/HerbM/WindowsPowerShell WindowsPowerShell
         
     git remote -v      # will show:
-    #  origin     https://github.com/HerbM/Profile-Utilities
-    #  origin     https://github.com/HerbM/Profile-Utilities
+    #  origin     https://github.com/HerbM/WindowsPowerShell
+    #  origin     https://github.com/HerbM/WindowsPowerShell
  
     #  You will need a decent .gitprofile, usually in `:$Home 
     #    $Home/.gitprofile

@@ -20,9 +20,9 @@ https://adsecurity.org/?p=94 Active Directory
 https://www.microsoft.com/en-us/download/details.aspx?id=42554 4.0 but good stuff
 https://github.com/groupe-sii/cheat-sheets VMWare PowerCLI 6.5
 Get-Content .\vpnconfig.txt -Raw | Select-String '(?sm)<ca>(.+)</ca>' | Select -Expand Matches | Select -First 1 -Expand Value
-https://github.com/HerbM/Profile-Utilities
+https://github.com/HerbM/WindowsPowerShell
 git init .
-git remote add -t \* -f origin https://github.com/HerbM/Profile-Utilities # <repository-url>
+git remote add -t \* -f origin https://github.com/HerbM/WindowsPowerShell # <repository-url>
 git checkout master
 
 Anyone know a good module etc. to split a file or array in slices based on markers (e.g., seeing a blank line, specific text, etc)?   I keep solving this ad hoc over and over and really want to find or build a more generic solution.  (Similar to Awk and perhaps Sed patterns perhaps).

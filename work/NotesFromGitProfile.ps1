@@ -27,7 +27,7 @@ dir -force
 ####
 cd (Split-Path $Profile)
 git init                                                                                                                                                                                        
-git remote add HerbProfile https://github.com/HerbM/Profile-Utilities                                             
+git remote add HerbProfile https://github.com/HerbM/WindowsPowerShell                                             
 git remote -v                                                                                                     
 git fetch --all                                                                                                   
 git reset --hard HerbProfile/master                                                                               
