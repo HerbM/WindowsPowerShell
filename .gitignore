@@ -31,5 +31,6 @@ Local*.ps1
 /work/bat
 /work/dev
 /work/Jesse
+/work/Jesse/*
 /work/dev/*
 /work/bat/*

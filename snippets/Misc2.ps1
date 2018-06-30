@@ -76,6 +76,31 @@ https://stackoverflow.com/questions/1838873/visualizing-branch-topology-in-git/3
 git log --format=oneline
 git lg
 
+gwmi win32_bios -computer (adcomputer -filter "name -like '*'").name | select name, serialnumber
+
+#Just online
+(adcomputer -filter "name -like '*'").name | Out-File ADComputer.txt -encoding ASCII
+portcheck ADComputer.txt 135 | ? { $_ -match 'open' } | ForEach-Object {
+  $ComputerName, $State = $_ -split '\s+'
+  # Write-Warning "[$ComputerName]"
+  If ($bios = gwmi win32_bios -computer $ComputerName -ea ignore) {
+    $bios | select @{N='ComputerName';E={$ComputerName}},@{N='BiosName';E={$_.Name}},SerialNumber
+  } else {
+    [pscustomobject]@{
+      ComputerName = $ComputerName
+      Name           = '' 
+      SerialNumber   = ''
+    }
+  }
+} | tee-object -variable BIOSVersion 
+
+$BiosVersion.Computername | % { 
+  $ComputerName = $_; 
+  $Sessions = quser /server:$ComputerName 
+}
+
+$BiosVersion.Computername | % { Get-WinStaSession -computername $_ } | ? UserName -match 'Hmar' | % { Start-Shadow $_.UserName $_.ComputerName }
+
 
 
 

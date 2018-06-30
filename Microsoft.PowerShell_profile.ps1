@@ -845,8 +845,10 @@ Function Get-WinStaSession {
       $ComputerName=$Env:ComputerName, # /SERVER:servername
     [Alias('Me','My','Mine')][switch]$Current
   )
-  $WinSta = qwinsta /server:$ComputerName | Select-Object -skip 1
-  write-verbose "Winsta count: $($WinSta.count)"
+  $WinSta = qwinsta /server:$ComputerName 2>$Null | Select-Object -skip 1
+  If ($WinSta) {
+    write-verbose "Winsta count: $($WinSta.count)"
+  }  
   $WinSta | ForEach-Object {
     write-verbose "WinStaLine: $_"
     # SESSIONNAME       USERNAME                 ID  STATE   TYPE        DEV
@@ -869,7 +871,7 @@ Function Get-WinStaSession {
         $Session = $Session | Where-Object UserName -match $UserName
       }
     }
-    if ($Session)  { Set-DefaultPropertySet $Session @('Current','UserName','ID','State')}
+    if ($Session)  { Set-DefaultPropertySet $Session @('ComputerName','Current','UserName','ID','State')}
   }
 }
 New-Alias ws  Get-WinStaSession -force -scope Global
