@@ -1391,3 +1391,29 @@ With the Active Directory Best Practices Analyzer (ADBPA) tool provided by Micro
 
 #>
 
+# Install-UpdatedModule  Newer Modules Later Versions
+$Modules = Get-Module -ListAvailable | Group Name | ForEach-Object {
+  $_.Group | Sort Version -Descending | Select-Object -First 1
+}
+$Gallery   = Find-Module
+$Available = @{};
+$Gallery | ForEach-Object { $Available."$($_.Name)" = $_.Version }
+$Newer = $Modules | Where-Object {
+  $Have = $_.Name
+  $Available.Contains($Have) -and $Available[$Have] -gt $_.Version
+} | ForEach-Object {
+  [PSCustomObject]@{
+    Name      = $Have
+    Version   = $_.Version
+    Available = $Available[$Have]
+  }
+}
+$Newer | % { 
+  $_ 
+  Install-Module -Name $_.Name  -Force -AllowClobber -Confirm:$False -ea Ignore 
+} | Format-Table
+
+
+
+
+
