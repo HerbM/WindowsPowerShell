@@ -1391,3 +1391,4 @@ With the Active Directory Best Practices Analyzer (ADBPA) tool provided by Micro
 
 #>
 
+$PSDefaultParameterValues['Get-ChildItem:Force'] = $True
