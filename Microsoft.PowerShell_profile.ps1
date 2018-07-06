@@ -248,7 +248,7 @@ Function Add-ToolPath {
     [string[]]$Path
   )
   ForEach ($TryPath in $Path) {
-    if ($marker = where.exe PortCheck.exe 2>&1) {
+    if ($marker = where.exe PortCheck.exe 2>$Null) {
       Write-Warning "Path is good: $marker"
       return
     } else {
@@ -397,16 +397,16 @@ Function Set-ItemTime {
     ####}
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE)"
 try {
-  $TryPath = $PSProfileDirectory,$ProfileDirectory,'C:\Bat' |
-    Where-Object { Test-Path $_ -ea ignore }
+  $TryPath = $PSProfileDirectory,$ProfileDirectory,'C:\Bat','.' 
   Write-Warning "$(get-date -f 'HH:mm:ss') $(LINE) Try Utility path: $($TryPath -join '; ')"
-  if ($Util=@(Join-Path $TryPath 'utility.ps1' -ea ignore)) {
-    Write-Warning "Utility: $($Util -join '; ')"
-    . $Util[0]
-    Write-Log "$(LINE) Using Write-Log from Utility.ps1" -file $ProfileLogPath 3
+  If ($Util=(Join-Path $TryPath 'utility.ps1' -ea ignore | Select -First 1)) {
+    Write-Warning "Utility: $Util"
+    . $Util
+    Get-Command Write-Log -syntax
+    Write-Log "$(LINE) Using Write-Log from Utility.ps1"
   }
 } catch { # just ignore and take care of below
-  Write-Log "Failed loading Utility.ps1" -file $PSProfileLogPath 3
+  Write-Log "$(LINE) Failed loading Utility.ps1 $Util"
 } finally {}
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE) ##338"
 if ((Get-Command 'Write-Log' -type Function,cmdlet -ea ignore)) {
@@ -530,13 +530,10 @@ Function Set-ProgramAlias {
     $cmdnames = @(If ($cmd = @(get-command $Name -all -ea Ignore)) {
       $cmd.definition
     })
-    $Path                                                      +
-    (Invoke-Command { where.exe $Command 2>$Null } -ea Ignore) +
-    $cmdnames
+    $Path + (where.exe $Command 2>$Null) + $cmdnames
   } else {
     @(get-command $Name -all -ea Ignore).definition +
-    (Invoke-Command { where.exe $Command 2>$Null } -ea Ignore) +
-    $Path
+     (where.exe $Command 2>$Null) + $Path
   }
   Remove-Item Alias:$Name -force -ea Ignore
   ForEach ($Location in $SearchPath) {
@@ -1548,27 +1545,14 @@ Function Get-Property {
 # 	}
 # 	if ($args[0]) {Set-Location $args[0]}
 # }
-$ECSTraining = "\Training"
-$SearchPath  = 'C:\',"$Home\Downloads","T:$ECSTraining","S:$ECSTraining"
-ForEach ($Path in $SearchPath) {
-  try {
-    if (Test-Path (Join-Path $Path 'Books' -ea ignore) -ea ignore) {
-      $Books = Resolve-Path (Join-Path $Path 'Books' -ea ignore) -ea ignore
-      If ($Books) { break }
-    }
-  } catch {}  # just ignore
+try {
+  $ECSTraining = "\Training"
+  $SearchPath  = 'C:\',"$Home\Downloads","T:$ECSTraining","S:$ECSTraining"
+  $Books = Join-Path $SearchPath 'Books' -ea ignore | Select-Object -First 1
+} catch {
   $Books = $PSProfile
-}
-$SearchPath  = 'C:\',"S:$ECSTraining","T:$ECSTraining","$Home\Downloads"
-ForEach ($Path in $SearchPath) {
-  try {
-    if (Test-Path (Join-Path $Path 'Dev' -ea ignore) -ea ignore) {
-      $Dev = Resolve-Path (Join-Path $Path 'Dev' -ea ignore) -ea ignore
-      If ($Dev) { break }
-    }
-  } catch {}  # just ignore
-  $Dev = $PSProfile
-}
+}  # just ignore
+
 Function Test-Clipboard { Get-Clipboard | Test-Script };
 New-Alias tcb  Test-ClipBoard -force -scope Global
 New-Alias gcbt Test-ClipBoard -force -scope Global
@@ -1709,10 +1693,7 @@ Function Set-GoLocation {
 New-Alias Go Set-GoLocation -force -scope global;
 New-Alias G  Set-GoLocation -force -scope global
 Set-GoAlias
-$books = switch ($true) {
-  { Test-Path 'c:\books' } { Resolve-Path 'c:\books' }
-  { Test-Path (Join-Path (Join-Path $Home 'Downloads')  'Books') } { Resolve-Path (Join-Path (Join-Path $Home 'Downloads')  Books) -ea ignore }
-}
+
 $gohash = [ordered]@{
   docs       = "$home\documents"
   down       = "$home\downloads"

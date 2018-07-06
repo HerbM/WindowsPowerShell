@@ -10,9 +10,8 @@ $ParentPath = Split-Path $ProfileDirectory
 $OldProfile = Join-Path  $ParentPath 'WindowsPowershell\Microsoft.PowerShell_profile.ps1' 
 write-warning "Profile: $Profile Parent: $ParentPath OldProfile: $OldProfile"
 if (Test-Path $OldProfile) {
-    .  $OldProfile
-}
-else {
+  .  $OldProfile
+} else {
     Set-PSReadlineOption -token string    -fore white 
     Set-PSReadlineOption -token None      -fore yellow
     Set-PSReadlineOption -token Operator  -fore cyan
