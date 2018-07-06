@@ -1391,6 +1391,7 @@ With the Active Directory Best Practices Analyzer (ADBPA) tool provided by Micro
 
 #>
 
+$PSDefaultParameterValues['Get-ChildItem:Force'] = $True
 # Install-UpdatedModule  Newer Modules Later Versions
 $Modules = Get-Module -ListAvailable | Group Name | ForEach-Object {
   $_.Group | Sort Version -Descending | Select-Object -First 1
@@ -1412,8 +1413,3 @@ $Newer | % {
   $_ 
   Install-Module -Name $_.Name  -Force -AllowClobber -Confirm:$False -ea Ignore 
 } | Format-Table
-
-
-
-
-
