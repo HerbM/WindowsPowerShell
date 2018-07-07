@@ -1874,31 +1874,15 @@ Function Set-GoLocation {
 
 New-Alias Go Set-GoLocation -force -scope global; New-Alias G Set-GoLocation -force -scope global
 New-Alias G  Set-GoLocation -force -scope global; New-Alias G Set-GoLocation -force -scope global
-<#
-Ok, I finally got around to starting to learn Pester version 4.1.1
-PSVersion 5.1.14409.1012
-Got this:
-     Expected: {C:\books}
-     But was:  {C:\books}
-Looks like a match, editor says it's a match, so I tried adding the same test with just gettype() added to the test and should values, and it gave no error (though maybe it was not really 2 strings but just looked like strings. (edited)
-(get-location).gettype();  (resolve-path .).gettype()
-(get-location)  -eq (resolve-path .)
-(get-location).path  -eq (resolve-path .).path
-[-] Uses books to change directory to C:\books 90ms
-  Expected: {C:\books}
-  But was:  {C:\books}
-  16:       & ([scriptblock]::Create("$Alias -verbose:$v -PushD"))  ; (get-location).path | Should -Be $goHash.$Alias
-  at Invoke-Assertion, C:\Program Files\WindowsPowerShell\Modules\Pester\4.1.1\Functions\Assertions\Should.ps1: line 209
-  at <ScriptBlock>, C:\Users\A469526\Documents\WindowsPowerShell\Go\GoLocation\GoLocation.Tests.ps1: line 16
-#>
+
 Function Show-InternetProxy {
   [CmdletBinding()] param()
   $InternetSettingsKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings"
   $urlEnvironment      = $Env:AutoConfigUrl
   $urlDefault          = 'http://proxyconf.my-it-solutions.net/proxy-na.pac'
   $ProxyValues         = 'AutoConfig ProxyEnable Autodetect'
-  write-output "`$Env:AutoConfigUrl        : $($Env:AutoConfigUrl)"
-  write-output  "Default proxy             : $urlDefault"
+  write-warning "`$Env:AutoConfigUrl        : $($Env:AutoConfigUrl)"
+  write-warning  "Default proxy             : $urlDefault"
   $Settings = get-itemproperty $InternetSettingsKey -ea ignore | findstr /i $ProxyValues | Sort-Object
     Write-Output "             Registry settings"
     ForEach ($Line in $Settings) {
