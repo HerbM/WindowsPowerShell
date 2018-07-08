@@ -194,7 +194,7 @@ If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])
   # DSC_PowerCLISnapShotCheck  PowerCLITools  PowerCLI.SessionManager PowerRestCLI
   # PowerShell CodeManager https://bytecookie.wordpress.com/
   # ChocolateyGet
-  
+
 try {
   $ProfileScriptDirectories = $ProfileDirectory, $PSProfileDirectory,
             "$ProfileDirectory\Scripts*", "$PSProfileDirectory\Scripts*"
@@ -229,8 +229,8 @@ try {
   #Function Test-Administrator { (whoami /all | Select-Object -string S-1-16-12288) -ne $null }
   #if ((whoami /user /priv | Select-Object -string S-1-16-12288) -ne $null) {'Administrator privileges: ENABLED'} #else {'Administrator privileges: DISABLED'}
   if ($AdminEnabled = Test-Administrator) {
-           write-information "$(LINE) Administrator privileges enabled"
-  } else { write-information "$(LINE) Administrator privileges DISABLED"}
+           Write-Information "$(LINE) Administrator privileges enabled"
+  } else { Write-Information "$(LINE) Administrator privileges DISABLED"}
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE)"
 If ($WinMerge = Join-Path -resolve -ea ignore 'C:\Program*\WinMerge*' 'WinMerge*.exe' |
   ? { $_ -notmatch 'proxy' } | select -first 1) {
@@ -248,8 +248,8 @@ Function Add-ToolPath {
     [string[]]$Path
   )
   ForEach ($TryPath in $Path) {
-    if ($marker = where.exe PortCheck.exe 2>$Null) {
-      Write-Warning "Path is good: $marker"
+    if (!(where.exe /q PortCheck.exe)) {
+      Write-Warning "Path is good: $(where.exe PortCheck.exe)"
       return
     } else {
       if (Test-Path (Join-Path $TryPath "Util\PortCheck.exe" -ea ignore)) {
@@ -270,7 +270,8 @@ $PlacesToLook = 'C:\','T:\Programs\Herb','T:\Programs\Tools','T:\Programs',
 try { Add-ToolPath $PlacesToLook } catch { Write-Warning "Caught:  Add-Path"}
 Function DosKey {
   param($Pattern='=')
-  if ($macros = where.exe 'macros.txt' 2>$Null) {
+  if (!(where.exe 'macros.txt' /q)) {
+    $macros = where.exe 'macros.txt'
     Get-Content $macros | Where-Object { $_ -match $Pattern }
   }
 }
@@ -397,7 +398,7 @@ Function Set-ItemTime {
     ####}
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE)"
 try {
-  $TryPath = $PSProfileDirectory,$ProfileDirectory,'C:\Bat','.' 
+  $TryPath = $PSProfileDirectory,$ProfileDirectory,'C:\Bat','.'
   Write-Warning "$(get-date -f 'HH:mm:ss') $(LINE) Try Utility path: $($TryPath -join '; ')"
   If ($Util=(Join-Path $TryPath 'utility.ps1' -ea ignore | Select -First 1)) {
     Write-Warning "Utility: $Util"
@@ -409,83 +410,16 @@ try {
   Write-Log "$(LINE) Failed loading Utility.ps1 $Util"
 } finally {}
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE) ##338"
-if ((Get-Command 'Write-Log' -type Function,cmdlet -ea ignore)) {
-  remove-item alias:write-log -force -ea ignore
+if ((Get-Command 'Write-Log' -type Function,CmdLet -ea ignore)) {
+  Remove-Item alias:write-log -force -ea ignore
 } else {
   New-Alias Write-Log Write-Verbose -ea ignore
   Write-Warning "$(LINE) Utility.ps1 not found.  Defined alias for Write-Log"
-<#  Function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
-  Function Get-CurrentFileName   { split-path -leaf $MyInvocation.PSCommandPath   }   Function Get-CurrentFileLine   {
-    if ($MyInvocation.PSCommandPath) {
-      "$(split-path -leaf $MyInvocation.PSCommandPath):$($MyInvocation.ScriptLineNumber)"
-    } else {"GLOBAL:$(LINE)"}
-  }
-  Function Get-CurrentFileName1  {
-    if ($var = get-variable MyInvocation -scope 1 -value) {
-      if ($var.PSCommandPath) { split-path -leaf $var.PSCommandPath }
-      else {'GLOBAL'}
-    } else {"GLOBAL"}
-  }   #$MyInvocation.ScriptName
-#>
-#  New-Alias -Name   LINE   -Value Get-CurrentLineNumber -Description 'Returns the current (caller''s) line number in a script.' -force -Option allscope
-#  New-Alias -Name   FILE   -Value Get-CurrentFileName   -Description 'Returns the name of the current script file.' -force             -Option allscope
-#  New-Alias -Name   FLINE  -Value Get-CurrentFileLine   -Description 'Returns the name of the current script file.' -force             -Option allscope
-#  New-Alias -Name   FILE1  -Value Get-CurrentFileName1  -Description 'Returns the name of the current script file.' -force             -Option allscope
-#  remove-item alias:write-log -force -ea ignore
-# Function Write-Log {
-#   param (
-#     [string]$Message,
-#     [int]$Severity = 3, ## Default to a high severity. Otherwise, override
-#     [string]$File
-#   )
-#   try {
-#     if (!$LogLevel) { $LogLevel = 3 }
-#     if ($Severity -lt $LogLevel) { return }
-#     write-verbose $Message
-#     $line = [pscustomobject]@{
-#       'DateTime' = (Get-Date -f "yyyy-MM-dd-ddd-HH:mm:ss") #### (Get-Date)
-#       'Severity' = $Severity
-#       'Message'  = $Message
-#     }
-#     if (-not $LogFilePath) {
-#       $LogFilePath  =  "$($MyInvocation.ScriptName)" -replace '(\.ps1)?$', ''
-#       $LogFilePath += '-Log.txt'
-#     }
-#     if ($File) { $LogFilePath = $File }
-#     if ($psversiontable.psversion.major -lt 3) {
-#       $Entry = "`"$($line.DateTime)`", `"$($line.$Severity)`", `"$($line.$Message)`""
-#       $null = Out-file -enc utf8 -filepath $LogFilePath -input $Entry -append -ea ignore -force
-#     } else {
-#       $line | Export-Csv -Path $LogFilePath -Append -NoTypeInformation -ea ignore -force -enc ASCII
-#     }
-#   } catch {
-#     $ec   = ('{0:x}' -f $_.Exception.ErrorCode); $em = $_.Exception.Message; $in = $_.InvocationInfo.PositionMessage
-#     $description =  "$(LINE) Catch $in $ec, $em"
-#     "Logging: $description" >> $LogFilePath
-#   }
-# }
-#
-# Function LINE {
-#   param ([string]$Format,[switch]$Label)
-#   $Line = '[1]'; $Suffix = ''
-#   If ($Format) { $Label = $True }
-#   If (!$Format) { $Format = 'Line {0,3}:' }
-#   try {
-#     if (($L = get-variable MyInvocation -scope 1 -value -ea ignore) -and $L.ScriptLineNumber) {
-#       $Line = $L.ScriptLineNumber
-#     }
-#   } catch {
-#     $Suffix = '(Catch in LINE)'
-#   }
-#   if ($Label) { $Line = $Format -f $Line }
-#   "$Line$Suffix"
-# }
 }
-<#
-#>
-write-information "Profile loaded: $($MyInvocation.MyCommand.Path) ##416"
+
+Write-Information "Profile loaded: $($MyInvocation.MyCommand.Path) ##416"
 $PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)" -as [double]
-write-information "$(LINE) PowerShell version PSVersionNumber: [$PSVersionNumber]"
+Write-Information "$(LINE) PowerShell version PSVersionNumber: [$PSVersionNumber]"
 $ForceModuleInstall = [boolean]$ForceModuleInstall
 $AllowClobber       = [boolean]$AllowClobber
 $Confirm            = [boolean]$Confirm
@@ -530,7 +464,8 @@ Function Set-ProgramAlias {
     $cmdnames = @(If ($cmd = @(get-command $Name -all -ea Ignore)) {
       $cmd.definition
     })
-    $Path + (where.exe $Command 2>$Null) + $cmdnames
+    $WhereFound = If (where.exe $Command /q) {@()} else {@(where.exe $Command)}
+    $Path + $WhereFound + $cmdnames
   } else {
     @(get-command $Name -all -ea Ignore).definition +
      (where.exe $Command 2>$Null) + $Path
@@ -572,20 +507,20 @@ Set-ProgramAlias 7z   7z.exe @('C:Util\7-Zip\app\7-Zip64\7z.exe',
 #$pattern = 'ddd, dd MMM yyyy Get-History:mm:ss zzz \(PST)'
 #[DateTime]::ParseExact($raw, $pattern, $null)
 if ($MyInvocation.HistoryID -eq 1) {
-  if (Get-Command write-information -type cmdlet,Function -ea ignore) {
+  if (Get-Command Write-Information -type cmdlet,Function -ea ignore) {
     $InformationPreference = 'Continue'
-    Remove-Item alias:write-information -ea ignore
+    Remove-Item alias:Write-Information -ea ignore
     $global:informationpreference = $warningpreference
   } else {
-    write-warning '$(LINE) Use write-warning for information if write-information not available'
-    new-alias write-information write-warning -force # -option allscope
+    write-warning '$(LINE) Use write-warning for information if Write-Information not available'
+    new-alias Write-Information write-warning -force # -option allscope
   }
 }
 if ($Quiet -and $global:informationpreference) {
   $informationpreferenceSave = $global:informationpreference
   $global:informationpreference = 'SilentlyContinue'
   $script:informationpreference = 'SilentlyContinue'
-  write-information "SHOULD NOT WRITE"
+  Write-Information "SHOULD NOT WRITE"
 }
 get-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive |
   Select-Object WindowArrangementActive | Format-List | findstr "WindowArrangementActive"
@@ -596,7 +531,7 @@ Function Get-CurrentIPAddress {(ipconfig) -split "`n" | Where-Object {
 }
 Function Get-WhoAmI { "[$PID]",(whoami),(hostname) + (Get-CurrentIPAddress) -join ' ' }
 If ($ShowDotNetVersions) {
-  write-information ".NET dotnet versions installed"
+  Write-Information ".NET dotnet versions installed"
   $DotNetKey = @('HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP',
                  'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4')
   @(foreach ($key in  $DotNetKey) { Get-ChildItem $key }) | Get-ItemProperty -ea ignore |
@@ -622,7 +557,7 @@ If (Test-Administrator) {
         Set-PSRepository -name 'PSGallery' -InstallationPolicy 'Trusted' -ea ignore
         $PSGallery = Get-PSRepository -name 'PSGallery'                  -ea ignore
       }
-      If ($Verbose) { $PSGallery | Format-Table }
+      If ($PSBoundParameters['Verbose'] -and $Verbose) { $PSGallery | Format-Table }
     }
   } catch {
     Write-Information "$(LINE) Problem with PSRepository"
@@ -714,11 +649,11 @@ Function Get-Constructor {
     } | Select-Object -Object Name, ParameterType
   }
 }
-write-information "Useful modules: https://blogs.technet.microsoft.com/pstips/2014/05/26/useful-powershell-modules/"
+Write-Information "Useful modules: https://blogs.technet.microsoft.com/pstips/2014/05/26/useful-powershell-modules/"
 $PSCXprofile = 'C:\Users\hmartin\Documents\WindowsPowerShell\Pscx.UserPreferences'
-write-information "import-module -noclobber PSCX $PSCXprofile"
+Write-Information "import-module -noclobber PSCX $PSCXprofile"
 if ($psversiontable.psversion.major -lt 6) {
-  write-information "import-module -noclobber PowerShellCookbook"
+  Write-Information "import-module -noclobber PowerShellCookbook"
 }
 <#
 [System.Windows.Forms.Screen]::AllScreens
@@ -845,7 +780,7 @@ Function Get-WinStaSession {
   $WinSta = qwinsta /server:$ComputerName 2>$Null | Select-Object -skip 1
   If ($WinSta) {
     write-verbose "Winsta count: $($WinSta.count)"
-  }  
+  }
   $WinSta | ForEach-Object {
     write-verbose "WinStaLine: $_"
     # SESSIONNAME       USERNAME                 ID  STATE   TYPE        DEV
@@ -917,8 +852,8 @@ function Get-CommandPath {
 }
 #################################################################
 $InformationPreference = 'continue'
-write-information "$(LINE) InformationPreference: $InformationPreference"
-write-information "$(LINE) Test hex format: $("{0:X}" -f -2068774911)"
+Write-Information "$(LINE) InformationPreference: $InformationPreference"
+Write-Information "$(LINE) Test hex format: $("{0:X}" -f -2068774911)"
 # "{0:X}" -f -2068774911
 Function Get-DriveTypeName ($type) {
 	$typename = @('UNKNOWN',     # 0 # The drive type cannot be determined.
@@ -1087,7 +1022,7 @@ Function Select-History {
         $id = $IDFormat -f $_.id
         "$id$($_.CommandLine)"
       }
-      #if ($Verbose) {
+      #if ($PSBoundParameters['Verbose'] -and $Verbose) {
         $LastID = $_.ID
         $LastTime = $_.EndExecutionTime
         $FoundCount++
@@ -1157,9 +1092,9 @@ Function Get-Syntax {
 Function syn { get-command @args -syntax }
 Function get-fullhelp { get-help -full @args }
 'hf','full','fh','fhelp','helpf' | ForEach-Object { new-alias $_ get-fullhelp -force -ea continue }
-write-information "$(LINE) $home"
-write-information "$(LINE) Try: import-module -prefix cx Pscx"
-write-information "$(LINE) Try: import-module -prefix cb PowerShellCookbook"
+Write-Information "$(LINE) $home"
+Write-Information "$(LINE) Try: import-module -prefix cx Pscx"
+Write-Information "$(LINE) Try: import-module -prefix cb PowerShellCookbook"
 new-alias npdf 'C:\Program Files (x86)\Nitro\Reader 3\NitroPDFReader.exe' -force -scope Global
 Function esf {
   $parms  = @('-dm')
@@ -1262,15 +1197,15 @@ Function ahk {
 Remove-Item Alias:a -force -ea ignore 2>$Null
 New-Alias a ahk -force -scope Global
 Function d    { cmd /c dir @args}
-Function df   { Get-ChildItem @args -force -file       }
-Function da   { Get-ChildItem @args -force             }
-Function dfs  { Get-ChildItem @args -force -file -rec  }
-Function dd   { Get-ChildItem @args -force -Get-ChildItem       }
-Function dds  { Get-ChildItem @args -force -Get-ChildItem  -rec }
-Function ddb  { Get-ChildItem @args -force -Get-ChildItem       | ForEach-Object { "$($_.FullName)" } }
-Function db   { Get-ChildItem @args -force             | ForEach-Object { "$($_.FullName)" }}
-Function dsb  { Get-ChildItem @args -force       -rec  | ForEach-Object { "$($_.FullName)" }}
-Function dfsb { Get-ChildItem @args -force -file -rec  | ForEach-Object { "$($_.FullName)" }}
+Function df   { Get-ChildItem @args -force -file      }
+Function da   { Get-ChildItem @args -force            }
+Function dfs  { Get-ChildItem @args -force -file -rec }
+Function dd   { Get-ChildItem @args -force -dir       }
+Function dds  { Get-ChildItem @args -force -dir  -rec }
+Function ddb  { Get-ChildItem @args -force -dir       | ForEach-Object { "$($_.FullName)" }}
+Function db   { Get-ChildItem @args -force            | ForEach-Object { "$($_.FullName)" }}
+Function dsb  { Get-ChildItem @args -force       -rec | ForEach-Object { "$($_.FullName)" }}
+Function dfsb { Get-ChildItem @args -force -file -rec | ForEach-Object { "$($_.FullName)" }}
 Function dod  { dd  @args -force | Sort-Object lastwritetime }
 Function dfod { df  @args -force | Sort-Object lastwritetime }
 Function ddod { dd  @args -force | Sort-Object lastwritetime }
@@ -1330,13 +1265,13 @@ Function Get-Drive {
 #### Because of DIFFICULTY with SCOPE
 # $PSProfileDirectory = Split-Path $PSProfile
 $ICFile = "$PSProfileDirectory\ic.ps1"
-write-information "$(LINE) Create ic file: $ICFile"
+Write-Information "$(LINE) Create ic file: $ICFile"
 set-content  $ICFile '. ([scriptblock]::Create($((Get-Clipboard) -join "`n")))'
 set-alias ic $ICFile -force -scope global -option AllScope
 # get-uptime;Get-WURebootStatus;Is-RebootPending?;Get-Uptime;PSCx\get-uptime;boottime.cmd;uptime.cmd
 #
 Function Get-BootTime { (Get-CimInstance win32_operatingsystem).lastbootuptime }
-write-information "$(LINE) Boot Time: $(Get-date ((Get-CimInstance win32_operatingsystem).lastbootuptime) -f 's')"
+Write-Information "$(LINE) Boot Time: $(Get-date ((Get-CimInstance win32_operatingsystem).lastbootuptime) -f 's')"
 Function ql {  $args  }
 Function qs { "$args" }
 Function qa {
@@ -1380,7 +1315,7 @@ Function qa {
 # $ic = '. ([scriptblock]::Create($((Get-Clipboard) -join "`n")))'
 # $ic = [scriptblock]::Create('. ([scriptblock]::Create($((Get-Clipboard) -join "`n")))')
 # https://weblogs.asp.net/jongalloway/working-around-a-powershell-call-depth-disaster-with-trampolines
-write-information "$(LINE) set Prompt Function"
+Write-Information "$(LINE) set Prompt Function"
 try {
   if (!$global:PromptStack) {
     #if ($global:PromptStack) -ne )
@@ -1389,8 +1324,8 @@ try {
 } catch {
 	[string[]]$global:PromptStack  = @((Get-Command prompt).ScriptBlock)
 }
-write-information "$(LINE) Pushed previous prompt onto `$PromptStack: $($PromptStack.count) entries"
-write-information "$(LINE) prompt='PS $($executionContext.SessionState.Path.CurrentLocation) $('>' * $nestedPromptLevel + '>')'"
+Write-Information "$(LINE) Pushed previous prompt onto `$PromptStack: $($PromptStack.count) entries"
+Write-Information "$(LINE) prompt='PS $($executionContext.SessionState.Path.CurrentLocation) $('>' * $nestedPromptLevel + '>')'"
 #Function Global:prompt { "PS '$($executionContext.SessionState.Path.CurrentLocation)' $('>.' * $nestedPromptLevel + '>') "}
 Function Global:prompt {
   If (!(Test-Path Variable:Global:MaxPromptLength -ea ignore 2>$Null)) { $MaxPrompt = 45 }
@@ -1865,15 +1800,15 @@ Function Set-GoLocation {
         write-verbose "$(LINE) $p"
         cd $p.path
       }
-    }  
+    }
   }	catch {
     write-error $_
   }
   write-verbose "$(LINE) Current: $((Get-Location).path)"
 }
 
-New-Alias Go Set-GoLocation -force -scope global; New-Alias G Set-GoLocation -force -scope global
-New-Alias G  Set-GoLocation -force -scope global; New-Alias G Set-GoLocation -force -scope global
+New-Alias Go Set-GoLocation -force -scope global -Desc "Set in Profile"
+New-Alias G  Set-GoLocation -force -scope global -Desc "Set in Profile"
 
 Function Show-InternetProxy {
   [CmdletBinding()] param()
@@ -1945,7 +1880,7 @@ Function Set-InternetProxy {
 filter Test-Odd  { param([Parameter(valuefrompipeline)][int]$n) [boolean]($n % 2)}
 filter Test-Even { param([Parameter(valuefrompipeline)][int]$n) -not (Test-Odd $n)}
 Function get-syntax([string]$command='Get-Command') { if ($command) {Get-Command $command -syntax} }   # syntax get-command
-new-alias syn get-syntax -force
+new-alias syn get-syntax -force -Desc "Set in Profile"
 Function Convert-ObjectToJson ($object, $depth=2) { $object | ConvertTo-Json -Depth $depth }
 Function dod { (Get-ChildItem @args) | Sort-Object -prop lastwritetime }
 Function don { (Get-ChildItem @args) | Sort-Object -prop fullname }
@@ -1973,7 +1908,7 @@ Function Get-SortableDate {
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE) Before PSReadline "
 #$PSReadLineProfile = Join-Path $myinvocation.pscommandpath 'PSReadLineProfile.ps1'
 $PSReadLineProfile = Join-Path (Split-Path $PSProfile) 'PSReadLineProfile.ps1'
-write-information $PSReadLineProfile
+Write-Information $PSReadLineProfile
 $ForcePSReadline = $PSBoundParameters.ContainsKey('ForcePSReadline') -and ([Boolean]$ForcePSReadline)
 if (Test-Path $PSReadLineProfile) {
   try {
@@ -1984,16 +1919,16 @@ if (Test-Path $PSReadLineProfile) {
 }
 try {   # Chocolatey profile
   $ChocolateyProfile = "$($env:ChocolateyInstall)\helpers\chocolateyProfile.psm1"
-  write-information "$(LINE) Chocolatey profile: $ChocolateyProfile"
+  Write-Information "$(LINE) Chocolatey profile: $ChocolateyProfile"
   if (Test-Path($ChocolateyProfile)) {
     Import-Module "$ChocolateyProfile"
   }
 } catch {
-  write-information "$(LINE) Chocolatey not available."
+  Write-Information "$(LINE) Chocolatey not available."
 }
-new-alias alias new-alias -force
+new-alias alias new-alias -force -Desc "Set in Profile"
 Function 4rank ($n, $d1, $d2, $d) {"{0:P2}   {1:P2}" -f ($n/$d),(1 - $n/$d)}
-write-information ("$(LINE) Use Function Get-PSVersion or variable `$PSVersionTable: $(Get-PSVersion)")
+Write-Information ("$(LINE) Use Function Get-PSVersion or variable `$PSVersionTable: $(Get-PSVersion)")
 Function down {Set-Location "$env:userprofile\downloads"}
 Function Get-SerialNumber {Get-WMIObject win32_operatingsystem  | Select-Object -prop SerialNumber}
 Function Get-ComputerDomain { Get-WMIObject win32_computersystem | Select-Object -object -prop Name,Domain,DomainRole,DNSDomainName}
@@ -2065,25 +2000,25 @@ If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])
 }
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE) After PSReadline "
 
-write-information "$(get-date -f 'HH:mm:ss') $(LINE) Error count: $($Error.Count)"
+Write-Information "$(get-date -f 'HH:mm:ss') $(LINE) Error count: $($Error.Count)"
 <#
-$SearchPath = (("$PSProfile;.;" + $env:path) -split ';' | 
-   ForEach-Object { join-path $_ 'utility.ps1' } | 
+$SearchPath = (("$PSProfile;.;" + $env:path) -split ';' |
+   ForEach-Object { join-path $_ 'utility.ps1' } |
    Where-Object { test-path $_ -ea ignore}) -split '\s*\n'
 ForEach ($Path in $SearchPath) {
   try {
     $Utility = Join-Path $Path 'utility.ps1'
     if (Test-Path $utility) {
-      write-information "$(LINE) Source: $utility"
+      Write-Information "$(LINE) Source: $utility"
       .  (Resolve-Path $utility[0]).path
-      write-information "$(LINE) Finished sourcing: $utility"
+      Write-Information "$(LINE) Finished sourcing: $utility"
       break
     }
   } catch {
-    write-information "$(LINE) Caught error importing $Utility"
+    Write-Information "$(LINE) Caught error importing $Utility"
     # $_
   }
-  write-information "$(LINE) utility.ps1 not found local or on path"
+  Write-Information "$(LINE) utility.ps1 not found local or on path"
 }
 #>
 #filter dt { if (get-variable _ -scope 0) { get-sortabledate $_ -ea ignore } else { get-sortabledate $args[1] } }
@@ -2201,19 +2136,19 @@ Function PSBoundParameter([string]$Parm) {
 #>
 write-host "`nError count: $($Error.Count)"
 #if(Test-Path Function:\Prompt) {Rename-Item Function:\Prompt PrePoshGitPrompt -Force}
-if (!(Invoke-Command { where.exe choco.exe 2>$Null } -ea Ignore)) {
+if (!(where.exe choco.exe /q)) {
   "Get Chocolatey: iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
 } else {
-  where.exe choco.exe 2>$Null
+  Write-Warning "$(FLINE) Found git: $(where.exe choco.exe)"
 }
-if (!(Invoke-Command { where.exe git.exe 2>$Null } -ea Ignore)) {
+if (where.exe git.exe /q) {
   "Get WindowsGit: & '$PSProfile\Scripts\Get-WindowsGit.ps1'"
 } else {
-  where.exe git.exe
+  Write-Warning "$(FLINE) Found git: $(where.exe git.exe)"
 }
 # Temporary Fix es in Profile \ Tools
 if (($es = Get-Alias es -ea ignore) -and !(Test-Path $es)) { Remove-Item Alias:es -force -ea ignore }
-if (!(Get-Command es -ea ignore)) { New-Alias es "$ProfileDirectory\Tools\es.exe" }
+if (!(Get-Command es -ea ignore)) { New-Alias es "$ProfileDirectory\Tools\es.exe" -Desc "Set in Profile" }
 if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $informationpreferenceSave }
 # try {
 # try is at start of script, use for testing

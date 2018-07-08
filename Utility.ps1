@@ -152,7 +152,7 @@ function Write-Log {
     [string]$File
   )
   try {
-    if (!$LogLevel) { $LogLevel = 3 }
+    if (!(Get-Variable LogLevel -ea Ignore)) { $LogLevel = 3 }
     if ($Severity -lt $LogLevel) { return }
     write-verbose $Message
     $line = [pscustomobject]@{
@@ -178,12 +178,36 @@ function Write-Log {
   }  
 }
 
-Function Test-Variable {
+Function Test-Variable {  # Remove when new version is tested
   [CmdletBinding()]param(
     [string]$Name
   )
   Get-Variable -name $Name -ea Ignore -valueOnly # -Scope $Scope
 }
+Function Test-Variable {
+  [CmdletBinding()]param(
+    [Parameter(Mandatory)][ValidateNotNullOrEmpty()][String]$Name,
+    [String]$Scope,
+    [Switch]$ExistsOnly
+  )
+  try {
+    If ($PSBoundParameters['ExistsOnly']) {
+      $Exists = $PSBoundParameters['ExistsOnly']
+      If ($PSBoundParameters['Verbose'] -and $Verbose) { Write-Log "$(FLINE) ExistsOnly: $Exists"}
+      [Void]$PSBoundParameters.Remove('ExistsOnly')
+    }
+    If ($V = Get-Variable @PSBoundParameters -ea Ignore) {
+      If ($Exists) { Return [Boolean]$Exists }
+      Else {
+        return $V.value # -Scope $Scope
+      }
+    }
+  } Catch {
+    Write-Log "$(LINE) Caught error: $_"   
+  }
+  $False
+}
+New-Alias TV  Test-Variable -Force -ea Ignore
 New-Alias TVN Test-Variable -Force -ea Ignore
 
 Function Write-LogSeparator {
