@@ -1204,9 +1204,9 @@ Function ddb  { Get-ChildItem @args -force -dir       | ForEach-Object { "$($_.F
 Function db   { Get-ChildItem @args -force            | ForEach-Object { "$($_.FullName)" }}
 Function dsb  { Get-ChildItem @args -force       -rec | ForEach-Object { "$($_.FullName)" }}
 Function dfsb { Get-ChildItem @args -force -file -rec | ForEach-Object { "$($_.FullName)" }}
-Function dod  { dd  @args -force | Sort-Object lastwritetime }
-Function dfod { df  @args -force | Sort-Object lastwritetime }
-Function ddod { dd  @args -force | Sort-Object lastwritetime }
+Function dod  { dd  @args | Sort-Object lastwritetime }
+Function dfod { df  @args | Sort-Object lastwritetime }
+Function ddod { dd  @args | Sort-Object lastwritetime }
 Function dfp  { d /a-@args d /b  | ForEach-Object {Get-ChildItem "$_"} }
 Function dl   { Get-ChildItem @args -force -attr ReparsePoint }
 new-alias dj dl -force -scope Global
