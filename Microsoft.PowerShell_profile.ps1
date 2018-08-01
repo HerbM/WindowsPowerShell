@@ -690,11 +690,9 @@ Function New-RDPSession {
     [Alias('Assist')][switch]$Control,
     [Alias('Watch')]$Shadow
   )
-  If (!(Test-Path $Path)) { $NoProfileFile = $False }
   $argX = $args
-  # $argX += '/prompt'
-  If (!$NoProfileFile -and (!(Test-Path $Path))) {
-    Write-Warning 'RDP Profile not found: $Path'
+  If (!$Path -or !(Test-Path $Path)) {
+    If ($Path) { Write-Warning 'RDP Profile not found: $Path' }
     $NoProfile = $True
   }
   if ($NoProfileFile) { mstsc /v:$ComputerName /w:$Width /Get-History:$Height @argX }

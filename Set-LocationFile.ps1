@@ -3,7 +3,7 @@
    This is a copy of:
    CommandType  Name         Version   Source             
    -----------  ----         -------   ------             
-   Cmdlet       Set-Location 3.1.0.0   Microsoft.PowerShell.Management
+   Cmdlet       Set-Location 3.1.0.0   Microsoft.PowerShell.Management                           
    
    Created: 26 April, 2018
    Author : Herb Martin
@@ -142,9 +142,13 @@ Function Set-Location {
                      ($PSBoundParameters | Out-String))
       If ($Path -and !$LiteralPath) { $_ = $Path}
       Write-Verbose ("$(LINE) `$_: $($_)" + ($PSBoundParameters | Out-String))
-      If ($_ -and ($Dir = (Resolve-Path $_ | 
-          Where-Object { Test-Path $_ -PathType container } | 
-          Select-Object -first 1))
+      If ($_ -and (
+			  $Dir = Resolve-Path $_ -ea Ignore | 
+          Where-Object { 
+					  (Test-Path $_              -PathType container -ea ignore) -or
+					  (Test-Path $_.ProviderPath -PathType container -ea ignore)
+					} | Select-Object -first 1
+			  )
       ) {
         $PSBoundParameters.Path = $Path = $_ = $dir.Path
       } ElseIf ($_ -and (!(Test-Path $_ -PathType Container -ea Ignore)) -and (
@@ -155,18 +159,35 @@ Function Set-Location {
         $_ = (Split-Path $_ -ea ignore) 
         Write-Verbose "$(LINE) Process `$_: $_   P:[$P]" 
       }
+			If ( $Literalpath -and 
+			    ($P = Resolve-Path -literal $Literalpath -ea ignore) -and 
+			    ($P = $P.ProviderPath)) { 
+			  if (test-path -literal $P -ea ignore ) { 
+          Write-Verbose "$(LINE) Set $_ = [$P]"
+          $_ = $Path = $LiteralPath = $P					
+			  }
+	    }	
+
       # $_ = $_ -replace '^[^:]::'
       Write-Verbose "$(LINE) `$_: $($_)"
       Write-Verbose ("$(LINE)" + ($PSBoundParameters | Out-String))
-      $Path = 
-      try { $p = $steppablePipeline.Process($_) } catch {
-        Write-Warning $_
+      $Path = try { 
+			  $p = $steppablePipeline.Process($_) 
+		  } catch {
+        Write-Verbose $_
       }
       # If ($Path) { Microsoft.PowerShell.Management\Set-Location -literalpath $Path -ea Ignore }
       If ($p -and $Simple) { 
         Write-Verbose "$(LINE) P: $P  `$_: $($_)"
         $p.providerpath 
-      } else { $p }
+			} ElseIf (($P = (get-location -ea ignore)) -and ($P = $P.ProviderPath)) { 
+			  if (test-path $P -ea ignore ) { 
+          Write-Verbose "$(LINE) Process using ProviderPath:  cd [$P]"			
+			    $P 
+			  }
+      } else { 
+			  $p 
+		  }
     } catch {
       Write-Verbose ("$(LINE)`n" + ($_           | FL * -Force | Out-String))
       Write-Verbose ("$(LINE)`n" + ($_.Exception | FL * -Force | Out-String))
@@ -176,6 +197,12 @@ Function Set-Location {
   End {
     try {
       $steppablePipeline.End()
+			If (($P = (get-location -ea ignore)) -and ($P = $P.ProviderPath)) { 
+			  if (test-path $P -ea ignore ) { 
+          Write-Verbose "End:  cd [$P]"			
+			    & $wrappedCmd $P -ea 0 
+			  }
+	    }	
     } catch {
       throw
     }
