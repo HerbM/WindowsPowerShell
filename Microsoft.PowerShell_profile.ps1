@@ -1915,6 +1915,7 @@ Function Set-DefaultProxy {
 }
 
 Function Get-DefaultProxy { [system.net.webrequest]::DefaultWebProxy }
+Function Remove-DefaultProxy { Set-DefaultProxy -Remove }
 
 # https://www.makeuseof.com/tag/3-scripts-modify-proxy-setting-internet-explorer/
 Function Show-InternetProxy {
