@@ -1,4 +1,5 @@
 <#
+<<<<<<< HEAD
    #requires -version 5.1
    This is a copy of:
    CommandType  Name         Version   Source
@@ -7,6 +8,16 @@
 
    Created: 26 April, 2018
    Author : Herb Martin
+=======
+  #requires -version 5.1
+  This is a copy of:
+  CommandType  Name         Version   Source
+  -----------  ----         -------   ------
+  Cmdlet       Set-Location 3.1.0.0   Microsoft.PowerShell.Management
+
+  Created: 26 April, 2018
+  Author : Herb Martin
+>>>>>>> f6b5eec2b2c9ee72c84e5c0258c79eb5cec2d581
 #>
 
 Set-StrictMode -Version Latest
