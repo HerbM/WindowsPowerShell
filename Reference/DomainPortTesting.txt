@@ -1,0 +1,72 @@
+Much of this we have been using for years but it can be difficult to explain or remember during an incident or other issues, so after working to help on a recent problem it seemed useful to write it all down (again):
+
+Finding DCs:
+nslookup yourDomain.local.  # also use specific DNS listed in IPConfig /all
+nslookup yourDomain.local. 10.10.10.61
+nslookup -type=srv _kerberos._tcp.yourADdomain.local
+
+You can try testing from the "problem" server to a Windows Active directory domain, with ADExplorer.exe if you can downloaded the Microsoft SysInternals tool or transfer it to that server. I just tested this to the ATOS WW930 domain with my ORDINARY USER ACCOUNT (no domain admin required.)  Current version 2018-07 is 1.44.
+
+C:\Windows\system32\ADExplorer.exe  is on .38 (version 1.44)   # don’t know why it’s there
+C:\util\ADExplorer.exe  # really a Symbolic link to my D:\WinTools\Tools\hm\util to avoid using c: space
+
+Useful article on ADExplorer, LDP.exe (may be on some servers by default or in RSAT):
+https://www.petri.com/test-connectivity-to-an-active-directory-domain-controller-from-pc
+
+ldp.exe is on many Windows machines and .38 in specific: C:\Windows\System32\ldp.exe
+
+
+PortQry.exe (version 2.0 current) is on .38 as :  'D:\PORTQRY\TCP PORTS\PortQry.exe'
+https://support.microsoft.com/en-us/help/816103/how-to-use-portqry-to-troubleshoot-active-directory-connectivity-issue
+
+Portqry.exe is available for download from the Microsoft Download Center. To download Portqry.exe, visit the following Microsoft Web site:
+http://www.microsoft.com/downloads/details.aspx?familyid=89811747-C74B-4638-A2D5-AC828BDC6983&displaylang=en
+832919 Portqry 2.0 New Features and Functionality
+http://support.microsoft.com/?id=832919
+
+# Find Domain Controllers:
+nslookup yourDomain.local.  # should show ONLY Domain Controllers (e.g., NOT WEB server)
+nslookup -type=srv _kerberos._tcp.yourADdomain.local.       # Find Domain Controllers
+nslookup -type=srv _ldap._tcp.gc._msdcs.yourADdomain.local. # Find Global Catalog servers
+
+# Use a known good  client to good DC to comparison:
+ 
+portqry -n 10.10.10.61 -e 53   -p both
+portqry -n 10.10.10.61 -e 88   -p both # Kerberos
+portqry -n 10.10.10.61 -e 135  -p tcp  # RPC port mapper (should show lots of ports)
+portqry -n 10.10.10.61 -e 389  -p udp  # ldap results should be good
+portqry -n 10.10.10.61 -e 3268 -p tcp  # ldap if DC is a GC should be good 
+portqry -n 10.10.10.61 -e 445  -p tcp  # probably should be open
+portqry -n 10.10.10.61 -e 464  -p both # kpass, client might not require
+
+#Possibly additional check for more information:
+portqry -n 10.10.10.61 -o 3389,5985,5986 -p tcp  # RDP, PowerShell Remoting not needed but nice
+portqry -n 10.10.10.61 -r 49152:65535    -p both # spot check some of these, impractical to check all
+    
+            Test these against a known working DC, e.g., .38 # (Your DC) 10.10.10.61
+           DNS 53 will be open, Kerberos 88 will be open or at least not closed, 135 RPCs will have a LOT of “endpoints”, and LDAP 389 will have good results to an LDAP query.
+
+TCP/5722 ???
+TCP/636
+
+Other:
+DNSLint.exe https://support.microsoft.com/en-us/help/321045/description-of-the-dnslint-utility
+Port list for AD Domains: https://support.microsoft.com/en-us/help/179442/how-to-configure-a-firewall-for-domains-and-trusts
+•	UDP Port 88 for Kerberos authentication
+•	UDP and TCP Port 135 for domain controllers-to-domain controller and client to domain controller operations.
+•	TCP Port 139 and UDP 138 for File Replication Service between domain controllers.
+•	UDP Port 389 for LDAP to handle normal queries from client computers to the domain controllers.
+•	TCP and UDP Port 445 for File Replication Service
+•	TCP and UDP Port 464 for Kerberos Password Change
+•	TCP Port 3268 and 3269 for Global Catalog from client to domain controller.
+•	TCP and UDP Port 53 for DNS from client to domain controller and domain controller to domain controller.
+•	udp 123 for time service
+•	udp for netlogon and NetBIOS
+•	TCP 139 for 
+•	Active Directory Replication over Firewalls
+https://msdn.microsoft.com/en-us/library/bb727063.aspx
+https://wiki.technet.microsoft.com/wiki/active-directory-replication-over-firewalls/
+•	Active Directory Firewall Ports – Let’s Try To Make This Simple
+http://blogs.msmvps.com/acefekay/2011/11/01/active-directory-firewall-ports-let-s-try-to-make-this-simple/
+
+ 

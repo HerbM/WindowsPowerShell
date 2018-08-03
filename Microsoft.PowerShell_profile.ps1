@@ -17,6 +17,16 @@ param (
 #region    Parameters
 $Private:StartTime  = Get-Date
 $ErrorCount = $Error.Count
+If (!(Get-Command Write-Information -ea 0)) { New-Alias Write-Information Write-Host -Scope Global }
+
+New-Alias -Name LINE -Value Get-CurrentLineNumber -Description 'Returns the current (caller''s) line number in a script.' -force -Option allscope
+New-Alias -Name __LINE__ -Value Get-CurrentLineNumber -Description 'Returns the current (caller''s) line number in a script.' -force -Option allscope
+New-Alias -Name FILE -Value Get-CurrentFileName -Description 'Returns the name of the current script file.' -force -Option allscope
+New-Alias -Name FLINE -Value Get-CurrentFileLine -Description 'Returns the name of the current script file.' -force -Option allscope
+New-Alias -Name FILE1 -Value Get-CurrentFileName1 -Description 'Returns the name of the current script file.' -force -Option allscope
+New-Alias -Name __FILE__ -Value Get-CurrentFileName -Description 'Returns the name of the current script file.' -force -Option allscope
+New-Alias TV  Test-Variable -Force -ea Ignore
+New-Alias TVN Test-Variable -Force -ea Ignore
 
 Function Get-Defined {
   [CmdletBinding()][OutputType([Object])]
@@ -37,6 +47,23 @@ Function Get-Value {
      (Get-Variable $Name -ea Ignore -value)
   }
 }
+
+Function ConvertFrom-FileTime { 
+  [CmdletBinding()]Param(
+    [Int64]$FileTime,    # 131775519645343599
+    [string]$Format=$null,
+    [switch]$Sortable
+  )    
+  try { 
+    If ($dt = Get-Date ($FileTime -as [DateTime])) {
+      If ($Sortable) { $Format = 's' }
+      If ($Format) { $dt = "{0:$Format}" -f $dt }   
+    }
+    $dt
+  } catch { }
+} 
+
+# $LastLogon = ((nslookup $env:userdnsdomain | select -skip 3 ) -replace '.*\s+([\d.]{7,})?.*','$1').where{$_} | % { get-aduser martinh -Properties *  -server $_ } | Select name,@{N='LastLogon';E={ConvertFrom-FileTIme -sort $_.LastLogon}},LastLogonDate,@{N='LastLogonTimeStamp';E={ConvertFrom-FileTIme -sort $_.LastLogonTimeStamp}} 131775519645343599
 
 Function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
 remove-item Alias:LINE -ea Ignore -force
@@ -60,7 +87,9 @@ Write-Host "$(LINE) ProfileLogPath: $ProfileLogPath"                 @Private:Co
 Function Get-ExtraProfile {
   [CmdletBinding()]param(
     [String]$Suffix,
-    [String[]]$Name=@($Env:UserDomain, $Env:ComputerName, $Env:UserName)
+    [String[]]$Name=@((Get-WMIObject win32_computersystem).Domain,
+      $Env:UserDomain, $Env:ComputerName, $Env:UserName
+    )
   )
   $Name | ForEach-Object {
     $Extra = Join-Path $ProfileDirectory "Profile$($_)$($Suffix).ps1"
@@ -125,10 +154,10 @@ If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])
   # Wakoopa      https://web.appstorm.net/how-to/app-management-howto/how-to-discover-new-apps-with-wakoopa/
   # VirusTotal   https://www.virustotal.com/#/settings/apikey
   # XPDF & Tools PDFToText is the main reason I am adopting this tool:
-  #              GUI Program:	https://xpdfreader-dl.s3.amazonaws.com/XpdfReader-win64-4.00.01.exe
-  #              CLI Tools: 	https://xpdfreader-dl.s3.amazonaws.com/xpdf-tools-win-4.00.zip
-  #              Extra Fonts:	https://xpdfreader-dl.s3.amazonaws.com/xpdf-t1fonts.tar.gz
-  #              Source code:	https://xpdfreader-dl.s3.amazonaws.com/xpdf-4.00.tar.gz
+  #              GUI Program:  https://xpdfreader-dl.s3.amazonaws.com/XpdfReader-win64-4.00.01.exe
+  #              CLI Tools:   https://xpdfreader-dl.s3.amazonaws.com/xpdf-tools-win-4.00.zip
+  #              Extra Fonts:  https://xpdfreader-dl.s3.amazonaws.com/xpdf-t1fonts.tar.gz
+  #              Source code:  https://xpdfreader-dl.s3.amazonaws.com/xpdf-4.00.tar.gz
   # https://null-byte.wonderhowto.com/how-to/use-google-hack-googledorks-0163566/
   # Add to Scripts, Snippets etc.
   # ToDo: Put scripts on path
@@ -329,24 +358,24 @@ new-alias lessdir less         -force -scope Global -ea ignore
 new-alias l       less         -force -scope Global -ea ignore
 Function Set-ItemTime {
   [CmdletBinding(DefaultParameterSetName='Path', SupportsShouldProcess, SupportsTransactions)]
- 	param(
- 	  [Parameter(ParameterSetName='Path',Position=0,
+   param(
+     [Parameter(ParameterSetName='Path',Position=0,
                ValueFromPipeline,ValueFromPipelineByPropertyName)]
- 	  [string[]]$Path=@(Get-ChildItem | Where-Object PSIsContainer -eq $False),
- 	  [Parameter(ParameterSetName='LiteralPath', Mandatory=$true, ValueFromPipelineByPropertyName=$true)]
- 	  [Alias('PSPath')][string[]]$LiteralPath,
+     [string[]]$Path=@(Get-ChildItem | Where-Object PSIsContainer -eq $False),
+     [Parameter(ParameterSetName='LiteralPath', Mandatory=$true, ValueFromPipelineByPropertyName=$true)]
+     [Alias('PSPath')][string[]]$LiteralPath,
     [Alias('WriteTime','Time','DateTime')]
     [Parameter(Position=1)][DateTime]$Date=(Get-Date),
     [string[]]$Property = @('LastWriteTime'),
- 	  [switch]$PassThru,
- 	  [string]$Filter,
- 	  [string[]]$Include,
- 	  [string[]]$Exclude
- 	  #[switch]${Force},
- 	  #[Parameter(ValueFromPipelineByPropertyName=$true)]
- 	  #[pscredential]
- 	  #[System.Management.Automation.CredentialAttribute()]
- 	  #${Credential})
+     [switch]$PassThru,
+     [string]$Filter,
+     [string[]]$Include,
+     [string[]]$Exclude
+     #[switch]${Force},
+     #[Parameter(ValueFromPipelineByPropertyName=$true)]
+     #[pscredential]
+     #[System.Management.Automation.CredentialAttribute()]
+     #${Credential})
   )
   Begin   {
     $DateString = Get-Date $Date -f 'yyyy-MM-dd HH:mm:ss'
@@ -397,18 +426,33 @@ Function Set-ItemTime {
     ####  Get-Date
     ####}
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE)"
-try {
-  $TryPath = $PSProfileDirectory,$ProfileDirectory,'C:\Bat','.'
-  Write-Warning "$(get-date -f 'HH:mm:ss') $(LINE) Try Utility path: $($TryPath -join '; ')"
-  If ($Util=(Join-Path $TryPath 'utility.ps1' -ea ignore | Select -First 1)) {
-    Write-Warning "Utility: $Util"
-    . $Util
-    Get-Command Write-Log -syntax
-    Write-Log "$(LINE) Using Write-Log from Utility.ps1"
+$LogFilePath = 'Microsoft.PowerShell_profile-Log.txt'
+$UtilityModule = 'PSUtility' # (Join-Path $ProfileDirectory Utility.psm1)
+$LoadUtilityFile = $True
+If ($True -and (Get-Module $UtilityModule -list -ea ignore)) {
+  try {
+    Write-Warning "Import Utility Module: $UtilityModule"
+    Import-Module $UtilityModule -force
+    Write-Warning "$(FLINE) Imported: $UtilityModule COMPLETE"
+    $LoadUtilityFile = $False
+  } catch {
+    Write-Warning "No FLINE: Caught utility module error: $UtilityModule"
   }
-} catch { # just ignore and take care of below
-  Write-Log "$(LINE) Failed loading Utility.ps1 $Util"
-} finally {}
+}
+If ($LoadUtilityFile) {
+  try {
+    $TryPath = $PSProfileDirectory,$ProfileDirectory,'C:\Bat','.'
+    Write-Warning "$(get-date -f 'HH:mm:ss') $(LINE) Try Utility path: $($TryPath -join '; ')"
+    If ($Util=(Join-Path $TryPath 'utility.ps1' -ea ignore | Select -First 1)) {
+      Write-Warning "Utility: $Util"
+      . $Util
+      Get-Command Write-Log -syntax
+      Write-Log "$(LINE) Using Write-Log from Utility.ps1"
+    }
+  } catch { # just ignore and take care of below
+    Write-Log "$(LINE) Failed loading Utility.ps1 $Util"
+  } finally {}
+}
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE) ##338"
 if ((Get-Command 'Write-Log' -type Function,CmdLet -ea ignore)) {
   Remove-Item alias:write-log -force -ea ignore
@@ -530,13 +574,23 @@ Function Get-CurrentIPAddress {(ipconfig) -split "`n" | Where-Object {
   $_ -match 'IPv4' } | ForEach-Object { $_ -replace '^.*\s+' }
 }
 Function Get-WhoAmI { "[$PID]",(whoami),(hostname) + (Get-CurrentIPAddress) -join ' ' }
-If ($ShowDotNetVersions) {
-  Write-Information ".NET dotnet versions installed"
+Function Get-DotNetVersion {
+  [CmdletBinding()]param(
+    [version]$MinimumVersion='0.0.0.0',
+    [version]$MaximumVersion='999.9.9.9'
+  )
+  # $MinimumVersion = $MinimumVersion
+  Write-Information '.NET dotnet versions installed'
   $DotNetKey = @('HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP',
                  'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4')
-  @(foreach ($key in  $DotNetKey) { Get-ChildItem $key }) | Get-ItemProperty -ea ignore |
+  @(foreach ($key in  $DotNetKey) { Get-ChildItem $key }) |
+    Get-ItemProperty -ea ignore |
     Select-Object @{N='Name';E={$_.pspath -replace '.*\\([^\\]+)$','$1'}},version,
-      InstallPath,@{N='Path';E={($_.pspath -replace '^[^:]*::') -replace '^HKEY[^\\]*','HKLM:'}}
+      InstallPath,@{N='Path';E={($_.pspath -replace '^[^:]*::') -replace '^HKEY[^\\]*','HKLM:'}} |
+      Where-Object { $MaximumVersion -ge $_.Version -and $MinimumVersion -le $_.Version }
+}
+If ($ShowDotNetVersions) {
+  Get-DotNetVersion
 }
 $DefaultConsoleTitle = 'Windows PowerShell'
 If (Test-Administrator) {
@@ -740,16 +794,16 @@ Function Get-HelpLink {
 ; New-Alias ghl Get-HelpLink -force
 # get-help about_* -full | ForEach-Object { '{0,-38}{1,6}  {2}' -f $_.Name,$_.Length,$_.Synopsis }
 if (Test-Path "$Home\Documents\WindowsPowerShell\tt.xml") {
-	if ($hc = import-clixml -first 1 "$Home\Documents\WindowsPowerShell\tt.xml" -ea ignore) {
-		$hc | ForEach-Object {$_.commandline = @'
-		"This is a test4"
-		Function F4 { "Function Test4"}
-		$testclip = "Clip test4"
+  if ($hc = import-clixml -first 1 "$Home\Documents\WindowsPowerShell\tt.xml" -ea ignore) {
+    $hc | ForEach-Object {$_.commandline = @'
+    "This is a test4"
+    Function F4 { "Function Test4"}
+    $testclip = "Clip test4"
 '@
-		}
-		$hc = import-clixml -first 1 "$Home\Documents\WindowsPowerShell\tt.xml"
-		#$hid = ($hc | ForEach-Object {$_.commandline = gcb } | add-history -passthru).id; ihy $hid
-	}
+    }
+    $hc = import-clixml -first 1 "$Home\Documents\WindowsPowerShell\tt.xml"
+    #$hid = ($hc | ForEach-Object {$_.commandline = gcb } | add-history -passthru).id; ihy $hid
+  }
 }
 ### gcb | ForEach-Object { $a = $_ -split '\.'; [array]::reverse($a); $a -join '.'}
 #C:\Windows\Microsoft.NET\Framework64\v4.0.30319\config\machine.config
@@ -770,9 +824,10 @@ Function Set-DefaultPropertySet { param([Object]$Object,
 
 
 
+# $x = quser; $head = ($x[0] -split '\s{2,}') -replace '\s+',''; $data = $x | ? { $_ } | select -skip 1 | convertfrom-string -PropertyNames $head -delim '\s\s+'
 Function Get-WinStaSession {
   [CmdletBinding()]param(
-    $UserName,
+    [Alias('Name')][string]$UserName,
     [Alias('RemoteComputer','TargetComputer','ServerComputer')]
       $ComputerName=$Env:ComputerName, # /SERVER:servername
     [Alias('Me','My','Mine')][switch]$Current
@@ -789,8 +844,8 @@ Function Get-WinStaSession {
       $_ = $_ -replace "^(.{$($COL)})\s{3}", '$1###'
     }
     write-verbose "WinStaLine: $_"
-    $S=[ordered]@{ ComputerName = $ComputerName };
-    $O=[ordered]@{ ComputerName = $ComputerName };
+    $S = [ordered]@{ ComputerName = $ComputerName };
+    $O = [ordered]@{ ComputerName = $ComputerName };
     [boolean]$O.Current =  $_ -match '^>'
     $null,$S.Name,$S.UserName,$S.ID,$S.State,$S.Type,$S.Device,$null = $_ -split '[>\s]+'
     ForEach ($Key in $S.Keys) { $O.$Key = $S.$Key -replace '^###$' }
@@ -856,13 +911,13 @@ Write-Information "$(LINE) InformationPreference: $InformationPreference"
 Write-Information "$(LINE) Test hex format: $("{0:X}" -f -2068774911)"
 # "{0:X}" -f -2068774911
 Function Get-DriveTypeName ($type) {
-	$typename = @('UNKNOWN',     # 0 # The drive type cannot be determined.
-					  		'NOROOTDIR',   # 1 # The root path is invalid; for example, there is no volume mounted at the specified path.
-								'REMOVABLE',   # 2 # The drive has removable media; for example, a floppy drive, thumb drive, or flash card reader.
-								'FIXED',       # 3 # The drive has fixed media; for example, a hard disk drive or flash drive.
-								'REMOTE',      # 4 # The drive is a remote (network) drive.
-								'CDROM',       # 5 # The drive is a Set-Location-ROM drive.
-								'RAMDISK')     # 6 # The drive is a RAM disk.
+  $typename = @('UNKNOWN',     # 0 # The drive type cannot be determined.
+                'NOROOTDIR',   # 1 # The root path is invalid; for example, there is no volume mounted at the specified path.
+                'REMOVABLE',   # 2 # The drive has removable media; for example, a floppy drive, thumb drive, or flash card reader.
+                'FIXED',       # 3 # The drive has fixed media; for example, a hard disk drive or flash drive.
+                'REMOTE',      # 4 # The drive is a remote (network) drive.
+                'CDROM',       # 5 # The drive is a Set-Location-ROM drive.
+                'RAMDISK')     # 6 # The drive is a RAM disk.
   if (($type -le 0) -or ($type -ge $typename.count)) {return 'INVALID'}
   $typename[$type]
 }
@@ -919,9 +974,10 @@ Function Get-DotNetAssembly  {
   $Exc = '(' + ($Exclude -join ')|(') + ')'
   write-verbose "Include: $Inc"
   write-verbose "Exclude: $Exc"
-  write-verbose "Full: $([boolean]$full)"
+  write-verbose "Full: $([boolean]$fullname)"
   [appdomain]::CurrentDomain.GetAssemblies() | Where-Object {
     $_.fullname -match $inc -and $_.fullname -notmatch $Exc
+}
     #-and ($_.IsDynamic -or ($_.GetExportedTypes()))
   }# | ForEach-Object {
    # if ($fullname) {
@@ -930,7 +986,6 @@ Function Get-DotNetAssembly  {
    #   $_ | Select-Object GlobalAssemblyCache,IsDynamic,ImageRuntimeversion,Fullname,Location
    # }
    #}
-}
 new-alias gdna Get-DotNetAssembly -force
 Function Get-TypeX {
   [CmdletBinding()]param(
@@ -1089,7 +1144,18 @@ Function Get-Syntax {
     } else { $Result }
   }
 }; new-alias syn get-syntax -force
-Function syn { get-command @args -syntax }
+#Function syn { get-command @args -syntax }
+Function Get-Syntax {
+  Param(
+    [Alias('CommandName')][string[]]$Name='Get-Command'
+  )
+  ForEach ($Command in $Name) {
+    If ($Cmd = (Get-Alias $Command -ea Ignore).definition) { $Command = $Cmd }
+    if ($command) {Get-Command $command -syntax}
+  }
+}   # syntax get-command
+new-alias syn Get-Syntax -force -Desc "Set in Profile"
+
 Function get-fullhelp { get-help -full @args }
 'hf','full','fh','fhelp','helpf' | ForEach-Object { new-alias $_ get-fullhelp -force -ea continue }
 Write-Information "$(LINE) $home"
@@ -1197,6 +1263,9 @@ Function ahk {
 Remove-Item Alias:a -force -ea ignore 2>$Null
 New-Alias a ahk -force -scope Global
 Function d    { cmd /c dir @args}
+Function dw   { get-childitem $args -force       | sort-object lastwritetime }
+Function dfw  { get-childitem $args -force -file | sort-object lastwritetime }
+Function ddw  { get-childitem $args -force -dir  | sort-object lastwritetime }
 Function df   { Get-ChildItem @args -force -file      }
 Function da   { Get-ChildItem @args -force            }
 Function dfs  { Get-ChildItem @args -force -file -rec }
@@ -1206,9 +1275,9 @@ Function ddb  { Get-ChildItem @args -force -dir       | ForEach-Object { "$($_.F
 Function db   { Get-ChildItem @args -force            | ForEach-Object { "$($_.FullName)" }}
 Function dsb  { Get-ChildItem @args -force       -rec | ForEach-Object { "$($_.FullName)" }}
 Function dfsb { Get-ChildItem @args -force -file -rec | ForEach-Object { "$($_.FullName)" }}
-Function dod  { dd  @args -force | Sort-Object lastwritetime }
-Function dfod { df  @args -force | Sort-Object lastwritetime }
-Function ddod { dd  @args -force | Sort-Object lastwritetime }
+Function dod  { dd  @args | Sort-Object lastwritetime }
+Function dfod { df  @args | Sort-Object lastwritetime }
+Function ddod { dd  @args | Sort-Object lastwritetime }
 Function dfp  { d /a-@args d /b  | ForEach-Object {Get-ChildItem "$_"} }
 Function dl   { Get-ChildItem @args -force -attr ReparsePoint }
 new-alias dj dl -force -scope Global
@@ -1255,8 +1324,8 @@ Function ff  {cmd /c for /f @args}
 Function Get-Drive {
   [CmdletBinding()] param(
     [string[]]$name='*',
-	  [string]  $scope=0,
-	  [string]  $PSProvider='FileSystem')
+    [string]  $scope=0,
+    [string]  $PSProvider='FileSystem')
   get-psdrive -name $name -psprovider $psprovider -scope $scope
 }
 # https://poshtools.com/2018/02/17/building-real-time-web-apps-powershell-universal-dashboard/
@@ -1320,9 +1389,9 @@ try {
   if (!$global:PromptStack) {
     #if ($global:PromptStack) -ne )
     [string[]]$global:PromptStack +=   (Get-Command prompt).ScriptBlock
-	}
+  }
 } catch {
-	[string[]]$global:PromptStack  = @((Get-Command prompt).ScriptBlock)
+  [string[]]$global:PromptStack  = @((Get-Command prompt).ScriptBlock)
 }
 Write-Information "$(LINE) Pushed previous prompt onto `$PromptStack: $($PromptStack.count) entries"
 Write-Information "$(LINE) prompt='PS $($executionContext.SessionState.Path.CurrentLocation) $('>' * $nestedPromptLevel + '>')'"
@@ -1465,20 +1534,20 @@ Function Get-Property {
 #     if (Test-Path $path) {
 #       if ($pushd) { pushd $path } else { Set-Location $path }
 #       if ($subdirectory) {Set-Location $subdirectory}
-#     }	else {
+#     }  else {
 #       throw "Directory [$Path] not found."
 #     }
-#   }	catch {
+#   }  catch {
 #     write-error $_
 #   }
 # }
 # Function books {
 #   if (Test-Path "$($env:userprofile)\downloads\books") {
 #     Set-Location "$($env:userprofile)\downloads\books"
-# 	} elseif (Test-Path "C:\books") {
+#   } elseif (Test-Path "C:\books") {
 #     Set-Location "C:\books"
-# 	}
-# 	if ($args[0]) {Set-Location $args[0]}
+#   }
+#   if ($args[0]) {Set-Location $args[0]}
 # }
 try {
   $ECSTraining = "\Training"
@@ -1526,7 +1595,10 @@ Function Set-GoAlias {
   }
 }
 # Import-Module "$Home\Documents\WindowsPowerShell\Set-LocationFile.ps1"
-. "$Home\Documents\WindowsPowerShell\Set-LocationFile.ps1"
+If ($Script:SLF =
+    Join-Path $ProfileDirectory,$Home\Documents\WindowsPowerShell Set-LocationFile.ps1 -resolve -ea Ignore |
+    Select -First 1
+) { . $Script:SLF }
 Function Set-GoLocation {
   [CmdletBinding()]param (
     [Parameter(Position='0')][string[]]$path=@(),
@@ -1591,7 +1663,7 @@ Function Set-GoLocation {
         }
       }
     }
-  }	catch {
+  }  catch {
     write-error $_
   }
   write-verbose "$(LINE) Current: $((Get-Location).path)"
@@ -1765,7 +1837,7 @@ Function Set-GoLocation {
         }
       }
     }
-  }	catch {
+  }  catch {
     write-error $_
   }
   write-verbose "$(LINE) Current: $((Get-Location).path)"
@@ -1801,7 +1873,7 @@ Function Set-GoLocation {
         cd $p.path
       }
     }
-  }	catch {
+  }  catch {
     write-error $_
   }
   write-verbose "$(LINE) Current: $((Get-Location).path)"
@@ -1810,14 +1882,51 @@ Function Set-GoLocation {
 New-Alias Go Set-GoLocation -force -scope global -Desc "Set in Profile"
 New-Alias G  Set-GoLocation -force -scope global -Desc "Set in Profile"
 
+Function Set-DefaultProxy {
+  [CmdletBinding()] param(
+    [Alias('InternetProxy','InetProxy')]
+                            [string]$Proxy = 'proxy-us.glb.my-it-solutions.net:84',
+             [Net.NetworkCredential]$Credential,
+                          [string[]]$BypassList,  # Array of regexes
+    [Alias('UseLocal')]     [switch]$UseProxyOnLocal,
+    [Alias('NDC','NoCred')] [switch]$NoDefaultCredential,
+    [Alias('Reset','Clear')][switch]$Remove
+  )
+  #https://msdn.microsoft.com/en-us/library/system.net.webrequest.defaultcachepolicy(v=vs.100).aspx
+  #https://msdn.microsoft.com/en-us/library/system.net.networkcredential(v=vs.100).aspx
+  # BypassProxyOnLocal    : False
+  # BypassList            : {}
+  # Credentials           : System.Net.SystemNetworkCredential
+  # UseDefaultCredentials : True
+  # BypassArrayList       : {}  ### CANNOT be set, get only
+
+  If ($Remove) {
+    [system.net.webrequest]::DefaultWebProxy = $Null
+    return
+  }
+  [system.net.webrequest]::DefaultWebProxy = new-object system.net.webproxy($Proxy)
+  If ($Credential -or $NoDefaultCredential) {
+    [system.net.webrequest]::DefaultWebProxy.Credentials = Credential
+  } else {
+    [system.net.webrequest]::DefaultWebProxy.UseDefaultCredentials = $True
+  }
+  If ($BypassList) {
+    [system.net.webrequest]::DefaultWebProxy.BypassList = $BypassList
+  }
+  [system.net.webrequest]::DefaultWebProxy.BypassProxyOnLocal = ![Boolean]$UseProxyOnLocal
+}
+
+Function Get-DefaultProxy { [system.net.webrequest]::DefaultWebProxy }
+
+# https://www.makeuseof.com/tag/3-scripts-modify-proxy-setting-internet-explorer/
 Function Show-InternetProxy {
   [CmdletBinding()] param()
   $InternetSettingsKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings"
   $urlEnvironment      = $Env:AutoConfigUrl
   $urlDefault          = 'http://proxyconf.my-it-solutions.net/proxy-na.pac'
   $ProxyValues         = 'AutoConfig ProxyEnable Autodetect'
-  write-warning "`$Env:AutoConfigUrl        : $($Env:AutoConfigUrl)"
-  write-warning  "Default proxy             : $urlDefault"
+  write-verbose "`$Env:AutoConfigUrl        : $($Env:AutoConfigUrl)"
+  write-verbose  "Default proxy             : $urlDefault"
   $Settings = get-itemproperty $InternetSettingsKey -ea ignore | findstr /i $ProxyValues | Sort-Object
     Write-Output "             Registry settings"
     ForEach ($Line in $Settings) {
@@ -1879,19 +1988,17 @@ Function Set-InternetProxy {
 # Utility Functions (small)
 filter Test-Odd  { param([Parameter(valuefrompipeline)][int]$n) [boolean]($n % 2)}
 filter Test-Even { param([Parameter(valuefrompipeline)][int]$n) -not (Test-Odd $n)}
-Function get-syntax([string]$command='Get-Command') { if ($command) {Get-Command $command -syntax} }   # syntax get-command
-new-alias syn get-syntax -force -Desc "Set in Profile"
 Function Convert-ObjectToJson ($object, $depth=2) { $object | ConvertTo-Json -Depth $depth }
 Function dod { (Get-ChildItem @args) | Sort-Object -prop lastwritetime }
 Function don { (Get-ChildItem @args) | Sort-Object -prop fullname }
 Function dos { (Get-ChildItem @args) | Sort-Object -prop length }
 Function dox { (Get-ChildItem @args) | Sort-Object -prop extension }
 Function Privs? {
-	if ((whoami /all | Select-Object -string S-1-16-12288) -ne $null) {
-		'Administrator privileges enabled'
-	} else {
-		'Administrator privileges NOT available'
-	}
+  if ((whoami /all | Select-Object -string S-1-16-12288) -ne $null) {
+    'Administrator privileges enabled'
+  } else {
+    'Administrator privileges NOT available'
+  }
 }
 Function Get-DayOfYear([DateTime]$date=(Get-Date)) {"{0:D3}" -f ($date).DayofYear}
 Function Get-FormattedDate ([DateTime]$Date = (Get-Date)) {
@@ -1931,7 +2038,12 @@ Function 4rank ($n, $d1, $d2, $d) {"{0:P2}   {1:P2}" -f ($n/$d),(1 - $n/$d)}
 Write-Information ("$(LINE) Use Function Get-PSVersion or variable `$PSVersionTable: $(Get-PSVersion)")
 Function down {Set-Location "$env:userprofile\downloads"}
 Function Get-SerialNumber {Get-WMIObject win32_operatingsystem  | Select-Object -prop SerialNumber}
-Function Get-ComputerDomain { Get-WMIObject win32_computersystem | Select-Object -object -prop Name,Domain,DomainRole,DNSDomainName}
+Function Get-ComputerDomain {
+  Get-WMIObject win32_computersystem |
+    Select-Object -property Name,Domain,DomainRole,@{
+      N='RoleName';E={Get-DomainRoleName $_.DomainRole}
+    }
+}
 Function logicaldrive {Get-WMIObject win32_logicaldisk | Where-Object {$_.drivetype -eq 3} | ForEach-Object {"$($_.deviceid)\"}}
 Function fileformat([string[]]$path = @('c:\dev'), [string[]]$include=@('*.txt')) {
   Get-ChildItem -path $path -include $include -recurse -force -ea ignore | Select-Object -Object -prop basename,extension,@{Name='WriteTime';Expression={$_.lastwritetime -f "yyyy-MM-dd-ddd-HH:mm:ss"}},length,directory,fullname | export-csv t.csv -force
@@ -2111,6 +2223,85 @@ Function Get-PSHost {
 Function Get-PSVersion {
   "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"
 }
+
+function Load-Assembly {
+  [CmdletBinding()]param(
+    [Parameter(Mandatory, ValueFromPipeline)]
+    [ValidateNotNullOrEmpty()][String]$AssemblyName,
+    [Switch]$Report
+  )
+  if ([appdomain]::currentdomain.getassemblies() -notmatch $AssemblyName){
+    if ($Report) {
+      Write-Output "Loading $AssemblyName assembly.";
+    }
+    [Void][System.Reflection.Assembly]::LoadFromPartialName($AssemblyName);
+    return 1
+  } else {
+    if ($Report) {
+      Write-Output "$AssemblyName is already loaded.";
+    }
+    return -1
+  }
+}
+
+#Convenience aliases for RDCMan
+$Private:RDCMan   = @('C:\Program*\*\R*D*C*Man*','C:\Program*\R*D*C*Man*')
+$Private:RDCMan   = Join-Path $RDCMan 'RDCMan.exe' -Resolve -EA ignore |
+                      Select -First 1 # Path to RDG file
+If ($RDCMan) {
+  New-Alias rdcman $Private:RDCMan -Force
+  New-Alias rdc    $Private:RDCMan -Force
+}
+
+Function Get-UserFolder {
+  [CmdletBinding()]param(
+    [Alias('Folder', 'FolderName', 'Directory', 'DirectoryName')]
+    [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
+    [string[]]$Name='*'
+  )
+  Begin {
+    $Key = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
+    $Folders = @()
+  }
+  Process {
+    $Folders += ForEach ($Folder in $Name) {
+      (Get-ItemProperty $Key -name $Folder).psobject.get_properties() |
+        Where-Object Name -notlike 'PS*' # Remote PSItem properties
+    }
+  }
+  End {
+    $Folders | Select -unique Name,@{N='Folder';E={$_.Value}} | Sort Value
+  }
+}
+
+If ($PSVersionTable.PSVersion -lt [version]'5.0.0.0') {
+  Function Get-Clipboard {
+    [CmdletBinding()]Param(
+      [ValidateSet('Audio','FileDropList','Image','Text')]$Format,
+      [ValidateSet('CSV','CommaSeparatedValue','Html','Rtf','Text','UnicodeText')]
+      $TextFormatType,
+      [switch]$Raw,
+      [switch]$Force
+    )
+    If ($Force -or $PSVersionTable.PSVersion -lt [version]'5.0.0.0') {
+      $Forms = 'System.Windows.Forms'
+      If ([appdomain]::currentdomain.getassemblies() -notmatch $Forms) {
+        Add-Type -AssemblyName $Forms
+      }
+      $tb = New-Object System.Windows.Forms.TextBox
+      $tb.Multiline = $True
+      $tb.Paste()
+      $tb.Text
+    } else {
+      If ($TextFormatType -and $TextFormatType -eq 'CSV') {
+        $PSBoundParameters.TextFormatType = $TextFormatType = 'CommaSeparatedValue'
+      }
+      Microsoft.PowerShell.Management\Get-ClipBoard @PSBoundParameters
+    }
+  }
+  New-Alias gcb Get-ClipBoard -force
+}
+
 <#
 General useful commands
  Get-Command *-rsjob*
@@ -2125,17 +2316,16 @@ Function PSBoundParameter([string]$Parm) {
 # Set-Location (split-path -parent $PSProfile )
 # Get-Command *zip*,*7z*,*archive*  | Where-Object {$_.Source -notmatch '\.(cmd|exe|bat)'}
 <#
-	$watcher = New-Object System.IO.FileSystemWatcher
-	$watcher.Path = 'C:\temp\'
-	$watcher.Filter = 'test1.txt'
-	$watcher.EnableRaisingEvents = $true
-	$changed = Register-ObjectEvent
-	$watcher 'Changed' -Action {
-	write-output "Changed: $($eventArgs.FullPath)"
+  $watcher = New-Object System.IO.FileSystemWatcher
+  $watcher.Path = 'C:\temp\'
+  $watcher.Filter = 'test1.txt'
+  $watcher.EnableRaisingEvents = $true
+  $changed = Register-ObjectEvent
+  $watcher 'Changed' -Action {
+  write-output "Changed: $($eventArgs.FullPath)"
 }
 #>
 write-host "`nError count: $($Error.Count)"
-#if(Test-Path Function:\Prompt) {Rename-Item Function:\Prompt PrePoshGitPrompt -Force}
 if (!(where.exe choco.exe /q)) {
   "Get Chocolatey: iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
 } else {
@@ -2198,3 +2388,5 @@ If (($PSRL = Get-Module PSReadLine -ea 0) -and ($PSRL.version -ge [version]'2.0.
 $Private:Duration = ((Get-Date) - $Private:StartTime).TotalSeconds
 Write-Warning "$(LINE) $(get-date -f 'HH:mm:ss') New errors: $($Error.Count - $ErrorCount)"
 Write-Warning "$(LINE) Duration: $Private:Duration Completed: $Profile"
+
+Import-Module 'C:\tools\poshgit\dahlbyk-posh-git-9bda399\src\posh-git.psd1'

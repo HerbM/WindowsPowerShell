@@ -1,11 +1,12 @@
-using namespace System.Management.Automation
-using namespace System.Management.Automation.Language
 [CmdletBinding()]param(
   [switch]$BraceMatching,
   [switch]$QuoteMatching,
   [switch]$ForcePSReadLine,
   [Alias('AllMatching','BothMatching')][switch]$Matching
 )
+
+# using namespace System.Management.Automation
+# using namespace System.Management.Automation.Language
 
 $Private:ErrorCount = if ($Error) { $Error.Count } else { 0 }
 
@@ -67,6 +68,13 @@ If (($PSRL = Get-Module PSReadLine -ea 0) -and ($PSRL.version -ge [version]'2.0.
 <#
 Set-PSReadLineOption     -HistorySearchCursorMovesToEnd
 #>
+New-Alias kh   Get-PSReadlineKeyHandler    -force
+New-Alias skh  Set-PSReadlineKeyHandler    -force
+New-Alias rkh  Remove-PSReadlineKeyHandler -force
+New-Alias rlo  Set-PSReadLineOption        -force
+New-Alias srlo Set-PSReadLineOption        -force
+New-Alias rlo  Get-PSReadLineOption        -force
+
 Set-PSReadLineKeyHandler -Key 'Alt+F7','Alt+F8' `
                          -BriefDescription History `
                          -LongDescription 'Show command history' `

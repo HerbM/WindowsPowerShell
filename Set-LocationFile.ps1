@@ -1,10 +1,10 @@
 <#
    #requires -version 5.1
    This is a copy of:
-   CommandType  Name         Version   Source             
-   -----------  ----         -------   ------             
+   CommandType  Name         Version   Source
+   -----------  ----         -------   ------
    Cmdlet       Set-Location 3.1.0.0   Microsoft.PowerShell.Management
-   
+
    Created: 26 April, 2018
    Author : Herb Martin
 #>
@@ -14,7 +14,7 @@ Set-StrictMode -Version Latest
 Function x86 { '(x86)' }
 
 Function Set-Location {
-<#  
+<#
 .SYNOPSIS
   Sets the current working location to a specified location.
 .DESCRIPTION
@@ -54,7 +54,7 @@ Function Set-Location {
   This command makes the WSManPaths location stack the current location stack.
   The location cmdlets use the current location stack unless a different location stack is specified in the command. For information about location stacks, see the Notes.
 .EXAMPLE
-  Set-Location $Profile  
+  Set-Location $Profile
   Changes to the directory where the PowerShell Profile is located
 .NOTES
   The  * cmdlet is designed to work with the data exposed by any provider. To list the providers available in your session, type `Get-PSProvider`. For more information, see about_Providers.
@@ -82,11 +82,11 @@ Function Set-Location {
 #>
   [CmdletBinding(DefaultParameterSetName='Path', SupportsTransactions=$true)]
   Param(
-    [Parameter(ParameterSetName='Path', Position=0, ValueFromPipeline=$true, 
+    [Parameter(ParameterSetName='Path', Position=0, ValueFromPipeline=$true,
       ValueFromPipelineByPropertyName=$true)][string]$Path,
     [Parameter(ParameterSetName='Path', ValueFromRemainingArguments)][string[]]$PathArgs,
     [Parameter(ParameterSetName='LiteralPath', Mandatory=$true, ValueFromPipelineByPropertyName=$true)]
-    [Alias('PSPath')][string]$LiteralPath, 
+    [Alias('PSPath')][string]$LiteralPath,
     [switch]$PassThru,
     [Alias('s','pp','providerpath','string')][switch]$Simple,
     [Parameter(ParameterSetName='Stack', ValueFromPipelineByPropertyName=$true)]
@@ -97,14 +97,14 @@ Function Set-Location {
     $P = ''
     If (!(Get-Command LINE -ea Ignore)) { Function LINE { $MyInvocation.ScriptLineNumber }}
     Set-StrictMode -version Latest
-    Write-Verbose ("$(LINE) BEGIN Set:$($PSCmdlet.ParameterSetName) " + 
+    Write-Verbose ("$(LINE) BEGIN Set:$($PSCmdlet.ParameterSetName) " +
                    ($PSBoundParameters | Out-String))
     If ($PSBoundParameters.ContainsKey('Simple')) {
       [Void]$PSBoundParameters.Remove('Simple')
       $Simple = $True
     }
     If ($PSBoundParameters.ContainsKey('PathArgs')) {
-      $P = ((@($Path) + $PathArgs).Where{$_} -Join ' ').trim(' \') 
+      $P = ((@($Path) + $PathArgs).Where{$_} -Join ' ').trim(' \')
       If (Test-Path $P -ea ignore) {
         $Path = $PSBoundParameters.Path = (Resolve-Path $P).path
       }
@@ -112,10 +112,10 @@ Function Set-Location {
       [Void]$PSBoundParameters.Remove('PathArgs')
     }
     ForEach ($Dir in 'Path','LiteralPath') {
-      If ($PSBoundParameters.ContainsKey($Dir) -and 
+      If ($PSBoundParameters.ContainsKey($Dir) -and
           (Test-Path $PSBoundParameters.$Dir -PathType Leaf -ea Ignore)) {
         $PSBoundParameters.$Dir = Split-Path $PSBoundParameters.$Dir -ea ignore
-        Write-Verbose "$(LINE) Begin $($Dir): $($PSBoundParameters.$Dir)" 
+        Write-Verbose "$(LINE) Begin $($Dir): $($PSBoundParameters.$Dir)"
       }
     }
     try {
@@ -123,8 +123,9 @@ Function Set-Location {
       if ($PSBoundParameters.TryGetValue('OutBuffer', [ref]$outBuffer)) {
         $PSBoundParameters['OutBuffer'] = 1
       }
+      $Original   = 'Microsoft.PowerShell.Management\Set-Location'
       $wrappedCmd = $ExecutionContext.InvokeCommand.GetCommand(
-                      'Microsoft.PowerShell.Management\Set-Location', 
+                      $Original,
                       [System.Management.Automation.CommandTypes]::Cmdlet
                     )
       $scriptCmd  = {& $wrappedCmd @PSBoundParameters }
@@ -138,13 +139,17 @@ Function Set-Location {
   } #begin
   Process {
     try {
-      Write-Verbose ("$(LINE) PROCESS Set:$($PSCmdlet.ParameterSetName) `$_=[$_] " + 
+      Write-Verbose ("$(LINE) PROCESS Set:$($PSCmdlet.ParameterSetName) `$_=[$_] " +
                      ($PSBoundParameters | Out-String))
       If ($Path -and !$LiteralPath) { $_ = $Path}
       Write-Verbose ("$(LINE) `$_: $($_)" + ($PSBoundParameters | Out-String))
-      If ($_ -and ($Dir = (Resolve-Path $_ | 
-          Where-Object { Test-Path $_ -PathType container } | 
-          Select-Object -first 1))
+      If ($_ -and (
+			  $Dir = Resolve-Path $_ -ea Ignore |
+          Where-Object {
+					  (Test-Path $_              -PathType container -ea ignore) -or
+					  (Test-Path $_.ProviderPath -PathType container -ea ignore)
+					} | Select-Object -first 1
+			  )
       ) {
         $PSBoundParameters.Path = $Path = $_ = $dir.Path
       } ElseIf ($_ -and (!(Test-Path $_ -PathType Container -ea Ignore)) -and (
@@ -152,21 +157,38 @@ Function Set-Location {
                  #(Test-Path -literalpath (Resolve-Path $_ -ea 0) -PathType Leaf -ea Ignore)
                )
       ) {
-        $_ = (Split-Path $_ -ea ignore) 
-        Write-Verbose "$(LINE) Process `$_: $_   P:[$P]" 
+        $_ = (Split-Path $_ -ea ignore)
+        Write-Verbose "$(LINE) Process `$_: $_   P:[$P]"
       }
+			If ( $Literalpath -and
+			    ($P = Resolve-Path -literal $Literalpath -ea ignore) -and
+			    ($P = $P.ProviderPath)) {
+			  if (test-path -literal $P -ea ignore ) {
+          Write-Verbose "$(LINE) Set $_ = [$P]"
+          $_ = $Path = $LiteralPath = $P
+			  }
+	    }
+
       # $_ = $_ -replace '^[^:]::'
       Write-Verbose "$(LINE) `$_: $($_)"
       Write-Verbose ("$(LINE)" + ($PSBoundParameters | Out-String))
-      $Path = 
-      try { $p = $steppablePipeline.Process($_) } catch {
-        Write-Warning $_
+      $Path = try {
+			  $p = $steppablePipeline.Process($_)
+		  } catch {
+        Write-Verbose $_
       }
       # If ($Path) { Microsoft.PowerShell.Management\Set-Location -literalpath $Path -ea Ignore }
-      If ($p -and $Simple) { 
+      If ($p) {
+        $P
+      } ElseIf ($p -and $Simple) {
         Write-Verbose "$(LINE) P: $P  `$_: $($_)"
-        $p.providerpath 
-      } else { $p }
+        $p.providerpath
+			} ElseIf (($P = (get-location -ea ignore)) -and ($P = $P.ProviderPath)) {
+			  if (test-path $P -ea ignore ) {
+          Write-Verbose "$(LINE) Process using ProviderPath:  cd [$P]"
+			    # $P
+			  }
+      }
     } catch {
       Write-Verbose ("$(LINE)`n" + ($_           | FL * -Force | Out-String))
       Write-Verbose ("$(LINE)`n" + ($_.Exception | FL * -Force | Out-String))
@@ -176,8 +198,20 @@ Function Set-Location {
   End {
     try {
       $steppablePipeline.End()
+			If (($P = (get-location -ea ignore)) -and ($P = $P.ProviderPath)) {
+			  if (test-path $P -ea ignore ) {
+          Write-Verbose "End:  cd [$P]"
+			    & $Original $P -ea 0
+			  }
+	    }
     } catch {
       throw
+    }
+    If ($Pwd.ToString() -match '::') {
+      Write-Warning "Check `$Pwd: $Pwd"
+      $Pwd.psobject.get_properties() | ForEach-Object {
+        $_.Name -match 'Path' -and  $_.value -notmatch '::'
+      } | Select -first 1 | ForEach-Object { & $Original $_.value }
     }
   } #end
 } #end function Set-Location

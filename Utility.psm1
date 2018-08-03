@@ -1,106 +1,5 @@
 #region Script Diagnostic & utility Functions
 
-#region Definitions
-  <#         
-			#   function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
-			#   function Get-CurrentFileName   { split-path -leaf $MyInvocation.PSCommandPath   }   #$MyInvocation.ScriptName
-			#   function Get-CurrentFileLine   
-			#   function Get-CurrentFileName1  
-			#   function Get-SortableDate 
-			#   function Get-FormattedDate ([DateTime]$Date = (Get-Date)) 
-			#   function Write-Log 
-			#   function Log-ComputerInfo 
-			#   function ExitWithCode($exitcode) 
-			#   function GetVerbose {   # return a --verbose switch string for calling other programs or ''
-			#   function Make-Credential([string]$username, [string]$password) 
-			#   function Get-ErrorDetail 
-			#   function MyPSHost 
-			#   function Convert-HashToString1($ht) 
-			#   function Convert-HashToString($Hash, [string]$prefix='-', 
-			#   function Get-AdminRole() 
-			#   function PSBoundParameter([string]$Parm) 
-			#   function Remove-MappedDrive([string]$name) 
-			#   function Get-MappedDrive([string]$name, [string]$share, [string]$username="", [string]$password="") 
-			#   function Get-AESKey([uint16]$length=256) 
-			#   function Decrypt-SecureString ($secureString) 
-			#   function Get-PlainText ([string]$string, [byte[]]$key=$(Get-Temporary)) 
-			#   function Set-EncryptedString([string]$content, [byte[]]$Key) 
-			#   function Get-Temporary 
-			#   function Get-EncryptedString($Secret, [byte[]]$key) 
-			#   function Set-EncryptedContent([string]$Path, [string]$content, [switch]$Append) 
-			#   function Get-EncryptedContent([string]$Path, [byte[]]$key, [switch]$Delete) 
-			#   function Get-StandardWindowsAdministrator { @('Administrator','Admin999','Admin888','admin123', 'BuildAdmin') }
-			#   function Get-CredentialContent ([string]$ZipFile, [string]$CredFile, $pwd = "NOTHING") 
-			#   function Import-SecureZipOLD 
-			#   function Import-SecureZip 
-			#   function New-Zipfile ([string]$ZipFile, [string]$contents, $pwd = "NOTHING") 
-			#   function Get-LocalCredential 
-			#   function Fix-Encoding([string]$xmlstring, [string]$enc=$encoding) 
-			#   Function Start-ProcessWithWait ([string]$cmd, [string[]]$arg, $wait = (10 * 1000)) 
-			#   function Run-CmdBatch ($Batch='APPConfig.cmd', $arguments=@(), $wait=(2*60*1000)) { # wait up to 2 minutes by default
-			#   Function Start-ProcessWithWait2 ([string]$cmd, [string[]]$arg, $wait = (10 * 1000), $cred=$null) 
-			#   function Run-CmdBatch2 ($Batch='APPConfig.cmd', $arguments=@(), $wait=(2*60*1000), $cred=$null) { # wait up to 2 minutes by default
-			#   function Add-ADDMAccount 
-			#   function Reboot-Computer($delay=15) 
-			#   function Get-LocalAdministrator 
-			#   function Set-Password([string]$UserName, [string]$Password, [byte[]]$key) 
-			#   function New-LocalUser 
-			#   function Get-Cleartext 
-			#   function Rename-LocalAdmin($NewName='Admin999', $Password, [byte[]]$key, [switch]$force,[switch]$HardForce) 
-			#   function Get-LocalAdminName {(Get-LocalAdministrator).Name}
-			#   function Get-DomainRoleName ([int32]$Role) 
-			#   function Get-Drive 
-			#   function Get-DomainInformation 
-			#   function Delete-AppDirectoryAtNextBoot 
-			#   function Get-SystemBootTime  
-			#   function Get-ComputerDomain 
-			#   function Get-ComputerNetBiosDomain 
-			#   function Get-LocalUserList() 
-			#   function LocalUserExists([string]$user, [string []]$userlist = @()) 
-			#   function Delete-LocalUser([string []]$users) 
-			#   function Add-UserToGroup ([string]$user, [string]$group='Administrators') 
-			#   function Add-GroupMember 
-			#   function Add-LocalUser([string]$user, [string]$password, [string]$comment="") 
-			#   Function Get-TempPassword() 
-			#   Function Get-TempName([UINT16]$Length=8, [switch]$Alphabetic, [switch]$Numeric) 
-			#   function Get-RegValue([String] $KeyPath, [String] $ValueName) 
-			#   function Get-AdminRole() 
-			#   function Copy-DirectoryTree([string]$sourcepath, [string]$destpath) 
-			#   function Remove-Parameters 
-			#   function Get-PresentSwitchName([string[]]$switch) 
-			#   function Get-SerialNumber 
-			#   function Get-MACAddress 
-			#   function Get-UUID 
-			#   function New-UniqueName() { [System.IO.Path]::GetRandomFileName() }  
-			#   function New-TemporaryDirectory ([string]$Path = '.\temp', [switch]$Create) 
-			#   function testlog () 
-			#   function testfl () 
-			#   function Set-ExecutionPolicyRemotely([string]$Computername, [string]$ExecutionPolicy, $cred) 
-			#   function Set-FirewallOff 
-			#   function Get-OS {(Get-WmiObject -class Win32_OperatingSystem -ea 0).caption}
-			#   function Is-Windows2008? {return ((Get-OS) -match '2008')}
-			#   function Get-EnvironmentVariable([string] $Name, [System.EnvironmentVariableTarget] $Scope) 
-			#   function Get-EnvironmentVariableNames([System.EnvironmentVariableTarget] $Scope) 
-			#   function Update-Environment 
-			#   function Is-RebootPending? 
-			#   function Clear-All-Event-Logs ($ComputerName="localhost") 
-			#   function WaitFor-WSMan 
-			#   function Test-Json 
-			#   function Get-CharSet ([string]$start='D', [string]$end='Q') 
-			#   function Get-UnusedDriveLetter($LetterSet) 
-			#   function Get-ServiceStatus ($Name) 
-			#   Function Write-ImageInfoLog([string]$CorrelationID, [string]$IPAddress, 
-			#   function Get-HostsContent ($path="$Env:SystemRoot\System32\drivers\etc\hosts") { gc $path -ea 0 }
-			#   function Replace-HostRecord ([string[]]$hosts, [string]$IP, [string[]]$Name, [string]$comment) 
-			#   function Add-HostRecord ([string]$IP, [string[]]$Name, [string]$comment='') 
-			#   function IsHealthCareCustomer? ([string]$Customer=$Customer) 
-			#   function Get-BuildCDC () 
-			#   function Set-BigfixEnvironment ([string]$BuildCDC=$BuildCDC, [string]$BuildCustomer=$Customer, [switch]$Permanent) 
-			#   function Sort-ConnectionSpeed 
-		 
-  #>
-  
-#endregion
 
 #region Definitions
 function Get-CurrentLineNumber { 
@@ -108,6 +7,7 @@ function Get-CurrentLineNumber {
   If (!$Invocation) { $Invocation = $MyInvocation } 
   $Invocation.ScriptLineNumber 
 }
+#function Get-CurrentFileName  { $MyInvocation.MyCommand.Name   }   #$MyInvocation.ScriptName
 function Get-CurrentFileName   { split-path -leaf $MyInvocation.PSCommandPath   }   #$MyInvocation.ScriptName
 function Get-CurrentFileLine   { 
   if ($MyInvocation.PSCommandPath) {
@@ -147,8 +47,8 @@ if (Get-Command Write-Log -CommandType alias -ea ignore) {
 function Write-Log {
   param (
     [Alias('Entry','Line','Display')][string]$Message,
-    [Alias('Level')]                   [int]$Severity = 3, ## Default to a high severity. Otherwise, override
-    [Alias('FileName','PathName')]  [string]$Path
+    [Alias('Level')]                    [int]$Severity = 3, ## Default to a high severity. Otherwise, override
+    [Alias('FileName','PathName')]   [string]$Path
   )
   try {
     if (!(Get-Variable LogLevel -ea Ignore)) { $LogLevel = 3 }
@@ -163,7 +63,7 @@ function Write-Log {
       $LogFilePath  =  "$($MyInvocation.ScriptName)" -replace '(\.ps1)?$', ''    
       $LogFilePath += '-Log.txt'
     }
-    if ($Path) { $LogFilePath = $Path }
+    if ($PSBoundParameters.ContainsKey('Path')) { $LogFilePath = $Path }
     if ($psversiontable.psversion.major -lt 3) {
       $Entry = "`"$($line.DateTime)`", `"$($line.$Severity)`", `"$($line.$Message)`""
       $null = Out-file -enc utf8 -filepath $LogFilePath -input $Entry -append -erroraction Silentlycontinue -force 

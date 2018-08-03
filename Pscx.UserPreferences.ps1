@@ -40,7 +40,7 @@
     SmtpHost = $null                  # Specify a default SMTP server.
     SmtpPort = $null                  # Specify a default port number if not specified port 25 is used.
 
-    FileSizeInUnits = $false          # Pscx prepends format data for display of file information.
+    FileSizeInUnits = $True          # Pscx prepends format data for display of file information.
                                       # If this value is set to $true, file sizes are displayed in
                                       # using KB,MG,GB and TB units.
 
