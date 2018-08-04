@@ -2388,7 +2388,6 @@ $Private:Duration = ((Get-Date) - $Private:StartTime).TotalSeconds
 Write-Warning "$(LINE) $(get-date -f 'HH:mm:ss') New errors: $($Error.Count - $ErrorCount)"
 Write-Warning "$(LINE) Duration: $Private:Duration Completed: $Profile"
 
-
 If (Get-Module Posh-Git -ea Ignore -ListAvailable) {
   Import-Module Posh-Git
 }
