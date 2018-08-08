@@ -1,6 +1,55 @@
 Filter Get-Split {param([string[]]$Input,[string]$Delimiter=';') $Input | % { $_ -split $Delimiter} }
 
+Install-Module PSJukebox
+Invoke-PSJTune -Name imperial-march
+
+
+AZURE, POWERSHELL Mount the Azure drive on Local PowerShell Console 
+https://ridicurious.com/2018/06/28/mount-the-azure-drive-on-local-powershell-console/
+AzurePSDrive) 
+  Import-Module AzurePSDrive, SHiPS –Force
+  Login-AzureRmAccount
+  $param = @{
+      Name       = 'Azure'
+      PSProvider = 'SHiPS'
+      Root       = 'AzurePSDrive#Azure'
+      Scope      = 'Global'
+  }
+  New-PSDrive @Param
+  Set-Location -Path Azure:        # Access the Azure PSDrive
+  Get-ChildItem                    # List AzureRM subscriptions
+  cd .\Pay-As-You-Go\              # Change directory to your subscription
+  Get-ChildItem .\WebApps\         # List AzureRM resources
+  Get-ChildItem .\VirtualMachines\
+
+Setup PowerShell 5.1 Self Signed Certificate and sign Script
+  https://1iq.uk/setup-powershell-5-1-self-signed-certificate-and-sign-script/
+FSharp Dzoukr/OpenAPITypeProvider  https://github.com/Dzoukr/OpenAPITypeProvider
+
+https://docs.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms?view=sql-server-2017
+$SSMS = invoke-webrequest 'https://docs.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms?view=sql-server-2017' -UseBasicParsing 
+$SSMS.links | ? OuterHTML -match 'Download SQL Server Management Studio ([.\d]{3,})\s*(Upgrade Package)?' | % { Write-Warning "[$($Matches[1])] [$($Matches[2])]"; $_ | Add-Member -MemberType NoteProperty -Name Version -Value $Matches[1] -force -PassThru | Add-Member -MemberType NoteProperty -Name Upgrade -Value ($Matches[2] -match 'Upgrade') -force -PassThru }  | select -first 1
+
 'net use O: \\tsclient\C /persistent:yes' | out-file O.ps1
+
+'C:\Program Files (x86)\Microsoft SQL Server\140\Tools\Binn\ManagementStudio'
+
+tasklist /v     /fo csv | convertfrom-csv   # Tasklist with username user name processes
+whoami /groups  /fo csv | convertfrom-csv
+whoami /priv    /fo csv | convertfrom-csv
+whoami /user    /fo csv | convertfrom-csv ; whoami /fqdn; whoami /upn; whoami /logonid; whoami /all 
+driverquery /si /fo csv | convertfrom-csv
+driverquery /v  /fo csv | convertfrom-csv
+systeminfo      /fo csv | convertfrom-csv
+C:\Windows\System32\sort.exe
+cmd /c help | sls '(?-i:^[A-Z]{2})' | Foreach-Object { 
+  ($_ -split '\s\s+')[0] 
+} | ? { (cmd /c help $_)  -match '/fo(rmat)?\b' } 
+gps | ft id,name,*windowtitle*
+tasklist /v /fo csv | convertfrom-csv | ? 'Window Title' -match '.'
+
+https://www.amazon.com/Quick-Python-Book-Naomi-Ceder/dp/1617294039/ref=dp_ob_title_bk
+https://www.amazon.com/Python-Tricks-Buffet-Awesome-Features/dp/1775093301/ref=pd_sim_14_6?_encoding=UTF8&pd_rd_i=1775093301&pd_rd_r=f18427ed-9650-11e8-97d0-034648083ec9&pd_rd_w=gvlzn&pd_rd_wg=pdLxV&pf_rd_i=desktop-dp-sims&pf_rd_m=ATVPDKIKX0DER&pf_rd_p=eb8198c1-8248-4314-940d-f60f1fec7e75&pf_rd_r=MYJWF9HS9S8YQSAPCSTN&pf_rd_s=desktop-dp-sims&pf_rd_t=40701&psc=1&refRID=MYJWF9HS9S8YQSAPCSTN
 
 $f = 'Master Patching Server List v5-write.xlsx'
 Function Select-SheetString {
@@ -67,6 +116,8 @@ Interact online, or Tools > Export to CSV
   $creds=Get-Credential
   $webclient.Proxy.Credentials=$creds
 
+# Adapted from https://workingsysadmin.com/finding-out-when-a-powershell-cmdlet-was-introduced/
+https://github.com/PowerShell/PowerShell-Docs/search?q=Expand-Archive&unscoped_q=Expand-Archive
 Function Get-FirstVersion {
   [CmdLetBinding()]Param(
     [Alias('CommandName')][string[]]$Name
@@ -75,10 +126,11 @@ Function Get-FirstVersion {
   ForEach ($Command in $Name) {
     ForEach ($Version in ('3.0','4.0','5.0','5.1','6')) {
       $Uri = ("$baseUri/$command" + "?view=powershell-$version")
+      Write-Verbose $Uri
       $Request = try { Invoke-WebRequest -uri $Uri -MaximumRedirection 0 -ea Ignore } catch {}
-      Write-Verbose $Request
+      Write-Verbose "$Request"
       If ($Request -and ($Url = $Request.Headers.Location)) {
-        Write-Verbose $Url
+        Write-Verbose "$Url"
         If ($Url -notlike ‘*FallbackFrom*’) { 
           [pscustomobject]@{
             Name    = $Command 

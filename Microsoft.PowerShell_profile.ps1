@@ -10,7 +10,8 @@ param (
   [Alias('ClobberAllowed')]                            [switch]$AllowClobber,
   [Alias('SilentlyContinue')]                          [switch]$Quiet,
   [Alias('PSReadlineProfile','ReadlineProfile','psrl')][switch]$PSReadline,
-  [Alias('ForcePSReadlineProfile','fpsrl')]            [switch]$ForcePSReadline
+  [Alias('ForcePSReadlineProfile','fpsrl')]            [switch]$ForcePSReadline,
+                                                       [switch]$UpdatePackageManager
   #[Alias('IAc','IAction','InfoAction')]
   #[ValidateSet('SilentlyContinue','')]                                  [switch]$InformationAction
 )
@@ -49,18 +50,18 @@ Function Get-Value {
 }
 
 Function ConvertFrom-FileTime { 
-  [CmdletBinding()]Param(
-    [Int64]$FileTime,    # 131775519645343599
-    [string]$Format=$null,
+  [CmdletBinding()][OutputType([DateTime],[String])]Param(
+    [Parameter(Mandatory)][Int64]$FileTime,    # 131775519645343599
+    [string]$Format='',
     [switch]$Sortable
   )    
-  try { 
-    If ($dt = Get-Date ($FileTime -as [DateTime])) {
-      If ($Sortable) { $Format = 's' }
-      If ($Format) { $dt = "{0:$Format}" -f $dt }   
+  try {  
+    If ($dt = [datetime]::FromFileTime($FileTime) ) {
+      If ($Sortable) { $Format = 's'              }
+      If ($Format)   { $dt = "{0:$Format}" -f $dt }   
     }
     $dt
-  } catch { }
+  } catch { }  # Just return $Null, no need to do more
 } 
 
 # $LastLogon = ((nslookup $env:userdnsdomain | select -skip 3 ) -replace '.*\s+([\d.]{7,})?.*','$1').where{$_} | % { get-aduser martinh -Properties *  -server $_ } | Select name,@{N='LastLogon';E={ConvertFrom-FileTIme -sort $_.LastLogon}},LastLogonDate,@{N='LastLogonTimeStamp';E={ConvertFrom-FileTIme -sort $_.LastLogonTimeStamp}} 131775519645343599
@@ -271,7 +272,6 @@ $SavePath = ($Env:Path -split ';' -replace '(?<=[\w\)])[\\;\s]*$' |
              Where-Object { $_ -and (Test-Path $_) } |
              select -uniq) -join ';'
 if ($SavePath) { $Env:Path, $SavePath = $SavePath, $Env:Path }
-function Get-PSVersion {"$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"}
 Function Add-ToolPath {
   [CmdLetBinding()]param(
     [string[]]$Path
@@ -305,6 +305,8 @@ Function DosKey {
   }
 }
 Function B { if (!$Args) { $args = ,95}  DisplayBrightnessConsole @Args }
+Remove-Item Alias:C -ea Ignore -Force
+New-Alias C Clear-Host -force -scope Global
 Function Get-PSHistory {
   param(
     $UserName = $Env:UserName
@@ -461,7 +463,7 @@ if ((Get-Command 'Write-Log' -type Function,CmdLet -ea ignore)) {
   Write-Warning "$(LINE) Utility.ps1 not found.  Defined alias for Write-Log"
 }
 
-Write-Information "Profile loaded: $($MyInvocation.MyCommand.Path) ##416"
+Write-Information "Profile loaded: $($MyInvocation.MyCommand.Path) ##464"
 $PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)" -as [double]
 Write-Information "$(LINE) PowerShell version PSVersionNumber: [$PSVersionNumber]"
 $ForceModuleInstall = [boolean]$ForceModuleInstall
@@ -493,6 +495,8 @@ $NotepadPlusPlus = (
    select -first 1).fullname
 if ($NotepadPlusPlus) { new-alias np $NotepadPlusPlus -force -scope Global }
 #>
+
+Write-Warning "$(get-date -f 'HH:mm:ss') $(LINE) Before Set-ProgramAlias"
 Function Set-ProgramAlias {
   param(
     [Alias('Alias')]  $Name,
@@ -545,6 +549,7 @@ Set-ProgramAlias 7z   7z.exe @('C:Util\7-Zip\app\7-Zip64\7z.exe',
                                'C:\ProgramData\chocolatey\bin\7z.exe',
                                'S:\Programs\7-Zip\app\7-Zip64\7z.exe'
                              ) -FirstPath
+Write-Warning "$(get-date -f 'HH:mm:ss') $(LINE) After Set-ProgramAlias"
 # 'Thu, 08 Feb 2018 07:47:42 -0800 (PST)' -replace '[^\d]+$' -as [datetime] 13:47:42 -0800 (PST)'
 # 'Thu, 08 Feb 2018 07:47:42 -0800 (PST)' -replace '[^\d]+$' -as [datetime] 13:47:42 -0800 (PST)'
 #$raw = 'Thu, 08 Feb 2018 13:47:42 -0800 (PST)'
@@ -589,34 +594,36 @@ Function Get-DotNetVersion {
       InstallPath,@{N='Path';E={($_.pspath -replace '^[^:]*::') -replace '^HKEY[^\\]*','HKLM:'}} |
       Where-Object { $MaximumVersion -ge $_.Version -and $MinimumVersion -le $_.Version }
 }
-If ($ShowDotNetVersions) {
-  Get-DotNetVersion
-}
+If ($ShowDotNetVersions) { Get-DotNetVersion }
+Write-Warning "$(get-date -f 'HH:mm:ss') $(LINE) After ShowDotNetVersions"
 $DefaultConsoleTitle = 'Windows PowerShell'
-If (Test-Administrator) {
-  $DefaultConsoleTitle = 'Administrator: Windows PowerShell'
-  # https://github.com/PowerShell/PowerShellGet/archive/1.6.0.zip
-  try {
-    if ((Get-PSVersion) -lt 6.0) {
-      If (Get-Package 'Nuget' -ea ignore) {
-        write-warning "$(get-date -f 'HH:mm:ss') $(LINE)"
-      } else {
-        Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+Function Update-PackageManager {
+  If (Test-Administrator) {
+    $DefaultConsoleTitle = 'Administrator: Windows PowerShell'
+    # https://github.com/PowerShell/PowerShellGet/archive/1.6.0.zip
+    try {
+      if ((Get-PSVersion) -lt 6.0) {
+        If (Get-Package 'Nuget' -ea ignore) {
+          write-warning "$(get-date -f 'HH:mm:ss') $(LINE)"
+        } else {
+          Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+        }
       }
-    }
-    $PSGallery = Get-PSRepository PSGallery -ea ignore
-    if ($PSGallery) {
-      #$PSGallery
-      if ($PSGallery.InstallationPolicy -ne 'Trusted') {
-        Set-PSRepository -name 'PSGallery' -InstallationPolicy 'Trusted' -ea ignore
-        $PSGallery = Get-PSRepository -name 'PSGallery'                  -ea ignore
+      $PSGallery = Get-PSRepository PSGallery -ea ignore
+      if ($PSGallery) {
+        #$PSGallery
+        if ($PSGallery.InstallationPolicy -ne 'Trusted') {
+          Set-PSRepository -name 'PSGallery' -InstallationPolicy 'Trusted' -ea ignore
+          $PSGallery = Get-PSRepository -name 'PSGallery'                  -ea ignore
+        }
+        If ($PSBoundParameters['Verbose'] -and $Verbose) { $PSGallery | Format-Table }
       }
-      If ($PSBoundParameters['Verbose'] -and $Verbose) { $PSGallery | Format-Table }
+    } catch {
+      Write-Information "$(LINE) Problem with PSRepository"
     }
-  } catch {
-    Write-Information "$(LINE) Problem with PSRepository"
   }
 }
+If ($UpdatePackageManager) { Update-PackageManager }
 $PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)" -as [double]
 $CurrentWindowTitle = $Host.ui.RawUI.WindowTitle
 if ($CurrentWindowTitle -match 'Windows PowerShell([\(\)\s\d]*)$') {
@@ -1148,13 +1155,13 @@ Function Get-Syntax {
     [Alias('CommandName')][string[]]$Name='Get-Command'
   )
   ForEach ($Command in $Name) {
-    If ($Cmd = (Get-Alias $Command -ea Ignore).definition) { $Command = $Cmd }
-    if ($command) {Get-Command $command -syntax}
+    If (($Cmd = Get-Alias $Command -ea Ignore) -and ($Cmd = $Cmd.definition)) { $Command = $Cmd }
+    If ($Command) {Get-Command $Command -syntax}
   }
 }   # syntax get-command
-new-alias syn Get-Syntax -force -Desc "Set in Profile"
+New-Alias Syn Get-Syntax -force -Desc "Set in Profile"
 
-Function get-fullhelp { get-help -full @args }
+Function Get-FullHelp { Get-Help -Full @Args }
 'hf','full','fh','fhelp','helpf' | ForEach-Object { new-alias $_ get-fullhelp -force -ea continue }
 Write-Information "$(LINE) $home"
 Write-Information "$(LINE) Try: import-module -prefix cx Pscx"
@@ -2388,6 +2395,6 @@ $Private:Duration = ((Get-Date) - $Private:StartTime).TotalSeconds
 Write-Warning "$(LINE) $(get-date -f 'HH:mm:ss') New errors: $($Error.Count - $ErrorCount)"
 Write-Warning "$(LINE) Duration: $Private:Duration Completed: $Profile"
 
-If (Get-Module Posh-Git -ea Ignore -ListAvailable) {
+If ((Get-Command git -ea Ignore) -and (Get-Module Posh-Git -ea Ignore -ListAvailable)) {
   Import-Module Posh-Git
 }
