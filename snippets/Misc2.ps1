@@ -34,13 +34,35 @@ $SSMS.links | ? OuterHTML -match 'Download SQL Server Management Studio ([.\d]{3
 
 'C:\Program Files (x86)\Microsoft SQL Server\140\Tools\Binn\ManagementStudio'
 
-tasklist /v     /fo csv | convertfrom-csv   # Tasklist with username user name processes
-whoami /groups  /fo csv | convertfrom-csv
-whoami /priv    /fo csv | convertfrom-csv
-whoami /user    /fo csv | convertfrom-csv ; whoami /fqdn; whoami /upn; whoami /logonid; whoami /all 
-driverquery /si /fo csv | convertfrom-csv
-driverquery /v  /fo csv | convertfrom-csv
-systeminfo      /fo csv | convertfrom-csv
+Function Get-WhoAmI {
+  [CmdletBinding()]param(
+    [ValidatePattern('^(P|G|U|F|L|G|P|A)')]$Show = 'Privileges'
+  )
+  $Switches = 'UPN', 'FQDN', 'USER', 'LOGONID', 'GROUPS', 'PRIV', 'ALL'
+  If ($Show -match '^(P|G|U|F|L|G|P|A)') {
+    $SwitchKey = $Matches[1]
+  }
+  Write-Verbose "Show: $Show Switchkey: $Switchkey"
+  # $Args = "/$Switch"   
+  $Switch = $Switches -match "^$SwitchKey"
+  If ($Switch -in 'GROUPS', 'PRIV', 'ALL') { 
+    Write-Verbose "WhoAmI `"/$Switch`" /fo csv | convertfrom-csv"
+    WhoAmI "/$Switch" /fo csv | convertfrom-csv
+  } {
+    Write-Verbose "WhoAmI /$Switch | % { [PSCustomObject]@{ $Switch = $_ } }"
+    WhoAmI "/$Switch" | ForEach-Object { [PSCustomObject]@{ $Switch = $_ } }
+  }  
+}
+
+#Codesey?
+
+tasklist /v      /fo csv | convertfrom-csv   # Tasklist with username user name processes
+whoami   /groups /fo csv | convertfrom-csv
+whoami   /priv   /fo csv | convertfrom-csv
+whoami   /user   /fo csv | convertfrom-csv ; whoami /fqdn; whoami /upn; whoami /logonid; whoami /all 
+driverquery /si  /fo csv | convertfrom-csv
+driverquery /v   /fo csv | convertfrom-csv
+systeminfo       /fo csv | convertfrom-csv
 C:\Windows\System32\sort.exe
 cmd /c help | sls '(?-i:^[A-Z]{2})' | Foreach-Object { 
   ($_ -split '\s\s+')[0] 
