@@ -85,21 +85,39 @@ Write-Host "$(LINE) Use `$Profile   for path to Profile: $Profile"   @Private:Co
 Write-Host "$(LINE) Use `$PSProfile for path to Profile: $PSProfile" @Private:Colors
 Write-Host "$(LINE) ProfileLogPath: $ProfileLogPath"                 @Private:Colors
 
+<#
+.Synopsis 
+  Locate pre & post load profiles to run
+.Description
+  Check for ComputerDomain, UserDomain, ComputerName, UserName profiles
+  to run them either before (pre) or after the main profile (post)
+  
+  Will generate/locate 
+    $ProfileDirectory\Profile + NAME + Suffix + .ps1
+.Parameter Suffix
+  Usually Pre or Post
+  Will generate/locate 
+    $ProfileDirectory\Profile + NAME + Suffix + .ps1
+#>
 Function Get-ExtraProfile {
   [CmdletBinding()]param(
     [String]$Suffix,
-    [String[]]$Name=@((Get-WMIObject win32_computersystem).Domain,
-      $Env:UserDomain, $Env:ComputerName, $Env:UserName
+    [String[]]$Name = (@((Get-WMIObject win32_computersystem).Domain) +
+      @((nbtstat  -n) -match '(?-i:<00>\s+GROUP\b)' -replace 
+        '^\s*(\S+)\s*(?-i:<00>\s+GROUP\b).*$', '$1' | Select-Object -Uniq) +
+      $Env:UserDomain + $Env:ComputerName + $Env:UserName
     )
   )
-  $Name | ForEach-Object {
-    $Extra = Join-Path $ProfileDirectory "Profile$($_)$($Suffix).ps1"
-    Write-Verbose $Extra
-    If (Test-path $Extra -ea Ignore) {
+  $Name | Where-Object {
+    If ($Extra = Join-Path $ProfileDirectory "Profile$($_)$($Suffix).ps1" -ea Ignore -resolve) {
+      Write-Verbose $Extra
       $Extra
     }
-  }
+  } | ForEach-Object { $Extra } | Select-Object -uniq
 }
+
+# Start-Process -FilePath 'https://www.google.com'
+# Start-Process -FilePath 'https://www.google.com/search?num=100&q=powershell+pssession'
 
 Get-ExtraProfile 'Pre' | ForEach-Object {
   try {
@@ -550,6 +568,11 @@ Set-ProgramAlias 7z   7z.exe @('C:Util\7-Zip\app\7-Zip64\7z.exe',
                                'S:\Programs\7-Zip\app\7-Zip64\7z.exe'
                              ) -FirstPath
 Write-Warning "$(get-date -f 'HH:mm:ss') $(LINE) After Set-ProgramAlias"
+
+# gwmi Win32_logicaldisk -filter 'drivetype = 3 or drivetype = 4'
+
+Join-Path 'C:\Program Files*\Microsoft VS Code*' Code*.exe -resolve | Select -first 1
+
 # 'Thu, 08 Feb 2018 07:47:42 -0800 (PST)' -replace '[^\d]+$' -as [datetime] 13:47:42 -0800 (PST)'
 # 'Thu, 08 Feb 2018 07:47:42 -0800 (PST)' -replace '[^\d]+$' -as [datetime] 13:47:42 -0800 (PST)'
 #$raw = 'Thu, 08 Feb 2018 13:47:42 -0800 (PST)'
@@ -955,7 +978,7 @@ Function Get-Free {
   }
   $PSBoundParameters.PSProvider = 'FileSystem'
   Get-PSDrive @PSBoundParameters | Where-Object Used -ne '' |
-    select used,free,root,currentlocation
+    Select-Object Used,Free,DisplayRoot,Currentlocation
 }
 #  Get-PSVolume
 # (Get-WMIObject win32_volume ) | Where-Object {$_.DriveLetter -match '[A-Z]:'} |
