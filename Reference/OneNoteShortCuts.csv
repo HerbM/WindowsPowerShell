@@ -1,0 +1,202 @@
+
+Key                                                                    Action                                                              
+---                                                                    ------                                                              
+Ctrl+M                                                                 Open new window                                                     
+Ctrl+Shift+M or Windows+Alt+N                                          Open small window to create side note                               
+Ctrl+Alt+D                                                             Dock the window                                                     
+Ctrl+Z                                                                 Undo the last action                                                
+Ctrl+Y                                                                 Redo the last action                                                
+Ctrl+A                                                                 Select all items on the current page                                
+Ctrl+X                                                                 Cut the selected text or item                                       
+Ctrl+C                                                                 Copy the selected text or item to the Clipboard                     
+Ctrl+V                                                                 Paste the contents of the Clipboard                                 
+Home                                                                   Move to the beginning of the line                                   
+End                                                                    Move to the end of the line                                         
+Left Arrow                                                             Move one character to the left                                      
+Right Arrow                                                            Move one character to the right                                     
+Ctrl+Left Arrow                                                        Move one word to the left                                           
+Ctrl+Right Arrow                                                       Move one word to the right                                          
+Backspace                                                              Delete one character to the left                                    
+Delete                                                                 Delete one character to the right                                   
+Ctrl+Backspace                                                         Delete one word to the left                                         
+Ctrl+Delete                                                            Delete one word to the right                                        
+Shift+Enter                                                            Insert line break without starting new paragraph                    
+F7                                                                     Check spelling                                                      
+Shift+F7                                                               Open the thesaurus for selected word                                
+Shift+F10                                                              Bring up the context menu                                           
+Ctrl+Shift+W                                                           Execute the action suggested                                        
+Ctrl+Shift+H or Ctrl+Alt+H                                             Highlight selected text                                             
+Ctrl+K                                                                 Insert link                                                         
+Ctrl+Shift+C                                                           Copy the formatting of selected text (Format Painter)               
+Ctrl+Shift+V                                                           Paste the formatting to selected text (Format Painter)              
+Enter                                                                  Open link (cursor in link text)                                     
+Ctrl+B                                                                 Apply or remove bold formatting from the selected text              
+Ctrl+I                                                                 Apply or remove italic formatting from the selected text            
+Ctrl+U                                                                 Apply or remove the underline from the selected text                
+Ctrl+Hyphen                                                            Apply or remove strikethrough from the selected text                
+Ctrl+Shift+=                                                           Apply or remove superscript formatting from the selected text       
+Ctrl+=                                                                 Apply or remove subscript formatting from the selected text         
+Ctrl+Period                                                            Apply or remove bulleted list formatting from the selected paragraph
+Ctrl+Slash                                                             Apply or remove numbered list formatting from the selected paragraph
+Ctrl+Alt+1                                                             Apply Heading 1 style to the current note                           
+Ctrl+Alt+2                                                             Apply Heading 2 style to the current note                           
+Ctrl+Alt+3                                                             Apply Heading 3 style to the current note                           
+Ctrl+Alt+4                                                             Apply Heading 4 style to the current note                           
+Ctrl+Alt+5                                                             Apply Heading 5 style to the current note                           
+Ctrl+Alt+6                                                             Apply Heading 6 style to the current note                           
+Ctrl+Shift+N                                                           Apply the Normal style to the current note                          
+Alt+Shift+Right Arrow                                                  Indent paragraph from the left                                      
+Alt+Shift+Left Arrow                                                   Remove paragraph indent from the left                               
+Ctrl+R                                                                 Right-align the selected paragraph                                  
+Ctrl+L                                                                 Left-align the selected paragraph                                   
+Ctrl+Shift+>                                                           Increase the font size of selected text                             
+Ctrl+Shift+<                                                           Decrease the font size of selected text                             
+Ctrl+Shift+N                                                           Clear all formatting applied to the selected text                   
+Ctrl+Shift+R                                                           Show or hide rule lines on the current page                         
+Alt+N, F                                                               Insert document or file on the current page                         
+Alt+N, O                                                               Insert file as printout on the current page                         
+Alt+Shift+P                                                            Show or hide document printouts on current page                     
+Alt+N, P                                                               Insert picture from file                                            
+Alt+N, S                                                               Insert picture from scanner or camera                               
+Windows logo key+Shift+S                                               Insert screen clipping (when OneNote Active)                        
+Alt+Shift+D                                                            Insert the current date                                             
+Alt+Shift+F                                                            Insert the current date and time                                    
+Alt+Shift+T                                                            Insert the current time                                             
+Shift+Enter                                                            Insert line break                                                   
+Alt+=                                                                  Start math equation or convert selected text to math equation       
+Ctrl+Alt+E                                                             Insert Euro (???) symbol                                            
+Tab                                                                    Create table by adding second column to already typed text          
+Tab                                                                    Create another column in table with single row                      
+Enter                                                                  Create row at end of table cell,again to finish                     
+Ctrl+Enter                                                             Create row below the current row in table                           
+Alt+Enter                                                              Create another paragraph in the same cell in table                  
+Ctrl+Alt+R                                                             Create column to the right of the current column in table           
+Enter                                                                  Create row above (cursor at beginning of row)                       
+DEL (press twice)                                                      Delete empty row (cursor at beginning of row)                       
+Ctrl+A                                                                 Select all items on page, again to increase scope                   
+Shift+End                                                              Select to the end of the line                                       
+Shift+Down Arrow                                                       Select the whole line (cursor at beginning of row)                  
+Ctrl+Shift+T                                                           Jump to the title of the page and select it                         
+Esc                                                                    Cancel the selected outline or page                                 
+Alt+Shift+Up Arrow                                                     Move paragraphs up                                                  
+Alt+Shift+Down Arrow                                                   Move paragraphs down                                                
+Alt+Shift+Left Arrow                                                   Move paragraphs left (decreasing the indent)                        
+Alt+Shift+Right Arrow                                                  Move paragraphs right (increasing the indent)                       
+Ctrl+Shift+Hyphen                                                      Select the current paragraph and its subordinate paragraphs         
+Delete                                                                 Delete the selected note or object                                  
+Home                                                                   Move to the beginning of the line                                   
+End                                                                    Move to the end of the line                                         
+Left Arrow                                                             Move one character to the left                                      
+Right Arrow                                                            Move one character to the right                                     
+Alt+Left Arrow                                                         Go back to the last page visited                                    
+Alt+Right Arrow                                                        Go forward to the next page visited                                 
+Ctrl+Alt+P or Ctrl+Alt+S                                               Start playback of selected audio or video recording                 
+Ctrl+Alt+Y                                                             Rewind the current audio or video recording by few seconds          
+Ctrl+Alt+U                                                             Fast-forward the current audio or video recording by few seconds    
+Ctrl+1                                                                 Apply, mark, or clear the To Do tag                                 
+Ctrl+2                                                                 Apply or clear the Important tag                                    
+Ctrl+3                                                                 Apply or clear the Question tag                                     
+Ctrl+4                                                                 Apply or clear the Remember for later tag                           
+Ctrl+5                                                                 Apply or clear the Definition tag                                   
+Ctrl+6                                                                 Apply or clear custom tag                                           
+Ctrl+7                                                                 Apply or clear custom tag                                           
+Ctrl+8                                                                 Apply or clear custom tag                                           
+Ctrl+9                                                                 Apply or clear custom tag                                           
+Ctrl+0                                                                 Remove all note tags from the selected notes                        
+Alt+Shift+1                                                            Show through Level 1                                                
+Alt+Shift+2                                                            Expand to Level 2                                                   
+Alt+Shift+3                                                            Expand to Level 3                                                   
+Alt+Shift+4                                                            Expand to Level 4                                                   
+Alt+Shift+5                                                            Expand to Level 5                                                   
+Alt+Shift+6                                                            Expand to Level 6                                                   
+Alt+Shift+7                                                            Expand to Level 7                                                   
+Alt+Shift+8                                                            Expand to Level 8                                                   
+Alt+Shift+9                                                            Expand to Level 9                                                   
+Alt+Shift+0                                                            Expand all levels                                                   
+Tab                                                                    Increase indent by one level                                        
+Shift+Tab                                                              Decrease indent by one level                                        
+Alt+Shift+Plus Sign                                                    Expand collapsed outline                                            
+Alt+Shift+Minus Sign                                                   Collapse an expanded outline                                        
+Ctrl+Left Shift                                                        Set writing direction left to right                                 
+Ctrl+Right Shift                                                       Set writing direction right to left                                 
+Tab                                                                    Increase indent by one level in right-to-left text                  
+Shift+Tab                                                              Decrease indent by one level in right-to-left text                  
+F11                                                                    Enable or disable full page view                                    
+Ctrl+M                                                                 Open new window                                                     
+Ctrl+Shift+M                                                           Open small window to create side note                               
+Ctrl+Shift+*                                                           Expand or collapse the tabs of page group                           
+Ctrl+P                                                                 Print the current page                                              
+Ctrl+N                                                                 Add new page at the end of the selected section                     
+Ctrl+Shift+[                                                           Increase the width of the page tabs bar                             
+Ctrl+Shift+]                                                           Decrease the width of the page tabs bar                             
+Ctrl+Alt+N                                                             Create new page below the current page tab at the same level        
+Ctrl+Alt+[                                                             Decrease indent level of the current page tab label                 
+Ctrl+Alt+]                                                             Increase indent level of the current page tab label                 
+Ctrl+Shift+Alt+N                                                       Create new subpage below the current page                           
+Ctrl+A                                                                 Select all items (or all page in group)                             
+Ctrl+Shift+A                                                           Select the current page                                             
+Alt+Shift+Up Arrow                                                     Move the selected page tab up                                       
+Alt+Shift+Down Arrow                                                   Move the selected page tab down                                     
+Ctrl+Shift+T                                                           Move the insertion point to the page title                          
+Alt+PAGE Up                                                            Go to the first page in the currently visible set of page tabs      
+Alt+PAGE Down                                                          Go to the last page in the currently visible set of page tabs       
+PAGE Up                                                                Scroll up in the current page                                       
+PAGE Down                                                              Scroll down in the current page                                     
+Ctrl+Home                                                              Scroll to the top of the current page                               
+Ctrl+End                                                               Scroll to the bottom of the current page                            
+Ctrl+Down Arrow                                                        Go to the next paragraph                                            
+Ctrl+Up Arrow                                                          Go to the previous paragraph                                        
+Alt+Down Arrow                                                         Go to the next note container                                       
+Home                                                                   Go to the beginning of the line                                     
+End                                                                    Go to the end of the line                                           
+Left Arrow                                                             Move one character to the left                                      
+Right Arrow                                                            Move one character to the right                                     
+Alt+Left Arrow                                                         Go back to the last page visited                                    
+Alt+Right Arrow                                                        Go forward to the next page visited                                 
+Alt+Ctrl+Plus Sign (on the numeric keypad) or Alt+Ctrl+Shift+Plus Sign Zoom in                                                             
+Alt+Ctrl+Minus Sign (on the numeric keypad) or Alt+Ctrl+Shift+Hyphen   Zoom out                                                            
+Ctrl+S                                                                 Save changes                                                        
+Windows+Shift+N                                                        Open OneNote                                                        
+Ctrl+O                                                                 Open notebook                                                       
+Windows+N                                                              Send to OneNote Tool                                                
+Ctrl+T                                                                 Create new section                                                  
+Ctrl+Alt+Shift+O                                                       Open section                                                        
+Ctrl+Tab                                                               Go to the next section                                              
+Ctrl+Shift+Tab                                                         Go to the previous section                                          
+Ctrl+PAGE Down                                                         Go to the next page in the section                                  
+Ctrl+PAGE Up                                                           Go to the previous page in the section                              
+Alt+Home                                                               Go to the first page in the section                                 
+Alt+End                                                                Go to the last page in the section                                  
+Alt+PAGE Up                                                            Go to the first page in the currently visible set of page tabs      
+Alt+PAGE Down                                                          Go to the last page of the currently visible set of page tabs       
+Ctrl+Alt+M                                                             Move or copy the current page                                       
+Ctrl+Alt+G                                                             Put focus on the current page tab                                   
+Ctrl+SHFT+A                                                            Select the current page tab                                         
+Ctrl+Shift+G                                                           Put focus on the current section tab                                
+Ctrl+Shift+G, Shift+F10, M                                             Move the current section                                            
+Ctrl+G, DownArrow/UpArrow (select notebook), Enter                     Switch to different notebook on the Navigation bar                  
+Ctrl+E                                                                 Move the insertion point to the Search box to search all notebooks  
+Down Arrow                                                             While searching all notebooks, preview next result                  
+Enter                                                                  While searching all notebooks, go to selected result & dismiss Se...
+Ctrl+E, Tab, Space                                                     Change the search scope                                             
+Alt+O after searching                                                  Open the Search Results pane                                        
+Ctrl+F                                                                 Search only the current page, switch with Ctrl+E or Ctrl+F          
+Enter or F3                                                            While searching the current page, move to the next result           
+Shift+F3                                                               While searching the current page, move to the previous result       
+Esc                                                                    Dismiss Search and return to the page                               
+Ctrl+Shift+E                                                           Send selected pages as email                                        
+Ctrl+Shift+E                                                           Send the selected pages as email                                    
+Ctrl+Shift+1                                                           Create Today Outlook task from selected note                        
+Ctrl+Shift+2                                                           Create Tomorrow Outlook task from selected note                     
+Ctrl+Shift+3                                                           Create This Week Outlook task from selected note                    
+Ctrl+Shift+4                                                           Create Next Week Outlook task from selected note                    
+Ctrl+Shift+5                                                           Create No Date Outlook task from selected note                      
+Ctrl+Shift+K                                                           Open the selected Outlook task                                      
+Ctrl+Shift+9                                                           Mark the selected Outlook task as complete                          
+Ctrl+Shift+0                                                           Delete the selected Outlook task                                    
+Shift+F9                                                               Sync changes in the current shared notebook                         
+F9                                                                     Sync changes in all shared notebooks                                
+Ctrl+Q                                                                 Mark the current page as Unread                                     
+Ctrl+Alt+L                                                             Lock all password-protected sections                                
+
+

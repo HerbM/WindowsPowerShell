@@ -64,3 +64,78 @@ Function New-Note {
 New-Alias Add-Note New-Note -force -scope Global
 New-Alias an       New-Note -force -scope Global
 New-Alias nn       New-Note -force -scope Global
+
+Function New-Mistake {
+  [CmdletBinding()]Param(
+    [Parameter(Mandatory)][string[]]$Mistake,
+                          [string]  $Reason  = 'Unknown',
+                          [string]  $Comment = '',
+                          [string]  $Path    = "$((Get-UserFolder 'Personal').Folder)\MistakeLog*.txt",
+                          [Switch]  $Force                      
+  )
+  $Mistake, $Extra = $Mistake
+  If (!$Comment ) {
+    If ($Reason) {
+      Write-Verbose "$(FLINE) Reason: $Reason but no Comment, Extra: $Extra"
+      $Comment       = $Reason
+      $Reason, $Null = $Extra
+    } Else {
+      Write-Verbose "$(FLINE) No Reason & no Comment Extra: $Extra"
+      $Reason, $Comment, $Null = $Extra
+    }
+  }
+  $FileName = Get-MistakeFileName $Path -Force
+  $Date = Get-Date -f 's'
+  Write-Verbose "$(FLINE) $Date,$Mistake,$Reason,$Comment,$Extra"
+  "$Date,$Mistake,$Reason,$Comment" | Out-File -Encoding UTF8 -Append $FileName
+}
+New-Alias Add-Mistake New-Mistake -scope Global -Force
+New-Alias nm          New-Mistake -scope Global -Force
+New-Alias am          New-Mistake -scope Global -Force
+
+Function Get-MistakeFileName {
+  [CmdletBinding()]Param(
+    [string]$Path    = "$((Get-UserFolder 'Personal').Folder)\MistakeLog*.txt",
+    [Switch]$Force                      
+  )
+  $FileName = If ($File = (Get-Item $Path -ea Ignore | Select-Object -First 1)) {
+    $File.FullName
+  } ElseIf ($Force) {
+    Join-Path (Get-UserFolder 'Personal').Folder "MistakeLog$($Env:UserName).txt"
+  }
+  Write-Verbose "$(FLINE) Filename: $FileName"
+  $FileName
+}
+
+Function Get-Mistake {
+  [CmdletBinding()]Param(
+    [string]$Path = "$((Get-UserFolder 'Personal').Folder)\MistakeLog*.txt"
+  )
+  $FileName = Get-MistakeFileName $Path
+  If (Test-Path $FileName -ea 0) { 
+    Write-Verbose "$(FLINE) Mistake file found: $FileName"
+    Import-CSV $FileName    
+  } else {
+    Write-Warning "$(FLINE) No mistake file found"
+  }
+}
+
+
+<#
+DateTime,Mistake,Reason,Comment
+2018-08-12T16:35:13,Forgot I downloaded OpenXML to c:\s,2018-05-13,2 months ago
+2018-08-12T16:35:13,PropHashOmitted = after E,careless,
+2018-08-12T16:38:13,Put Hash @ on Expresssion scriptblock,Took took long due to previous mistake,
+2018-08-12T16:54:10,Command after last param,moved them around 1st->last,common problem
+2018-08-12T17:03:21,"used Resolve-Path wrong" "Don't use it often",doesn't return fileinfo/something else
+2018-08-12T17:09:33,Used ps1 extension for txt file,wasted time debugging,Resolve-Path->Get-Item->Get-ChildItem
+2018-08-12T18:07:22,Missing paren,Copied code but missed close paren,$(
+##############
+ToDo:
+Compile OpenXML
+Fix ImportXML
+Fix Notepad++:  Find dialog A/D, switch tabs, close (reopen) search window
+Notepad++ macro for datetime or Mistake file
+PowerShell function for datetime Mistake file
+
+#>
