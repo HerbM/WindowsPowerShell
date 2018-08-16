@@ -65,6 +65,11 @@ New-Alias Add-Note New-Note -force -scope Global
 New-Alias an       New-Note -force -scope Global
 New-Alias nn       New-Note -force -scope Global
 
+<#
+.Notes
+  ToDo: consider more/better Notes, Json captures, etc.  
+        support csv, xml, json
+#>
 Function New-Mistake {
   [CmdletBinding()]Param(
     [Parameter(Mandatory)][string[]]$Mistake,
@@ -89,7 +94,7 @@ Function New-Mistake {
   Write-Verbose "$(FLINE) $Date,$Mistake,$Reason,$Comment,$Extra"
   "$Date,$Mistake,$Reason,$Comment" | Out-File -Encoding UTF8 -Append $FileName
 }
-New-Alias Add-Mistake New-Mistake -scope Global -Force
+New-Alias Add-Mistake New-Mistake -scope Global -Force # Mistake object
 New-Alias nm          New-Mistake -scope Global -Force
 New-Alias am          New-Mistake -scope Global -Force
 
@@ -107,6 +112,10 @@ Function Get-MistakeFileName {
   $FileName
 }
 
+<#
+.Notes
+  ToDo: support date range, filter/search, count
+#>
 Function Get-Mistake {
   [CmdletBinding()]Param(
     [string]$Path = "$((Get-UserFolder 'Personal').Folder)\MistakeLog*.txt"
