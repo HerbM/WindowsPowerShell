@@ -1,8 +1,62 @@
 Filter Get-Split {param([string[]]$Input,[string]$Delimiter=';') $Input | % { $_ -split $Delimiter} }
 
+$global:DefaultVIServers 
+Get-Process *powershell*,*rdp* -IncludeUserName
+get-vm *beast*  # Just demo
+(get-vm *dira4avspprod* | select powerstate,name,guest,Uid )
+(get-vm *dira4avspprod* | select powerstate,name,Uid )
+(get-vm *dira4avspprod* | select powerstate,name,Guest )
+
+https://github.com/dotnet/cli/issues/3065
+https://docs.nuget.org/consume/nuget-config-settings#proxy-settings validate that "classic" nuget actually works
+dotnet restore fails behind proxy using windows authentication
+Im currently using Fiddler as a local proxy using the "Automatically Authenticate" rule for our corporate proxy while the nuget config points to http://127.0.0.1:8888. Not very handy, but works as a temporary workaround.
+
+try setting the http_proxy value of the NuGet Config File to point to your local CNtlm installation (e.g. http://127.0.0.1:3128)
+CNtlm instead of Fiddler should work too. Its basically the same problem NPM, Bower et al have...
+
+ @Michael-D-Pine
+Michael-D-Pine commented on May 23, 2016
+@axelheer I dont understand this, I have CNtlm installed and as far as I am aware working because I 
+can use npm fine from a command line but this always fails, I dont think I have ever been able to 
+get it work here are there environment variables or something else that needs to be set in a 
+configuration file that will allow the dotnet restore command or other commands to work correctly ?
+
+https://docs.nuget.org/consume/nuget-config-file
+
+Filter Get-Split { param([string]$Delimiter=';') $_ -split $Delimiter }
+sc.exe  triggerinfo w32time start/domainjoin start/domainleave
+sc.exe qtriggerinfo w32time
+sc.exe  triggerinfo w32time delete
+DOMAIN JOINED STATUS : ddaf516e-58c2-4866-9574-c3b615d42ea1 [NOT DOMAIN JOINED]
+ START SERVICE
+   DOMAIN JOINED STATUS         : 1ce20aba-9851-4421-9430-1ddeb766e809 [DOMAIN JOINED]
+ STOP SERVICE
+   DOMAIN JOINED STATUS         : ddaf516e-58c2-4866-9574-c3b615d42ea1 [NOT DOMAIN JOINED]
+
+Get-ItemProperty 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -name Personal
+Set-ItemProperty 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -name Personal -Value 'D:\%UserName%\Documents' -Type ExpandString -Force
+Get-ItemProperty 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -name Personal
+https://github.com/RamblingCookieMonster/WritingModules.git
+https://github.com/ddneves/Book_Learn_PowerShell.git
+
+
+<# D:\AvamarLinux #> portcheck 168.44.245.11 135,445,3389,5985
+<#
+168.44.245.11       open    open    open    open
+
+135  = MS RPC (NetBIOS, authentication, legacy remote management)
+445  = MS File Sharing -- SMB & CIFS
+3389 = RDP (Terminal Services)
+5985 = PowerShell Remoting (really it's WSMAN for WinRM service) 
+#>
+
+add-accelerator ErrorRecord System.Management.Automation.ErrorRecord
+
 Install-Module PSJukebox
 Invoke-PSJTune -Name imperial-march
 
+Get-Variable | Where-Object { $_.value -and ($_.value -is 'array') -and $_.value.length -gt 200 }
 
 AZURE, POWERSHELL Mount the Azure drive on Local PowerShell Console 
 https://ridicurious.com/2018/06/28/mount-the-azure-drive-on-local-powershell-console/
@@ -54,7 +108,7 @@ Function Get-WhoAmI {
   }  
 }
 
-#Codesey?
+#Codacy?
 
 tasklist /v      /fo csv | convertfrom-csv   # Tasklist with username user name processes
 whoami   /groups /fo csv | convertfrom-csv
@@ -1602,3 +1656,187 @@ $Newer | % {
   $_ 
   Install-Module -Name $_.Name  -Force -AllowClobber -Confirm:$False -ea Ignore 
 } | Format-Table
+
+
+Hacking the Human Operating System  -- Downloaded PDF
+Cyber attackers often bypass the consciousness of their targets and attempt to manipulate victims through subconscious influences. This report from Intel Security offers advice on how to mitigate these risks.
+
+BookMarks and/or History from Phone 2018-14-08 
+Google
+http://www.google.com/
+Mobile Web
+http://smart.myvzw.com/
+Insider's Guide
+http://www.verizonwireless.com/insiders-guide/
+DSC Data Science Search Engine - Data Science Central
+https://www.datasciencecentral.com/page/search?q=in+one+picture
+Cheatsheets – RStudio
+https://www.rstudio.com/resources/cheatsheets/
+31 Must Know Keyboard Shortcuts for Web Browsers - Ridicurious
+https://ridicurious.com/2015/03/23/31-must-know-keyboard-shortcuts-for-web-browsers/
+PowerShell and Design Patterns | Researching the optimal; implementing the practical
+https://dfinke.github.io/powershell,%20design%20patterns/2018/04/13/PowerShell-And-Design-Patterns.html?utm_content=buffer00216&utm_medium=social&utm_source=twitter.com&utm_campaign=buffer
+Your Guide to Master Hypothesis Testing in Statistics - Data Science Central
+https://www.datasciencecentral.com/profiles/blogs/your-guide-to-master-hypothesis-testing-in-statistics?utm_content=buffer597a9&utm_medium=social&utm_source=twitter.com&utm_campaign=buffer
+ScriptBlock Logging Bypass
+https://gist.github.com/cobbr/d8072d730b24fbae6ffe3aed8ca9c407
+sc0tfree | Real-World Rubber Ducky Attacks with Empire Stagers
+https://www.sc0tfree.com/sc0tfree-blog/optimizing-rubber-ducky-attacks-with-empire-stagers
+Alternative methods of becoming SYSTEM
+https://blog.xpnsec.com/becoming-system/amp/?__twitter_impression=true
+Reverse Engineering – martin.uy
+http://martin.uy/blog/projects/reverse-engineering/
+YouTube
+https://m.youtube.com/watch?reload=9&v=FvGndkpa4K0
+Introducing Event Query Language | Endgame
+https://www.endgame.com/blog/technical-blog/introducing-event-query-language
+Introducing Git protocol version 2 | Google Open Source Blog
+https://opensource.googleblog.com/2018/05/introducing-git-protocol-version-2.html?m=1
+Revoke-Obfuscation: PowerShell Obfuscation Detection Framework • Penetration Testing
+https://securityonline.info/revoke-obfuscation-powershell-obfuscation-detection-framework/
+5 Free Security Tools You Likely Haven't Heard Of (But Should Install)
+https://www.makeuseof.com/tag/unknown-free-security-tools/
+Upgrading shells to fully interactive TTYs
+https://blog.ropnop.com/upgrading-simple-shells-to-fully-interactive-ttys/
+A Design of the Command-line Suggestion Infrastructure · Issue #123 · PowerShell/PowerShell-RFC
+https://github.com/PowerShell/PowerShell-RFC/pull/123
+recon-points.txt
+https://gist.github.com/ehsahil/7a047f38e22e167cbed85aa703639c1f
+Recon— my way. – SecurityEscape – Medium
+https://medium.com/securityescape/recon-my-way-82b7e5f62e21
+Which Anti-Poverty Policies Work? by Bjørn Lomborg - Project Syndicate
+https://www.project-syndicate.org/commentary/microcredit-debt-waivers-weak-poverty-relief-by-bjorn-lomborg-2018-06
+The Git Rebase Introduction I Wish I'd Had
+https://dev.to/maxwell_dev/the-git-rebase-introduction-i-wish-id-had
+GitHub - Gallopsled/pwntools: CTF framework and exploit development library
+https://github.com/Gallopsled/pwntools
+The File Google has on You Is 10 Times Bigger Than Facebook's
+http://theantimedia.com/google-10-times-data/#comments
+Blue Team fundamentals Part Two: Windows Processes.
+https://securitybytes.io/blue-team-fundamentals-part-two-windows-processes-759fe15965e2
+AIRNow - Austin, TX Air Quality
+https://airnow.gov/index.cfm?action=airnow.local_city&cityid=229
+2018 Blog Income Report Research Study by The Blog Millionaire - BrandonGaille.com
+https://brandongaille.com/blog-income-report-study/
+Twitter Shadowban Test
+https://shadowban.eu/
+Blue Team fundamentals Part Two: Windows Processes.
+https://securitybytes.io/blue-team-fundamentals-part-two-windows-processes-759fe15965e2?gi=7ffdecb42dc8
+Modifying Metasploit x64 template for AV evasion - Black Hills Information Security
+https://www.blackhillsinfosec.com/modifying-metasploit-x64-template-for-av-evasion/
+Predicate Pushdown and why should I care? – MSSQL Tiger Team
+https://blogs.msdn.microsoft.com/sql_server_team/predicate-pushdown-and-why-should-i-care/
+Reverse Engineering – martin.uy
+https://martin.uy/blog/projects/reverse-engineering/
+Watch How-To Training for Technology Professionals for Free
+https://www.techsnips.io/
+Introducing Merlin — A cross-platform post-exploitation HTTP/2 Command & Control Tool
+https://medium.com/@Ne0nd0g/introducing-merlin-645da3c635a
+10 ways to prevent, detect and recover from ransomware and zeroday threats | CSO Online
+https://www.csoonline.com/article/3287099/ransomware/10-ways-to-prevent-detect-and-recover-from-ransomware-and-zeroday-threats.html
+Radiolab | Radiolab Presents: Gonads | WNYC Studios
+https://www.wnycstudios.org/shows/radiolab/projects/radiolab-presents-gonads/
+Counseling - Bullies2Buddies
+https://bullies2buddies.com/what-we-do/counseling-2/
+How to delete your past tweets — in bulk and for free — and save your career from your past self
+https://medium.freecodecamp.org/how-to-delete-your-past-tweets-in-bulk-and-for-free-save-yourself-from-your-past-self-f8844cdbda2
+Creating Universal Dashboard Components - Part 1 - PoshTools
+https://poshtools.com/2018/07/21/creating-universal-dashboard-components-part-1/
+How to Bypass Application Whitelisting & AV - Black Hills Information Security
+https://www.blackhillsinfosec.com/how-to-bypass-application-whitelisting-av/
+Powershell Without Powershell - How To Bypass Application Whitelisting, Environment Restrictions & AV - Black Hills Information Security
+https://www.blackhillsinfosec.com/powershell-without-powershell-how-to-bypass-application-whitelisting-environment-restrictions-av/
+PowerShell : Fancy Test-Connection - Ridicurious
+https://ridicurious.com/2015/07/16/powershell-fancy-test-connection/
+Google's Grand Plan To Make AI Accessible To Developers And Businesses
+https://www.forbes.com/sites/janakirammsv/2018/07/28/googles-grand-plan-to-make-ai-accessible-to-developers-and-businesses/amp/?__twitter_impression=true
+The Self-Taught Data Scientist Curriculum - Data Mania
+http://www.data-mania.com/blog/self-taught-data-scientist-curriculum/
+How to write PowerShell for speed – 4sysops
+https://4sysops.com/archives/how-to-write-powershell-for-speed/
+ScriptBlock Logging Bypass · GitHub
+https://gist.github.com/cobbr/d8072d730b24fbae6ffe3aed8ca9c407
+Advanced Threat Tactics – Course and Notes | Strategic Cyber LLC
+https://blog.cobaltstrike.com/2015/09/30/advanced-threat-tactics-course-and-notes/
+A Design of the Command-line Suggestion Infrastructure · Issue #123 · PowerShell/PowerShell-RFC · GitHub
+https://github.com/PowerShell/PowerShell-RFC/pull/123
+GitHub - adbertram/Automate-The-Boring-Stuff-With-PowerShell
+https://github.com/adbertram/Automate-The-Boring-Stuff-With-PowerShell
+Draft of Microsoft Security Servicing Commitments for Windows – Security Research & Defense
+https://blogs.technet.microsoft.com/srd/2018/06/12/draft-of-microsoft-security-servicing-commitments-for-windows/
+ehsahil’s gists · GitHub
+https://gist.github.com/ehsahil
+Mini Post: 20 More Pulseway Alerts with PowerShell
+https://king.geek.nz/2015/07/03/more-alerts/amp/?__twitter_impression=true
+Malware Types Explained - Hacking Tutorials
+https://www.hackingtutorials.org/malware-analysis-tutorials/malware-types-explained/
+Hacking with Netcat part 3: Advanced Techniques - Hacking Tutorials
+https://www.hackingtutorials.org/networking/hacking-with-netcat-part-3-advanced-techniques/
+Radiolab Presents: Gonads | WNYC Studios | Podcasts
+https://www.wnycstudios.org/shows/radiolab/projects/radiolab-presents-gonads/
+Microsoft Azure Notebooks - Online Jupyter Notebooks
+https://notebooks.azure.com/ian-buckley/libraries/probabilistic-programming
+What is the IP address 168.63.129.16? – Microsoft Azure Support Team Blog
+https://blogs.msdn.microsoft.com/mast/2015/05/18/what-is-the-ip-address-168-63-129-16/
+Bypassing Application Whitelisting with BGInfo | MSitPros Blog
+https://msitpros.com/?p=3831
+Daniel Bachler
+http://danielbachler.de/
+PowerHour: Community Lightning Demos!
+https://powershell.org/2018/07/31/powerhour-community-lightning-demos/
+The Best Hacking Books 2018 - Hacking Tutorials
+https://www.hackingtutorials.org/infosec-books/the-best-hacking-books-2018/
+No Win32_Process Needed – Expanding the WMI Lateral Movement Arsenal
+https://www.cybereason.com/blog/wmi-lateral-movement-win32?hs_amp=true&hs_preview=UbvcDFUZ-5764480077&__twitter_impression=true
+Mass PowerShell and WMImplant - FortyNorth Security
+https://www.fortynorthsecurity.com/mass-powershell-and-wmimplant/
+Ketogenic Diet Shows Promising Results for All Dementia Stages
+https://universityhealthnews.com/daily/memory/ketogenic-diet-shows-promising-results-for-all-dementia-stages/
+Module Worst Practices | Get-RandomProblems
+https://chrislgardner.github.io/powershell/2018/08/03/module-worst-practices.html
+Awesome Data Science Repository - Data Science Central
+https://www.datasciencecentral.com/group/research/forum/topics/awesome-data-science-repository
+On PowerShell Parameters – James O'Neill's Blog
+https://jamesone111.wordpress.com/2018/07/30/on-powershell-parameters/amp/?__twitter_impression=true
+Plot Graph in Powershell console | RidiCurious.com
+https://ridicurious.com/2017/09/04/plot-graph-in-powershell-console/
+Tools for Extracting Data and Text from PDFs - A Review - Open Knowledge Labs
+http://okfnlabs.org/blog/2016/04/19/pdf-tools-extract-text-and-data-from-pdfs.html
+Exploring APIs for likes and bookmarks - DEV Community 👩‍💻👨‍💻
+https://dev.to/kehers/exploring-apis-for-likes-and-bookmarks-4afb
+Linux security tools (top 100) - Linux Security Expert
+https://linuxsecurity.expert/security-tools/top-100/
+Powershell : How To Identify the Parameter that Accepts Pipeline Input - Ridicurious
+https://ridicurious.com/2015/03/30/powershell-how-to-identify-the-parameter-that-accepts-pipeline-input/
+Using WinRM Through Meterpreter - TrustedSec
+https://www.trustedsec.com/2017/09/using-winrm-meterpreter/
+3 ways to download files with PowerShell
+https://blog.jourdant.me/post/3-ways-to-download-files-with-powershell
+How to Fall Asleep in 120 Seconds – Member Feature Stories – Medium
+https://medium.com/s/story/combat-tested-training-unwind-and-sleep-anywhere-in-120-seconds-27d5307b7606
+Data Mining Reveals Fundamental Pattern of Human Thinking
+https://medium.com/mit-technology-review/data-mining-reveals-fundamental-pattern-of-human-thinking-7fc1d5e1d8b
+Powershell: Text To Speech in 3 lines of code | Scripting Library
+https://www.scriptinglibrary.com/languages/powershell/powershell-text-to-speech/
+mattifestation/BHUSA2018_Sysmon: All materials from our Black Hat 2018 "Subverting Sysmon" talk
+https://github.com/mattifestation/BHUSA2018_Sysmon
+.NET Core Self-Contained and Framework-Dependent Deployments Explained
+https://www.danielcrabtree.com/blog/496/net-core-self-contained-and-framework-dependent-deployments-explained
+Test-NetConnection vs. Test-Connection – Testing a network connection with PowerShell – 4sysops
+https://4sysops.com/archives/test-netconnection-vs-test-connection-testing-a-network-connection-with-powershell/
+AutoKeras: The Killer of Google’s AutoML – Towards Data Science
+https://towardsdatascience.com/autokeras-the-killer-of-googles-automl-9e84c552a319
+The Developer’s Guide to Microsoft Azure eBook - August update is now available | Blog | Microsoft Azure
+https://azure.microsoft.com/en-us/blog/the-developer-s-guide-to-microsoft-azure-ebook-august-update-is-now-available/
+RDP hijacking — how to hijack RDS and RemoteApp sessions transparently to move through an…
+https://medium.com/@networksecurity/rdp-hijacking-how-to-hijack-rds-and-remoteapp-sessions-transparently-to-move-through-an-da2a1e73a5f6
+Windows Privilege Escalation Guide
+https://www.sploitspren.com/2018-01-26-Windows-Privilege-Escalation-Guide/
+FuzzySecurity | Windows Privilege Escalation Fundamentals
+http://www.fuzzysecurity.com/tutorials/16.html
+Tim Arneaud: Windows Privilege Escalation - a cheatsheet
+http://it-ovid.blogspot.com/2012/02/windows-privilege-escalation.html?m=1
+Home – Books + Videos – PowerShell.org
+https://powershell.org/groups/books-videos/
+Art of Anti Detection 1 – Introduction to AV & Detection Techniques – Pentest Blog
+https://pentest.blog/art-of-anti-detection-1-introduction-to-av-detection-techniques/

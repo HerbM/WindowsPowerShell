@@ -119,6 +119,26 @@ Function Get-ExtraProfile {
 # Start-Process -FilePath 'https://www.google.com'
 # Start-Process -FilePath 'https://www.google.com/search?num=100&q=powershell+pssession'
 
+Function Get-FileVersion {
+  Get-item @Args | Select-Object -expand VersionInfo
+  es @Args | Get-Childitem -File | Select-Object -Expand VersionINfo 
+}
+
+Filter Get-FileVersion {
+  Get-item @Args | Select-Object -expand VersionInfo
+  # es @Args | Get-Childitem -File | Select-Object -Expand VersionINfo 
+}
+
+Function Get-ProcessFile {
+  (Get-Process @args).Where{$_.Name -notin 'System','Idle'} | 
+    Sort-Object -unique name,path | Get-Process -FileVersionInfo
+}
+
+Function Get-ProcessUser {
+  $args = $args.Where{'IncludeUserName' -notmatch $_ } |
+  Get-Process @args -IncludeUserName
+}
+
 Get-ExtraProfile 'Pre' | ForEach-Object {
   try {
     $Private:Separator = "`n$('=' * 72)`n"
@@ -1929,18 +1949,23 @@ Function Set-DefaultProxy {
   # BypassArrayList       : {}  ### CANNOT be set, get only
 
   If ($Remove) {
+    Write-Verbose "Remove current default proxy settings" 
     [system.net.webrequest]::DefaultWebProxy = $Null
     return
   }
   [system.net.webrequest]::DefaultWebProxy = new-object system.net.webproxy($Proxy)
   If ($Credential -or $NoDefaultCredential) {
+    Write-Verbose 'Set UseDefaultCredentials:$False' 
     [system.net.webrequest]::DefaultWebProxy.Credentials = Credential
   } else {
+    Write-Verbose 'Set UseDefaultCredentials:$True' 
     [system.net.webrequest]::DefaultWebProxy.UseDefaultCredentials = $True
   }
   If ($BypassList) {
+    Write-Verbose "SetByPassList: $BypassList" 
     [system.net.webrequest]::DefaultWebProxy.BypassList = $BypassList
   }
+    Write-Verbose "Set ByPassProxyOnLocal: $(![Boolean]$UseProxyOnLocal)" 
   [system.net.webrequest]::DefaultWebProxy.BypassProxyOnLocal = ![Boolean]$UseProxyOnLocal
 }
 

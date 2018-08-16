@@ -5,18 +5,32 @@
 
 Function Get-Reference {
   [CmdletBinding()]param(
-    [string]$Filter = '*',
-    [string[]]$Path   = "$(Split-Path $Profile)\Reference", 
+    [parameter(ValueFromPipeline=$True, ValueFromPipelineByPropertyName=$True)]
+    [Alias('Filter','Reference')]
+    [string[]]$Name = '.*',
+    [string[]]$Path = "$(Split-Path $Profile)\Reference", 
+    [switch]$All,
     [switch]$Invocation
   )
-  ForEach ($P in $Path) {
-    Get-ChildItem $P -Filter $Filter | ForEach-Object {
-      [PSCustomObject]@{
-        LastWriteTime = (get-date $_.LastWriteTime -f 's')
-        Type          = $_.Extension
-        Name          = $_.BaseName
-      }  
+  Begin { $List = @() }
+  Process {
+    $Name = '(' + ($Name -join ')|(') + ')'
+    ForEach ($P in $Path) {
+      Write-Verbose "$(FLINE)P: $P [Get-ChildItem $P | Where-Object Name -match $Name]"
+      $List += Get-ChildItem $P | Where-Object Name -match $Name
     }
+  }
+  End {
+    If ($All -or $List.count -eq 1) {
+      $List | ForEach-Object {
+        [PSCustomObject]@{
+          LastWriteTime = (get-date $_.LastWriteTime -f 's')
+          Length        = $_.Length
+          Type          = $_.Extension
+          Name          = $_.BaseName
+        }  
+      }
+    }     
   }
 }
 
