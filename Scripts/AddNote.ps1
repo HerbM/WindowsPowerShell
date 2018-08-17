@@ -65,7 +65,7 @@ New-Alias Add-Note New-Note -force -scope Global
 New-Alias an       New-Note -force -scope Global
 New-Alias nn       New-Note -force -scope Global
 
-<#
+<#. 
 .Notes
   ToDo: consider more/better Notes, Json captures, etc.  
         support csv, xml, json
@@ -89,10 +89,15 @@ Function New-Mistake {
       $Reason, $Comment, $Null = $Extra
     }
   }
+  $Date     = Get-Date -f 's'
   $FileName = Get-MistakeFileName $Path -Force
-  $Date = Get-Date -f 's'
   Write-Verbose "$(FLINE) $Date,$Mistake,$Reason,$Comment,$Extra"
-  "$Date,$Mistake,$Reason,$Comment" | Out-File -Encoding UTF8 -Append $FileName
+  [PSCustomObject]@{ 
+    Date    = $Date     
+    Mistake = $Mistake -join ' '
+    Reason  = $Reason  -join ' '
+    Comment = $Comment -join ' '
+  } | Export-Csv -Encoding UTF8 -Append $FileName -NoTypeInformation
 }
 New-Alias Add-Mistake New-Mistake -scope Global -Force # Mistake object
 New-Alias nm          New-Mistake -scope Global -Force

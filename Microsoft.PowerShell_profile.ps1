@@ -1332,6 +1332,9 @@ new-alias dj dl -force -scope Global
 new-alias w  where.exe -force
 new-alias wh where.exe -force
 new-alias wi where.exe -force
+If (Test-Path 'C:\ProgramData\Local\Julia\bin\julia.exe') { 
+  new-alias julia 'C:\ProgramData\Local\Julia\bin\julia.exe' -force -scope global
+}  
 Function od {
   param(
     [parameter(Position=0,ValueFromPipeline,ValueFromPipelineByPropertyName,
