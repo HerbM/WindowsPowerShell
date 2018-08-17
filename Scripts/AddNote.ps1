@@ -93,10 +93,10 @@ Function New-Mistake {
   $FileName = Get-MistakeFileName $Path -Force
   Write-Verbose "$(FLINE) $Date,$Mistake,$Reason,$Comment,$Extra"
   [PSCustomObject]@{ 
-    Date    = $Date     
-    Mistake = $Mistake -join ' '
-    Reason  = $Reason  -join ' '
-    Comment = $Comment -join ' '
+    DateTime = $Date     
+    Mistake  = $Mistake -join ' '
+    Reason   = $Reason  -join ' '
+    Comment  = $Comment -join ' '
   } | Export-Csv -Encoding UTF8 -Append $FileName -NoTypeInformation
 }
 New-Alias Add-Mistake New-Mistake -scope Global -Force # Mistake object

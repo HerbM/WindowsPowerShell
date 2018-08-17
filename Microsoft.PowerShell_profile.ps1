@@ -1088,7 +1088,7 @@ Function Get-HistoryCommandline {
     [Switch]$ShowID,
     [Alias('ID','Object','FullObject')][switch]$HistoryInfo
   )
-  If ($PSBoundParameters.Contains('ShowID')) {
+  If ($PSBoundParameters.ContainsKey('ShowID')) {
     $ShowID = [boolean]$ShowID
     $PSBoundParameters.Remove('ShowID')
   }
