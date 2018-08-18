@@ -1092,7 +1092,13 @@ Function Get-HistoryCommandline {
     $ShowID = [boolean]$ShowID
     $PSBoundParameters.Remove('ShowID')
   }
-  (get-history @PSBoundParameters).commandline
+  $Pattern = If ($PSBoundParameters.ContainsKey('Pattern')) {
+    $Pattern = $PSBoundParameters.Pattern
+    $PSBoundParameters.Remove('Pattern')
+  } Else {
+    '\S'
+  }
+  (get-history @PSBoundParameters).commandline -match $Pattern
 } New-Alias cl  Get-HistoryCommandline -force
   new-alias gch Get-HistoryCommandLine -force
   new-alias ghc Get-HistoryCommandLine -force

@@ -134,6 +134,41 @@ Function Get-Mistake {
   }
 }
 
+<#
+.Notes
+  Add support for 
+    Remembering Path/File(s), appending (to last section)
+    Active Apps?  AHK?
+    Pipeline input
+    Replace/Revert (last item)
+    
+#>
+Function Out-Remember {
+  [CmdletBinding()]Param(
+    [string]$Message   = "# $(Get-Date -f 's')", 
+    [uint16]$Count     = 25,
+    [string]$Path      = "$(Join-Path (Split-Path $Profile) Junk\Remember.ps1)",
+    [string]$Separator = '=',
+    [string]$Prefix    = '#|| ',
+    [Alias('UseClipBoard','GCB')][Switch]$ClipBoard,
+    [Alias('CreateDirectoryy')]  [Switch]$Force                      
+  )
+  Begin {
+    If ($Force) { 
+      If (!(Test-Path (Split-Path $Path))) { mkdir -force -ea Ignore }
+    }
+    If ($Separator.length -lt 4) { $Separator *= 72 / $Separator.length }    
+    "$Prefix$Separator`n$Prefix$Message"          | Out-File -append $Path
+    $Content = If ($ClipBoard) { Get-ClipBoard } 
+                          Else {(Get-History -count $Count).CommandLine }
+  }
+  Process {
+  }
+  End {
+    $Content | Out-File -append $Path
+  }
+}
+
 
 <#
 DateTime,Mistake,Reason,Comment
