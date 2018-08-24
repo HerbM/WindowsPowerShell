@@ -779,6 +779,14 @@ DisableFirstRunCustomize DWORD value greater than 0 under one of these keys:
     }
   } 
 
+# Git_Proxy
+$Env:credential_helper     = 'wincred'
+$Env:GIT_credential_helper = 'wincred'
+$Env:GIT_HTTP_PROXY        = 'http://ww930\\A469526@proxy-us.glb.my-it-solutions.net:84'
+$Env:GIT_HTTPS_PROXY       = 'http://ww930\\A469526@proxy-us.glb.my-it-solutions.net:84' 
+$Env:http_proxy            = 'http://ww930\\A469526@proxy-us.glb.my-it-solutions.net:84'
+$Env:https_proxy           = 'http://ww930\\A469526@proxy-us.glb.my-it-solutions.net:84'
+
   reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings"  |findstr /i auto
 
   reg add    "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v AutoConfigURL-SAVE /d http://proxyconf.my-it-solutions.net/proxy-na.pac /f /t REG_SZ
@@ -1657,8 +1665,11 @@ $Newer | % {
   Install-Module -Name $_.Name  -Force -AllowClobber -Confirm:$False -ea Ignore 
 } | Format-Table
 
+https://github.com/dotnet/corefx/issues/29934
+WinHttpGetIEProxyConfigForCurrentUser
+WinHttpGetProxyForUrl
 
-Hacking the Human Operating System  -- Downloaded PDF
+Hacking the Human Operating System  -- Downloaded PDF 
 Cyber attackers often bypass the consciousness of their targets and attempt to manipulate victims through subconscious influences. This report from Intel Security offers advice on how to mitigate these risks.
 
 BookMarks and/or History from Phone 2018-14-08 
