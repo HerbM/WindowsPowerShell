@@ -1,3 +1,14 @@
+conda update --yes -n base conda
+conda update --yes --all
+
+npm i -g npm -y
+
+http://github.com/tshort/ReactiveBasics.jl
+
+# -k, --insecure        Allow conda to perform "insecure" SSL connections and
+#                       transfers. Equivalent to setting 'ssl_verify' to
+#                       'false'.
+                       
 Filter Get-Split {param([string[]]$Input,[string]$Delimiter=';') $Input | % { $_ -split $Delimiter} }
 
 $global:DefaultVIServers 
