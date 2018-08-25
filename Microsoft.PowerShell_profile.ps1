@@ -958,16 +958,39 @@ $InformationPreference = 'continue'
 Write-Information "$(LINE) InformationPreference: $InformationPreference"
 Write-Information "$(LINE) Test hex format: $("{0:X}" -f -2068774911)"
 # "{0:X}" -f -2068774911
-Function Get-DriveTypeName ($type) {
-  $typename = @('UNKNOWN',     # 0 # The drive type cannot be determined.
-                'NOROOTDIR',   # 1 # The root path is invalid; for example, there is no volume mounted at the specified path.
-                'REMOVABLE',   # 2 # The drive has removable media; for example, a floppy drive, thumb drive, or flash card reader.
-                'FIXED',       # 3 # The drive has fixed media; for example, a hard disk drive or flash drive.
-                'REMOTE',      # 4 # The drive is a remote (network) drive.
-                'CDROM',       # 5 # The drive is a Set-Location-ROM drive.
-                'RAMDISK')     # 6 # The drive is a RAM disk.
-  if (($type -le 0) -or ($type -ge $typename.count)) {return 'INVALID'}
-  $typename[$type]
+Function Get-DriveType {
+  [CmdletBinding()][Alias('Get-DriveTypeName')]
+  [Alias('DriveTypeName','Type','Code','DriveCode')]Param($Type)
+  $DriveTypes = [Ordered]@{ 
+    0 = 'UNKNOWN'   # Type cannot be determined.
+    1 = 'NOROOTDIR' # Root path is invalid, e.g., no volume mounted at specified path
+    2 = 'REMOVABLE' # Removable media       e.g., floppy drive, thumb or flash card reader
+    3 = 'FIXED'     # Fixed media           e.g., hard disk drive or SSD
+    4 = 'REMOTE'    # Remote network drive
+    5 = 'CDROM'     # CDROM drive
+    6 = 'RAMDISK'   # RAM disk
+  }
+  # $PSBoundParameters
+  If     (!$PSBoundParameters.ContainsKey('Type')) { $DriveTypes        } 
+  ElseIf ($DriveTypes.Contains($Type))             { $DriveTypes[$Type] } 
+  Else                                             { 'INVALID'          }
+}
+Function Get-DriveType {
+  [CmdletBinding()][Alias('Get-DriveTypeName')]
+  [Alias('DriveTypeName','Type','Code','DriveCode')]
+  Param(
+    [UInt16[]]$Type=@(0..6)
+  )
+  Switch ($Type) {
+    0       { 'UNKNOWN'   } # Type cannot be determined.
+    1       { 'NOROOTDIR' } # Root path is invalid, e.g., no volume mounted at specified path
+    2       { 'REMOVABLE' } # Removable media       e.g., floppy drive, thumb or flash card reader
+    3       { 'FIXED'     } # Fixed media           e.g., hard disk drive or SSD
+    4       { 'REMOTE'    } # Remote network drive
+    5       { 'CDROM'     } # CDROM drive
+    6       { 'RAMDISK'   } # RAM disk
+    Default { 'INVALID'   }
+  }
 }
 Function Get-Volume {
   [CmdletBinding(DefaultParameterSetName='Name')]Param(
@@ -1002,8 +1025,8 @@ Function Get-Free {
 }
 #  Get-PSVolume
 # (Get-WMIObject win32_volume ) | Where-Object {$_.DriveLetter -match '[A-Z]:'} |
-#  ForEach-Object { "{0:2} {0:2} {0:9} {S:9} "-f $_.DriveLetter, $_.DriveType, (Get-DriveTypeName $_.DriveType), $_.Label, ($_.Freespace / 1GB)}
-#  # % {"$($_.DriveLetter) $($_.DriveType) $(Get-DriveTypeName $_.DriveType) $($_.Label) $($_.Freespace / 1GB)GB"}
+#  ForEach-Object { "{0:2} {0:2} {0:9} {S:9} "-f $_.DriveLetter, $_.DriveType, (Get-DriveType $_.DriveType), $_.Label, ($_.Freespace / 1GB)}
+#  # % {"$($_.DriveLetter) $($_.DriveType) $(Get-DriveType $_.DriveType) $($_.Label) $($_.Freespace / 1GB)GB"}
 #}
 Function Get-WMIClassInfo {
   [CmdletBinding()] param([string]$className, [switch]$WrapList)
@@ -1088,11 +1111,17 @@ Function Get-HistoryCommandline {
     [Switch]$ShowID,
     [Alias('ID','Object','FullObject')][switch]$HistoryInfo
   )
-  If ($PSBoundParameters.Contains('ShowID')) {
+  If ($PSBoundParameters.ContainsKey('ShowID')) {
     $ShowID = [boolean]$ShowID
     $PSBoundParameters.Remove('ShowID')
   }
-  (get-history @PSBoundParameters).commandline
+  $Pattern = If ($PSBoundParameters.ContainsKey('Pattern')) {
+    $Pattern = $PSBoundParameters.Pattern
+    $PSBoundParameters.Remove('Pattern')
+  } Else {
+    '\S'
+  }
+  (get-history @PSBoundParameters).commandline -match $Pattern
 } New-Alias cl  Get-HistoryCommandline -force
   new-alias gch Get-HistoryCommandLine -force
   new-alias ghc Get-HistoryCommandLine -force
@@ -1332,6 +1361,9 @@ new-alias dj dl -force -scope Global
 new-alias w  where.exe -force
 new-alias wh where.exe -force
 new-alias wi where.exe -force
+If (Test-Path 'C:\ProgramData\Local\Julia\bin\julia.exe') { 
+  new-alias julia 'C:\ProgramData\Local\Julia\bin\julia.exe' -force -scope global
+}  
 Function od {
   param(
     [parameter(Position=0,ValueFromPipeline,ValueFromPipelineByPropertyName,
@@ -1612,6 +1644,7 @@ Function Get-HistoryCount {param([int]$Count) get-history -count $Count }
 New-alias count Get-HistoryCount -force -scope Global
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE) Before Go"
 $goHash = [ordered]@{
+  doc        = "$home\documents"
   docs       = "$home\documents"
   down       = "$home\downloads"
   download   = "$home\downloads"
@@ -1630,6 +1663,7 @@ $goHash = [ordered]@{
   text       = 'c:\txt'
   esb        = 'c:\esb'
   dev        = 'c:\dev'
+  PowerShell = 'C:\Books\PowerShell'
 }
 Function Set-GoAlias {
   [CmdletBinding()]param([string]$Alias, [string]$Path)
@@ -1639,7 +1673,10 @@ Function Set-GoAlias {
   }
   ForEach ($Alias in $goHash.Keys) {
     write-verbose "New-Alias $Alias go -force -scope Global -Option allscope"
-    New-Alias $Alias Set-GoLocation -force -scope Global -Option allscope
+    If (!($Command = Get-Command $Alias -ea ignore) -or 
+          $Command.Definition -match 'Set-GoLocation$') {
+      New-Alias $Alias Set-GoLocation -force -scope Global -Option allscope
+    } else { Write-Warning "Set-GoLocation: Alias $Alias conflicts with "}
   }
 }
 # Import-Module "$Home\Documents\WindowsPowerShell\Set-LocationFile.ps1"
@@ -2116,8 +2153,24 @@ Function fileformat([string[]]$path = @('c:\dev'), [string[]]$include=@('*.txt')
         # Function Get-ErrorDetail
         # Function MyPSHost
 #endregion
-Function PSBoundParameter([string]$Parm) {
-  return ($PSCmdlet -and $PSCmdlet.MyInvocation.BoundParameters[$Parm].IsPresent)
+Function Get-PSBoundParameter {
+  [CmdletBinding()][Alias('PSBoundParameter','BoundParameter','IsBound')]
+  Param(
+    [Alias('Parm')][string]$Parameter,
+    [Alias('Present','IsPresent','ContainsKey')][switch]$Boolean,
+    [Alias('RemoveParameter')]                  [switch]$RemoveKey
+  ) 
+  If ($PSCmdlet -and $PSBoundParameters.ContainsKey($Parameter)) {
+    If ($Boolean) { $True }
+    Else { 
+      $PSBoundParameters.$Parameter 
+    }
+    If ($RemoveKey) { $PSBoundParameters.Remove($Parameter) }    
+  } elseif ($Boolean) {
+    $False
+  } else {
+    $Null
+  }
 }
 if ($Private:PSRealineModule = Get-Module 'PSReadline' -ea ignore) {
   set-psreadlinekeyhandler -chord 'Tab'            -Func TabCompleteNext      ### !!!!!
@@ -2307,24 +2360,64 @@ If ($RDCMan) {
   New-Alias rdc    $Private:RDCMan -Force
 }
 
+##  TODO:  Set-LocationEnvironment, Set-LocationPath 
+## (dir ENV:*) |  ? value -match '\\'
 Function Get-UserFolder {
-  [CmdletBinding()]param(
-    [Alias('Folder', 'FolderName', 'Directory', 'DirectoryName')]
+  [CmdletBinding()][Alias('guf','gf')]param(
+    [Alias('Folder', 'FolderName', 'Directory', 'DirectoryName','Path','PSPath')]
     [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
-    [string[]]$Name='*'
+    [string[]]$Name='*',
+    [switch]$Regex
   )
   Begin {
-    $Key = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
+    $Key = 
+      'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
     $Folders = @()
+    $RegistryFolders = 
+      (Get-ItemProperty $Key -name * -ea Ignore).psobject.get_properties() | 
+        Where-Object Name -notlike 'PS*' | ForEach {
+          $_ = [PSCustomObject]@{ $_.Name = $_.Value }
+          If ($_.Name -eq '{374DE290-123F-4565-9164-39C4925E467B}') {
+            $Alias = $_.Clone
+            $Alias.Name =  'Downloads'
+            $Alias
+          }
+        }
   }
   Process {
     $Folders += ForEach ($Folder in $Name) {
-      (Get-ItemProperty $Key -name $Folder).psobject.get_properties() |
-        Where-Object Name -notlike 'PS*' # Remote PSItem properties
+      $Folder = $Folder -replace '^Dow.*', '{374DE290-123F-4565-9164-39C4925E467B}'
+      $Folder = $Folder -replace '^Doc.*',  'Personal' 
+      $Folder = $Folder -replace '^(Pict|Vid|Mus).*$', 'My $1'
+      $Folder = $Folder -replace '^(AppData)$', 'Local $1'
+      Write-Verbose "Folder: Folder pattern: [$Folder]"
+      If ($Regex -and ($F = $RegistryFolders | Where Name -match $Folder)) {
+        Write-Verbose "Regex: User folders: [$($F.Name)]"
+        $F
+      } ElseIf ($F = Get-ItemProperty $Key -name $Folder -ea Ignore) {
+        $F.psobject.get_properties() | Where-Object Name -notlike 'PS*' 
+      } Else {
+        Write-Warning "User folder: [$Folder] not found"
+      }   
     }
   }
   End {
-    $Folders | Select -unique Name,@{N='Folder';E={$_.Value}} | Sort Value
+    $Folders | Select -unique Name,@{N='Folder';E={$_.Value}}
+  }
+}
+
+Function Set-LocationUserFolder {
+  [CmdletBinding()][Alias('cdu','cdf','cduf')]
+  Param(
+    [Alias('Folder', 'FolderName', 'Directory', 'DirectoryName','Path','PSPath')]
+    [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
+    [string[]]$Name='*',
+    [switch]$PassThru
+  )
+  If ($PSBoundParameters.ContainsKey('PassThru')) {
+  }
+  ForEach ($Folder in $Name) {
+    If ($F = Get-UserFolder $Folder) { Set-Location $F.Folder }
   }
 }
 

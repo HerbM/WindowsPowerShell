@@ -65,7 +65,7 @@ New-Alias Add-Note New-Note -force -scope Global
 New-Alias an       New-Note -force -scope Global
 New-Alias nn       New-Note -force -scope Global
 
-<#
+<#. 
 .Notes
   ToDo: consider more/better Notes, Json captures, etc.  
         support csv, xml, json
@@ -89,10 +89,15 @@ Function New-Mistake {
       $Reason, $Comment, $Null = $Extra
     }
   }
+  $Date     = Get-Date -f 's'
   $FileName = Get-MistakeFileName $Path -Force
-  $Date = Get-Date -f 's'
   Write-Verbose "$(FLINE) $Date,$Mistake,$Reason,$Comment,$Extra"
-  "$Date,$Mistake,$Reason,$Comment" | Out-File -Encoding UTF8 -Append $FileName
+  [PSCustomObject]@{ 
+    DateTime = $Date     
+    Mistake  = $Mistake -join ' '
+    Reason   = $Reason  -join ' '
+    Comment  = $Comment -join ' '
+  } | Export-Csv -Encoding UTF8 -Append $FileName -NoTypeInformation
 }
 New-Alias Add-Mistake New-Mistake -scope Global -Force # Mistake object
 New-Alias nm          New-Mistake -scope Global -Force
@@ -126,6 +131,41 @@ Function Get-Mistake {
     Import-CSV $FileName    
   } else {
     Write-Warning "$(FLINE) No mistake file found"
+  }
+}
+
+<#
+.Notes
+  Add support for 
+    Remembering Path/File(s), appending (to last section)
+    Active Apps?  AHK?
+    Pipeline input
+    Replace/Revert (last item)
+    
+#>
+Function Out-Remember {
+  [CmdletBinding()]Param(
+    [string]$Message   = "# $(Get-Date -f 's')", 
+    [uint16]$Count     = 25,
+    [string]$Path      = "$(Join-Path (Split-Path $Profile) Junk\Remember.ps1)",
+    [string]$Separator = '=',
+    [string]$Prefix    = '#|| ',
+    [Alias('UseClipBoard','GCB')][Switch]$ClipBoard,
+    [Alias('CreateDirectoryy')]  [Switch]$Force                      
+  )
+  Begin {
+    If ($Force) { 
+      If (!(Test-Path (Split-Path $Path))) { mkdir -force -ea Ignore }
+    }
+    If ($Separator.length -lt 4) { $Separator *= 72 / $Separator.length }    
+    "$Prefix$Separator`n$Prefix$Message"          | Out-File -append $Path
+    $Content = If ($ClipBoard) { Get-ClipBoard } 
+                          Else {(Get-History -count $Count).CommandLine }
+  }
+  Process {
+  }
+  End {
+    $Content | Out-File -append $Path
   }
 }
 
