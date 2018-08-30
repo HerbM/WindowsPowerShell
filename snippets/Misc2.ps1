@@ -789,6 +789,9 @@ DisableFirstRunCustomize DWORD value greater than 0 under one of these keys:
       Write-Verbose $Line
     }
   } 
+# Windows 2019 17739 https://blogs.windows.com/windowsexperience/2018/08/21/announcing-windows-server-2019-insider-preview-build-17738/#SxX8wkxciKh6aF7D.97
+# Datacenter Edition	6XBNX-4JQGW-QX6QG-74P76-72V67
+# Standard Edition	MFY9F-XBN2F-TYFMP-CCV49-RMYVH
 
 # Git_Proxy
 $Env:credential_helper     = 'wincred'
