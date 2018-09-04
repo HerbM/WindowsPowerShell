@@ -1,0 +1,123 @@
+Exploring Julia: A Statistical Primer
+Hayden Klok, Yoni Nazarathy 
+DRAFT:June 5, 2018
+Linked here: https://people.smp.uq.edu.au/YoniNazarathy/research.html
+Or the PDF: https://people.smp.uq.edu.au/YoniNazarathy/julia-stats/exploring-julia-a-statistical-primer-DRAFT.pdf
+
+A Deep Introduction to Julia for Data Science and Scientific Computing
+  http://ucidatascienceinitiative.github.io/IntroToJulia/
+Think Julia https://github.com/BenLauwens/ThinkJulia.jl/tree/master/book
+
+https://github.com/svaksha/Julia.jl
+  https://github.com/svaksha/Julia.jl/blob/master/AI.md
+  https://github.com/svaksha/Julia.jl/blob/master/API.md
+  https://github.com/svaksha/Julia.jl/blob/master/DevOps.md
+  https://github.com/svaksha/Julia.jl/blob/master/DataBase.md
+  https://github.com/svaksha/Julia.jl/blob/master/FileIO.md JSon,PDF,XML, 
+  https://github.com/svaksha/Julia.jl/blob/master/Statistics.md 
+    Operations Research/Optimization, MachineLearning, MathProgramming/MP/Genetics
+  https://github.com/queryverse/ExcelReaders.jl Excel (uses Python)  
+
+https://docs.julialang.org/en/latest/search/?q=UnitRange  
+https://docs.julialang.org/en/latest/search/?q=%s
+
+https://docs.julialang.org/en/v1/ https://github.com/JuliaLang/julia/blob/master/doc/src/index.md
+https://discourse.julialang.org/
+https://julialang.slack.com/
+https://julialang.slack.com/
+https://julialang.org/community/
+
+https://www.coursera.org/learn/julia-programming/home/welcome
+https://www.edx.org/course/optimization-methods-business-analytics-mitx-15-053x
+
+https://en.wikibooks.org/wiki/Introducing_Julia
+http://samuelcolvin.github.io/JuliaByExample
+https://www.gitbook.com/book/sylvaticus/julia-language-a-concise-tutorial
+https://learnxinyminutes.com/docs/julia/ https://learnxinyminutes.com/docs/files/learnjulia.jl
+https://github.com/bkamins/The-Julia-Express
+  http://bogumilkaminski.pl/files/julia_express.pdf
+
+Learning https://julialang.org/learning/
+Tutorials https://juliabox.com/  https://juliabox.com/#
+  Jupyter Notebooks https://github.com/JuliaComputing/JuliaBoxTutorials 
+
+Video
+  Intro to Julia Video https://youtu.be/4igzy3bGVkQ
+  
+  Intro to Julia, by Jane Herriman (December 19, 2017)
+  Intro to Julia by Jane Herriman (January 25, 2018)
+  Intro to solving differential equations in Julia, by Chris Rackauckas (February 6, 2018)
+  Intro to Julia, by Jane Herriman (February 15, 2018)
+  Intro to JuliaDB, a package for working with large persistent data sets, by Josh Day and Shashi Gowda (February 28, 2018)
+  Intro to Julia, by Jane Herriman (April 6, 2018)
+  Intro to Julia, by Jane Herriman (May 4, 2018)
+  Intro to dynamical systems in Julia, by George Datseris (May 10, 2018)
+  Intro to Julia Data Frames, by Bogumił Kamiński (May 24, 2018)
+  Intro to Julia, by Jane Herriman (June 8, 2018)
+  Intro to the Queryverse, a Julia data science stack, by David Anthoff (June 14, 2018)
+  Intro to Julia, by Jane Herriman (July 20, 2018)
+  Intro to Julia for data science , by Huda Nassar (July 25, 2018)
+
+Computing
+  JuliaArrays – Custom array types (and utilities for building array types)
+  JuliaBerry – Julia resources for the Raspberry Pi
+  JuliaCI – Continuous Integration Support for Julia packages
+  JuliaGPU – GPU computing
+  JuliaInterop – Easy interoperability between Julia and not-Julia
+  JuliaIO – IO-related functionality, such as serialization
+  JuliaParallel – Parallel programming in Julia
+  JuliaWeb – Web stack
+  JuliaCloud - Cloud providers
+Mathematics
+  JuliaDiff – Differentiation tools
+  JuliaDiffEq – Differential equation solving and analysis (Gitter)
+  JuliaGeometry – Computational Geometry
+  JuliaGraphs – Graph Theory and Implementation
+  JuliaIntervals - Rigorous numerics with interval arithmetic & applications
+  JuliaMath – Mathematics made easy in Julia
+  JuliaOpt – Optimization (Gitter)
+  JuliaPolyhedra – Polyhedral computation
+  JuliaSparse – Sparse matrix solvers
+Scientific Domains
+  BioJulia – Biology (Gitter)
+  EcoJulia – Ecology
+  JuliaAstro – Astronomy (Gitter)
+  JuliaDSP – Digital signal processing
+  JuliaQuant – Finance
+  JuliaQuantum – Julia libraries for quantum science and technology (Gitter)
+  JuliaPhysics – Physics
+  JuliaDynamics - Dynamical systems, nonlinear dynamics and chaos.
+  JuliaGeo – Earth science, geospatial data processing
+Data Science
+  JuliaML – Machine Learning (Gitter)
+  JuliaStats – Statistics
+  JuliaImages – Image Processing
+  JuliaText – Natural Language Processing (NLP), Computational Linguistics and (textual) Information Retrieval
+  JuliaDatabases – Various database drivers for Julia
+  JuliaData – Data manipulation, storage, and I/O in Julia
+Visualizations
+  GiovineItalia – Plotting (with Gadfly)
+  JuliaPlots – Data visualization
+  JuliaGL – OpenGL API and ecosystem (Gitter)
+  JuliaGraphics – Drawing, Colors, GUIs
+
+
+Books
+Julia: High Performance Programming by Ivo Balbaert, Avik Sengupta, Malcolm Sherrington (697 pages; published: November 2016; ISBN: 9781787125704) In this learning path, you will learn to use an interesting and dynamic programming language—Julia! This book is a combination and curation of the three separate books by the three authors.
+Julia Programming for Operations Research: A Primer on Computing by Changhyun Kwon (246 pages; published: 2016-05; ISBN: 978-1533328793) This book aims to teach how one can solve various optimization problems arising in operations research and management science.
+Julia High Performance by Avik Sengupta (120 pages; published: 2016-05; ISBN: 9781785880919) This is a book about performance optimisation of Julia programs, showing how to design and write Julia code that fully realises the potential speed of the language and its libraries.
+Mastering Julia by Malcolm Sherrington - published by Packt Publishing (410 pages; published: 2015-07; ISBN: 9781783553310)
+Getting Started with Julia Programming by Ivo Balbaert - published by Packt Publishing (214 pages; published: 2015-02-28; ISBN: 9781783284795)
+Seven More Languages in Seven Weeks by Bruce Tate, Fred Daoud, Jack Moffit and Ian Dees - published by The Pragmatic Programmers (350 pages; published: 2014-11-15; ISBN: 978-1-94122-215-7) This book contains a Julia tutorial chapter (written by Jack Moffitt and Bruce Tate) for programmers new to Julia, which is very good, with nice examples and exercises.
+Julia for Data Science by Anshul Joshi (348 pages; published: 2016-09; ISBN: 9781785289699) Explore the world of data science from scratch with Julia by your side
+Julia for Data Science by Zacharias Voulgaris PhD (415 pages; published: 2016-09-01; ISBN: 9781634621304). Master the essentials of data science through the Julia programming ecosystem (no prior knowledge of the language is required), accompanied by a variety of interesting examples and exercises.
+Julia Cookbook by Jalem Raj Rohit - published by Packt Publishing (172 pages; published: 2016-09; ISBN: 9781785882012)
+Julia Solutions by Jalem Raj Rohit - A comprehensive guide to learn data science for a Julia programmer - Produced by Packt Publishing (2 hours and 52 minutes long; published: January 31, 2017; ISBN: 9781787283299)
+Getting Started with Julia by Erik Engheim - Learn the new language Julia for high performance technical computing - Produced by Packt Publishing (9 hours and 50 minutes long; published: March 31, 2017; ISBN: 9781786462978)
+Learning Julia by Anshul Joshi, Rahul Lakhanpal (316 pages; published: November 2017; ISBN: 9781785883279). This book shows you how to write effective functions, reduce code redundancies, and improve code reuse. It will be helpful for new programmers who are starting out with Julia to explore its wide and ever-growing package ecosystem and also for experienced developers/statisticians/data scientists who want to add Julia to their skill-set.
+Tutorials
+A Deep Introduction to Julia for Data Science and Scientific Computing by Chris Rackauckas
+Programming in Julia (Quantitative Economics) - by Thomas J. Sargent and John Stachurski. Along with being a complete textbook with Julia code for macroeconomics, this also is a very good introduction to Julia.
+The Julia Express (featuring Julia 1.0) by Bogumił Kamiński
+Introducing Julia wikibook
+ThinkJulia  

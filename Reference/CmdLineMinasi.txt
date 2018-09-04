@@ -1,6 +1,20 @@
 netsh, reg, netdom, winrm, winrs, repadmin, netdiag, dcdiag,
 sc.exe --% create hj binpath= "cmd.exe /k tscon 8 /dest:rdp-tcp#57"
 
+Testing a network connection:
+
+portcheck 192.168.0.2 135,445,3389,5985
+  192.168.0.2       open    open    open    open
+
+  135  = MS RPC (NetBIOS, authentication, legacy remote management)
+  445  = MS File Sharing -- SMB & CIFS
+  3389 = RDP (Terminal Services)
+  5985 = PowerShell Remoting (really it's WSMAN for WinRM service) 
+
+Testing DNS Server and network:
+  nslookup ANYTHING 192.168.0.2        # 2nd param is address of DNS server
+  nslookup www.Microsoft.com  8.8.8.8  # lookup MS on Google DNS server
+  
 DNSCmd, DCPromo, route, netstat, nslookup, nblookup, portqry,
 nltest, dsadd, dsmod, dsget, dsquery, dsrm
 netdiag, dcdiag, dsacls, dsrevoke

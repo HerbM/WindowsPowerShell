@@ -70,8 +70,8 @@ New-Alias nn       New-Note -force -scope Global
   ToDo: consider more/better Notes, Json captures, etc.  
         support csv, xml, json
 #>
-Function New-Mistake {
-  [CmdletBinding()]Param(
+Function Add-Mistake {
+  [CmdletBinding()][Alias('New-Mistake')]Param(
     [Parameter(Mandatory)][string[]]$Mistake,
                           [string]  $Reason  = 'Unknown',
                           [string]  $Comment = '',
@@ -82,8 +82,8 @@ Function New-Mistake {
   If (!$Comment ) {
     If ($Reason) {
       Write-Verbose "$(FLINE) Reason: $Reason but no Comment, Extra: $Extra"
-      $Comment       = $Reason
-      $Reason, $Null = $Extra
+      $Reason, $Comment, $Null = $Reason
+      $Reason,           $Null = $Extra
     } Else {
       Write-Verbose "$(FLINE) No Reason & no Comment Extra: $Extra"
       $Reason, $Comment, $Null = $Extra
@@ -115,6 +115,50 @@ Function Get-MistakeFileName {
   }
   Write-Verbose "$(FLINE) Filename: $FileName"
   $FileName
+}
+
+Function Get-ChangeLogName {
+  [CmdletBinding()]Param(
+    [string]$Path    = ".\ChangeLog.txt",
+    [Switch]$Force                      
+  )
+  $FileName = If ($File = (Get-Item $Path -ea Ignore | Select-Object -First 1)) {
+    $File.FullName
+  } ElseIf ($Force) {
+    Join-Path (Get-UserFolder 'Personal').Folder "MistakeLog$($Env:UserName).txt"
+  }
+  Write-Verbose "$(FLINE) Filename: $FileName"
+  $FileName
+}
+
+Function Add-ChangeLog {
+  [CmdletBinding()]Param(
+    [Parameter(Mandatory)][string[]]$Change,
+                          [string]  $Reason  = 'Unknown',
+                          [string]  $Comment = '',
+                          [string]  $Path    = "$((Get-UserFolder 'Personal').Folder)\ChangeLog*.txt",
+                          [Switch]  $Force                      
+  )
+  $Change, $Extra = $Change
+  If (!$Comment ) {
+    If ($Reason) {
+      Write-Verbose "$(FLINE) Reason: $Reason but no Comment, Extra: $Extra"
+      $Reason, $Comment, $Null = $Reason
+      $Reason,           $Null = $Extra
+    } Else {
+      Write-Verbose "$(FLINE) No Reason & no Comment Extra: $Extra"
+      $Reason, $Comment, $Null = $Extra
+    }
+  }
+  $Date     = Get-Date -f 's'
+  $FileName = Get-ChangeFileName $Path -Force
+  Write-Verbose "$(FLINE) $Date,$Change,$Reason,$Comment,$Extra"
+  [PSCustomObject]@{ 
+    DateTime = $Date     
+    Change   = $Change  -join ' '
+    Reason   = $Reason  -join ' '
+    Comment  = $Comment -join ' '
+  } | Export-Csv -Encoding UTF8 -Append $FileName -NoTypeInformation
 }
 
 <#

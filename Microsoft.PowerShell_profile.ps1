@@ -767,7 +767,10 @@ Get-ChildItem | Sort-Object LastWriteTime -desc | ForEach-Object { '{0,23} {1,11
 #>
 <#
 ts.ecs-support.com:32793  terminal server 10.10.11.80
-ts.ecs-support.com:32795 FS02
+ts.ecs-support.com:32795  TS02  also FS02??? 
+Efficient Computer Systems ECS EFFComSYS\hmartin ecs-support.com ts01 ts02
+S:\Organization Tools IPaddress v2
+
 #>
 # Get-WindowsFeature 'RSAT-DNS-Server'
 # Import-Module ServerManager
@@ -2008,10 +2011,15 @@ Function Set-DefaultProxy {
 
 Function Get-DefaultProxy { [system.net.webrequest]::DefaultWebProxy }
 Function Remove-DefaultProxy { Set-DefaultProxy -Remove }
+# DefaultProxy mainly PowerShell git? InternetProxy IE, but no notify
+# setproxy.exe does notify -- need to unify, add netsh + apps, env:
+# GIT_credential_helper          wincred 
 
+# setproxy /disable
+# setproxy /pac:http://proxyconf.my-it-solutions.net/proxy-na.pac
 # https://www.makeuseof.com/tag/3-scripts-modify-proxy-setting-internet-explorer/
-Function Show-InternetProxy {
-  [CmdletBinding()] param()
+Function Get-InternetProxy {
+  [CmdletBinding()][Alias('Show-InternetProxy')]param()
   $InternetSettingsKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings"
   $urlEnvironment      = $Env:AutoConfigUrl
   $urlDefault          = 'http://proxyconf.my-it-solutions.net/proxy-na.pac'
@@ -2033,6 +2041,7 @@ Function Set-InternetProxy {
     [Alias('On' )][switch]$Enable,
     [Alias('Off')][switch]$Disable
   )
+  $Verbose = $PSBoundParameters.ContainsKey('Verbose') -and $PSBoundParameters.Verbose
   If ($State -match '^(On|Ena)') { $Enable = $True  }
   If ($State -match '^(Of|Dis)') { $Disable = $True }
   $InternetSettingsKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings"
@@ -2042,8 +2051,10 @@ Function Set-InternetProxy {
   $ProxyEnable         = 'ProxyEnable'
   $ProxyValues         = 'AutoConfig ProxyEnable Autodetect'
   $urlEnvironment      = $Env:AutoConfigUrl
-  $urlCurrent          = (get-itemproperty $InternetSettingsKey $AutoConfigURL     -ea ignore).$AutoConfigURL
-  $urlSaved            = (get-itemproperty $InternetSettingsKey $AutoConfigURLSave -ea ignore).$AutoConfigURLSAVE
+  $urlCurrent          = If ($P = get-itemproperty $InternetSettingsKey $AutoConfigURL     -ea ignore) {
+                           $P.$AutoConfigURL } else { '' }  
+  $urlSaved            = If ($P = get-itemproperty $InternetSettingsKey $AutoConfigURLSave -ea ignore) {
+                           $P.$AutoConfigURLSAVE } Else { '' }  
   $urlDefault          = 'http://proxyconf.my-it-solutions.net/proxy-na.pac'
   If ($Enable -eq $Disable) {
     Write-Warning "Specify either Enable or Disable (alias: On or Off)"
@@ -2073,7 +2084,7 @@ Function Set-InternetProxy {
   }
   $Settings = get-itemproperty $InternetSettingsKey -ea ignore | findstr /i $ProxyValues | Sort-Object
   ForEach ($Line in $Settings) {
-    Write-Verbose $Line -Verbose:$Verbose
+    Write-Verbose $Line 
   }
 }
 # Utility Functions (small)
