@@ -5,6 +5,28 @@
 # http://winmerge.org/
 # https://sourceforge.net/projects/winmerge/files/alpha/2.15.2/WinMerge-2.15.2-x64-Setup.exe/download
 
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+[Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+Invoke-WebRequest #  remove errors
+
+function e {    # es.exe everything 
+  [cmdletbinding()]param(
+    [Parameter(valuefromremainingarguments)]$args) 
+  $args = ($args -split '\W+').trim() | ? { $_ -and $_ -notmatch '^-?verbo' } | % { Write-verbose "[$_]"; $_ }; 
+  write-verbose "es $args" ; 
+  es @args 
+}
+
+if ($MyInvocation.InvocationName -ne '.') { Invoke-Main }
+else { ((Get-Command $PSCommandPath | Select -Expand ScriptBlock) -split "`n" | ? {$_ -match "^\s*function "}) -replace "^Function *| .*" }
+
+else { $Functions = "^[\t ]*function "; (gc $PSCommandPath | ? {$_ -match $Functions}) -replace "$Functions| .*"}
+
+Simpler? Maybe? Maybe not? Hm
+
+# https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2003/cc772726(v=ws.10)
+# https://support.microsoft.com/en-us/help/832017/service-overview-and-network-port-requirements-for-windows
+
 # LiveStream JayKul Joel Bennett
 # TipJar Streaming
 # https://mybinder.org/v2/gh/jaykul/Jupyter-PowerShell/master
@@ -634,7 +656,7 @@ function Where-UpdatedSince{
 # $Epoch = New-Object -Type DateTime -ArgumentList 1970, 1, 1, 0, 0, 0, 0
 # $Epoch.AddSeconds(("1412750187")) 
 # ((get-date) - $epoch).totalseconds
-# ($x=new-object xml).Load("http://rss.slashdot.org/Slashdot/slashdot");$x.RDF.item|?{$_.creator-ne"kdawson"}|fl descr*
+# ($x=l).Load("http://rss.slashdot.org/Slashdot/slashdot");$x.RDF.item|?{$_.creator-ne"kdawson"}|fl descr*
 #     slashdot reader sans the horrible submissions by mr. kdawson. Designed to be fewer than 120 chars which allows it to be used as signature on /.
 
 # gps | select ProcessName -exp Modules -ea 0 | where {$_.modulename -match 'msvc'} | sort ModuleName | Format-Table ProcessName -GroupBy ModuleName
