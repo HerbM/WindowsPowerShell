@@ -65,7 +65,7 @@ Function Set-Location {
   - To display the locations in the current location stack, use the Stack parameter of the Get-Location cmdlet. To display the locations in a named location stack, use the StackName parameter of Get-Location . - To create a new location stack, use the StackName parameter of Push-Location . If you specify a stack that does not exist, Push-Location creates the stack. - To make a location stack the current location stack, use the StackName parameter of  .
   The unnamed default location stack is fully accessible only when it is the current location stack. If you make a named location stack the current location stack, you cannot no longer use Push-Location or Pop-Location cmdlets add or get items from the default stack or use Get-Location to display the locations in the unnamed stack. To make the unnamed stack the current stack, use the StackName parameter of  with a value of $Null or an empty string ("").
   *
-  .INPUTS
+.INPUTS
   System.String
 .OUTPUTS
   None, System.Management.Automation.PathInfo, System.Management.Automation.PathInfoStack
