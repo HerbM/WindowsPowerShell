@@ -14,3 +14,4 @@ ForEach ($Key in $VSPath.Keys) {
   write-warning "Env:$Key -value `"$($VSPath.$Key)`""
   set-variable   Env:$Key -value  "$($VSPath).'$Key'"
 }
+

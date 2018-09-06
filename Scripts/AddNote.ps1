@@ -14,7 +14,7 @@
 .Parameter Configuration
   Look up and match partial category names from this file
 .Notes
-Just a start but functional
+  Just a start but functional
   ToDo:  Add more fields
   ToDo:  ???
 
