@@ -386,7 +386,7 @@ if (! (Get-Command write-log -type Function,cmdlet,alias -ea ignore)) {
 new-alias kp      'C:\Program Files (x86)\KeePass2\KeePass.exe' -force -scope Global -ea ignore
 new-alias KeePass 'C:\Program Files (x86)\KeePass2\KeePass.exe' -force -scope Global -ea ignore
 new-alias rdir    Remove-Item  -force -scope Global -ea ignore
-new-alias cdir    Set-Location -force -scope Global -ea ignore
+new-alias cdir    cd           -force -scope Global -ea ignore
 new-alias mdir    mkdir        -force -scope Global -ea ignore
 new-alias mvdir   move-item    -force -scope Global -ea ignore
 new-alias modir   more         -force -scope Global -ea ignore
@@ -2018,6 +2018,7 @@ Function Remove-DefaultProxy { Set-DefaultProxy -Remove }
 # setproxy /disable
 # setproxy /pac:http://proxyconf.my-it-solutions.net/proxy-na.pac
 # https://www.makeuseof.com/tag/3-scripts-modify-proxy-setting-internet-explorer/
+# setproxy /pac:http://proxyconf.my-it-solutions.net/proxy-na.pac
 Function Get-InternetProxy {
   [CmdletBinding()][Alias('Show-InternetProxy')]param()
   $InternetSettingsKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings"

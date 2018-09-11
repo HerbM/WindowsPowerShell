@@ -13,7 +13,7 @@ Set-StrictMode -Version Latest
 
 Function x86 { '(x86)' }
 
-Function Set-Location {
+Function Set-LocationFile {
 <#
 .SYNOPSIS
   Sets the current working location to a specified location.
@@ -80,14 +80,16 @@ Function Set-Location {
 .LINK
   Push-Location
 #>
-  [CmdletBinding(DefaultParameterSetName='Path', SupportsTransactions=$true)]
-  Param(
+  [CmdletBinding(DefaultParameterSetName='Path', SupportsTransactions)] 
+  [Alias('cd','Set-Location')]Param(
     [Parameter(ParameterSetName='Path', Position=0, ValueFromPipeline=$true,
       ValueFromPipelineByPropertyName=$true)][string]$Path,
-    [Parameter(ParameterSetName='Path', ValueFromRemainingArguments)][string[]]$PathArgs,
+    [Parameter(ParameterSetName='Path', ValueFromRemainingArguments)]
+      [string[]]$PathArgs,
     [Parameter(ParameterSetName='LiteralPath', Mandatory=$true, ValueFromPipelineByPropertyName=$true)]
-    [Alias('PSPath')][string]$LiteralPath,
+      [Alias('PSPath')][string]$LiteralPath,
     [switch]$PassThru,
+    [Alias('PushDirectory','pdirectory')][switch]$PushLocation,
     [Alias('s','pp','providerpath','string')][switch]$Simple,
     [Parameter(ParameterSetName='Stack', ValueFromPipelineByPropertyName=$true)]
       [string]$StackName
@@ -100,17 +102,21 @@ Function Set-Location {
     Write-Verbose ("$(LINE) BEGIN Set:$($PSCmdlet.ParameterSetName) " +
                    ($PSBoundParameters | Out-String))
     If ($PSBoundParameters.ContainsKey('Simple')) {
+      $Simple = $PSBoundParameters.Simple
       [Void]$PSBoundParameters.Remove('Simple')
-      $Simple = $True
+    }
+    If ($PSBoundParameters.ContainsKey('PushLocation')) {
+      $PushLocation = $PSBoundParameters.PushLocation
+      [Void]$PSBoundParameters.Remove('PushLocation')
     }
     If ($PSBoundParameters.ContainsKey('PathArgs')) {
       $P = ((@($Path) + $PathArgs).Where{$_} -Join ' ').trim(' \')
       If (Test-Path $P -ea ignore) {
         $Path = $PSBoundParameters.Path = (Resolve-Path $P).path
-      }
+      }   
       Write-Verbose "$(LINE) Path: [$Path] P: [$P]  PathArgs: [$PathArgs]"
       [Void]$PSBoundParameters.Remove('PathArgs')
-    }
+    } 
     ForEach ($Dir in 'Path','LiteralPath') {
       If ($PSBoundParameters.ContainsKey($Dir) -and
           (Test-Path $PSBoundParameters.$Dir -PathType Leaf -ea Ignore)) {
@@ -136,9 +142,18 @@ Function Set-Location {
       Write-Verbose ("$(LINE)`n" + ($_.Exception | FL * -Force | Out-String))
       throw
     }
+    If ($PushLocation) { 
+      $PwdSave = $PSBoundParameters.Path
+      $PSBoundParameters.Path = $Pwd
+      Push-Location @PSBoundParameters
+      $PSBoundParameters.Path = $PwdSave      
+    }
   } #begin
   Process {
     try {
+      $Target = If     ($psCmdlet.ParameterSetName -eq 'Path') { $Path } 
+                ElseIf ($LiteralPath) { $LiteralPath }
+                Else   { '' }
       Write-Verbose ("$(LINE) PROCESS Set:$($PSCmdlet.ParameterSetName) `$_=[$_] " +
                      ($PSBoundParameters | Out-String))
       If ($Path -and !$LiteralPath) { $_ = $Path}
