@@ -378,6 +378,91 @@ Function Add-Path {
 }
 #>
 
+function Get-WmiNamespace {
+  [CmdletBinding()]Param ($Namespace='ROOT')
+  Get-WmiObject -Namespace $Namespace -Class __NAMESPACE | ForEach-Object {
+    ($ns = '{0}\{1}' -f $_.__NAMESPACE,$_.Name)
+    Get-WmiNamespace -Namespace $ns
+  }
+}
+
+function Get-WmiClass {
+  [CmdletBinding()]Param($Pattern='^.')
+  Get-WmiNamespace | ForEach-Object {
+    Get-WmiObject -Namespace $_ -List |
+      ForEach-Object { $_.Path.Path }         | 
+      Where-Object { $_ -match $Pattern } 
+  } | Sort-Object -Unique  
+} 
+
+Function Get-SpeechSynthesizer {
+  [CmdletBinding()]Param(
+    [Alias('gettype')][switch]$Type
+  )
+  If ($SpeechType = Add-Type -AssemblyName System.Speech -passthru) { # | gm
+    If ($Type) { 
+      Write-Verbose "Returning Synthezizer, try:  $SpeechType | gm -static"
+      $SpeechType  
+    } else {
+      $SpeechSynthesizer = New-Object -TypeName System.Speech.Synthesis.SpeechSynthesizer
+      $SpeechSynthesizer
+      If ($SpeechSynthesizer) { 
+        Write-Verbose "Speaking now..."
+        If ($PSBoundParameters.ContainsKey('Verbose')) {
+          $SpeechSynthesizer.Speak('Hello World!') 
+        }        
+      } else {
+        Write-Verbose "No synthesizer"
+      }
+    }      
+  }  
+}
+<#  SpeechType
+IsPublic IsSerial Name                                     BaseType
+-------- -------- ----                                     --------
+False    True     SRID                                     System.Enum
+False    False    SR                                       System.Object
+
+    SpeechType | gm -static
+#>
+
+Function Get-MemberType{ 
+  [CmdletBinding()][Alias('IsMember','Member?','MemberP')]
+  Param(
+    [Parameter(Mandatory)][Object]$InputObject, 
+    [Alias('Name')][string]$MemberName
+  ) 
+  $ChildNames = $MemberName -split '\.'  
+  $Object = $InputObject; 
+  Write-Verbose "ChildNames: $ChildNames"
+  ForEach ($Name in $ChildNames) {
+    Write-Verbose "1-Name: $Name $($Object.GetType())"
+    If (!($Member = Get-Member -Name $Name -InputObject $Object -ea Ignore)) { 
+      Write-Verbose "Returning with no child: $Name"
+      return $Null            # nothing there
+    }  
+    Write-Verbose "2-Name: $Name Type: $($Object.GetType()) MemberType $($Member.MemberType)"
+    $Object = $Object.$Name 
+    If ($Member.MemberType -notmatch 'Property') { break }  # Function, etc.
+  }
+  $Object.GetType()
+}
+
+Function Set-StreamColor {
+  [CmdletBinding()][Alias('SSC')]Param(
+    [string]$StreamName      = 'Error',
+    [string]$BackGroundColor = 'DarkRed',
+    [string]$ForeGroundColor = 'White'
+  )
+  If (Get-MemberType $Host "PrivateData.$($StreamName)BackgroundColor") { 
+    $host.PrivateData."$($StreamName)BackGroundColor" = $BackGroundColor
+    $host.PrivateData."$($StreamName)ForeGroundColor" = $ForeGroundColor
+    # $host.PrivateData.debugbackgroundcolor   = 'black'
+  }
+}
+
+
+    
 Function Get-NewLine { [environment]::NewLine }; new-alias NL Get-NewLine -force
 if (! (Get-Command write-log -type Function,cmdlet,alias -ea ignore)) {
   new-alias write-log write-verbose -force -scope Global -ea ignore
@@ -963,7 +1048,7 @@ Write-Information "$(LINE) Test hex format: $("{0:X}" -f -2068774911)"
 # "{0:X}" -f -2068774911
 Function Get-DriveType {
   [CmdletBinding()][Alias('Get-DriveTypeName')]
-  [Alias('DriveTypeName','Type','Code','DriveCode')]Param($Type)
+  [Alias('DriveTypeName','DriveType','Code','DriveCode')]Param($Type)
   $DriveTypes = [Ordered]@{ 
     0 = 'UNKNOWN'   # Type cannot be determined.
     1 = 'NOROOTDIR' # Root path is invalid, e.g., no volume mounted at specified path
@@ -973,7 +1058,7 @@ Function Get-DriveType {
     5 = 'CDROM'     # CDROM drive
     6 = 'RAMDISK'   # RAM disk
   }
-  # $PSBoundParameters
+  # $a
   If     (!$PSBoundParameters.ContainsKey('Type')) { $DriveTypes        } 
   ElseIf ($DriveTypes.Contains($Type))             { $DriveTypes[$Type] } 
   Else                                             { 'INVALID'          }
@@ -2388,11 +2473,9 @@ Function Get-UserFolder {
     $RegistryFolders = 
       (Get-ItemProperty $Key -name * -ea Ignore).psobject.get_properties() | 
         Where-Object Name -notlike 'PS*' | ForEach {
-          $_ = [PSCustomObject]@{ $_.Name = $_.Value }
+          [PSCustomObject]@{ $_.Name = $_.Value }
           If ($_.Name -eq '{374DE290-123F-4565-9164-39C4925E467B}') {
-            $Alias = $_.Clone
-            $Alias.Name =  'Downloads'
-            $Alias
+            [PSCustomObject]@{ Downloads = $_.Value }
           }
         }
   }

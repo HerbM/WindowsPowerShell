@@ -66,7 +66,7 @@ Function Set-LocationFile {
   The unnamed default location stack is fully accessible only when it is the current location stack. If you make a named location stack the current location stack, you cannot no longer use Push-Location or Pop-Location cmdlets add or get items from the default stack or use Get-Location to display the locations in the unnamed stack. To make the unnamed stack the current stack, use the StackName parameter of  with a value of $Null or an empty string ("").
   *
 .INPUTS
-  System.String
+  (including those produced by Get-ChildItem, Path cmdlets etc.)
 .OUTPUTS
   None, System.Management.Automation.PathInfo, System.Management.Automation.PathInfoStack
 .LINK
@@ -105,15 +105,26 @@ Function Set-LocationFile {
       $Simple = $PSBoundParameters.Simple
       [Void]$PSBoundParameters.Remove('Simple')
     }
+    If ($PSBoundParameters.ContainsKey('Path') -and !(Test-Path $Path -ea ignore)) {
+      $P = $Path -replace '^"|"$'
+      If (Test-Path $P -ea ignore) { $Path = $PSBoundParameters.Path = $P}
+    }
     If ($PSBoundParameters.ContainsKey('PushLocation')) {
       $PushLocation = $PSBoundParameters.PushLocation
       [Void]$PSBoundParameters.Remove('PushLocation')
     }
     If ($PSBoundParameters.ContainsKey('PathArgs')) {
-      $P = ((@($Path) + $PathArgs).Where{$_} -Join ' ').trim(' \')
+      Write-Verbose "$(LINE) Path: [$Path] P: [$P]  PathArgs: [$PathArgs]"
+      $PathArgs = $PathArgs.trim()
+      Write-Verbose "$(LINE) Path: [$Path] P: [$P]  PathArgs: [$PathArgs]"
+      $P  = ((@($Path) + $PathArgs).Where{$_} -Join ' ').trim(' \')
+      $P2 = $P -replace '\)\s+([\\/])',')$1'
       If (Test-Path $P -ea ignore) {
         $Path = $PSBoundParameters.Path = (Resolve-Path $P).path
-      }   
+      } elseif (Test-Path $P2 -ea ignore) {
+        Write-Verbose "$(LINE) Path: [$Path] P2: [$P2]  PathArgs: [$PathArgs]"
+        $P = $Path = $PSBoundParameters.Path = (Resolve-Path $P2).path
+      }  
       Write-Verbose "$(LINE) Path: [$Path] P: [$P]  PathArgs: [$PathArgs]"
       [Void]$PSBoundParameters.Remove('PathArgs')
     } 
@@ -143,21 +154,36 @@ Function Set-LocationFile {
       throw
     }
     If ($PushLocation) { 
-      $PwdSave = $PSBoundParameters.Path
-      $PSBoundParameters.Path = $Pwd
+      $PathParam = $psCmdlet.ParameterSetName
+      $PwdSave = If ($PSBoundParameters.ContainsKey($PathParam)) {
+        $PSBoundParameters.$PathParam
+      } else {
+      }
+      $PSBoundParameters.$PathParam = $Pwd
+      Write-Verbose ("$(LINE) Pushing with: " + ($PSBoundParameters | Out-String))
       Push-Location @PSBoundParameters
-      $PSBoundParameters.Path = $PwdSave      
+      $PSBoundParameters.PathParam = $PwdSave      
     }
   } #begin
   Process {
     try {
+			If ($PSBoundParameters.ContainsKey('Literalpath') -and 
+          $Literalpath -and
+			    (!(Test-Path -literal $Literalpath -ea ignore))) {
+        $P = $LiteralPath -replace '^"|"$'
+        Write-Verbose "$(LINE) P: $P  LiteralPath: $LiteralPath"
+        If ($P -and (Test-Path $P -ea ignore)) { 
+          $LiteralPath = $PSBoundParameters.LiteralPath = $P
+        }
+        Write-Verbose "$(LINE) P: $P  LiteralPath: $LiteralPath"
+      }
       $Target = If     ($psCmdlet.ParameterSetName -eq 'Path') { $Path } 
                 ElseIf ($LiteralPath) { $LiteralPath }
-                Else   { '' }
-      Write-Verbose ("$(LINE) PROCESS Set:$($PSCmdlet.ParameterSetName) `$_=[$_] " +
+                Else   { '.' }
+      Write-Verbose ("$(LINE) PROCESS Set:$($PSCmdlet.ParameterSetName) `$Target=[$Target] " +
                      ($PSBoundParameters | Out-String))
-      If ($Path -and !$LiteralPath) { $_ = $Path}
-      Write-Verbose ("$(LINE) `$_: $($_)" + ($PSBoundParameters | Out-String))
+      #If ($Path -and !$LiteralPath) { $_ = $Path}
+      #Write-Verbose ("$(LINE) `$_: $($_)" + ($PSBoundParameters | Out-String))
       If ($_ -and (
 			  $Dir = Resolve-Path $_ -ea Ignore |
           Where-Object {
@@ -174,6 +200,13 @@ Function Set-LocationFile {
       ) {
         $_ = (Split-Path $_ -ea ignore)
         Write-Verbose "$(LINE) Process `$_: $_   P:[$P]"
+      }
+			If ($Literalpath -and
+			    (!(Test-Path -literal $Literalpath -ea ignore))) {
+        $P = $_ -replace '^"|"$'
+        If (Test-Path $P -ea ignore) { 
+          $LiteralPath = $PSBoundParameters.LiteralPath = $P
+        }
       }
 			If ( $Literalpath -and
 			    ($P = Resolve-Path -literal $Literalpath -ea ignore) -and
