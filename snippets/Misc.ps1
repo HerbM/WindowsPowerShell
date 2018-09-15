@@ -6,8 +6,66 @@
 # https://sourceforge.net/projects/winmerge/files/alpha/2.15.2/WinMerge-2.15.2-x64-Setup.exe/download
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+[Net.ServicePointManager]::SecurityProtocol = "Tls12, Tls11, Tls, Ssl3"
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 Invoke-WebRequest #  remove errors
+# Update to enable TLS 1.1 and TLS 1.2 as a default secure protocols in WinHTTP in Windows
+# https://support.microsoft.com/en-us/help/3140245/update-to-enable-tls-1-1-and-tls-1-2-as-a-default-secure-protocols-in
+# http://www.catalog.update.microsoft.com/search.aspx?q=kb3140245
+
+# Decision Making under Uncertainty TIKZ LuaLatex->SGV PGFPlots.jl (Plots.jl)  POMDP_.jl SISL  Bellman Algorithm
+# TikzGraph.jl  juliaplots.sty (Pythontex but good with Julia)  BayesNets.jl
+# Mykel Kochenderfer Stanford ACAS TACAS Partially Observable Markov Decision Process
+# Discretizers.jl  Decision Making under Uncertainty aa228 standford.edu Julia notebooks 
+# Multidisciplinary Design Optimization    Building Trust in Autonomous Systems
+# Vocareum notebooks and competitions
+# github.com/sisl/OptimizationCOurse  High School
+# Algorithm for Optimization in Julia  mykel@standford.edu
+
+Partially Observable Markov Decision Processes POMDP
+PartiallyObservableMarkovDecisionProcesses-POMDP_lecture.pdf
+# C:\Users\Herb\Downloads\books\Algorithms\144715021X {B8541B7F} Simulation-Based Algorithms for Markov Decision Processes (2nd ed.) [Chang, Hu, Fu & Marcus 2013-02-23].pdf
+# F:\BT\Math\MathProgramming\Math Collection\Simulation-Based Algorithms for Markov Decision Processes - H. Chang, et al., (Springer, 2007) WW.pdf
+# C:\Users\Herb\Downloads\books\Algorithms\0387293353 {6E06366C} Markov Chains_ Models, Algorithms and Applications [Ching & Ng 2005-12-05].pdf
+# C:\Users\Herb\Downloads\books\Algorithms\0387293353 {B9C5F978} Markov Chains_ Models, Algorithms and Applications [Ching & Ng 2005-12-05].pdf
+# C:\Users\Herb\Downloads\books\Algorithms\0470772719 {2675E105} Markov Processes and Applications_ Algorithms, Networks Genome and Finance [Pardoux 2009-01-07].pdf
+# C:\Users\Herb\Downloads\books\Algorithms\1447122267, 1447158369 {0DF5EC10} Low Rank Approximation_ Algorithms, Implementation, Applications [Markovsky 2011-11-19].pdf
+# C:\Users\Herb\Downloads\books\Algorithms\1461463114 {EA91A374} Markov Chains_ Models, Algorithms and Applications (2nd ed.) [Ching, Huang, Ng & Siu 2013-03-28].pdf
+# F:\BT\Math\MathProgramming\dvd64\Sinclair A. - Algorithms for Random Generation and Counting. A Markov Chain Approach(1993)(Second Edition)(160).pdf
+# C:\Users\Herb\Downloads\books\Python\Apress.Reinforcement.Learning.With.Open.AI.TensorFlow.and.Keras.Using.Python.1484232844.epub
+
+C:\Users\Herb\Downloads\books\Python\Apress.Reinforcement.Learning.With.Open.AI.TensorFlow.and.Keras.Using.Python.1484232844.pdf
+F:\BT\Download\pack27.5\Hands - On Reinforcement Learning with Python.zip
+C:\Users\Herb\Downloads\bt\Nandy A., Biswas M. - Reinforcement Learning With Open AI, TensorFlow and Keras Using Python - 2018.pdf
+C:\Users\Herb\Downloads\books\Python\Packt.Hands-On.Reinforcement.Learning.with.Python.1788836529.epub
+F:\BT\Download\pack11.75\Statistics for Machine Learning_ Build supervised, unsupervised, and reinforcement learning models using both Python and R.epub
+
+
+C:\Users\Herb\Downloads\books\Machine Learning\0387310738 {073AD785} Pattern Recognition and Machine Learning [Bishop 
+2007-10-01].pdf
+C:\Users\Herb\Downloads\books\Machine Learning\9814335452 {05716798} Introduction to Pattern Recognition and Machine 
+Learning [Murty & Devi 2014-09-30].pdf
+C:\Users\Herb\Downloads\books\Machine Learning\Bishop C. M. - Pattern Recognition and Machine Learning (Information 
+Science and Statistics) - 2006.pdf
+F:\BT\Math\29\Cs_Computer science\CsAi_AI, knowledge\Fu K.S. Sequential methods in pattern recognition and machine 
+learning (AP, 1968)(ISBN 012269550X)(T)(O)(245s)_CsAi_.djvu
+C:\Users\Herb\Downloads\books\AI\ML\pattern recognition and machine learning (2007).pdf
+C:\Users\Herb\Downloads\books\AI\other\solutions\pattern recognition and machine learning solutions.pdf
+C:\Users\Herb\Downloads\books\Machine Learning\Stephen Marsland - Machine Learning An Algorithmic Perspective (2nd 
+Edition) (Chapman & Hall Crc Machine Learning & Pattern Recognition) - 2014.pdf
+
+
+C:\Users\Herb\Downloads\books\Machine Learning\1466583282 {1642C406} Machine Learning_ An Algorithmic Perspective (2nd 
+ed.) [Marsland 2014-10-08].pdf
+F:\BT\Download\pack11.75\Machine Learning_ An Algorithmic Perspective 2nd Edition.pdf
+C:\Users\Herb\Downloads\books\Machine Learning\Stephen Marsland - Machine Learning An Algorithmic Perspective (2nd 
+Edition) (Chapman & Hall Crc Machine Learning & Pattern Recognition) - 2014.pdf
+
+F:\BT\Download\pack11.75\Fundamentals of Deep Learning_ Designing Next-Generation Machine Intelligence Algorithms.pdf
+F:\BT\Programming\MachineLearning\OReilly.Fundamentals.of.Deep.Learning.1491925612.pdf
+
+
+
 
 function e {    # es.exe everything 
   [cmdletbinding()]param(

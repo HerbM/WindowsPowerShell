@@ -1,6 +1,7 @@
 #region    Parameters
 [CmdLetBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
 param (
+                                                       [switch]$Force,
   [Alias('DotNet')]                                    [switch]$ShowDotNetVersions,
   [Alias('Modules')]                                   [switch]$ShowModules,
   [Alias('IModules')]                                  [switch]$InstallModules,
@@ -16,6 +17,13 @@ param (
   #[ValidateSet('SilentlyContinue','')]                                  [switch]$InformationAction
 )
 #region    Parameters
+If ((Get-Item Env:NoProfile -ea Ignore) -and $Env:NoProfile.Trim() -match '^(T|Y|Skip)' ) {
+  Write-Host "  PowerShell skip profile `$Env:NoProfile = [$($Env:NoProfile)]" -fore 'blue' -back 'Green'
+  ForEach ($Key in $PSBoundParameters.Keys) {
+    Write-Host "  $Key = $($PSBoundParameters.$Key)" -fore 'blue' -back 'Green'
+  }
+  Exit 
+}  
 $Private:StartTime  = Get-Date
 $ErrorCount = $Error.Count
 If (!(Get-Command Write-Information -ea 0)) { New-Alias Write-Information Write-Host -Scope Global }

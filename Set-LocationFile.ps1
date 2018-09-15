@@ -68,7 +68,7 @@ Function Set-Location {
   Set-Location $Profile
   Changes to the directory where the PowerShell Profile is located
 .NOTES
-  The  * cmdlet is designed to work with the data exposed by any provider. To list the providers available in your session, type `Get-PSProvider`. For more information, see about_Providers.
+  The * cmdlet is designed to work with the data exposed by any provider. To list the providers available in your session, type `Get-PSProvider`. For more information, see about_Providers.
   A stack is a last-in, first-out list in which only the most recently added item can be accessed. You add items to a stack in the order that you use them, and then retrieve them for use in the reverse order. Windows PowerShell lets you store provider locations in location stacks. Windows PowerShell creates an unnamed default location stack. You can create multiple named location stacks. If you do not specify a stack name, Windows PowerShell uses the current location stack. By default, the unnamed default location is the current location stack, but you can use the  cmdlet to change the current location stack.
   To manage location stacks, use the Windows PowerShell Location cmdlets, as follows:
   - To add a location to a location stack, use the Push-Location cmdlet.
