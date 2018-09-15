@@ -16,8 +16,9 @@ Function Get-Reference {
   Process {
     $Name = '(' + ($Name -join ')|(') + ')'
     ForEach ($P in $Path) {
-      Write-Verbose "$(FLINE)P: $P [Get-ChildItem $P | Where-Object Name -match $Name]"
-      $List += Get-ChildItem $P | Where-Object Name -match $Name
+      Write-Verbose "$(FLINE)P"
+      Write-Verbose "Get-ChildItem $P | Where-Object Name -match '$Name'"
+      $List += Get-ChildItem $P -File | Where-Object Name -match $Name
     }
   }
   End {

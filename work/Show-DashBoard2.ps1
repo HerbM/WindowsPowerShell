@@ -6,7 +6,7 @@ $Dashboard = New-UDDashboard -Title "Processes $(Get-Date -f 's')" -Content {
   }
 }
 
-Start-UDDashboard -dashboard $Dashboard -port 2000 -autoreload
+Start-UDDashboard -dashboard $Dashboard -port 2000 -autoreload -cyclepages -cyclepagesinterval 
   
   
 #  DCS4AVDevOps01  

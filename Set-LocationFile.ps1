@@ -1,14 +1,4 @@
 <#
-<<<<<<< HEAD
-   #requires -version 5.1
-   This is a copy of:
-   CommandType  Name         Version   Source
-   -----------  ----         -------   ------
-   Cmdlet       Set-Location 3.1.0.0   Microsoft.PowerShell.Management
-
-   Created: 26 April, 2018
-   Author : Herb Martin
-=======
   #requires -version 5.1
   This is a copy of:
   CommandType  Name         Version   Source
@@ -17,14 +7,13 @@
 
   Created: 26 April, 2018
   Author : Herb Martin
->>>>>>> f6b5eec2b2c9ee72c84e5c0258c79eb5cec2d581
 #>
 
 Set-StrictMode -Version Latest
 
 Function x86 { '(x86)' }
 
-Function Set-Location {
+Function Set-LocationFile {
 <#
 .SYNOPSIS
   Sets the current working location to a specified location.
@@ -77,7 +66,7 @@ Function Set-Location {
   The unnamed default location stack is fully accessible only when it is the current location stack. If you make a named location stack the current location stack, you cannot no longer use Push-Location or Pop-Location cmdlets add or get items from the default stack or use Get-Location to display the locations in the unnamed stack. To make the unnamed stack the current stack, use the StackName parameter of  with a value of $Null or an empty string ("").
   *
 .INPUTS
-  System.String
+  (including those produced by Get-ChildItem, Path cmdlets etc.)
 .OUTPUTS
   None, System.Management.Automation.PathInfo, System.Management.Automation.PathInfoStack
 .LINK
@@ -91,14 +80,16 @@ Function Set-Location {
 .LINK
   Push-Location
 #>
-  [CmdletBinding(DefaultParameterSetName='Path', SupportsTransactions=$true)]
-  Param(
+  [CmdletBinding(DefaultParameterSetName='Path', SupportsTransactions)] 
+  [Alias('cd','Set-Location')]Param(
     [Parameter(ParameterSetName='Path', Position=0, ValueFromPipeline=$true,
       ValueFromPipelineByPropertyName=$true)][string]$Path,
-    [Parameter(ParameterSetName='Path', ValueFromRemainingArguments)][string[]]$PathArgs,
+    [Parameter(ParameterSetName='Path', ValueFromRemainingArguments)]
+      [string[]]$PathArgs,
     [Parameter(ParameterSetName='LiteralPath', Mandatory=$true, ValueFromPipelineByPropertyName=$true)]
-    [Alias('PSPath')][string]$LiteralPath,
+      [Alias('PSPath')][string]$LiteralPath,
     [switch]$PassThru,
+    [Alias('PushDirectory','pdirectory')][switch]$PushLocation,
     [Alias('s','pp','providerpath','string')][switch]$Simple,
     [Parameter(ParameterSetName='Stack', ValueFromPipelineByPropertyName=$true)]
       [string]$StackName
@@ -111,17 +102,32 @@ Function Set-Location {
     Write-Verbose ("$(LINE) BEGIN Set:$($PSCmdlet.ParameterSetName) " +
                    ($PSBoundParameters | Out-String))
     If ($PSBoundParameters.ContainsKey('Simple')) {
+      $Simple = $PSBoundParameters.Simple
       [Void]$PSBoundParameters.Remove('Simple')
-      $Simple = $True
+    }
+    If ($PSBoundParameters.ContainsKey('Path') -and !(Test-Path $Path -ea ignore)) {
+      $P = $Path -replace '^"|"$'
+      If (Test-Path $P -ea ignore) { $Path = $PSBoundParameters.Path = $P}
+    }
+    If ($PSBoundParameters.ContainsKey('PushLocation')) {
+      $PushLocation = $PSBoundParameters.PushLocation
+      [Void]$PSBoundParameters.Remove('PushLocation')
     }
     If ($PSBoundParameters.ContainsKey('PathArgs')) {
-      $P = ((@($Path) + $PathArgs).Where{$_} -Join ' ').trim(' \')
+      Write-Verbose "$(LINE) Path: [$Path] P: [$P]  PathArgs: [$PathArgs]"
+      $PathArgs = $PathArgs.trim()
+      Write-Verbose "$(LINE) Path: [$Path] P: [$P]  PathArgs: [$PathArgs]"
+      $P  = ((@($Path) + $PathArgs).Where{$_} -Join ' ').trim(' \')
+      $P2 = $P -replace '\)\s+([\\/])',')$1'
       If (Test-Path $P -ea ignore) {
         $Path = $PSBoundParameters.Path = (Resolve-Path $P).path
-      }
+      } elseif (Test-Path $P2 -ea ignore) {
+        Write-Verbose "$(LINE) Path: [$Path] P2: [$P2]  PathArgs: [$PathArgs]"
+        $P = $Path = $PSBoundParameters.Path = (Resolve-Path $P2).path
+      }  
       Write-Verbose "$(LINE) Path: [$Path] P: [$P]  PathArgs: [$PathArgs]"
       [Void]$PSBoundParameters.Remove('PathArgs')
-    }
+    } 
     ForEach ($Dir in 'Path','LiteralPath') {
       If ($PSBoundParameters.ContainsKey($Dir) -and
           (Test-Path $PSBoundParameters.$Dir -PathType Leaf -ea Ignore)) {
@@ -147,13 +153,37 @@ Function Set-Location {
       Write-Verbose ("$(LINE)`n" + ($_.Exception | FL * -Force | Out-String))
       throw
     }
+    If ($PushLocation) { 
+      $PathParam = $psCmdlet.ParameterSetName
+      $PwdSave = If ($PSBoundParameters.ContainsKey($PathParam)) {
+        $PSBoundParameters.$PathParam
+      } else {
+      }
+      $PSBoundParameters.$PathParam = $Pwd
+      Write-Verbose ("$(LINE) Pushing with: " + ($PSBoundParameters | Out-String))
+      Push-Location @PSBoundParameters
+      $PSBoundParameters.PathParam = $PwdSave      
+    }
   } #begin
   Process {
     try {
-      Write-Verbose ("$(LINE) PROCESS Set:$($PSCmdlet.ParameterSetName) `$_=[$_] " +
+			If ($PSBoundParameters.ContainsKey('Literalpath') -and 
+          $Literalpath -and
+			    (!(Test-Path -literal $Literalpath -ea ignore))) {
+        $P = $LiteralPath -replace '^"|"$'
+        Write-Verbose "$(LINE) P: $P  LiteralPath: $LiteralPath"
+        If ($P -and (Test-Path $P -ea ignore)) { 
+          $LiteralPath = $PSBoundParameters.LiteralPath = $P
+        }
+        Write-Verbose "$(LINE) P: $P  LiteralPath: $LiteralPath"
+      }
+      $Target = If     ($psCmdlet.ParameterSetName -eq 'Path') { $Path } 
+                ElseIf ($LiteralPath) { $LiteralPath }
+                Else   { '.' }
+      Write-Verbose ("$(LINE) PROCESS Set:$($PSCmdlet.ParameterSetName) `$Target=[$Target] " +
                      ($PSBoundParameters | Out-String))
-      If ($Path -and !$LiteralPath) { $_ = $Path}
-      Write-Verbose ("$(LINE) `$_: $($_)" + ($PSBoundParameters | Out-String))
+      #If ($Path -and !$LiteralPath) { $_ = $Path}
+      #Write-Verbose ("$(LINE) `$_: $($_)" + ($PSBoundParameters | Out-String))
       If ($_ -and (
 			  $Dir = Resolve-Path $_ -ea Ignore |
           Where-Object {
@@ -170,6 +200,13 @@ Function Set-Location {
       ) {
         $_ = (Split-Path $_ -ea ignore)
         Write-Verbose "$(LINE) Process `$_: $_   P:[$P]"
+      }
+			If ($Literalpath -and
+			    (!(Test-Path -literal $Literalpath -ea ignore))) {
+        $P = $_ -replace '^"|"$'
+        If (Test-Path $P -ea ignore) { 
+          $LiteralPath = $PSBoundParameters.LiteralPath = $P
+        }
       }
 			If ( $Literalpath -and
 			    ($P = Resolve-Path -literal $Literalpath -ea ignore) -and
