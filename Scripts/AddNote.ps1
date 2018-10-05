@@ -103,6 +103,9 @@ New-Alias Add-Mistake New-Mistake -scope Global -Force # Mistake object
 New-Alias nm          New-Mistake -scope Global -Force
 New-Alias am          New-Mistake -scope Global -Force
 
+<#
+Powershell makes a test if it works under Application White List (AWL) or not. Powershell creates a couple of files with extention ps1 and psm1 in %temp% folder and then trys to start it. If this attempt fails Powershell decides that it works under AWL and switches on constrained language mode. Name of the files created by powershel are always random but the content of these files is always the same (each file consist of the only one symbol - '1'). So you can create the only one hash rule to allow these files to start.
+#>
 Function Get-MistakeFileName {
   [CmdletBinding()]Param(
     [string]$Path    = "$((Get-UserFolder 'Personal').Folder)\MistakeLog*.txt",

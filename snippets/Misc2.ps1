@@ -195,7 +195,7 @@ Dump all server Cis in the CMDB..
 Launch Service Flow from the DCS Portal home page > Published Reports > CMDB Assets > CMDB Assets Hardware > CMDB Hardware Asset Data.  
 Interact online, or Tools > Export to CSV
 
-
+setproxy /pac:http://proxyconf.my-it-solutions.net/proxy-na.pac
   netsh winhttp show proxy
   netsh winhttp import proxy source=ie
   
@@ -794,7 +794,8 @@ function t  { param([ValidateSet('a','b','c')]$abc) $v = get-variable abc; $v | 
 
 # Git_Proxy
 Function Set-GitProxy {
-  [CmdletBinding(SupportsShouldProcess,ConfirmImpact='Media',DefaultParameterSetName='Proxy')]
+  [CmdletBinding(SupportsShouldProcess,ConfirmImpact='Media',
+    DefaultParameterSetName='Proxy')]
   Param(
     [Parameter=(ParameterSetName='Proxy')]
     [string]$Proxy      = 'http://proxy-us.glb.my-it-solutions.net:84',
@@ -806,15 +807,18 @@ Function Set-GitProxy {
     [Parameter=(ParameterSetName='HTTP','Proxy')][switch]$CurrentUser,
     [Parameter=(ParameterSetName='Reset']        [switch]$Reset
   )
-  If ($CurrentUser) { $UserName = whoami }
-  If ($UserName) { 
-  
-  $Env:credential_helper     = 'wincred'
-  $Env:GIT_credential_helper = 'wincred'
-  $Env:GIT_HTTP_PROXY        = 'http://ww930\\A469526@proxy-us.glb.my-it-solutions.net:84'
-  $Env:GIT_HTTPS_PROXY       = 'http://ww930\\A469526@proxy-us.glb.my-it-solutions.net:84' 
-  $Env:http_proxy            = 'http://ww930\\A469526@proxy-us.glb.my-it-solutions.net:84'
-  $Env:https_proxy           = 'http://ww930\\A469526@proxy-us.glb.my-it-solutions.net:84'
+  If ($PSBoundParameters.ContainsKey('CurrentUser') -and $CurrentUser) { 
+    $UserName = whoami 
+  }
+  If ($UserName) {   
+    $UserName = $UserName -replace '\b\\\b','\\'
+    $Env:credential_helper     = 'wincred'
+    $Env:GIT_credential_helper = 'wincred'
+    $Env:GIT_HTTP_PROXY        = "http://$UserName@proxy-us.glb.my-it-solutions.net:84"
+    $Env:GIT_HTTPS_PROXY       = "http://$UserName@proxy-us.glb.my-it-solutions.net:84" 
+    $Env:http_proxy            = "http://$UserName@proxy-us.glb.my-it-solutions.net:84"
+    $Env:https_proxy           = "http://$UserName@proxy-us.glb.my-it-solutions.net:84"
+  }  
 }
 
 ###  Report-478 397 tools
