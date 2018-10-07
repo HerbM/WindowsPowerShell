@@ -792,34 +792,6 @@ DisableFirstRunCustomize DWORD value greater than 0 under one of these keys:
 function t  { param([ValidateSet('a','b','c')]$abc) $v = get-variable abc; $v | fl * -force; $v | select -expand Attributes| fl * -force }
 
 
-# Git_Proxy
-Function Set-GitProxy {
-  [CmdletBinding(SupportsShouldProcess,ConfirmImpact='Media',
-    DefaultParameterSetName='Proxy')]
-  Param(
-    [Parameter=(ParameterSetName='Proxy')]
-    [string]$Proxy      = 'http://proxy-us.glb.my-it-solutions.net:84',
-    [Parameter=(ParameterSetName='HTTP')]
-    [string]$HttpProxy  = 'http://proxy-us.glb.my-it-solutions.net:84',
-    [Parameter=(ParameterSetName='HTTP')]
-    [string]$HttpsProxy = 'http://proxy-us.glb.my-it-solutions.net:84',
-    [Parameter=(ParameterSetName='HTTP','Proxy')][string]$UserName='',
-    [Parameter=(ParameterSetName='HTTP','Proxy')][switch]$CurrentUser,
-    [Parameter=(ParameterSetName='Reset']        [switch]$Reset
-  )
-  If ($PSBoundParameters.ContainsKey('CurrentUser') -and $CurrentUser) { 
-    $UserName = whoami 
-  }
-  If ($UserName) {   
-    $UserName = $UserName -replace '\b\\\b','\\'
-    $Env:credential_helper     = 'wincred'
-    $Env:GIT_credential_helper = 'wincred'
-    $Env:GIT_HTTP_PROXY        = "http://$UserName@proxy-us.glb.my-it-solutions.net:84"
-    $Env:GIT_HTTPS_PROXY       = "http://$UserName@proxy-us.glb.my-it-solutions.net:84" 
-    $Env:http_proxy            = "http://$UserName@proxy-us.glb.my-it-solutions.net:84"
-    $Env:https_proxy           = "http://$UserName@proxy-us.glb.my-it-solutions.net:84"
-  }  
-}
 
 ###  Report-478 397 tools
 ###  Fix Convert-Bigfix 2 output files?
