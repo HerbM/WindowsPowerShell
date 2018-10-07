@@ -30,7 +30,11 @@ $PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversi
 if (!(Get-Module PSReadline -listavailable -ea Ignore)) {
   $parms = @{force = $true; Confirm = $False}
   if ($PSVersionNumber -ge 5.1) { $parms += @{ AllowClobber = $True } }
-  Install-Module PSReadline @Parms -ea Ignore 
+  If (Get-Command Install-Module -ea Ignore) {
+    Install-Module PSReadline @Parms -ea Ignore 
+  } Else {
+    Write-Warning "$(FLINE) Install-Module not found"
+  }
 }
 if (!(Get-Module PSReadline -ea ignore) -and (Get-Module PSReadline -listavailable -ea ignore)) {
   Import-Module PSReadLine

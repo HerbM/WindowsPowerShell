@@ -1,3 +1,4 @@
+
 #region    Parameters
 [CmdLetBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
 param (
@@ -27,6 +28,9 @@ If ((Get-Item Env:NoProfile -ea Ignore) -and $Env:NoProfile.Trim() -match '^(T|Y
 $Private:StartTime  = Get-Date
 $ErrorCount = $Error.Count
 If (!(Get-Command Write-Information -ea 0)) { New-Alias Write-Information Write-Host -Scope Global }
+
+remove-item alias:type       -force -ea Ignore
+new-alias   type Get-Content -force -scope Global -ea Ignore
 
 New-Alias -Name LINE -Value Get-CurrentLineNumber -Description 'Returns the current (caller''s) line number in a script.' -force -Option allscope
 New-Alias -Name __LINE__ -Value Get-CurrentLineNumber -Description 'Returns the current (caller''s) line number in a script.' -force -Option allscope
@@ -127,15 +131,6 @@ Function Get-ExtraProfile {
 # Start-Process -FilePath 'https://www.google.com'
 # Start-Process -FilePath 'https://www.google.com/search?num=100&q=powershell+pssession'
 
-Function Get-FileVersion {
-  Get-item @Args | Select-Object -expand VersionInfo
-  es @Args | Get-Childitem -File | Select-Object -Expand VersionINfo 
-}
-
-Filter Get-FileVersion {
-  Get-item @Args | Select-Object -expand VersionInfo
-  # es @Args | Get-Childitem -File | Select-Object -Expand VersionINfo 
-}
 
 Function Get-ProcessFile {
   (Get-Process @args).Where{$_.Name -notin 'System','Idle'} | 
@@ -770,7 +765,7 @@ Function Update-ModuleList {
   [CmdLetBinding(SupportsShouldProcess = $true,ConfirmImpact='Medium')]
   param(
     [Parameter(ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$true)]
-    [string[]]$name='pscx'
+    [string[]]$Name='pscx'
   )
   begin {}
   process {
@@ -836,8 +831,10 @@ if ($ShowModules) {
    Format-Table version,name,author,path
 } else {}
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE) After Show-Module "
+
 # Get .Net Constructor parameters
 # ([type]"Net.Sockets.TCPClient").GetConstructors() | ForEach-Object { $_.GetParameters() } | Select-Object Name,ParameterType
+
 Function Get-Constructor {
   param([Alias('Name')][string[]]$TypeName)
   ForEach ($Name in $TypeName) {
@@ -845,6 +842,66 @@ Function Get-Constructor {
       write-host "$_"; $_.GetParameters()
     } | Select-Object -Object Name, ParameterType
   }
+}
+# [Net.Sockets.TCPClient]::New
+# Check TCP connection (New-Object Net.Sockets.TcpClient).Connect("<remote machine>",<port>) 
+# Check UDP conection  (New-Object Net.Sockets.UdpClient).Connect("<remote machine>",<port>)
+
+Function Test-TCP { 
+  [CmdletBinding()]Param($ComputerName='www.google.com',$Port=80)
+  try { 
+    (New-Object Net.Sockets.TcpClient).Connect($ComputerName,$Port) 
+    $True
+  } Catch { $False }
+}
+<#
+.Example
+(measure-command { test-tcpservice 168.44.245.99 9999 }).TotalSeconds
+#>
+Function Test-TCPService {
+  [CmdLetBinding()]Param([string]$Server,$port=135,$MaxWait=3000)
+  if ($MaxWait -lt 30) { $MaxWait *= 1000 }
+  $Failed = $False
+  try {
+    $ErrorActionPreference = 'Continue'
+    $tcpclient = new-Object system.Net.Sockets.TcpClient
+    $Start = Get-Date
+    Function Elapsed { param($Start = $Start) '{0,5:N0}ms' -f ((get-date) - $Start).TotalMilliseconds }
+    # Write-Verbose "$(LINE) $(Elapsed) Begin"
+    $iar = $tcpclient.BeginConnect($Server, $port, $null, $null) # Create Client
+    # Write-Verbose "$(LINE) $(Elapsed) Wait"
+    $wait = $iar.AsyncWaitHandle.WaitOne($MaxWait,$false)         # Set timeout
+    # Write-Verbose "$(LINE) $(Elapsed) If !Wait"
+    if (!$wait) {                                                 # Check if connection is complete
+        # Write-Verbose "$(LINE) $(Elapsed) NOT Wait"
+        #write-log "$(FLINE) Connection Timeout: $Server $Port $MaxWait"
+        $Failed = $True
+        #try {$tcpclient.EndConnect($iar) | out-Null } catch {}
+        # Write-Verbose "$(LINE) $(Elapsed) After ENDConnect"
+    }  else {
+      # Write-Verbose "$(LINE) $(Elapsed) Wait"
+      # $error.Clear()                                             # Close the connection, report any error
+      $tcpclient.EndConnect($iar) | out-Null
+      # Write-Verbose "$(LINE) $(Elapsed) After End Connect 1"
+      if (!$?) {
+        # write-Verbose "$(FLINE) $(Elapsed) `$?"
+        $failed = $true
+      }
+    }
+  } catch {
+    # write-Verbose "$(LINE) $(Elapsed) Catch"
+    $Failed = $True
+  } finally {
+    # write-Verbose "$(LINE) $(Elapsed) Finally"
+    if ($tcpclient.Connected) {
+      # try {$tcpclient.EndConnect($iar) | out-Null } catch {}
+      # write-Verbose "$(LINE) $(Elapsed) After ENDConnect"
+      $null = $tcpclient.Close
+      # write-Verbose "$(LINE) $(Elapsed) After Close"
+    }
+  }
+  # write-Verbose "$(LINE) $(Elapsed) Returning"
+  !$failed  # Return $true if connection Establish else $False
 }
 Write-Information "Useful modules: https://blogs.technet.microsoft.com/pstips/2014/05/26/useful-powershell-modules/"
 $PSCXprofile = 'C:\Users\hmartin\Documents\WindowsPowerShell\Pscx.UserPreferences'
@@ -1071,6 +1128,7 @@ Function Get-DriveType {
   ElseIf ($DriveTypes.Contains($Type))             { $DriveTypes[$Type] } 
   Else                                             { 'INVALID'          }
 }
+
 Function Get-DriveType {
   [CmdletBinding()][Alias('Get-DriveTypeName')]
   [Alias('DriveTypeName','Type','Code','DriveCode')]
@@ -1317,7 +1375,7 @@ Function Get-Syntax {
     } else { $Result }
   }
 }; new-alias syn get-syntax -force
-#Function syn { get-command @args -syntax }
+
 Function Get-Syntax {
   Param(
     [Alias('CommandName')][string[]]$Name='Get-Command'
@@ -1699,67 +1757,50 @@ Function Get-Property {
     }
   }
 }
-# Function docs {
-#   [CmdletBinding()]param (
-#     [Parameter(Position='0')][string]$path="$Home\Documents",
-#     [Parameter(Position='1')][string]$subdirectory,
-#     [switch]$pushd
-#   )
-#   try {
-#     write-verbose $Path
-#     if (Test-Path $path) {
-#       if ($pushd) { pushd $path } else { Set-Location $path }
-#       if ($subdirectory) {Set-Location $subdirectory}
-#     }  else {
-#       throw "Directory [$Path] not found."
-#     }
-#   }  catch {
-#     write-error $_
-#   }
+Function GalDef { 
+  Param([string[]]$Definition,[string[]]$Exclude,[string]$Scope)
+  Get-Alias @PSBoundParameters
+}
+New-Alias ts Test-Script -Force   
+Function Test-Clipboard { 
+  [CmdletBinding()][Alias('tcb','gcbt','tgcb')]Param() 
+  Get-Clipboard | Test-Script
+}
+Function Get-HistoryCount {
+  [CmdletBinding()][Alias('hcount','hc')]param([int]$Count) 
+  Get-History -count $Count 
+}
 # }
-# Function books {
-#   if (Test-Path "$($env:userprofile)\downloads\books") {
-#     Set-Location "$($env:userprofile)\downloads\books"
-#   } elseif (Test-Path "C:\books") {
-#     Set-Location "C:\books"
-#   }
-#   if ($args[0]) {Set-Location $args[0]}
-# }
+write-warning "$(get-date -f 'HH:mm:ss') $(LINE) Before Go"
 try {
   $ECSTraining = "\Training"
-  $SearchPath  = 'C:\',"$Home\Downloads","T:$ECSTraining","S:$ECSTraining"
+  $SearchPath  = 'C:\',"$Home\Downloads","S:$ECSTraining","T:$ECSTraining"
   $Books = Join-Path $SearchPath 'Books' -ea ignore | Select-Object -First 1
 } catch {
   $Books = $PSProfile
 }  # just ignore
-
-Function Test-Clipboard { Get-Clipboard | Test-Script };
-New-Alias tcb  Test-ClipBoard -force -scope Global
-New-Alias gcbt Test-ClipBoard -force -scope Global
-Function Get-HistoryCount {param([int]$Count) get-history -count $Count }
-New-alias count Get-HistoryCount -force -scope Global
-write-warning "$(get-date -f 'HH:mm:ss') $(LINE) Before Go"
 $goHash = [ordered]@{
+  book       = $books
+  books      = $books
+  dev        = 'c:\dev'
   doc        = "$home\documents"
   docs       = "$home\documents"
   down       = "$home\downloads"
   download   = "$home\downloads"
   downloads  = "$home\downloads"
-  book       = $books
-  books      = $books
+  esb        = 'c:\esb'
+  power      = "$books\PowerShell"
+  PowerShell = '$Books\PowerShell'
+  pro        = $PSProfileDirectory
+  prof       = $PSProfileDirectory
+  profile    = $ProfileDirectory
+  ps         = "$books\PowerShell"
   psbook     = "$books\PowerShell"
   psbooks    = "$books\PowerShell"
   psh        = "$books\PowerShell"
   pshell     = "$books\PowerShell"
-  power      = "$books\PowerShell"
-  pro        = $PSProfileDirectory
-  prof       = $PSProfileDirectory
-  profile    = $PSProfileDirectory
-  txt        = 'c:\txt'
   text       = 'c:\txt'
-  esb        = 'c:\esb'
-  dev        = 'c:\dev'
-  PowerShell = 'C:\Books\PowerShell'
+  txt        = 'c:\txt'
 }
 Function Set-GoAlias {
   [CmdletBinding()]param([string]$Alias, [string]$Path)
@@ -1882,21 +1923,6 @@ New-Alias Go Set-GoLocation -force -scope global;
 New-Alias G  Set-GoLocation -force -scope global
 Set-GoAlias
 
-$gohash = [ordered]@{
-  docs       = "$home\documents"
-  down       = "$home\downloads"
-  download   = "$home\downloads"
-  downloads  = "$home\downloads"
-  books      = $books
-  ps         = "$books\PowerShell"
-  pshell     = "$books\PowerShell"
-  profile    = $ProfileDirectory
-  pro        = $ProfileDirectory
-  txt        = 'c:\txt'
-  text       = 'c:\txt'
-  esb        = 'c:\esb'
-  dev        = 'c:\dev'
-}
 Function Set-GoAlias {
   [CmdletBinding()]param([string]$Alias, [string]$Path)
   if ($Alias) {
@@ -2063,124 +2089,6 @@ Function Set-GoLocation {
 New-Alias Go Set-GoLocation -force -scope global -Desc "Set in Profile"
 New-Alias G  Set-GoLocation -force -scope global -Desc "Set in Profile"
 
-Function Set-DefaultProxy {
-  [CmdletBinding()] param(
-    [Alias('InternetProxy','InetProxy')]
-                            [string]$Proxy = 'proxy-us.glb.my-it-solutions.net:84',
-             [Net.NetworkCredential]$Credential,
-                          [string[]]$BypassList,  # Array of regexes
-    [Alias('UseLocal')]     [switch]$UseProxyOnLocal,
-    [Alias('NDC','NoCred')] [switch]$NoDefaultCredential,
-    [Alias('Reset','Clear')][switch]$Remove
-  )
-  #https://msdn.microsoft.com/en-us/library/system.net.webrequest.defaultcachepolicy(v=vs.100).aspx
-  #https://msdn.microsoft.com/en-us/library/system.net.networkcredential(v=vs.100).aspx
-  # BypassProxyOnLocal    : False
-  # BypassList            : {}
-  # Credentials           : System.Net.SystemNetworkCredential
-  # UseDefaultCredentials : True
-  # BypassArrayList       : {}  ### CANNOT be set, get only
-
-  If ($Remove) {
-    Write-Verbose "Remove current default proxy settings" 
-    [system.net.webrequest]::DefaultWebProxy = $Null
-    return
-  }
-  [system.net.webrequest]::DefaultWebProxy = new-object system.net.webproxy($Proxy)
-  If ($Credential -or $NoDefaultCredential) {
-    Write-Verbose 'Set UseDefaultCredentials:$False' 
-    [system.net.webrequest]::DefaultWebProxy.Credentials = Credential
-  } else {
-    Write-Verbose 'Set UseDefaultCredentials:$True' 
-    [system.net.webrequest]::DefaultWebProxy.UseDefaultCredentials = $True
-  }
-  If ($BypassList) {
-    Write-Verbose "SetByPassList: $BypassList" 
-    [system.net.webrequest]::DefaultWebProxy.BypassList = $BypassList
-  }
-    Write-Verbose "Set ByPassProxyOnLocal: $(![Boolean]$UseProxyOnLocal)" 
-  [system.net.webrequest]::DefaultWebProxy.BypassProxyOnLocal = ![Boolean]$UseProxyOnLocal
-}
-
-Function Get-DefaultProxy { [system.net.webrequest]::DefaultWebProxy }
-Function Remove-DefaultProxy { Set-DefaultProxy -Remove }
-# DefaultProxy mainly PowerShell git? InternetProxy IE, but no notify
-# setproxy.exe does notify -- need to unify, add netsh + apps, env:
-# GIT_credential_helper          wincred 
-
-# setproxy /disable
-# setproxy /pac:http://proxyconf.my-it-solutions.net/proxy-na.pac
-# https://www.makeuseof.com/tag/3-scripts-modify-proxy-setting-internet-explorer/
-# setproxy /pac:http://proxyconf.my-it-solutions.net/proxy-na.pac
-Function Get-InternetProxy {
-  [CmdletBinding()][Alias('Show-InternetProxy')]param()
-  $InternetSettingsKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings"
-  $urlEnvironment      = $Env:AutoConfigUrl
-  $urlDefault          = 'http://proxyconf.my-it-solutions.net/proxy-na.pac'
-  $ProxyValues         = 'AutoConfig ProxyEnable Autodetect'
-  write-verbose "`$Env:AutoConfigUrl        : $($Env:AutoConfigUrl)"
-  write-verbose  "Default proxy             : $urlDefault"
-  $Settings = get-itemproperty $InternetSettingsKey -ea ignore | findstr /i $ProxyValues | Sort-Object
-    Write-Output "             Registry settings"
-    ForEach ($Line in $Settings) {
-    Write-Output $Line
-  }
-}
-Function Set-InternetProxy {
-  [CmdletBinding()]
-  param(
-    #[Parameter(ValidateSet='Enable','On','Disable','Off')][string]$State,
-    [string]$State,
-    [string]$Url,
-    [Alias('On' )][switch]$Enable,
-    [Alias('Off')][switch]$Disable
-  )
-  $Verbose = $PSBoundParameters.ContainsKey('Verbose') -and $PSBoundParameters.Verbose
-  If ($State -match '^(On|Ena)') { $Enable = $True  }
-  If ($State -match '^(Of|Dis)') { $Disable = $True }
-  $InternetSettingsKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings"
-  $AutoConfigURL       = 'AutoConfigURL'
-  $AutoConfigURLSave   = $AutoConfigURL + 'SAVE'
-  $AutoDetect          = 'AutoDetect'
-  $ProxyEnable         = 'ProxyEnable'
-  $ProxyValues         = 'AutoConfig ProxyEnable Autodetect'
-  $urlEnvironment      = $Env:AutoConfigUrl
-  $urlCurrent          = If ($P = get-itemproperty $InternetSettingsKey $AutoConfigURL     -ea ignore) {
-                           $P.$AutoConfigURL } else { '' }  
-  $urlSaved            = If ($P = get-itemproperty $InternetSettingsKey $AutoConfigURLSave -ea ignore) {
-                           $P.$AutoConfigURLSAVE } Else { '' }  
-  $urlDefault          = 'http://proxyconf.my-it-solutions.net/proxy-na.pac'
-  If ($Enable -eq $Disable) {
-    Write-Warning "Specify either Enable or Disable (alias: On or Off)"
-    $Verbose = $True
-  } elseif ($Disable) {
-    if ($urlCurrent) {
-      set-itemproperty $InternetSettingsKey $AutoConfigURLSave $urlCurrent -force -ea ignore
-      remove-itemproperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" 'AutoConfigURL' -ea ignore
-    }
-    Set-ItemProperty $InternetSettingsKey $AutoDetect  0 -force -ea ignore
-    Set-ItemProperty $InternetSettingsKey $ProxyEnable 0 -force -ea ignore
-  } elseif ($Enable) {
-    $Url = switch ($True) {
-      { [boolean]$Url            } { $Url            ; break }
-      { [boolean]$UrlEnvironment } { $UrlEnvironment ; break }
-      { [boolean]$UrlCurrent     } { $UrlCurrent     ; break }
-      { [boolean]$urlSaved       } { $UrlSaved       ; break }
-      { [boolean]$urlDefault     } { $UrlDefault     ; break }
-      Default {
-        Write-Warning "Supply URL for enabling and setting AutoConfigURL Proxy"
-        return
-      }
-    }
-    Set-Itemproperty $InternetSettingsKey $AutoConfigURL $url -force -ea ignore
-    Set-ItemProperty $InternetSettingsKey $AutoDetect    1    -force -ea ignore
-    Set-ItemProperty $InternetSettingsKey $ProxyEnable   1    -force -ea ignore
-  }
-  $Settings = get-itemproperty $InternetSettingsKey -ea ignore | findstr /i $ProxyValues | Sort-Object
-  ForEach ($Line in $Settings) {
-    Write-Verbose $Line 
-  }
-}
 # Utility Functions (small)
 filter Test-Odd  { param([Parameter(valuefrompipeline)][int]$n) [boolean]($n % 2)}
 filter Test-Even { param([Parameter(valuefrompipeline)][int]$n) -not (Test-Odd $n)}
@@ -2465,6 +2373,12 @@ If ($RDCMan) {
   New-Alias rdc    $Private:RDCMan -Force
 }
 
+
+# $objShell = New-Object -ComObject ("WScript.Shell")
+# $objShortCut = $objShell.CreateShortcut($env:USERPROFILE + "Start Menu\Programs\Startup" + "\program.lnk")
+# $objShortCut.TargetPath("path to program")
+# $objShortCut.Save()
+
 ##  TODO:  Set-LocationEnvironment, Set-LocationPath 
 ## (dir ENV:*) |  ? value -match '\\'
 Function Get-UserFolder {
@@ -2505,7 +2419,7 @@ Function Get-UserFolder {
     }
   }
   End {
-    $Folders | Select -unique Name,@{N='Folder';E={$_.Value}}
+    $Folders | Select -unique Name,@{N='PSPath';E={$_.Value}}
   }
 }
 
@@ -2634,6 +2548,8 @@ Get-ExtraProfile 'Post' | ForEach-Object {
 If (($PSRL = Get-Module PSReadLine -ea 0) -and ($PSRL.version -ge [version]'2.0.0')) {
   Remove-PSReadLineKeyHandler ' ' -ea Ignore
 }
+remove-item alias:type       -force -ea Ignore
+new-alias   type Get-Content -force -scope Global -ea Ignore
 
 $Private:Duration = ((Get-Date) - $Private:StartTime).TotalSeconds
 Write-Warning "$(LINE) $(get-date -f 'HH:mm:ss') New errors: $($Error.Count - $ErrorCount)"
@@ -2642,3 +2558,40 @@ Write-Warning "$(LINE) Duration: $Private:Duration Completed: $Profile"
 If ((Get-Command git -ea Ignore) -and (Get-Module Posh-Git -ea Ignore -ListAvailable)) {
   Import-Module Posh-Git
 }
+
+<#
+$ScriptBlock = {
+  $hashtable = @{}
+  foreach( $property in $this.psobject.properties.name ) {
+    $hashtable[$property] = $this.$property
+  }
+  return $hashtable
+}
+$memberParam  = @{
+  MemberType  = ScriptMethod
+  InputObject = $myobject
+  Name        = "ToHashtable"
+  Value       = $scriptBlock
+}
+Add-Member @memberParam
+
+$TypeData = @{
+    TypeName   = 'My.Object'
+    MemberType = 'ScriptProperty'
+    MemberName = 'UpperCaseName'
+    Value = {$this.Name.toUpper()}
+}
+#Update-TypeData @TypeData
+#https://kevinmarquette.github.io/2016-10-28-powershell-everything-you-wanted-to-know-about-pscustomobject/#adding-object-methods
+
+Function Set-Owner Set-FileOwner Set-ObjectOwner ???
+cacls History /c /t /e /g "$(whoami):F"
+wmic path Win32_LogicalFileSecuritySetting where Path="C:\\windows\\winsxs" ASSOC /RESULTROLE:Owner /ASSOCCLASS:Win32_LogicalFileOwner /RESULTCLASS:Win32_SID
+wmic path Win32_LogicalFileSecuritySetting where Path="C:\\Users\\A469526\\AppData\Local" ASSOC /RESULTROLE:Owner /ASSOCCLASS:Win32_LogicalFileOwner /RESULTCLASS:Win32_SID
+wmic path Win32_LogicalFileSecuritySetting where Path="C:\\Users\\A469526\\AppData\\Local" ASSOC /RESULTROLE:Owner /ASSOCCLASS:Win32_LogicalFileOwner /RESULTCLASS:Win32_SID
+wmic path Win32_LogicalFileSecuritySetting where Path="C:\\Users\\A469526\\AppData" ASSOC /RESULTROLE:Owner /ASSOCCLASS:Win32_LogicalFileOwner /RESULTCLASS:Win32_SID
+wmic --% path Win32_LogicalFileSecuritySetting where Path="C:\\Users\\A469526\\AppData" ASSOC /RESULTROLE:Owner /ASSOCCLASS:Win32_LogicalFileOwner /RESULTCLASS:Win32_SID
+. D:\a469526\Documents\WindowsPowerShell\PSReadLineProfile.ps1
+cd (get-userfolder documents).folder
+(get-userfolder documents).tostring()
+#>
