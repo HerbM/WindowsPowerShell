@@ -1153,12 +1153,28 @@ Function Get-Volume {
   $PSBoundParameters.PSProvider = 'FileSystem'
   Get-PSDrive @PSBoundParameters
 }
+
+
+
+
+
 Function Get-Free {
   [CmdletBinding(DefaultParameterSetName='Name')]Param(
     [String[]]$Name,
     [String]$Scope = 'Local',
+    [String]$Units = 'GB',
     [switch]$UseTransaction
   )
+  $Units, $Divisor, $Precision = Switch -regex ($Units) {
+    '^G'    { 'GB'; 1GB, 1;       break }
+    '^M'    { 'MB'; 1MB, 1;       break }
+    '^K'    { 'KB'; 1KB, 1;       break }
+    '^B'    { ''  ; 1  , 0;       break }
+    '^T'    { 'TB'; 1TB, 1;       break }
+    '^P'    { 'PB'; 1PB, 1;       break }
+    '^[EX]' { 'EB'; 1PB * 1KB, 1; break }
+    Default { 'GB', 1GB, 1;       break }
+  }
   If ($PSBoundParameters.ContainsKey('Name'))  {
     $Name = $Name | ForEach-Object {
       If (Test-Path $_ -ea Ignore) { (Resolve-Path $Name).Drive } Else { $Name }
@@ -1166,9 +1182,17 @@ Function Get-Free {
     $PSBoundParameters.Name = $Name -replace '(:.*)'
   }
   $PSBoundParameters.PSProvider = 'FileSystem'
-  Get-PSDrive @PSBoundParameters | Where-Object Used -ne '' |
-    Select-Object Used,Free,DisplayRoot,Currentlocation
+  Get-PSDrive @PSBoundParameters | Where-Object Used -ne '' | ForEach-Object {
+    [PSCustomObject]@{
+      "Used$Units"    = "{0,6:N$Precision}" -f ($_.Used / $Divisor) 
+      "Free$Units"    = "{0,6:N$Precision}" -f ($_.Free / $Divisor) 
+      Root            = $_.Root   # '{0,4}' -f  $_.Root           
+      CurrentLocation = $_.CurrentLocation
+    }  
+  }  
 }
+
+
 #  Get-PSVolume
 # (Get-WMIObject win32_volume ) | Where-Object {$_.DriveLetter -match '[A-Z]:'} |
 #  ForEach-Object { "{0:2} {0:2} {0:9} {S:9} "-f $_.DriveLetter, $_.DriveType, (Get-DriveType $_.DriveType), $_.Label, ($_.Freespace / 1GB)}
