@@ -145,6 +145,40 @@ Function Set-InternetProxy {
   }
 }
 
+Function Set-GitProxy {
+  [CmdletBinding(SupportsShouldProcess,ConfirmImpact='Low',
+    DefaultParameterSetName='Proxy')]
+  Param(
+    [Parameter(ParameterSetName='Proxy')]
+    [string]$Proxy      = 'http://proxy-us.glb.my-it-solutions.net:84',
+    [Parameter(ParameterSetName='HTTP')]
+    [string]$HttpProxy  = 'http://proxy-us.glb.my-it-solutions.net:84',
+    [Parameter(ParameterSetName='HTTP')]
+    [string]$HttpsProxy = 'http://proxy-us.glb.my-it-solutions.net:84',
+    [Parameter(ParameterSetName='HTTP')]
+    [Parameter(ParameterSetName='Proxy')][string]$UserName = '',
+    [Parameter(ParameterSetName='HTTP')]
+    [Parameter(ParameterSetName='Proxy')][switch]$CurrentUser,
+    [Parameter(ParameterSetName='Reset')][switch]$Reset
+  )
+  If ($PSBoundParameters.ContainsKey('CurrentUser') -and $CurrentUser) { 
+    $UserName = whoami 
+  }
+  If ($UserName) {   
+    $UserName = ($UserName -replace '\b\\\b','\\') + '@'
+    $HTTPProxy  = $HTTPProxy -replace  '//([^@]+)$', "//$UserName$1"
+    $HTTPSProxy = $HTTPSProxy -replace '//([^@]+)$', "//$UserName$1"
+  }  
+  Write-Verbose "UserName: $UserName"
+  $Env:credential_helper     = 'wincred'
+  $Env:GIT_credential_helper = 'wincred'
+  $Env:GIT_HTTP_PROXY        = "$HTTPProxy"
+  $Env:GIT_HTTPS_PROXY       = "$HTTPSProxy" 
+  $Env:http_proxy            = "$HTTPProxy"
+  $Env:https_proxy           = "$HTTPSProxy"
+}
+
+
 If ($MyInvocation.Line -match '\s*\.(?![\w\\.\"''])') {
   Write-Warning "$(FLINE) Dot source, load functions, and exit"
 } Else {
@@ -152,14 +186,17 @@ If ($MyInvocation.Line -match '\s*\.(?![\w\\.\"''])') {
     Write-Warning "$(FLINE) Setting proxy"
     Set-DefaultProxy @$PSBoundParameters
     Set-InternetProxy -State Enable -url $Proxy
-    If (Get-Command setproxy.exe) { 
+    If (Get-Command setproxy.exe -ea Ignore) { 
       setproxy /pac:http://proxyconf.my-it-solutions.net/proxy-na.pac  
     }  
+    Set-GitProxy
   } ElseIf ($Remove) { 
     Write-Warning "$(FLINE) Reset proxy"
     Set-DefaultProxy @$PSBoundParameters
     Set-InternetProxy -State Disable  
-    If (Get-Command setproxy.exe) { setproxy.exe /reset }
+    If (Get-Command setproxy.exe -ea Ignore) { setproxy.exe /reset }
+    Set-GitProxy
   }
 }
+
 
