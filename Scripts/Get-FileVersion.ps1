@@ -17,8 +17,7 @@ Function Get-FileVersion {
     [Parameter(ParameterSetName='Path')]
     [Switch]$Recurse = $Null
   )
-  Begin {
-  }
+  Begin { }
   Process {
     $Recurse = If ($Recurse) { @{Recurse = $True} } Else { @{} }
     $Names   = If     ($Path)        { @{Path        = $Path}        } 
@@ -50,3 +49,7 @@ Write-Verbose "Command line: [$($MyInvocation.Line | Out-String -stream)]"
 If ($MyInvocation.Line -notmatch '^\W*\.\W') {
   Get-FileVersion @args
 }
+
+# tmlbl/TypedFunctions.jl
+# marius311/SelfFunctions.jl
+# Pkg.clone("https://github.com/swadey/LispSyntax.jl")
