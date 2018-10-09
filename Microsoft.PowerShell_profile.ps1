@@ -15,10 +15,18 @@ param (
   #[Alias('IAc','IAction','InfoAction')]
   #[ValidateSet('SilentlyContinue','')]                                  [switch]$InformationAction
 )
+If ((Get-Variable Env:NoPSProfile -value -ea Ignore) -or 
+    (Get-Variable Env:SkipPSProfile -value -ea Ignore)) { 
+  Write-Host "Skipping PS Profile due to environment settings" -Fore Yellow -Back DarkRed  
+  return 
+}
 #region    Parameters
 $Private:StartTime  = Get-Date
 $ErrorCount = $Error.Count
 If (!(Get-Command Write-Information -ea 0)) { New-Alias Write-Information Write-Host -Scope Global }
+
+remove-item alias:type       -force -ea Ignore
+new-alias   type Get-Content -force -scope Global -ea Ignore
 
 New-Alias -Name LINE -Value Get-CurrentLineNumber -Description 'Returns the current (caller''s) line number in a script.' -force -Option allscope
 New-Alias -Name __LINE__ -Value Get-CurrentLineNumber -Description 'Returns the current (caller''s) line number in a script.' -force -Option allscope
@@ -85,20 +93,49 @@ Write-Host "$(LINE) Use `$Profile   for path to Profile: $Profile"   @Private:Co
 Write-Host "$(LINE) Use `$PSProfile for path to Profile: $PSProfile" @Private:Colors
 Write-Host "$(LINE) ProfileLogPath: $ProfileLogPath"                 @Private:Colors
 
+<#
+.Synopsis 
+  Locate pre & post load profiles to run
+.Description
+  Check for ComputerDomain, UserDomain, ComputerName, UserName profiles
+  to run them either before (pre) or after the main profile (post)
+  
+  Will generate/locate 
+    $ProfileDirectory\Profile + NAME + Suffix + .ps1
+.Parameter Suffix
+  Usually Pre or Post
+  Will generate/locate 
+    $ProfileDirectory\Profile + NAME + Suffix + .ps1
+#>
 Function Get-ExtraProfile {
   [CmdletBinding()]param(
     [String]$Suffix,
-    [String[]]$Name=@((Get-WMIObject win32_computersystem).Domain,
-      $Env:UserDomain, $Env:ComputerName, $Env:UserName
+    [String[]]$Name = (@((Get-WMIObject win32_computersystem).Domain) +
+      @((nbtstat  -n) -match '(?-i:<00>\s+GROUP\b)' -replace 
+        '^\s*(\S+)\s*(?-i:<00>\s+GROUP\b).*$', '$1' | Select-Object -Uniq) +
+      $Env:UserDomain + $Env:ComputerName + $Env:UserName
     )
   )
-  $Name | ForEach-Object {
-    $Extra = Join-Path $ProfileDirectory "Profile$($_)$($Suffix).ps1"
-    Write-Verbose $Extra
-    If (Test-path $Extra -ea Ignore) {
+  $Name | Where-Object {
+    If ($Extra = Join-Path $ProfileDirectory "Profile$($_)$($Suffix).ps1" -ea Ignore -resolve) {
+      Write-Verbose $Extra
       $Extra
     }
-  }
+  } | ForEach-Object { $Extra } | Select-Object -uniq
+}
+
+# Start-Process -FilePath 'https://www.google.com'
+# Start-Process -FilePath 'https://www.google.com/search?num=100&q=powershell+pssession'
+
+
+Function Get-ProcessFile {
+  (Get-Process @args).Where{$_.Name -notin 'System','Idle'} | 
+    Sort-Object -unique name,path | Get-Process -FileVersionInfo
+}
+
+Function Get-ProcessUser {
+  $args = $args.Where{'IncludeUserName' -notmatch $_ } |
+  Get-Process @args -IncludeUserName
 }
 
 Get-ExtraProfile 'Pre' | ForEach-Object {
@@ -340,6 +377,91 @@ Function Add-Path {
 }
 #>
 
+function Get-WmiNamespace {
+  [CmdletBinding()]Param ($Namespace='ROOT')
+  Get-WmiObject -Namespace $Namespace -Class __NAMESPACE | ForEach-Object {
+    ($ns = '{0}\{1}' -f $_.__NAMESPACE,$_.Name)
+    Get-WmiNamespace -Namespace $ns
+  }
+}
+
+function Get-WmiClass {
+  [CmdletBinding()]Param($Pattern='^.')
+  Get-WmiNamespace | ForEach-Object {
+    Get-WmiObject -Namespace $_ -List |
+      ForEach-Object { $_.Path.Path }         | 
+      Where-Object { $_ -match $Pattern } 
+  } | Sort-Object -Unique  
+} 
+
+Function Get-SpeechSynthesizer {
+  [CmdletBinding()]Param(
+    [Alias('gettype')][switch]$Type
+  )
+  If ($SpeechType = Add-Type -AssemblyName System.Speech -passthru) { # | gm
+    If ($Type) { 
+      Write-Verbose "Returning Synthezizer, try:  $SpeechType | gm -static"
+      $SpeechType  
+    } else {
+      $SpeechSynthesizer = New-Object -TypeName System.Speech.Synthesis.SpeechSynthesizer
+      $SpeechSynthesizer
+      If ($SpeechSynthesizer) { 
+        Write-Verbose "Speaking now..."
+        If ($PSBoundParameters.ContainsKey('Verbose')) {
+          $SpeechSynthesizer.Speak('Hello World!') 
+        }        
+      } else {
+        Write-Verbose "No synthesizer"
+      }
+    }      
+  }  
+}
+<#  SpeechType
+IsPublic IsSerial Name                                     BaseType
+-------- -------- ----                                     --------
+False    True     SRID                                     System.Enum
+False    False    SR                                       System.Object
+
+    SpeechType | gm -static
+#>
+
+Function Get-MemberType{ 
+  [CmdletBinding()][Alias('IsMember','Member?','MemberP')]
+  Param(
+    [Parameter(Mandatory)][Object]$InputObject, 
+    [Alias('Name')][string]$MemberName
+  ) 
+  $ChildNames = $MemberName -split '\.'  
+  $Object = $InputObject; 
+  Write-Verbose "ChildNames: $ChildNames"
+  ForEach ($Name in $ChildNames) {
+    Write-Verbose "1-Name: $Name $($Object.GetType())"
+    If (!($Member = Get-Member -Name $Name -InputObject $Object -ea Ignore)) { 
+      Write-Verbose "Returning with no child: $Name"
+      return $Null            # nothing there
+    }  
+    Write-Verbose "2-Name: $Name Type: $($Object.GetType()) MemberType $($Member.MemberType)"
+    $Object = $Object.$Name 
+    If ($Member.MemberType -notmatch 'Property') { break }  # Function, etc.
+  }
+  $Object.GetType()
+}
+
+Function Set-StreamColor {
+  [CmdletBinding()][Alias('SSC')]Param(
+    [string]$StreamName      = 'Error',
+    [string]$BackGroundColor = 'DarkRed',
+    [string]$ForeGroundColor = 'White'
+  )
+  If (Get-MemberType $Host "PrivateData.$($StreamName)BackgroundColor") { 
+    $host.PrivateData."$($StreamName)BackGroundColor" = $BackGroundColor
+    $host.PrivateData."$($StreamName)ForeGroundColor" = $ForeGroundColor
+    # $host.PrivateData.debugbackgroundcolor   = 'black'
+  }
+}
+
+
+    
 Function Get-NewLine { [environment]::NewLine }; new-alias NL Get-NewLine -force
 if (! (Get-Command write-log -type Function,cmdlet,alias -ea ignore)) {
   new-alias write-log write-verbose -force -scope Global -ea ignore
@@ -348,7 +470,7 @@ if (! (Get-Command write-log -type Function,cmdlet,alias -ea ignore)) {
 new-alias kp      'C:\Program Files (x86)\KeePass2\KeePass.exe' -force -scope Global -ea ignore
 new-alias KeePass 'C:\Program Files (x86)\KeePass2\KeePass.exe' -force -scope Global -ea ignore
 new-alias rdir    Remove-Item  -force -scope Global -ea ignore
-new-alias cdir    Set-Location -force -scope Global -ea ignore
+new-alias cdir    cd           -force -scope Global -ea ignore
 new-alias mdir    mkdir        -force -scope Global -ea ignore
 new-alias mvdir   move-item    -force -scope Global -ea ignore
 new-alias modir   more         -force -scope Global -ea ignore
@@ -550,6 +672,11 @@ Set-ProgramAlias 7z   7z.exe @('C:Util\7-Zip\app\7-Zip64\7z.exe',
                                'S:\Programs\7-Zip\app\7-Zip64\7z.exe'
                              ) -FirstPath
 Write-Warning "$(get-date -f 'HH:mm:ss') $(LINE) After Set-ProgramAlias"
+
+# gwmi Win32_logicaldisk -filter 'drivetype = 3 or drivetype = 4'
+
+Join-Path 'C:\Program Files*\Microsoft VS Code*' Code*.exe -resolve | Select -first 1
+
 # 'Thu, 08 Feb 2018 07:47:42 -0800 (PST)' -replace '[^\d]+$' -as [datetime] 13:47:42 -0800 (PST)'
 # 'Thu, 08 Feb 2018 07:47:42 -0800 (PST)' -replace '[^\d]+$' -as [datetime] 13:47:42 -0800 (PST)'
 #$raw = 'Thu, 08 Feb 2018 13:47:42 -0800 (PST)'
@@ -578,6 +705,41 @@ set-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -va
 Function Get-CurrentIPAddress {(ipconfig) -split "`n" | Where-Object {
   $_ -match 'IPv4' } | ForEach-Object { $_ -replace '^.*\s+' }
 }
+
+Function Get-RegKey {
+  param(
+               [string[]]$Key, 
+                 [switch]$Double    = $Null,
+                 [switch]$Single    = $Null,
+                 [switch]$CmdOnly   = $Null,
+                 [switch]$PSOnly    = $Null,
+    [Alias('QO')][switch]$QuoteOnly = $Null,
+                 [switch]$Quote     = $Null
+  )    
+  Begin { 
+    $Keys = New-Object System.Collections.ArrayList 
+    If ($QuoteOnly) { $Quote = $True }
+  }
+  Process {
+    ForEach ($K in $key) { 
+      $K2 = $K -replace 'HK\w*_(.)\w*_(.)\w*:?','HK$1$2:'
+      If (!$CmdOnly) { [Void]$Keys.Add($K2) }
+      $K1 = $K2 -replace ':'
+      If (!$PSOnly)  { [Void]$Keys.Add($K1) }
+      If ($Keys) {
+        ForEach ($K3 in $Keys) {
+          If ($Quote) { 
+            If (!$Double) {  "'$K3'"  } 
+            If (!$Single) { "`"$K3`"" } 
+          }
+          If (!$QuoteOnly) { $K3 }
+        }
+      }
+    } 
+  }
+  End {}
+}
+
 Function Get-WhoAmI { "[$PID]",(whoami),(hostname) + (Get-CurrentIPAddress) -join ' ' }
 Function Get-DotNetVersion {
   [CmdletBinding()]param(
@@ -634,7 +796,7 @@ Function Update-ModuleList {
   [CmdLetBinding(SupportsShouldProcess = $true,ConfirmImpact='Medium')]
   param(
     [Parameter(ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$true)]
-    [string[]]$name='pscx'
+    [string[]]$Name='pscx'
   )
   begin {}
   process {
@@ -700,8 +862,10 @@ if ($ShowModules) {
    Format-Table version,name,author,path
 } else {}
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE) After Show-Module "
+
 # Get .Net Constructor parameters
 # ([type]"Net.Sockets.TCPClient").GetConstructors() | ForEach-Object { $_.GetParameters() } | Select-Object Name,ParameterType
+
 Function Get-Constructor {
   param([Alias('Name')][string[]]$TypeName)
   ForEach ($Name in $TypeName) {
@@ -709,6 +873,66 @@ Function Get-Constructor {
       write-host "$_"; $_.GetParameters()
     } | Select-Object -Object Name, ParameterType
   }
+}
+# [Net.Sockets.TCPClient]::New
+# Check TCP connection (New-Object Net.Sockets.TcpClient).Connect("<remote machine>",<port>) 
+# Check UDP conection  (New-Object Net.Sockets.UdpClient).Connect("<remote machine>",<port>)
+
+Function Test-TCP { 
+  [CmdletBinding()]Param($ComputerName='www.google.com',$Port=80)
+  try { 
+    (New-Object Net.Sockets.TcpClient).Connect($ComputerName,$Port) 
+    $True
+  } Catch { $False }
+}
+<#
+.Example
+(measure-command { test-tcpservice 168.44.245.99 9999 }).TotalSeconds
+#>
+Function Test-TCPService {
+  [CmdLetBinding()]Param([string]$Server,$port=135,$MaxWait=3000)
+  if ($MaxWait -lt 30) { $MaxWait *= 1000 }
+  $Failed = $False
+  try {
+    $ErrorActionPreference = 'Continue'
+    $tcpclient = new-Object system.Net.Sockets.TcpClient
+    $Start = Get-Date
+    Function Elapsed { param($Start = $Start) '{0,5:N0}ms' -f ((get-date) - $Start).TotalMilliseconds }
+    # Write-Verbose "$(LINE) $(Elapsed) Begin"
+    $iar = $tcpclient.BeginConnect($Server, $port, $null, $null) # Create Client
+    # Write-Verbose "$(LINE) $(Elapsed) Wait"
+    $wait = $iar.AsyncWaitHandle.WaitOne($MaxWait,$false)         # Set timeout
+    # Write-Verbose "$(LINE) $(Elapsed) If !Wait"
+    if (!$wait) {                                                 # Check if connection is complete
+        # Write-Verbose "$(LINE) $(Elapsed) NOT Wait"
+        #write-log "$(FLINE) Connection Timeout: $Server $Port $MaxWait"
+        $Failed = $True
+        #try {$tcpclient.EndConnect($iar) | out-Null } catch {}
+        # Write-Verbose "$(LINE) $(Elapsed) After ENDConnect"
+    }  else {
+      # Write-Verbose "$(LINE) $(Elapsed) Wait"
+      # $error.Clear()                                             # Close the connection, report any error
+      $tcpclient.EndConnect($iar) | out-Null
+      # Write-Verbose "$(LINE) $(Elapsed) After End Connect 1"
+      if (!$?) {
+        # write-Verbose "$(FLINE) $(Elapsed) `$?"
+        $failed = $true
+      }
+    }
+  } catch {
+    # write-Verbose "$(LINE) $(Elapsed) Catch"
+    $Failed = $True
+  } finally {
+    # write-Verbose "$(LINE) $(Elapsed) Finally"
+    if ($tcpclient.Connected) {
+      # try {$tcpclient.EndConnect($iar) | out-Null } catch {}
+      # write-Verbose "$(LINE) $(Elapsed) After ENDConnect"
+      $null = $tcpclient.Close
+      # write-Verbose "$(LINE) $(Elapsed) After Close"
+    }
+  }
+  # write-Verbose "$(LINE) $(Elapsed) Returning"
+  !$failed  # Return $true if connection Establish else $False
 }
 Write-Information "Useful modules: https://blogs.technet.microsoft.com/pstips/2014/05/26/useful-powershell-modules/"
 $PSCXprofile = 'C:\Users\hmartin\Documents\WindowsPowerShell\Pscx.UserPreferences'
@@ -724,7 +948,10 @@ Get-ChildItem | Sort-Object LastWriteTime -desc | ForEach-Object { '{0,23} {1,11
 #>
 <#
 ts.ecs-support.com:32793  terminal server 10.10.11.80
-ts.ecs-support.com:32795 FS02
+ts.ecs-support.com:32795  TS02  also FS02??? 
+Efficient Computer Systems ECS EFFComSYS\hmartin ecs-support.com ts01 ts02
+S:\Organization Tools IPaddress v2
+
 #>
 # Get-WindowsFeature 'RSAT-DNS-Server'
 # Import-Module ServerManager
@@ -915,16 +1142,40 @@ $InformationPreference = 'continue'
 Write-Information "$(LINE) InformationPreference: $InformationPreference"
 Write-Information "$(LINE) Test hex format: $("{0:X}" -f -2068774911)"
 # "{0:X}" -f -2068774911
-Function Get-DriveTypeName ($type) {
-  $typename = @('UNKNOWN',     # 0 # The drive type cannot be determined.
-                'NOROOTDIR',   # 1 # The root path is invalid; for example, there is no volume mounted at the specified path.
-                'REMOVABLE',   # 2 # The drive has removable media; for example, a floppy drive, thumb drive, or flash card reader.
-                'FIXED',       # 3 # The drive has fixed media; for example, a hard disk drive or flash drive.
-                'REMOTE',      # 4 # The drive is a remote (network) drive.
-                'CDROM',       # 5 # The drive is a Set-Location-ROM drive.
-                'RAMDISK')     # 6 # The drive is a RAM disk.
-  if (($type -le 0) -or ($type -ge $typename.count)) {return 'INVALID'}
-  $typename[$type]
+Function Get-DriveType {
+  [CmdletBinding()][Alias('Get-DriveTypeName')]
+  [Alias('DriveTypeName','DriveType','Code','DriveCode')]Param($Type)
+  $DriveTypes = [Ordered]@{ 
+    0 = 'UNKNOWN'   # Type cannot be determined.
+    1 = 'NOROOTDIR' # Root path is invalid, e.g., no volume mounted at specified path
+    2 = 'REMOVABLE' # Removable media       e.g., floppy drive, thumb or flash card reader
+    3 = 'FIXED'     # Fixed media           e.g., hard disk drive or SSD
+    4 = 'REMOTE'    # Remote network drive
+    5 = 'CDROM'     # CDROM drive
+    6 = 'RAMDISK'   # RAM disk
+  }
+  # $a
+  If     (!$PSBoundParameters.ContainsKey('Type')) { $DriveTypes        } 
+  ElseIf ($DriveTypes.Contains($Type))             { $DriveTypes[$Type] } 
+  Else                                             { 'INVALID'          }
+}
+
+Function Get-DriveType {
+  [CmdletBinding()][Alias('Get-DriveTypeName')]
+  [Alias('DriveTypeName','Type','Code','DriveCode')]
+  Param(
+    [UInt16[]]$Type=@(0..6)
+  )
+  Switch ($Type) {
+    0       { 'UNKNOWN'   } # Type cannot be determined.
+    1       { 'NOROOTDIR' } # Root path is invalid, e.g., no volume mounted at specified path
+    2       { 'REMOVABLE' } # Removable media       e.g., floppy drive, thumb or flash card reader
+    3       { 'FIXED'     } # Fixed media           e.g., hard disk drive or SSD
+    4       { 'REMOTE'    } # Remote network drive
+    5       { 'CDROM'     } # CDROM drive
+    6       { 'RAMDISK'   } # RAM disk
+    Default { 'INVALID'   }
+  }
 }
 Function Get-Volume {
   [CmdletBinding(DefaultParameterSetName='Name')]Param(
@@ -941,26 +1192,56 @@ Function Get-Volume {
   $PSBoundParameters.PSProvider = 'FileSystem'
   Get-PSDrive @PSBoundParameters
 }
+
+
+
+
+
 Function Get-Free {
   [CmdletBinding(DefaultParameterSetName='Name')]Param(
-    [String[]]$Name,
+    [String[]]$Name='*',
     [String]$Scope = 'Local',
+    [String]$Units = 'GB',
     [switch]$UseTransaction
   )
-  If ($PSBoundParameters.ContainsKey('Name'))  {
+  If ($Name.Count -eq 1 -and $Name -match '^[GMKBTEXP][a-z]*B') {
+    $Units, $Name = $Name, '*'
+    $PSBoundParameters.Remove('Name') 
+    Write-Verbose "Name=[$Name] $Units=$Units"
+  }
+  $Units, $Divisor, $Precision = Switch -regex ($Units) {
+    '^G'    { 'GB'    ; 1GB, 1;     break }
+    '^M'    { 'MB'    ; 1MB, 1;     break }
+    '^K'    { 'KB'    ; 1KB, 1;     break }
+    '^B'    { 'Bytes' ; 1  , 0;     break }
+    '^T'    { 'TB'    ; 1TB, 1;     break }
+    '^P'    { 'PB'    ; 1PB, 1;     break }
+    '^[EX]' { 'EB'    ; 1PB*1KB, 1; break }
+    Default { 'GB'    , 1GB, 1;     break }
+  }
+  If ($PSBoundParameters.ContainsKey('Units')) { $PSBoundParameters.Remove('Units')}
+  If ($PSBoundParameters.ContainsKey('Name') -and $PSBoundParameters.'Name' -notmatch '^\*?$')  {
     $Name = $Name | ForEach-Object {
       If (Test-Path $_ -ea Ignore) { (Resolve-Path $Name).Drive } Else { $Name }
     }
     $PSBoundParameters.Name = $Name -replace '(:.*)'
   }
   $PSBoundParameters.PSProvider = 'FileSystem'
-  Get-PSDrive @PSBoundParameters | Where-Object Used -ne '' |
-    select used,free,root,currentlocation
+  Get-PSDrive @PSBoundParameters | Where-Object Used -ne '' | ForEach-Object {
+    [PSCustomObject]@{
+      "Used$Units"    = "{0,6:N$Precision}" -f ($_.Used / $Divisor) 
+      "Free$Units"    = "{0,6:N$Precision}" -f ($_.Free / $Divisor) 
+      Root            = $_.Root   # '{0,4}' -f  $_.Root           
+      CurrentLocation = $_.CurrentLocation
+    }  
+  }  
 }
+
+
 #  Get-PSVolume
 # (Get-WMIObject win32_volume ) | Where-Object {$_.DriveLetter -match '[A-Z]:'} |
-#  ForEach-Object { "{0:2} {0:2} {0:9} {S:9} "-f $_.DriveLetter, $_.DriveType, (Get-DriveTypeName $_.DriveType), $_.Label, ($_.Freespace / 1GB)}
-#  # % {"$($_.DriveLetter) $($_.DriveType) $(Get-DriveTypeName $_.DriveType) $($_.Label) $($_.Freespace / 1GB)GB"}
+#  ForEach-Object { "{0:2} {0:2} {0:9} {S:9} "-f $_.DriveLetter, $_.DriveType, (Get-DriveType $_.DriveType), $_.Label, ($_.Freespace / 1GB)}
+#  # % {"$($_.DriveLetter) $($_.DriveType) $(Get-DriveType $_.DriveType) $($_.Label) $($_.Freespace / 1GB)GB"}
 #}
 Function Get-WMIClassInfo {
   [CmdletBinding()] param([string]$className, [switch]$WrapList)
@@ -1045,11 +1326,17 @@ Function Get-HistoryCommandline {
     [Switch]$ShowID,
     [Alias('ID','Object','FullObject')][switch]$HistoryInfo
   )
-  If ($PSBoundParameters.Contains('ShowID')) {
+  If ($PSBoundParameters.ContainsKey('ShowID')) {
     $ShowID = [boolean]$ShowID
     $PSBoundParameters.Remove('ShowID')
   }
-  (get-history @PSBoundParameters).commandline
+  $Pattern = If ($PSBoundParameters.ContainsKey('Pattern')) {
+    $Pattern = $PSBoundParameters.Pattern
+    $PSBoundParameters.Remove('Pattern')
+  } Else {
+    '\S'
+  }
+  (get-history @PSBoundParameters).commandline -match $Pattern
 } New-Alias cl  Get-HistoryCommandline -force
   new-alias gch Get-HistoryCommandLine -force
   new-alias ghc Get-HistoryCommandLine -force
@@ -1149,7 +1436,7 @@ Function Get-Syntax {
     } else { $Result }
   }
 }; new-alias syn get-syntax -force
-#Function syn { get-command @args -syntax }
+
 Function Get-Syntax {
   Param(
     [Alias('CommandName')][string[]]$Name='Get-Command'
@@ -1289,6 +1576,9 @@ new-alias dj dl -force -scope Global
 new-alias w  where.exe -force
 new-alias wh where.exe -force
 new-alias wi where.exe -force
+If (Test-Path 'C:\ProgramData\Local\Julia\bin\julia.exe') { 
+  new-alias julia 'C:\ProgramData\Local\Julia\bin\julia.exe' -force -scope global
+}  
 Function od {
   param(
     [parameter(Position=0,ValueFromPipeline,ValueFromPipelineByPropertyName,
@@ -1528,65 +1818,50 @@ Function Get-Property {
     }
   }
 }
-# Function docs {
-#   [CmdletBinding()]param (
-#     [Parameter(Position='0')][string]$path="$Home\Documents",
-#     [Parameter(Position='1')][string]$subdirectory,
-#     [switch]$pushd
-#   )
-#   try {
-#     write-verbose $Path
-#     if (Test-Path $path) {
-#       if ($pushd) { pushd $path } else { Set-Location $path }
-#       if ($subdirectory) {Set-Location $subdirectory}
-#     }  else {
-#       throw "Directory [$Path] not found."
-#     }
-#   }  catch {
-#     write-error $_
-#   }
+Function GalDef { 
+  Param([string[]]$Definition,[string[]]$Exclude,[string]$Scope)
+  Get-Alias @PSBoundParameters
+}
+New-Alias ts Test-Script -Force   
+Function Test-Clipboard { 
+  [CmdletBinding()][Alias('tcb','gcbt','tgcb')]Param() 
+  Get-Clipboard | Test-Script
+}
+Function Get-HistoryCount {
+  [CmdletBinding()][Alias('hcount','hc')]param([int]$Count) 
+  Get-History -count $Count 
+}
 # }
-# Function books {
-#   if (Test-Path "$($env:userprofile)\downloads\books") {
-#     Set-Location "$($env:userprofile)\downloads\books"
-#   } elseif (Test-Path "C:\books") {
-#     Set-Location "C:\books"
-#   }
-#   if ($args[0]) {Set-Location $args[0]}
-# }
+write-warning "$(get-date -f 'HH:mm:ss') $(LINE) Before Go"
 try {
   $ECSTraining = "\Training"
-  $SearchPath  = 'C:\',"$Home\Downloads","T:$ECSTraining","S:$ECSTraining"
+  $SearchPath  = 'C:\',"$Home\Downloads","S:$ECSTraining","T:$ECSTraining"
   $Books = Join-Path $SearchPath 'Books' -ea ignore | Select-Object -First 1
 } catch {
   $Books = $PSProfile
 }  # just ignore
-
-Function Test-Clipboard { Get-Clipboard | Test-Script };
-New-Alias tcb  Test-ClipBoard -force -scope Global
-New-Alias gcbt Test-ClipBoard -force -scope Global
-Function Get-HistoryCount {param([int]$Count) get-history -count $Count }
-New-alias count Get-HistoryCount -force -scope Global
-write-warning "$(get-date -f 'HH:mm:ss') $(LINE) Before Go"
 $goHash = [ordered]@{
+  book       = $books
+  books      = $books
+  dev        = 'c:\dev'
+  doc        = "$home\documents"
   docs       = "$home\documents"
   down       = "$home\downloads"
   download   = "$home\downloads"
   downloads  = "$home\downloads"
-  book       = $books
-  books      = $books
+  esb        = 'c:\esb'
+  power      = "$books\PowerShell"
+  PowerShell = '$Books\PowerShell'
+  pro        = $PSProfileDirectory
+  prof       = $PSProfileDirectory
+  profile    = $ProfileDirectory
+  ps         = "$books\PowerShell"
   psbook     = "$books\PowerShell"
   psbooks    = "$books\PowerShell"
   psh        = "$books\PowerShell"
   pshell     = "$books\PowerShell"
-  power      = "$books\PowerShell"
-  pro        = $PSProfileDirectory
-  prof       = $PSProfileDirectory
-  profile    = $PSProfileDirectory
-  txt        = 'c:\txt'
   text       = 'c:\txt'
-  esb        = 'c:\esb'
-  dev        = 'c:\dev'
+  txt        = 'c:\txt'
 }
 Function Set-GoAlias {
   [CmdletBinding()]param([string]$Alias, [string]$Path)
@@ -1596,7 +1871,10 @@ Function Set-GoAlias {
   }
   ForEach ($Alias in $goHash.Keys) {
     write-verbose "New-Alias $Alias go -force -scope Global -Option allscope"
-    New-Alias $Alias Set-GoLocation -force -scope Global -Option allscope
+    If (!($Command = Get-Command $Alias -ea ignore) -or 
+          $Command.Definition -match 'Set-GoLocation$') {
+      New-Alias $Alias Set-GoLocation -force -scope Global -Option allscope
+    } else { Write-Warning "Set-GoLocation: Alias $Alias conflicts with "}
   }
 }
 # Import-Module "$Home\Documents\WindowsPowerShell\Set-LocationFile.ps1"
@@ -1706,21 +1984,6 @@ New-Alias Go Set-GoLocation -force -scope global;
 New-Alias G  Set-GoLocation -force -scope global
 Set-GoAlias
 
-$gohash = [ordered]@{
-  docs       = "$home\documents"
-  down       = "$home\downloads"
-  download   = "$home\downloads"
-  downloads  = "$home\downloads"
-  books      = $books
-  ps         = "$books\PowerShell"
-  pshell     = "$books\PowerShell"
-  profile    = $ProfileDirectory
-  pro        = $ProfileDirectory
-  txt        = 'c:\txt'
-  text       = 'c:\txt'
-  esb        = 'c:\esb'
-  dev        = 'c:\dev'
-}
 Function Set-GoAlias {
   [CmdletBinding()]param([string]$Alias, [string]$Path)
   if ($Alias) {
@@ -1887,110 +2150,6 @@ Function Set-GoLocation {
 New-Alias Go Set-GoLocation -force -scope global -Desc "Set in Profile"
 New-Alias G  Set-GoLocation -force -scope global -Desc "Set in Profile"
 
-Function Set-DefaultProxy {
-  [CmdletBinding()] param(
-    [Alias('InternetProxy','InetProxy')]
-                            [string]$Proxy = 'proxy-us.glb.my-it-solutions.net:84',
-             [Net.NetworkCredential]$Credential,
-                          [string[]]$BypassList,  # Array of regexes
-    [Alias('UseLocal')]     [switch]$UseProxyOnLocal,
-    [Alias('NDC','NoCred')] [switch]$NoDefaultCredential,
-    [Alias('Reset','Clear')][switch]$Remove
-  )
-  #https://msdn.microsoft.com/en-us/library/system.net.webrequest.defaultcachepolicy(v=vs.100).aspx
-  #https://msdn.microsoft.com/en-us/library/system.net.networkcredential(v=vs.100).aspx
-  # BypassProxyOnLocal    : False
-  # BypassList            : {}
-  # Credentials           : System.Net.SystemNetworkCredential
-  # UseDefaultCredentials : True
-  # BypassArrayList       : {}  ### CANNOT be set, get only
-
-  If ($Remove) {
-    [system.net.webrequest]::DefaultWebProxy = $Null
-    return
-  }
-  [system.net.webrequest]::DefaultWebProxy = new-object system.net.webproxy($Proxy)
-  If ($Credential -or $NoDefaultCredential) {
-    [system.net.webrequest]::DefaultWebProxy.Credentials = Credential
-  } else {
-    [system.net.webrequest]::DefaultWebProxy.UseDefaultCredentials = $True
-  }
-  If ($BypassList) {
-    [system.net.webrequest]::DefaultWebProxy.BypassList = $BypassList
-  }
-  [system.net.webrequest]::DefaultWebProxy.BypassProxyOnLocal = ![Boolean]$UseProxyOnLocal
-}
-
-Function Get-DefaultProxy { [system.net.webrequest]::DefaultWebProxy }
-Function Remove-DefaultProxy { Set-DefaultProxy -Remove }
-
-# https://www.makeuseof.com/tag/3-scripts-modify-proxy-setting-internet-explorer/
-Function Show-InternetProxy {
-  [CmdletBinding()] param()
-  $InternetSettingsKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings"
-  $urlEnvironment      = $Env:AutoConfigUrl
-  $urlDefault          = 'http://proxyconf.my-it-solutions.net/proxy-na.pac'
-  $ProxyValues         = 'AutoConfig ProxyEnable Autodetect'
-  write-verbose "`$Env:AutoConfigUrl        : $($Env:AutoConfigUrl)"
-  write-verbose  "Default proxy             : $urlDefault"
-  $Settings = get-itemproperty $InternetSettingsKey -ea ignore | findstr /i $ProxyValues | Sort-Object
-    Write-Output "             Registry settings"
-    ForEach ($Line in $Settings) {
-    Write-Output $Line
-  }
-}
-Function Set-InternetProxy {
-  [CmdletBinding()]
-  param(
-    #[Parameter(ValidateSet='Enable','On','Disable','Off')][string]$State,
-    [string]$State,
-    [string]$Url,
-    [Alias('On' )][switch]$Enable,
-    [Alias('Off')][switch]$Disable
-  )
-  If ($State -match '^(On|Ena)') { $Enable = $True  }
-  If ($State -match '^(Of|Dis)') { $Disable = $True }
-  $InternetSettingsKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings"
-  $AutoConfigURL       = 'AutoConfigURL'
-  $AutoConfigURLSave   = $AutoConfigURL + 'SAVE'
-  $AutoDetect          = 'AutoDetect'
-  $ProxyEnable         = 'ProxyEnable'
-  $ProxyValues         = 'AutoConfig ProxyEnable Autodetect'
-  $urlEnvironment      = $Env:AutoConfigUrl
-  $urlCurrent          = (get-itemproperty $InternetSettingsKey $AutoConfigURL     -ea ignore).$AutoConfigURL
-  $urlSaved            = (get-itemproperty $InternetSettingsKey $AutoConfigURLSave -ea ignore).$AutoConfigURLSAVE
-  $urlDefault          = 'http://proxyconf.my-it-solutions.net/proxy-na.pac'
-  If ($Enable -eq $Disable) {
-    Write-Warning "Specify either Enable or Disable (alias: On or Off)"
-    $Verbose = $True
-  } elseif ($Disable) {
-    if ($urlCurrent) {
-      set-itemproperty $InternetSettingsKey $AutoConfigURLSave $urlCurrent -force -ea ignore
-      remove-itemproperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" 'AutoConfigURL' -ea ignore
-    }
-    Set-ItemProperty $InternetSettingsKey $AutoDetect  0 -force -ea ignore
-    Set-ItemProperty $InternetSettingsKey $ProxyEnable 0 -force -ea ignore
-  } elseif ($Enable) {
-    $Url = switch ($True) {
-      { [boolean]$Url            } { $Url            ; break }
-      { [boolean]$UrlEnvironment } { $UrlEnvironment ; break }
-      { [boolean]$UrlCurrent     } { $UrlCurrent     ; break }
-      { [boolean]$urlSaved       } { $UrlSaved       ; break }
-      { [boolean]$urlDefault     } { $UrlDefault     ; break }
-      Default {
-        Write-Warning "Supply URL for enabling and setting AutoConfigURL Proxy"
-        return
-      }
-    }
-    Set-Itemproperty $InternetSettingsKey $AutoConfigURL $url -force -ea ignore
-    Set-ItemProperty $InternetSettingsKey $AutoDetect    1    -force -ea ignore
-    Set-ItemProperty $InternetSettingsKey $ProxyEnable   1    -force -ea ignore
-  }
-  $Settings = get-itemproperty $InternetSettingsKey -ea ignore | findstr /i $ProxyValues | Sort-Object
-  ForEach ($Line in $Settings) {
-    Write-Verbose $Line -Verbose:$Verbose
-  }
-}
 # Utility Functions (small)
 filter Test-Odd  { param([Parameter(valuefrompipeline)][int]$n) [boolean]($n % 2)}
 filter Test-Even { param([Parameter(valuefrompipeline)][int]$n) -not (Test-Odd $n)}
@@ -2068,8 +2227,24 @@ Function fileformat([string[]]$path = @('c:\dev'), [string[]]$include=@('*.txt')
         # Function Get-ErrorDetail
         # Function MyPSHost
 #endregion
-Function PSBoundParameter([string]$Parm) {
-  return ($PSCmdlet -and $PSCmdlet.MyInvocation.BoundParameters[$Parm].IsPresent)
+Function Get-PSBoundParameter {
+  [CmdletBinding()][Alias('PSBoundParameter','BoundParameter','IsBound')]
+  Param(
+    [Alias('Parm')][string]$Parameter,
+    [Alias('Present','IsPresent','ContainsKey')][switch]$Boolean,
+    [Alias('RemoveParameter')]                  [switch]$RemoveKey
+  ) 
+  If ($PSCmdlet -and $PSBoundParameters.ContainsKey($Parameter)) {
+    If ($Boolean) { $True }
+    Else { 
+      $PSBoundParameters.$Parameter 
+    }
+    If ($RemoveKey) { $PSBoundParameters.Remove($Parameter) }    
+  } elseif ($Boolean) {
+    $False
+  } else {
+    $Null
+  }
 }
 if ($Private:PSRealineModule = Get-Module 'PSReadline' -ea ignore) {
   set-psreadlinekeyhandler -chord 'Tab'            -Func TabCompleteNext      ### !!!!!
@@ -2259,24 +2434,68 @@ If ($RDCMan) {
   New-Alias rdc    $Private:RDCMan -Force
 }
 
+
+# $objShell = New-Object -ComObject ("WScript.Shell")
+# $objShortCut = $objShell.CreateShortcut($env:USERPROFILE + "Start Menu\Programs\Startup" + "\program.lnk")
+# $objShortCut.TargetPath("path to program")
+# $objShortCut.Save()
+
+##  TODO:  Set-LocationEnvironment, Set-LocationPath 
+## (dir ENV:*) |  ? value -match '\\'
 Function Get-UserFolder {
-  [CmdletBinding()]param(
-    [Alias('Folder', 'FolderName', 'Directory', 'DirectoryName')]
+  [CmdletBinding()][Alias('guf','gf')]param(
+    [Alias('Folder', 'FolderName', 'Directory', 'DirectoryName','Path','PSPath')]
     [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
-    [string[]]$Name='*'
+    [string[]]$Name='*',
+    [switch]$Regex
   )
   Begin {
-    $Key = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
+    $Key = 
+      'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
     $Folders = @()
+    $RegistryFolders = 
+      (Get-ItemProperty $Key -name * -ea Ignore).psobject.get_properties() | 
+        Where-Object Name -notlike 'PS*' | ForEach {
+          [PSCustomObject]@{ $_.Name = $_.Value }
+          If ($_.Name -eq '{374DE290-123F-4565-9164-39C4925E467B}') {
+            [PSCustomObject]@{ Downloads = $_.Value }
+          }
+        }
   }
   Process {
     $Folders += ForEach ($Folder in $Name) {
-      (Get-ItemProperty $Key -name $Folder).psobject.get_properties() |
-        Where-Object Name -notlike 'PS*' # Remote PSItem properties
+      $Folder = $Folder -replace '^Dow.*', '{374DE290-123F-4565-9164-39C4925E467B}'
+      $Folder = $Folder -replace '^Doc.*',  'Personal' 
+      $Folder = $Folder -replace '^(Pict|Vid|Mus).*$', 'My $1'
+      $Folder = $Folder -replace '^(AppData)$', 'Local $1'
+      Write-Verbose "Folder: Folder pattern: [$Folder]"
+      If ($Regex -and ($F = $RegistryFolders | Where Name -match $Folder)) {
+        Write-Verbose "Regex: User folders: [$($F.Name)]"
+        $F
+      } ElseIf ($F = Get-ItemProperty $Key -name $Folder -ea Ignore) {
+        $F.psobject.get_properties() | Where-Object Name -notlike 'PS*' 
+      } Else {
+        Write-Warning "User folder: [$Folder] not found"
+      }   
     }
   }
   End {
-    $Folders | Select -unique Name,@{N='Folder';E={$_.Value}} | Sort Value
+    $Folders | Select -unique Name,@{N='PSPath';E={$_.Value}}
+  }
+}
+
+Function Set-LocationUserFolder {
+  [CmdletBinding()][Alias('cdu','cdf','cduf')]
+  Param(
+    [Alias('Folder', 'FolderName', 'Directory', 'DirectoryName','Path','PSPath')]
+    [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
+    [string[]]$Name='*',
+    [switch]$PassThru
+  )
+  If ($PSBoundParameters.ContainsKey('PassThru')) {
+  }
+  ForEach ($Folder in $Name) {
+    If ($F = Get-UserFolder $Folder) { Set-Location $F.Folder }
   }
 }
 
@@ -2390,6 +2609,8 @@ Get-ExtraProfile 'Post' | ForEach-Object {
 If (($PSRL = Get-Module PSReadLine -ea 0) -and ($PSRL.version -ge [version]'2.0.0')) {
   Remove-PSReadLineKeyHandler ' ' -ea Ignore
 }
+remove-item alias:type       -force -ea Ignore
+new-alias   type Get-Content -force -scope Global -ea Ignore
 
 $Private:Duration = ((Get-Date) - $Private:StartTime).TotalSeconds
 Write-Warning "$(LINE) $(get-date -f 'HH:mm:ss') New errors: $($Error.Count - $ErrorCount)"
@@ -2398,3 +2619,40 @@ Write-Warning "$(LINE) Duration: $Private:Duration Completed: $Profile"
 If ((Get-Command git -ea Ignore) -and (Get-Module Posh-Git -ea Ignore -ListAvailable)) {
   Import-Module Posh-Git
 }
+
+<#
+$ScriptBlock = {
+  $hashtable = @{}
+  foreach( $property in $this.psobject.properties.name ) {
+    $hashtable[$property] = $this.$property
+  }
+  return $hashtable
+}
+$memberParam  = @{
+  MemberType  = ScriptMethod
+  InputObject = $myobject
+  Name        = "ToHashtable"
+  Value       = $scriptBlock
+}
+Add-Member @memberParam
+
+$TypeData = @{
+    TypeName   = 'My.Object'
+    MemberType = 'ScriptProperty'
+    MemberName = 'UpperCaseName'
+    Value = {$this.Name.toUpper()}
+}
+#Update-TypeData @TypeData
+#https://kevinmarquette.github.io/2016-10-28-powershell-everything-you-wanted-to-know-about-pscustomobject/#adding-object-methods
+
+Function Set-Owner Set-FileOwner Set-ObjectOwner ???
+cacls History /c /t /e /g "$(whoami):F"
+wmic path Win32_LogicalFileSecuritySetting where Path="C:\\windows\\winsxs" ASSOC /RESULTROLE:Owner /ASSOCCLASS:Win32_LogicalFileOwner /RESULTCLASS:Win32_SID
+wmic path Win32_LogicalFileSecuritySetting where Path="C:\\Users\\A469526\\AppData\Local" ASSOC /RESULTROLE:Owner /ASSOCCLASS:Win32_LogicalFileOwner /RESULTCLASS:Win32_SID
+wmic path Win32_LogicalFileSecuritySetting where Path="C:\\Users\\A469526\\AppData\\Local" ASSOC /RESULTROLE:Owner /ASSOCCLASS:Win32_LogicalFileOwner /RESULTCLASS:Win32_SID
+wmic path Win32_LogicalFileSecuritySetting where Path="C:\\Users\\A469526\\AppData" ASSOC /RESULTROLE:Owner /ASSOCCLASS:Win32_LogicalFileOwner /RESULTCLASS:Win32_SID
+wmic --% path Win32_LogicalFileSecuritySetting where Path="C:\\Users\\A469526\\AppData" ASSOC /RESULTROLE:Owner /ASSOCCLASS:Win32_LogicalFileOwner /RESULTCLASS:Win32_SID
+. D:\a469526\Documents\WindowsPowerShell\PSReadLineProfile.ps1
+cd (get-userfolder documents).folder
+(get-userfolder documents).tostring()
+#>

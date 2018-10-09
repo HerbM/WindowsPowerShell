@@ -1,0 +1,18 @@
+Key,FnKey,Description
+DellE550,KeyBoard,https://www.dell.com/support/article/ky/en/kybsdt1/sln295380/dell-latitude-e5550-keyboard-guide?lang=en
+Esc,Fn+Esc,Toggle Function Key Lock
+F1,Fn+F1,Mute Audio
+F2,Fn+F2,Decrease Volume
+F3,Fn+F3,Increase Volume
+F4,Fn+F4,Toggle Microphone On/Off
+F6,Fn+F6,Enable or Disable Scroll Lock
+F8,Fn+F8,Toggles between external & LCD display
+F9,Fn+F9,Search (Windows 8 & above)
+F10,Fn+F10,Adjust Keyboard Backlight brightness & on/off (Optional)
+F11,Fn+F11,Decrease LCD Brightness
+F12,Fn+F12,Increase LCD Brightness
+B,Fn+B,Break
+PrtScr,Fn+PrtScr,Toggle Wireless on/off
+Insert,Fn+Insert,Enter Sleep / Hibernation mode
+Left,Fn+Left,Home
+Right,Fn+Right,End

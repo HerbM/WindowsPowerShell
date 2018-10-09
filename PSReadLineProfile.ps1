@@ -30,7 +30,11 @@ $PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversi
 if (!(Get-Module PSReadline -listavailable -ea Ignore)) {
   $parms = @{force = $true; Confirm = $False}
   if ($PSVersionNumber -ge 5.1) { $parms += @{ AllowClobber = $True } }
-  Install-Module PSReadline @Parms -ea Ignore 
+  If (Get-Command Install-Module -ea Ignore) {
+    Install-Module PSReadline @Parms -ea Ignore 
+  } Else {
+    Write-Warning "$(FLINE) Install-Module not found"
+  }
 }
 if (!(Get-Module PSReadline -ea ignore) -and (Get-Module PSReadline -listavailable -ea ignore)) {
   Import-Module PSReadLine
@@ -286,7 +290,7 @@ if ($Matching) {
 # This binding will let you save that command in the history so you can recall it,
 # but it doesn't actually execute.  It also clears the line with RevertLine so the
 # undo stack is reset - though redo will still reconstruct the command line.
-Set-PSReadLineKeyHandler -Key Alt+w `
+Set-PSReadLineKeyHandler -Key Alt+w,Shift+Escape `
              -BriefDescription SaveInHistory `
              -LongDescription "Save current line in history but do not execute" `
              -ScriptBlock {
@@ -297,6 +301,20 @@ Set-PSReadLineKeyHandler -Key Alt+w `
   [Microsoft.PowerShell.PSConsoleReadLine]::AddToHistory($line)
   [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
 }
+Set-PSReadLineKeyHandler -key escape -function RevertLine 
+
+<#
+Set-PSReadLineKeyHandler -Chord Escape `
+                         -BriefDescription RevertLineWithSave `
+                         -LongDescription "Save Curent line then revert" `
+                         -ScriptBlock {
+  param($key, $arg)
+  $line = $cursor = $null
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)                         
+  [Microsoft.PowerShell.PSConsoleReadLine]::AddToHistory($line)
+  [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
+}
+#>
 
 # Insert text from the clipboard as a here string
 Set-PSReadLineKeyHandler -Key Ctrl+Shift+v `
@@ -747,17 +765,6 @@ write-warning "$(FLINE) Before Ctrl+Alt+|"
 #	[Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
 #	[Microsoft.PowerShell.PSConsoleReadLine]::Insert($Line)
 Set-PSReadLineOption -HistorySearchCursorMovesToEnd 
-Set-PSReadLineKeyHandler -Chord Escape `
-                         -BriefDescription RevertLineWithSave `
-                         -LongDescription "Save Curent line then revert" `
-                         -ScriptBlock {
-  param($key, $arg)
-  $line = $cursor = $null
-  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)                         
-  [Microsoft.PowerShell.PSConsoleReadLine]::AddToHistory($line)
-  [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
-}
-
 Set-PSReadLineKeyHandler -Chord 'Ctrl+Alt+|','Ctrl+Alt+?','Ctrl+\','Ctrl+Alt+\' `
                          -BriefDescription InsertForEachObject `
                          -LongDescription "Insert ForEach-Object with scriptblock " `

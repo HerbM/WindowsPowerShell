@@ -39,6 +39,36 @@ portqry -n 10.10.10.61 -e 3268 -p tcp  # ldap if DC is a GC should be good
 portqry -n 10.10.10.61 -e 445  -p tcp  # probably should be open
 portqry -n 10.10.10.61 -e 464  -p both # kpass, client might not require
 
+Function Test-DomainConnection {
+  Param(
+    [string[]]$ComputerName,
+    [switch]$RPC,   # 
+    [switch]$RDP,   # Not yet implemented
+    [switch]$WSMan, # Not yet implemented
+    [switch]$All    # Not yet implemented    
+  )
+  If ($All) { $RDP = $WSMan = $True }  
+  ForEach ($Computer in $ComputerName) {
+    portqry -n $Computer -e 53   -p both 2>&1 # DNS
+    portqry -n $Computer -e 88   -p both 2>&1 # Kerberos
+    portqry -n $Computer -e 445  -p tcp  2>&1 # probably should be open
+    portqry -n $Computer -e 464  -p both 2>&1 # kpass, client might not require
+    portqry -n $Computer -e 389  -p udp  2>&1 # ldap results should be good
+    portqry -n $Computer -e 3268 -p tcp  2>&1 # ldap if DC is a GC should be good 
+    If ($RPC) { 
+      portqry -n $Computer -e 135  -p tcp  2>&1 # RPC port mapper (should show lots of ports)
+    }
+    If ($RDP) { 
+      portqry -n $Computer -e 3389 -p tcp  2>&1 # RPC port mapper (should show lots of ports)
+    }
+    If (!$WSMan) { 
+      portqry -n $Computer -e 5985  -p tcp 2>&1 # RPC port mapper (should show lots of ports)
+    }
+  }
+}
+$DC = '168.44.246.91'
+Test-DomainConnection $DC
+
 #Possibly additional check for more information:
 portqry -n 10.10.10.61 -o 3389,5985,5986 -p tcp  # RDP, PowerShell Remoting not needed but nice
 portqry -n 10.10.10.61 -r 49152:65535    -p both # spot check some of these, impractical to check all
