@@ -169,13 +169,17 @@ Function Set-GitProxy {
     $HTTPProxy  = $HTTPProxy -replace  '//([^@]+)$', "//$UserName$1"
     $HTTPSProxy = $HTTPSProxy -replace '//([^@]+)$', "//$UserName$1"
   }  
-  Write-Verbose "UserName: $UserName"
-  $Env:credential_helper     = 'wincred'
-  $Env:GIT_credential_helper = 'wincred'
-  $Env:GIT_HTTP_PROXY        = "$HTTPProxy"
-  $Env:GIT_HTTPS_PROXY       = "$HTTPSProxy" 
-  $Env:http_proxy            = "$HTTPProxy"
-  $Env:https_proxy           = "$HTTPSProxy"
+  If ($Reset) {
+    remove-item Env:Git*,Env:HTTP*,Env:credential_helper* -ea ignore
+  } else {
+    Write-Verbose "UserName: $UserName"
+    $Env:credential_helper     = 'wincred'
+    $Env:GIT_credential_helper = 'wincred'
+    $Env:GIT_HTTP_PROXY        = "$HTTPProxy"
+    $Env:GIT_HTTPS_PROXY       = "$HTTPSProxy" 
+    $Env:http_proxy            = "$HTTPProxy"
+    $Env:https_proxy           = "$HTTPSProxy"
+  }
 }
 
 
@@ -194,9 +198,7 @@ If ($MyInvocation.Line -match '\s*\.(?![\w\\.\"''])') {
     Write-Warning "$(FLINE) Reset proxy"
     Set-DefaultProxy @$PSBoundParameters
     Set-InternetProxy -State Disable  
+    Set-GitProxy -reset
     If (Get-Command setproxy.exe -ea Ignore) { setproxy.exe /reset }
-    Set-GitProxy
   }
 }
-
-

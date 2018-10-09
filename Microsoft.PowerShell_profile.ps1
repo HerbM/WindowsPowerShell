@@ -1,4 +1,3 @@
-
 #region    Parameters
 [CmdLetBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
 param (
@@ -17,6 +16,11 @@ param (
   #[Alias('IAc','IAction','InfoAction')]
   #[ValidateSet('SilentlyContinue','')]                                  [switch]$InformationAction
 )
+If ((Get-Variable Env:NoPSProfile -value -ea Ignore) -or 
+    (Get-Variable Env:SkipPSProfile -value -ea Ignore)) { 
+  Write-Host "Skipping PS Profile due to environment settings" -Fore Yellow -Back DarkRed  
+  return 
+}
 #region    Parameters
 If ((Get-Item Env:NoProfile -ea Ignore) -and $Env:NoProfile.Trim() -match '^(T|Y|Skip)' ) {
   Write-Host "  PowerShell skip profile `$Env:NoProfile = [$($Env:NoProfile)]" -fore 'blue' -back 'Green'
@@ -709,6 +713,41 @@ set-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -va
 Function Get-CurrentIPAddress {(ipconfig) -split "`n" | Where-Object {
   $_ -match 'IPv4' } | ForEach-Object { $_ -replace '^.*\s+' }
 }
+
+Function Get-RegKey {
+  param(
+               [string[]]$Key, 
+                 [switch]$Double    = $Null,
+                 [switch]$Single    = $Null,
+                 [switch]$CmdOnly   = $Null,
+                 [switch]$PSOnly    = $Null,
+    [Alias('QO')][switch]$QuoteOnly = $Null,
+                 [switch]$Quote     = $Null
+  )    
+  Begin { 
+    $Keys = New-Object System.Collections.ArrayList 
+    If ($QuoteOnly) { $Quote = $True }
+  }
+  Process {
+    ForEach ($K in $key) { 
+      $K2 = $K -replace 'HK\w*_(.)\w*_(.)\w*:?','HK$1$2:'
+      If (!$CmdOnly) { [Void]$Keys.Add($K2) }
+      $K1 = $K2 -replace ':'
+      If (!$PSOnly)  { [Void]$Keys.Add($K1) }
+      If ($Keys) {
+        ForEach ($K3 in $Keys) {
+          If ($Quote) { 
+            If (!$Double) {  "'$K3'"  } 
+            If (!$Single) { "`"$K3`"" } 
+          }
+          If (!$QuoteOnly) { $K3 }
+        }
+      }
+    } 
+  }
+  End {}
+}
+
 Function Get-WhoAmI { "[$PID]",(whoami),(hostname) + (Get-CurrentIPAddress) -join ' ' }
 Function Get-DotNetVersion {
   [CmdletBinding()]param(
@@ -1168,22 +1207,28 @@ Function Get-Volume {
 
 Function Get-Free {
   [CmdletBinding(DefaultParameterSetName='Name')]Param(
-    [String[]]$Name,
+    [String[]]$Name='*',
     [String]$Scope = 'Local',
     [String]$Units = 'GB',
     [switch]$UseTransaction
   )
-  $Units, $Divisor, $Precision = Switch -regex ($Units) {
-    '^G'    { 'GB'; 1GB, 1;       break }
-    '^M'    { 'MB'; 1MB, 1;       break }
-    '^K'    { 'KB'; 1KB, 1;       break }
-    '^B'    { ''  ; 1  , 0;       break }
-    '^T'    { 'TB'; 1TB, 1;       break }
-    '^P'    { 'PB'; 1PB, 1;       break }
-    '^[EX]' { 'EB'; 1PB * 1KB, 1; break }
-    Default { 'GB', 1GB, 1;       break }
+  If ($Name.Count -eq 1 -and $Name -match '^[GMKBTEXP][a-z]*B') {
+    $Units, $Name = $Name, '*'
+    $PSBoundParameters.Remove('Name') 
+    Write-Verbose "Name=[$Name] $Units=$Units"
   }
-  If ($PSBoundParameters.ContainsKey('Name'))  {
+  $Units, $Divisor, $Precision = Switch -regex ($Units) {
+    '^G'    { 'GB'    ; 1GB, 1;     break }
+    '^M'    { 'MB'    ; 1MB, 1;     break }
+    '^K'    { 'KB'    ; 1KB, 1;     break }
+    '^B'    { 'Bytes' ; 1  , 0;     break }
+    '^T'    { 'TB'    ; 1TB, 1;     break }
+    '^P'    { 'PB'    ; 1PB, 1;     break }
+    '^[EX]' { 'EB'    ; 1PB*1KB, 1; break }
+    Default { 'GB'    , 1GB, 1;     break }
+  }
+  If ($PSBoundParameters.ContainsKey('Units')) { $PSBoundParameters.Remove('Units')}
+  If ($PSBoundParameters.ContainsKey('Name') -and $PSBoundParameters.'Name' -notmatch '^\*?$')  {
     $Name = $Name | ForEach-Object {
       If (Test-Path $_ -ea Ignore) { (Resolve-Path $Name).Drive } Else { $Name }
     }
