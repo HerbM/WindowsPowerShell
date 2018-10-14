@@ -1,3 +1,6 @@
+# Adopted RipGrep rg, runiq, xsv to supplement PowerShell 
+# SetProxy.exe plus PowerShell to set and disable proxy
+# 
 conda update --yes -n base conda
 conda update --yes --all
 
@@ -195,10 +198,6 @@ Dump all server Cis in the CMDB..
 Launch Service Flow from the DCS Portal home page > Published Reports > CMDB Assets > CMDB Assets Hardware > CMDB Hardware Asset Data.  
 Interact online, or Tools > Export to CSV
 
-setproxy /pac:http://proxyconf.my-it-solutions.net/proxy-na.pac
-  netsh winhttp show proxy
-  netsh winhttp import proxy source=ie
-  
   $webclient=New-Object System.Net.WebClient
   $creds=Get-Credential
   $webclient.Proxy.Credentials=$creds
@@ -1678,9 +1677,6 @@ $Newer | % {
   Install-Module -Name $_.Name  -Force -AllowClobber -Confirm:$False -ea Ignore 
 } | Format-Table
 
-https://github.com/dotnet/corefx/issues/29934
-WinHttpGetIEProxyConfigForCurrentUser
-WinHttpGetProxyForUrl
 
 Hacking the Human Operating System  -- Downloaded PDF 
 Cyber attackers often bypass the consciousness of their targets and attempt to manipulate victims through subconscious influences. This report from Intel Security offers advice on how to mitigate these risks.

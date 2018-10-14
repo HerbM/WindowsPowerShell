@@ -15,10 +15,10 @@ param (
   #[Alias('IAc','IAction','InfoAction')]
   #[ValidateSet('SilentlyContinue','')]                                  [switch]$InformationAction
 )
-If ((Get-Variable Env:NoPSProfile -value -ea Ignore) -or 
-    (Get-Variable Env:SkipPSProfile -value -ea Ignore)) { 
-  Write-Host "Skipping PS Profile due to environment settings" -Fore Yellow -Back DarkRed  
-  return 
+If ((Get-Variable Env:NoPSProfile -value -ea Ignore) -or
+    (Get-Variable Env:SkipPSProfile -value -ea Ignore)) {
+  Write-Host "Skipping PS Profile due to environment settings" -Fore Yellow -Back DarkRed
+  return
 }
 #region    Parameters
 $Private:StartTime  = Get-Date
@@ -57,20 +57,20 @@ Function Get-Value {
   }
 }
 
-Function ConvertFrom-FileTime { 
+Function ConvertFrom-FileTime {
   [CmdletBinding()][OutputType([DateTime],[String])]Param(
     [Parameter(Mandatory)][Int64]$FileTime,    # 131775519645343599
     [string]$Format='',
     [switch]$Sortable
-  )    
-  try {  
+  )
+  try {
     If ($dt = [datetime]::FromFileTime($FileTime) ) {
       If ($Sortable) { $Format = 's'              }
-      If ($Format)   { $dt = "{0:$Format}" -f $dt }   
+      If ($Format)   { $dt = "{0:$Format}" -f $dt }
     }
     $dt
   } catch { }  # Just return $Null, no need to do more
-} 
+}
 
 # $LastLogon = ((nslookup $env:userdnsdomain | select -skip 3 ) -replace '.*\s+([\d.]{7,})?.*','$1').where{$_} | % { get-aduser martinh -Properties *  -server $_ } | Select name,@{N='LastLogon';E={ConvertFrom-FileTIme -sort $_.LastLogon}},LastLogonDate,@{N='LastLogonTimeStamp';E={ConvertFrom-FileTIme -sort $_.LastLogonTimeStamp}} 131775519645343599
 
@@ -94,24 +94,24 @@ Write-Host "$(LINE) Use `$PSProfile for path to Profile: $PSProfile" @Private:Co
 Write-Host "$(LINE) ProfileLogPath: $ProfileLogPath"                 @Private:Colors
 
 <#
-.Synopsis 
+.Synopsis
   Locate pre & post load profiles to run
 .Description
   Check for ComputerDomain, UserDomain, ComputerName, UserName profiles
   to run them either before (pre) or after the main profile (post)
-  
-  Will generate/locate 
+
+  Will generate/locate
     $ProfileDirectory\Profile + NAME + Suffix + .ps1
 .Parameter Suffix
   Usually Pre or Post
-  Will generate/locate 
+  Will generate/locate
     $ProfileDirectory\Profile + NAME + Suffix + .ps1
 #>
 Function Get-ExtraProfile {
   [CmdletBinding()]param(
     [String]$Suffix,
     [String[]]$Name = (@((Get-WMIObject win32_computersystem).Domain) +
-      @((nbtstat  -n) -match '(?-i:<00>\s+GROUP\b)' -replace 
+      @((nbtstat  -n) -match '(?-i:<00>\s+GROUP\b)' -replace
         '^\s*(\S+)\s*(?-i:<00>\s+GROUP\b).*$', '$1' | Select-Object -Uniq) +
       $Env:UserDomain + $Env:ComputerName + $Env:UserName
     )
@@ -129,7 +129,7 @@ Function Get-ExtraProfile {
 
 
 Function Get-ProcessFile {
-  (Get-Process @args).Where{$_.Name -notin 'System','Idle'} | 
+  (Get-Process @args).Where{$_.Name -notin 'System','Idle'} |
     Sort-Object -unique name,path | Get-Process -FileVersionInfo
 }
 
@@ -389,32 +389,32 @@ function Get-WmiClass {
   [CmdletBinding()]Param($Pattern='^.')
   Get-WmiNamespace | ForEach-Object {
     Get-WmiObject -Namespace $_ -List |
-      ForEach-Object { $_.Path.Path }         | 
-      Where-Object { $_ -match $Pattern } 
-  } | Sort-Object -Unique  
-} 
+      ForEach-Object { $_.Path.Path }         |
+      Where-Object { $_ -match $Pattern }
+  } | Sort-Object -Unique
+}
 
 Function Get-SpeechSynthesizer {
   [CmdletBinding()]Param(
     [Alias('gettype')][switch]$Type
   )
   If ($SpeechType = Add-Type -AssemblyName System.Speech -passthru) { # | gm
-    If ($Type) { 
+    If ($Type) {
       Write-Verbose "Returning Synthezizer, try:  $SpeechType | gm -static"
-      $SpeechType  
+      $SpeechType
     } else {
       $SpeechSynthesizer = New-Object -TypeName System.Speech.Synthesis.SpeechSynthesizer
       $SpeechSynthesizer
-      If ($SpeechSynthesizer) { 
+      If ($SpeechSynthesizer) {
         Write-Verbose "Speaking now..."
         If ($PSBoundParameters.ContainsKey('Verbose')) {
-          $SpeechSynthesizer.Speak('Hello World!') 
-        }        
+          $SpeechSynthesizer.Speak('Hello World!')
+        }
       } else {
         Write-Verbose "No synthesizer"
       }
-    }      
-  }  
+    }
+  }
 }
 <#  SpeechType
 IsPublic IsSerial Name                                     BaseType
@@ -425,23 +425,23 @@ False    False    SR                                       System.Object
     SpeechType | gm -static
 #>
 
-Function Get-MemberType{ 
+Function Get-MemberType{
   [CmdletBinding()][Alias('IsMember','Member?','MemberP')]
   Param(
-    [Parameter(Mandatory)][Object]$InputObject, 
+    [Parameter(Mandatory)][Object]$InputObject,
     [Alias('Name')][string]$MemberName
-  ) 
-  $ChildNames = $MemberName -split '\.'  
-  $Object = $InputObject; 
+  )
+  $ChildNames = $MemberName -split '\.'
+  $Object = $InputObject;
   Write-Verbose "ChildNames: $ChildNames"
   ForEach ($Name in $ChildNames) {
     Write-Verbose "1-Name: $Name $($Object.GetType())"
-    If (!($Member = Get-Member -Name $Name -InputObject $Object -ea Ignore)) { 
+    If (!($Member = Get-Member -Name $Name -InputObject $Object -ea Ignore)) {
       Write-Verbose "Returning with no child: $Name"
       return $Null            # nothing there
-    }  
+    }
     Write-Verbose "2-Name: $Name Type: $($Object.GetType()) MemberType $($Member.MemberType)"
-    $Object = $Object.$Name 
+    $Object = $Object.$Name
     If ($Member.MemberType -notmatch 'Property') { break }  # Function, etc.
   }
   $Object.GetType()
@@ -453,7 +453,7 @@ Function Set-StreamColor {
     [string]$BackGroundColor = 'DarkRed',
     [string]$ForeGroundColor = 'White'
   )
-  If (Get-MemberType $Host "PrivateData.$($StreamName)BackgroundColor") { 
+  If (Get-MemberType $Host "PrivateData.$($StreamName)BackgroundColor") {
     $host.PrivateData."$($StreamName)BackGroundColor" = $BackGroundColor
     $host.PrivateData."$($StreamName)ForeGroundColor" = $ForeGroundColor
     # $host.PrivateData.debugbackgroundcolor   = 'black'
@@ -461,7 +461,7 @@ Function Set-StreamColor {
 }
 
 
-    
+
 Function Get-NewLine { [environment]::NewLine }; new-alias NL Get-NewLine -force
 if (! (Get-Command write-log -type Function,cmdlet,alias -ea ignore)) {
   new-alias write-log write-verbose -force -scope Global -ea ignore
@@ -708,34 +708,34 @@ Function Get-CurrentIPAddress {(ipconfig) -split "`n" | Where-Object {
 
 Function Get-RegKey {
   param(
-               [string[]]$Key, 
+               [string[]]$Key,
                  [switch]$Double    = $Null,
                  [switch]$Single    = $Null,
                  [switch]$CmdOnly   = $Null,
                  [switch]$PSOnly    = $Null,
     [Alias('QO')][switch]$QuoteOnly = $Null,
                  [switch]$Quote     = $Null
-  )    
-  Begin { 
-    $Keys = New-Object System.Collections.ArrayList 
+  )
+  Begin {
+    $Keys = New-Object System.Collections.ArrayList
     If ($QuoteOnly) { $Quote = $True }
   }
   Process {
-    ForEach ($K in $key) { 
+    ForEach ($K in $key) {
       $K2 = $K -replace 'HK\w*_(.)\w*_(.)\w*:?','HK$1$2:'
       If (!$CmdOnly) { [Void]$Keys.Add($K2) }
       $K1 = $K2 -replace ':'
       If (!$PSOnly)  { [Void]$Keys.Add($K1) }
       If ($Keys) {
         ForEach ($K3 in $Keys) {
-          If ($Quote) { 
-            If (!$Double) {  "'$K3'"  } 
-            If (!$Single) { "`"$K3`"" } 
+          If ($Quote) {
+            If (!$Double) {  "'$K3'"  }
+            If (!$Single) { "`"$K3`"" }
           }
           If (!$QuoteOnly) { $K3 }
         }
       }
-    } 
+    }
   }
   End {}
 }
@@ -875,13 +875,13 @@ Function Get-Constructor {
   }
 }
 # [Net.Sockets.TCPClient]::New
-# Check TCP connection (New-Object Net.Sockets.TcpClient).Connect("<remote machine>",<port>) 
+# Check TCP connection (New-Object Net.Sockets.TcpClient).Connect("<remote machine>",<port>)
 # Check UDP conection  (New-Object Net.Sockets.UdpClient).Connect("<remote machine>",<port>)
 
-Function Test-TCP { 
+Function Test-TCP {
   [CmdletBinding()]Param($ComputerName='www.google.com',$Port=80)
-  try { 
-    (New-Object Net.Sockets.TcpClient).Connect($ComputerName,$Port) 
+  try {
+    (New-Object Net.Sockets.TcpClient).Connect($ComputerName,$Port)
     $True
   } Catch { $False }
 }
@@ -948,7 +948,7 @@ Get-ChildItem | Sort-Object LastWriteTime -desc | ForEach-Object { '{0,23} {1,11
 #>
 <#
 ts.ecs-support.com:32793  terminal server 10.10.11.80
-ts.ecs-support.com:32795  TS02  also FS02??? 
+ts.ecs-support.com:32795  TS02  also FS02???
 Efficient Computer Systems ECS EFFComSYS\hmartin ecs-support.com ts01 ts02
 S:\Organization Tools IPaddress v2
 
@@ -1145,7 +1145,7 @@ Write-Information "$(LINE) Test hex format: $("{0:X}" -f -2068774911)"
 Function Get-DriveType {
   [CmdletBinding()][Alias('Get-DriveTypeName')]
   [Alias('DriveTypeName','DriveType','Code','DriveCode')]Param($Type)
-  $DriveTypes = [Ordered]@{ 
+  $DriveTypes = [Ordered]@{
     0 = 'UNKNOWN'   # Type cannot be determined.
     1 = 'NOROOTDIR' # Root path is invalid, e.g., no volume mounted at specified path
     2 = 'REMOVABLE' # Removable media       e.g., floppy drive, thumb or flash card reader
@@ -1155,8 +1155,8 @@ Function Get-DriveType {
     6 = 'RAMDISK'   # RAM disk
   }
   # $a
-  If     (!$PSBoundParameters.ContainsKey('Type')) { $DriveTypes        } 
-  ElseIf ($DriveTypes.Contains($Type))             { $DriveTypes[$Type] } 
+  If     (!$PSBoundParameters.ContainsKey('Type')) { $DriveTypes        }
+  ElseIf ($DriveTypes.Contains($Type))             { $DriveTypes[$Type] }
   Else                                             { 'INVALID'          }
 }
 
@@ -1206,7 +1206,7 @@ Function Get-Free {
   )
   If ($Name.Count -eq 1 -and $Name -match '^[GMKBTEXP][a-z]*B') {
     $Units, $Name = $Name, '*'
-    $PSBoundParameters.Remove('Name') 
+    $PSBoundParameters.Remove('Name')
     Write-Verbose "Name=[$Name] $Units=$Units"
   }
   $Units, $Divisor, $Precision = Switch -regex ($Units) {
@@ -1229,12 +1229,12 @@ Function Get-Free {
   $PSBoundParameters.PSProvider = 'FileSystem'
   Get-PSDrive @PSBoundParameters | Where-Object Used -ne '' | ForEach-Object {
     [PSCustomObject]@{
-      "Used$Units"    = "{0,6:N$Precision}" -f ($_.Used / $Divisor) 
-      "Free$Units"    = "{0,6:N$Precision}" -f ($_.Free / $Divisor) 
-      Root            = $_.Root   # '{0,4}' -f  $_.Root           
+      "Used$Units"    = "{0,6:N$Precision}" -f ($_.Used / $Divisor)
+      "Free$Units"    = "{0,6:N$Precision}" -f ($_.Free / $Divisor)
+      Root            = $_.Root   # '{0,4}' -f  $_.Root
       CurrentLocation = $_.CurrentLocation
-    }  
-  }  
+    }
+  }
 }
 
 
@@ -1576,9 +1576,9 @@ new-alias dj dl -force -scope Global
 new-alias w  where.exe -force
 new-alias wh where.exe -force
 new-alias wi where.exe -force
-If (Test-Path 'C:\ProgramData\Local\Julia\bin\julia.exe') { 
+If (Test-Path 'C:\ProgramData\Local\Julia\bin\julia.exe') {
   new-alias julia 'C:\ProgramData\Local\Julia\bin\julia.exe' -force -scope global
-}  
+}
 Function od {
   param(
     [parameter(Position=0,ValueFromPipeline,ValueFromPipelineByPropertyName,
@@ -1818,18 +1818,18 @@ Function Get-Property {
     }
   }
 }
-Function GalDef { 
+Function GalDef {
   Param([string[]]$Definition,[string[]]$Exclude,[string]$Scope)
   Get-Alias @PSBoundParameters
 }
-New-Alias ts Test-Script -Force   
-Function Test-Clipboard { 
-  [CmdletBinding()][Alias('tcb','gcbt','tgcb')]Param() 
+New-Alias ts Test-Script -Force
+Function Test-Clipboard {
+  [CmdletBinding()][Alias('tcb','gcbt','tgcb')]Param()
   Get-Clipboard | Test-Script
 }
 Function Get-HistoryCount {
-  [CmdletBinding()][Alias('hcount','hc')]param([int]$Count) 
-  Get-History -count $Count 
+  [CmdletBinding()][Alias('hcount','hc')]param([int]$Count)
+  Get-History -count $Count
 }
 # }
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE) Before Go"
@@ -1871,7 +1871,7 @@ Function Set-GoAlias {
   }
   ForEach ($Alias in $goHash.Keys) {
     write-verbose "New-Alias $Alias go -force -scope Global -Option allscope"
-    If (!($Command = Get-Command $Alias -ea ignore) -or 
+    If (!($Command = Get-Command $Alias -ea ignore) -or
           $Command.Definition -match 'Set-GoLocation$') {
       New-Alias $Alias Set-GoLocation -force -scope Global -Option allscope
     } else { Write-Warning "Set-GoLocation: Alias $Alias conflicts with "}
@@ -2233,13 +2233,13 @@ Function Get-PSBoundParameter {
     [Alias('Parm')][string]$Parameter,
     [Alias('Present','IsPresent','ContainsKey')][switch]$Boolean,
     [Alias('RemoveParameter')]                  [switch]$RemoveKey
-  ) 
+  )
   If ($PSCmdlet -and $PSBoundParameters.ContainsKey($Parameter)) {
     If ($Boolean) { $True }
-    Else { 
-      $PSBoundParameters.$Parameter 
+    Else {
+      $PSBoundParameters.$Parameter
     }
-    If ($RemoveKey) { $PSBoundParameters.Remove($Parameter) }    
+    If ($RemoveKey) { $PSBoundParameters.Remove($Parameter) }
   } elseif ($Boolean) {
     $False
   } else {
@@ -2440,7 +2440,7 @@ If ($RDCMan) {
 # $objShortCut.TargetPath("path to program")
 # $objShortCut.Save()
 
-##  TODO:  Set-LocationEnvironment, Set-LocationPath 
+##  TODO:  Set-LocationEnvironment, Set-LocationPath
 ## (dir ENV:*) |  ? value -match '\\'
 Function Get-UserFolder {
   [CmdletBinding()][Alias('guf','gf')]param(
@@ -2450,11 +2450,11 @@ Function Get-UserFolder {
     [switch]$Regex
   )
   Begin {
-    $Key = 
+    $Key =
       'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
     $Folders = @()
-    $RegistryFolders = 
-      (Get-ItemProperty $Key -name * -ea Ignore).psobject.get_properties() | 
+    $RegistryFolders =
+      (Get-ItemProperty $Key -name * -ea Ignore).psobject.get_properties() |
         Where-Object Name -notlike 'PS*' | ForEach {
           [PSCustomObject]@{ $_.Name = $_.Value }
           If ($_.Name -eq '{374DE290-123F-4565-9164-39C4925E467B}') {
@@ -2465,7 +2465,7 @@ Function Get-UserFolder {
   Process {
     $Folders += ForEach ($Folder in $Name) {
       $Folder = $Folder -replace '^Dow.*', '{374DE290-123F-4565-9164-39C4925E467B}'
-      $Folder = $Folder -replace '^Doc.*',  'Personal' 
+      $Folder = $Folder -replace '^Doc.*',  'Personal'
       $Folder = $Folder -replace '^(Pict|Vid|Mus).*$', 'My $1'
       $Folder = $Folder -replace '^(AppData)$', 'Local $1'
       Write-Verbose "Folder: Folder pattern: [$Folder]"
@@ -2473,10 +2473,10 @@ Function Get-UserFolder {
         Write-Verbose "Regex: User folders: [$($F.Name)]"
         $F
       } ElseIf ($F = Get-ItemProperty $Key -name $Folder -ea Ignore) {
-        $F.psobject.get_properties() | Where-Object Name -notlike 'PS*' 
+        $F.psobject.get_properties() | Where-Object Name -notlike 'PS*'
       } Else {
         Write-Warning "User folder: [$Folder] not found"
-      }   
+      }
     }
   }
   End {

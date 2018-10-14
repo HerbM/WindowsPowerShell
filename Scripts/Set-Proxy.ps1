@@ -5,7 +5,7 @@
                         [string[]]$BypassList,  # Array of regexes
   [Alias('UseLocal')]     [switch]$UseProxyOnLocal=$Null,
   [Alias('NDC','NoCred')] [switch]$NoDefaultCredential=$Null,
-  [Alias('Reset','Clear')][switch]$Remove=$Null
+  [Alias('Off','Reset','Clear','Disable')][switch]$Remove=$Null
 )
 
 
@@ -17,7 +17,7 @@ Function Set-DefaultProxy {
                           [string[]]$BypassList,  # Array of regexes
     [Alias('UseLocal')]     [switch]$UseProxyOnLocal=$Null,
     [Alias('NDC','NoCred')] [switch]$NoDefaultCredential=$Null,
-    [Alias('Reset','Clear')][switch]$Remove=$Null
+    [Alias('Disable','Reset','Clear')][switch]$Remove=$Null
   )
   #https://msdn.microsoft.com/en-us/library/system.net.webrequest.defaultcachepolicy(v=vs.100).aspx
   #https://msdn.microsoft.com/en-us/library/system.net.networkcredential(v=vs.100).aspx
@@ -96,7 +96,7 @@ Function Set-InternetProxy {
     [string]$State,
     [string]$Url,
     [Alias('On' )][switch]$Enable=$Null,
-    [Alias('Off')][switch]$Disable=$Null
+    [Alias('Off','Reset','Clear','Remove')][switch]$Disable=$Null
   )
   $Verbose = $PSBoundParameters.ContainsKey('Verbose') -and $PSBoundParameters.Verbose
   If ($State -match '^(On|Ena)') { $Enable = $True  }
@@ -199,6 +199,60 @@ If ($MyInvocation.Line -match '\s*\.(?![\w\\.\"''])') {
     Set-DefaultProxy @$PSBoundParameters
     Set-InternetProxy -State Disable  
     Set-GitProxy -reset
-    If (Get-Command setproxy.exe -ea Ignore) { setproxy.exe /reset }
+    If (Get-Command setproxy.exe -ea Ignore) { setproxy.exe /proxy:disable }
+  }
+}
+<#
+setproxy /pac:http://proxyconf.my-it-solutions.net/proxy-na.pac
+  netsh winhttp show proxy
+  netsh winhttp import proxy source=ie
+
+https://github.com/dotnet/corefx/issues/29934
+WinHttpGetIEProxyConfigForCurrentUser
+WinHttpGetProxyForUrl
+#>
+  
+
+<#
+.Notes
+    DefaultSecureProtocols 
+      Value       Protocol  Enabled
+      0x00000008  SSL 2.0   Enable by default
+      0x00000020  SSL 3.0   Enable by default
+      0x00000080  TLS 1.0   Enable by default
+      0x00000200  TLS 1.1   Enable by default
+      0x00000800  TLS 1.2   Enable by default
+.Link
+ https://support.microsoft.com/en-us/help/3140245/update-to-enable-tls-1-1-and-tls-1-2-as-a-default-secure-protocols-in
+#>
+Function Set-HTTPSecurity {
+  [CmdletBinding()] param(
+    [Alias('Enabled','On','Set')] [UInt32]$Value = 0x00000A00,
+    [Alias('Off','Remove','Disable','Clear')]   [Switch]$Reset
+  ) 
+  $Drives = 'HKCU:','HKLM:'
+  $Keys   = 'SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings\WinHttp',
+            'SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Internet Settings\WinHttp'         
+  ForEach ($Drive in $Drives) {
+    ForEach ($Key in $Keys) {
+      If ($Reset) {
+        Remove-ItemProperty -Path "$Drive\$Key" -Name 'DefaultSecureProtocols' -Force -EA Ignore
+      } Else {
+        Set-ItemProperty    -Path "$Drive\$Key" -Name 'DefaultSecureProtocols' -Value $Value -Force -EA Ignore  
+      }
+    } 
+  }
+}
+
+Function Get-HTTPSecurity {
+  [CmdletBinding()] param(
+  )
+  $Drives = 'HKCU:','HKLM:'
+  $Keys    = 'SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings\WinHttp',
+            'SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Internet Settings\WinHttp'         
+  ForEach ($Drive in $Drives) {
+    ForEach ($Key in $Keys) {
+        Get-ItemProperty -Path "$Drive\$Key" -Name 'DefaultSecureProtocols' -EA Ignore  
+    } 
   }
 }
