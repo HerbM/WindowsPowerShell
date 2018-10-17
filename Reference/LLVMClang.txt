@@ -1,0 +1,58 @@
+https://ninja-build.org/
+Ninja's low-level approach makes it perfect for embedding into more featureful build systems; see a list of existing tools. Ninja is used to build Google Chrome, parts of Android, LLVM, and can be used in many other projects due to CMake's Ninja backend.
+
+Binaries for Linux, Mac, and Windows are available at https://github.com/ninja-build/ninja/releases
+Run './ninja -h' for Ninja help.
+https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-win.zip
+
+Simultaneously Building Clang and LLVM: http://clang.llvm.org/get_started.html
+Once you have checked out Clang into the llvm source tree it will build along with the rest of llvm. To build all of LLVM and Clang together all at once simply run make from the root LLVM directory.
+
+If you encounter problems while building Clang, make sure that your LLVM checkout is at the same revision as your Clang checkout. LLVM's interfaces change over time, and mismatched revisions are not expected to work together. We recommend writing a script to automatically run svn up in each repository to keep them synchronized. Alternatively, you may consider using the unofficial git monorepo which automatically keeps everything in sync at the same revision and lets you commit changes atomically across multiple LLVM subprojects.
+
+Using Visual Studio  The following details setting up for and building Clang on Windows using Visual Studio:
+
+Get the required tools:
+Subversion. Source code control program. Get it from: https://subversion.apache.org/packages.html
+CMake. This is used for generating Visual Studio solution and project files. Get it from: https://cmake.org/download/
+Visual Studio 2015 or later
+Python. It is used to run the clang test suite. Get it from: https://www.python.org/download/
+GnuWin32 tools The Clang and LLVM test suite use various GNU core utilities, such as grep, sed, and find. The gnuwin32 packages are the oldest and most well-tested way to get these tools. However, the MSys utilities provided by git for Windows have been known to work. Cygwin has worked in the past, but is not well tested. If you don't already have the core utilies from some other source, get gnuwin32 from http://getgnuwin32.sourceforge.net/.
+Check out LLVM:
+svn co https://llvm.org/svn/llvm-project/llvm/trunk llvm
+Check out Clang:
+cd llvm\tools
+svn co https://llvm.org/svn/llvm-project/cfe/trunk clang
+Note: Some Clang tests are sensitive to the line endings. Ensure that checking out the files does not convert LF line endings to CR+LF. If you use git-svn, make sure your core.autocrlf setting is false.
+
+Run CMake to generate the Visual Studio solution and project files:
+cd ..\.. (back to where you started)
+mkdir build (for building without polluting the source dir)
+cd build
+If you are using Visual Studio 2017: cmake -G "Visual Studio 15 2017" -A x64 -Thost=x64 ..\llvm
+-Thost=x64 is required, since the 32-bit linker will run out of memory.
+To generate x86 binaries instead of x64, pass -A Win32.
+See the LLVM CMake guide for more information on other configuration options for CMake.
+The above, if successful, will have created an LLVM.sln file in the build directory.
+Build Clang:
+Open LLVM.sln in Visual Studio.
+Build the "clang" project for just the compiler driver and front end, or the "ALL_BUILD" project to build everything, including tools.
+Try it out (assuming you added llvm/debug/bin to your path). (See the running examples from above.)
+See Hacking on clang - Testing using Visual Studio on Windows for information on running regression tests on Windows.
+Note that once you have checked out both llvm and clang, to synchronize to the latest code base, use the svn update command in both the llvm and llvm\tools\clang directories, as they are separate repositories.
+
+Using Ninja alongside Visual Studio
+We recommend that developers who want the fastest incremental builds use the Ninja build system. You can use the generated Visual Studio project files to edit Clang source code and generate a second build directory next to it for running the tests with these steps:
+
+Check out clang and LLVM as described above
+Open a developer command prompt with the appropriate environment.
+If you open the start menu and search for "Command Prompt", you should see shortcuts created by Visual Studio to do this. To use native x64 tools, choose the one titled "x64 Native Tools Command Prompt for VS 2017".
+Alternatively, launch a regular cmd prompt and run the appropriate vcvarsall.bat incantation. To get the 2017 x64 tools, this would be:
+"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
+mkdir build_ninja (or build, or use your own organization)
+cd build_ninja
+set CC=cl (necessary to force CMake to choose MSVC over mingw GCC if you have it installed)
+set CXX=cl
+cmake -GNinja ..\llvm
+ninja clang This will build just clang.
+ninja check-clang This will run the clang tests.
