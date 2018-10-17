@@ -31,7 +31,8 @@ Test
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact='Low')]
 Param(
   [string]$Script, 
-  [string]$Parameters
+  [string]$Parameters,
+  [switch]$Keep
 )
 
 try {
@@ -45,9 +46,15 @@ try {
     if($_ -match '^(.*?)=(.+)$' ) {
       If ($ShouldProcess = $PSCmdlet.ShouldProcess($Item, $NewMessage)) {
         Set-Content "env:\$($matches[1])" $matches[2]
-      }  
+      } else {
+        "Set-Content `"env:\$($matches[1])`" $matches[2]"
+      } 
     }
   }
+} catch {
+  Write-Warning "$($_ | fl * -force | Out-String )"  
 } finally {
-  If (Test-Path $tempFile -ea ignore){ Remove-Item $tempFile -ea Ignore -force }
+  If (!$Keep -and (Test-Path $tempFile -ea ignore){ 
+    Remove-Item $tempFile -ea Ignore -force 
+  }
 }

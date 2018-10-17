@@ -5,6 +5,8 @@ Binaries for Linux, Mac, and Windows are available at https://github.com/ninja-b
 Run './ninja -h' for Ninja help.
 https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-win.zip
 
+Getting Started with the LLVM System https://llvm.org/docs/GettingStarted.html
+
 Simultaneously Building Clang and LLVM: http://clang.llvm.org/get_started.html
 Once you have checked out Clang into the llvm source tree it will build along with the rest of llvm. To build all of LLVM and Clang together all at once simply run make from the root LLVM directory.
 
@@ -24,6 +26,7 @@ Check out Clang:
 cd llvm\tools
 svn co https://llvm.org/svn/llvm-project/cfe/trunk clang
 Note: Some Clang tests are sensitive to the line endings. Ensure that checking out the files does not convert LF line endings to CR+LF. If you use git-svn, make sure your core.autocrlf setting is false.
+
 
 Run CMake to generate the Visual Studio solution and project files:
 cd ..\.. (back to where you started)

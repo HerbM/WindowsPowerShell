@@ -816,6 +816,10 @@ Set-PSReadLineKeyHandler -Chord 'Ctrl+|,s','Ctrl+|,f','Ctrl+|,o','Ctrl+|,w',
     'c' { '| Sort-Object CreationTime '   }  
     default { '{NO MATCH}' }
   }
+  ####    ##########   If es es($Insertion -match '\bLength\b' -and 
+  ####    ##########       ((Get-Variable Length -value -ea Ignore) -and
+  ####    ##########       ## #:HM: 
+  ####    ##########   )
   #[Microsoft.PowerShell.PSConsoleReadLine]::Insert("Key: [$($key.Keychar)] arg: [$arg] Ins: [$Insertion]")
   [Microsoft.PowerShell.PSConsoleReadLine]::Insert($Insertion)
   If ($False) {

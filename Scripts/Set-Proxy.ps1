@@ -141,7 +141,8 @@ Function Set-InternetProxy {
     Set-ItemProperty $InternetSettingsKey $AutoDetect    1    -force -ea ignore
     Set-ItemProperty $InternetSettingsKey $ProxyEnable   1    -force -ea ignore
   }
-  $Settings = get-itemproperty $InternetSettingsKey -ea ignore | findstr /i $ProxyValues | Sort-Object
+  $Settings = get-itemproperty $InternetSettingsKey -ea ignore | 
+    FindStr /i $ProxyValues | Sort-Object
   ForEach ($Line in $Settings) {
     Write-Verbose $Line 
   }

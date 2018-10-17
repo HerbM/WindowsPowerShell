@@ -1863,94 +1863,11 @@ $goHash = [ordered]@{
   text       = 'c:\txt'
   txt        = 'c:\txt'
 }
-Function Set-GoAlias {
-  [CmdletBinding()]param([string]$Alias, [string]$Path)
-  if ($Alias) {
-    if ($global:goHash.Contains($Alias)) { $global:goHash.Remove($Alias) }
-    $global:goHash += @{$Alias = $path}
-  }
-  ForEach ($Alias in $goHash.Keys) {
-    write-verbose "New-Alias $Alias go -force -scope Global -Option allscope"
-    If (!($Command = Get-Command $Alias -ea ignore) -or
-          $Command.Definition -match 'Set-GoLocation$') {
-      New-Alias $Alias Set-GoLocation -force -scope Global -Option allscope
-    } else { Write-Warning "Set-GoLocation: Alias $Alias conflicts with "}
-  }
-}
 # Import-Module "$Home\Documents\WindowsPowerShell\Set-LocationFile.ps1"
 If ($Script:SLF =
     Join-Path $ProfileDirectory,$Home\Documents\WindowsPowerShell Set-LocationFile.ps1 -resolve -ea Ignore |
     Select -First 1
 ) { . $Script:SLF }
-Function Set-GoLocation {
-  [CmdletBinding()]param (
-    [Parameter(Position='0')][string[]]$path=@(),
-    [Parameter(Position='1')][string[]]$subdirectory=@(),
-    [switch]$pushd,
-    [switch]$showInvocation   # for testing
-  )
-  $verbose = $true
-  write-verbose "$(LINE) Start In: $((Get-Location).path)"
-  if ($showInvocation) { write-warning "$($Myinvocation | out-string )" }
-  $InvocationName = $MyInvocation.InvocationName
-  if (Get-Command set-jumplocation -ea ignore) {
-           new-alias jpushd Set-JumpLocation -force -scope Global
-  } else { new-alias jpushd pushd            -force -scope Global }
-  if (!(get-variable gohash -ea ignore)) { $goHash = @{} }
-  write-verbose "$(LINE) Path: $Path InvocationName: $InvocationName"
-  $subdir = @($subdirectory.foreach{$_.split(';')}) ##### $subdirectory -split ';'
-  $Target = @(if ($goHash.Contains($InvocationName)) {
-    if (!$subdirectory) { $subdir = @($path.foreach{$_.split(';')}) }
-    $goHash.$InvocationName -split ';'
-  } else {
-    ForEach ($P in $Path) {
-      if ($gohash.Contains($P)) { $gohash.$path.foreach{$_.split(';')} }  # @($goHash.path.foreach{$_.split(';')})
-    }
-  })
-  if (!$Target ) { $Target = $Path.foreach{$_.split(';')} }
-  write-verbose "$(LINE) path: [$($Target -join '] [')] sub: [$($subdir -join '] [')]"
-  try {
-    $ValidPath = @()
-    :OuterForEach ForEach ($p in ($Target)) {    #  | ForEach-Object {$_ -split ';'}  ### @($path.foreach{$_.split(';')})
-      if ($goHash.Contains($p) -and (Test-Path $goHash.$p)) { $p = $goHash.$p}
-      write-verbose "$(LINE) Foreach P: $p"
-      if (Test-Path $p -ea ignore) {
-        $ValidPath += Resolve-Path $p -ea ignore
-        ForEach ($Sub in ($subdir)) {   #  | ForEach-Object {$_ -split ';'}
-          write-verbose "$(LINE) $p sub: $sub"
-          $TryPath = Join-Path (Resolve-Path $pr -ea ignore) $Sub
-          if (Test-Path $TryPath) {
-            $ValidPath = @(Resolve-Path (Join-Path $TryPath))
-            write-verbose "$(LINE) Try: $TryPath ValidPath: [$($ValidPath -join '] [')]"
-            break :OuterForEach
-          }
-        }
-      }
-    }
-    if ($ValidPath) {
-      write-verbose "$(LINE) Valid: $($ValidPath -join '; ')"
-      if ($true -or $pushd) { jpushd       $ValidPath    }
-      else                  { Set-Location $ValidPath[0] }
-    } else {
-      write-verbose "$(LINE) $($Path -join '] [') $($Subdirectory -join '] [')"
-      if ($Path -or $Subdirectory) {
-        write-verbose "$(LINE) Jump: jpushd $(($Path + $Subdirectory) -join '; ')"
-        jpushd ($Path + $Subdirectory)
-      } else  {
-        if ($InvocationName -notin 'go','g','Set-GoLocation','GoLocation') {
-          write-verbose "$(LINE) Jump: jpushd $InvocationName"
-          jpushd $InvocationName
-        } else {
-          jpushd $InvocationName
-          write-verbose "$(LINE) Jump: jpushd $InvocationName"
-        }
-      }
-    }
-  }  catch {
-    write-error $_
-  }
-  write-verbose "$(LINE) Current: $((Get-Location).path)"
-} New-Alias Go Set-GoLocation -force -scope global; New-Alias G Set-GoLocation -force -scope global
 Function Set-GoLocation {
   [CmdletBinding()]param (
     [Parameter(Position='0')][string[]]$path=@(),
@@ -1994,121 +1911,6 @@ Function Set-GoAlias {
     write-verbose "New-Alias $Alias go -force -scope Global -Option allscope"
     New-Alias $Alias Set-GoLocation -force -scope Global -Option allscope
   }
-}
-Function Set-GoLocation {
-  [CmdletBinding()]param (
-    [Parameter(Position='0')][string[]]$path=@(),
-    [Parameter(Position='1')][string[]]$subdirectory=@(),
-    [Parameter(ValueFromRemainingArguments=$true)][string[]]$args,
-    [switch]$pushd,
-    [switch]$showInvocation   # for testing
-  )
-  Function set-SafeJumpLocation {
-    $a = $args
-    $jumpsTaken = 0
-    if (!$a) { try { set-location (Get-Location) } catch { Write-Warning "JL: Failed1" }; return }
-                    #set-jumplocation x 4
-    foreach ($p in $a) {
-      while ($p -is 'array') { $p = $p[0] }
-      write-verbose "p:[$p]  a:[$($a -join '] [')]"
-      if ($p -and ($p = Resolve-Path $p -ea ignore)) {
-        write-verbose "p:[$p]  a:[$($a -join '] [')]"
-        if (Get-ChildItem $p -ea ignore -force | Where-Object PSIsContainer -eq $True) {
-          try { set-location $p ; $jumpsTaken++ } catch { Write-Warning "JL: Failed2" } # Set-JumpLocation
-        } else {
-          $pd = Split-Path $p
-          write-verbose "Target [$p] is a FILE, `n         change to PARENT DIRECTORY [$pd]"
-          try { set-location $pd; $jumpsTaken++  } catch { Write-Warning "JL: Failed3" } # Set-JumpLocation
-        }
-      }
-    }
-    if (!$jumpsTaken) {
-      $a = $a | ForEach-Object { $_ } | ForEach-Object { $_ } # flatten array
-      $p = Resolve-Path ($a -join ' ') -ea ignore
-      write-warning "$(LINE) Joined path: [$p]  a:[$($a -join '] [')]"
-      if ($p) { Set-Location $p; return }                  # Set-JumpLocation
-      write-warning "$(LINE) a:[$($a -join '] [')]"
-      Set-Location @a    ###
-    }
-  }
-  $verbose = $true
-  write-verbose "$(LINE) Start In: $((Get-Location).path)"
-  if ($showInvocation) { write-warning "$($Myinvocation | out-string )" }
-  $InvocationName = $MyInvocation.InvocationName
-  if (Get-Command set-jumplocation -ea ignore) {
-           new-alias jpushd Set-SafeJumpLocation -force
-  } else { new-alias jpushd pushd                -force }
-  if (!(get-variable gohash -ea ignore)) { $goHash = @{} }
-  write-verbose "$(LINE) Path: $Path InvocationName: $InvocationName"
-  if ($Path.count -eq 1 -and (Test-Path $Path[0])) {
-    write-verbose "$(LINE) Path: $Path Sub: $sub"
-    try {
-      $P = $Path[0]
-      ForEach ($sub in ,$subdirectory + $args + '' ) {
-        write-verbose "$(LINE) P: $P Sub: $P $sub"
-        $JP = Join-Path $P $sub
-        if (Test-Path $JP -leaf) { $P = (Resolve-Path $P -parent).ToString()}
-        write-verbose "$(LINE) P: $P Sub: $P $sub"
-      }
-      $Path = @($P)
-    } catch {
-      write-verbose "$(LINE) $P didn't work with the subs/args"
-      jpushd $P
-      return
-    }  # didn't work so just keep processing
-  }
-  $subdir = @($subdirectory.foreach{$_.split(';')}) ##### $subdirectory -split ';'
-  $Target = @(if ($goHash.Contains($InvocationName)) {
-    if (!$subdirectory) { $subdir = @($path.foreach{$_.split(';')}) }
-    $goHash.$InvocationName -split ';'
-  } else {
-    ForEach ($P in $Path) {
-      if ($gohash.Contains($P)) { $gohash.$path.foreach{$_.split(';')} }  # @($goHash.path.foreach{$_.split(';')})
-    }
-  })
-  if (!$Target ) { $Target = $Path.foreach{$_.split(';')} }
-  write-verbose "$(LINE) path: [$($Target -join '] [')] sub: [$($subdir -join '] [')]"
-  try {
-    $ValidPath = @()
-    :OuterForEach ForEach ($p in ($Target)) {    #  | ForEach-Object {$_ -split ';'}  ### @($path.foreach{$_.split(';')})
-      if ($goHash.Contains($p) -and (Test-Path $goHash.$p)) { $p = $goHash.$p}
-      write-verbose "$(LINE) Foreach P: $p"
-      if (Test-Path $p -ea ignore) {
-        $ValidPath += Resolve-Path $p -ea ignore
-        ForEach ($Sub in ($subdir)) {   #  | ForEach-Object {$_ -split ';'}
-          write-verbose "$(LINE) $p sub: $sub"
-          $TryPath = Join-Path (Resolve-Path $pr -ea ignore) $Sub
-          if (Test-Path $TryPath) {
-            $ValidPath = @(Resolve-Path (Join-Path $TryPath))
-            write-verbose "$(LINE) Try: $TryPath ValidPath: [$($ValidPath -join '] [')]"
-            break :OuterForEach
-          }
-        }
-      }
-    }
-    if ($ValidPath) {
-      write-verbose "$(LINE) Valid: $($ValidPath -join '; ')"
-      if ($true -or $pushd) { jpushd  $ValidPath @args }     #### :HM:
-      else        { Set-Location      $ValidPath[0] }
-    } else {
-      write-verbose "$(LINE) $($Path -join '] [') $($Subdirectory -join '] [')"
-      if ($Path -or $Subdirectory) {
-        write-verbose "$(LINE) Jump: jpushd $(($Path + $Subdirectory + $args) -join '; ')"
-        jpushd ($Path + $Subdirectory) @args
-      } else  {
-        if ($InvocationName -notin 'go','g','Set-GoLocation','GoLocation') {
-          write-verbose "$(LINE) Jump: jpushd $InvocationName args"
-          jpushd $InvocationName @args
-        } else {
-          jpushd $InvocationName @args
-          write-verbose "$(LINE) Jump: jpushd $InvocationName"
-        }
-      }
-    }
-  }  catch {
-    write-error $_
-  }
-  write-verbose "$(LINE) Current: $((Get-Location).path)"
 }
 
 Function Set-GoLocation {
@@ -2440,6 +2242,90 @@ If ($RDCMan) {
 # $objShortCut.TargetPath("path to program")
 # $objShortCut.Save()
 
+Function Set-EnvironmentVariable {
+  [CmdletBinding(SupportsShouldProcess,ConfirmImpact='Low')]
+  [Alias('Set-Environment','Set-Env','sev')]Param(
+    [string[]]$Variable=$Null,
+    [string[]]$Value='',
+    [string[]]$Scope='Local',
+    [switch]  $Local,
+    [switch]  $Process,
+    [switch]  $User,
+    [Alias('Computer','System')][switch]$Machine
+  )
+  Begin {
+    $Scope = Switch ($True) {
+      { $Local   } { 'Local'   }
+      { $Process } { 'Process' }
+      { $User    } { 'User'    }
+      { $Machine } { 'Machine' }
+      Default      { $Scope    }
+    }
+  }
+  Process {
+    ForEach ($Var in $Variable) {
+      If ($Var -is 'System.Collections.DictionaryEntry') {
+        $Var, $Val = $Var.Name, $Var.Value       
+      } Else {
+        If ($Value) { $Val, $Value = $Value }
+        If ($Scope) { $Env, $Scope = $Scope }
+      }
+      If ($Env -in 'Computer','System') { $Env = 'Machine'}
+      If ($Var -as [String]) {
+        $Val = If ($Val = Get-Variable Val -ea 4 -value) { $Val -as 'string' } Else { '' }
+        Write-Verbose "Set environment [$Var=$Val] in [$Env] scope"
+        If ($PSCmdlet.ShouldProcess("$Env scope", "Set [$Var=$Val]")) {
+          If ($Env -eq 'Local') { Set-Item -Path "Env:$Var" -Value $Val } 
+          Else { [Environment]::SetEnvironmentVariable($Var,$Val,$Env) }
+        }
+      }
+    }
+  }
+  End {}
+}
+Function Get-EnvironmentVariable {
+  [CmdletBinding()][Alias('Get-Environment','Get-Env','gev')]
+  Param(
+    [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
+    [Alias('Key','Name','Path')][string[]]$Variable=$Null,
+    [string[]]$Scope='Local',
+    [switch]  $Local,
+    [switch]  $Process,
+    [switch]  $User,
+    [Alias('Computer','System')][switch]$Machine
+  )
+  Begin {
+    $Scope = Switch ($True) {
+      { $Local   } { 'Local'   }
+      { $Process } { 'Process' }
+      { $User    } { 'User'    }
+      { $Machine } { 'Machine' }
+      Default      { $Scope    }
+    }
+  }
+  Process {
+    ForEach ($Var in $Variable) {
+      If ($Var -is 'System.Collections.DictionaryEntry') {
+        $Var, $Val = $Var.Name       
+      } Else {
+        If ($Scope) { $Env, $Scope = $Scope }
+      }
+      If ($Env -in 'Computer','System') { $Env = 'Machine'}
+      If ($Var -as [String]) {
+        If ($Env -eq 'Local') { 
+          Get-Item -Path "Env:$Var"
+        } Else {
+          If ($Null -ne ($Val = [Environment]::GetEnvironmentVariable($Var,$Env))) {
+            [System.Collections.DictionaryEntry]::New($Var, $Val)
+          }
+        }
+      }
+    }
+  }
+  End {}
+}
+
+
 ##  TODO:  Set-LocationEnvironment, Set-LocationPath
 ## (dir ENV:*) |  ? value -match '\\'
 Function Get-UserFolder {
@@ -2527,11 +2413,6 @@ If ($PSVersionTable.PSVersion -lt [version]'5.0.0.0') {
   New-Alias gcb Get-ClipBoard -force
 }
 
-<#
-General useful commands
- Get-Command *-rsjob*
- history[-10..-1]
-#>
 Function PSBoundParameter([string]$Parm) {
   return ($PSCmdlet -and $PSCmdlet.MyInvocation.BoundParameters[$Parm].IsPresent)
 }
