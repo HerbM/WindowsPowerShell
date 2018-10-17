@@ -101,6 +101,7 @@ Function Set-InternetProxy {
   $Verbose = $PSBoundParameters.ContainsKey('Verbose') -and $PSBoundParameters.Verbose
   If ($State -match '^(On|Ena)') { $Enable = $True  }
   If ($State -match '^(Of|Dis)') { $Disable = $True }
+  If (!$Disable) { $Enable = $True }
   $InternetSettingsKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings"
   $AutoConfigURL       = 'AutoConfigURL'
   $AutoConfigURLSave   = $AutoConfigURL + 'SAVE'
@@ -135,6 +136,7 @@ Function Set-InternetProxy {
         return
       }
     }
+    Write-Warning "Setting registry keys including ProxyEnable"
     Set-Itemproperty $InternetSettingsKey $AutoConfigURL $url -force -ea ignore
     Set-ItemProperty $InternetSettingsKey $AutoDetect    1    -force -ea ignore
     Set-ItemProperty $InternetSettingsKey $ProxyEnable   1    -force -ea ignore
@@ -182,26 +184,53 @@ Function Set-GitProxy {
   }
 }
 
+Function Get-HTTPProxy {
+  [CmdletBinding()][Alias('Show-InternetProxy')]param()
+  netsh winhttp show proxy
+}
+Function Set-HTTPProxy {
+  [CmdletBinding()][Alias('Show-InternetProxy')]param(
+    [Alias('Proxy')][string]$ProxyHTTP  = '',
+                    [string]$ProxyHTTPS = '',
+                    [string]$ByPassList = '',
+    [Alias('Off','Reset','Clear','Remove')][switch]$Disable
+  )
+  # set proxy myproxy:80 "<local>;bar"
+  # set proxy proxy-server="http=myproxy;https=sproxy:88" bypass-list="*.foo.com"
+  If ($Disable) {
+    netsh winhttp reset proxy
+  } ElseIf ($ProxyHTTP) {
+    If (!$ProxyHTTPS) { $ProxyHTTPS = $ProxyHTTP }
+    set proxy proxy-server="http=$ProxyHTTP;https=$ProxyHTTPS"
+  } Else {
+    netsh winhttp set proxy http://proxyconf.my-it-solutions.net/proxy-na.pac
+    # netsh winhttp import proxy source=ie
+  }
+}
 
 If ($MyInvocation.Line -match '\s*\.(?![\w\\.\"''])') {
   Write-Warning "$(FLINE) Dot source, load functions, and exit"
 } Else {
   If ($Proxy -and !$Remove) { 
     Write-Warning "$(FLINE) Setting proxy"
-    Set-DefaultProxy @$PSBoundParameters
-    Set-InternetProxy -State Enable -url $Proxy
+    Set-DefaultProxy # @$PSBoundParameters
+    Set-InternetProxy -Enable # -url $Proxy
     If (Get-Command setproxy.exe -ea Ignore) { 
       setproxy /pac:http://proxyconf.my-it-solutions.net/proxy-na.pac  
     }  
+    Set-HTTPProxy
     Set-GitProxy
   } ElseIf ($Remove) { 
     Write-Warning "$(FLINE) Reset proxy"
     Set-DefaultProxy @$PSBoundParameters
-    Set-InternetProxy -State Disable  
-    Set-GitProxy -reset
+    Set-InternetProxy -State Disable
     If (Get-Command setproxy.exe -ea Ignore) { setproxy.exe /proxy:disable }
+    Set-HTTPProxy -Disable    
+    Set-GitProxy  -Reset
   }
 }
+
+
 <#
 setproxy /pac:http://proxyconf.my-it-solutions.net/proxy-na.pac
   netsh winhttp show proxy
