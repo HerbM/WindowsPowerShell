@@ -1,14 +1,32 @@
-conda update --yes -n base conda
+# Adopted RipGrep rg, runiq, xsv to supplement PowerShell 
+# SetProxy.exe plus PowerShell to set and disable proxy
+#
+
+# -k, --insecure        Allow conda to perform "insecure" SSL connections &
+#                       transfers. Equivalent to setting 'ssl_verify' 'false'
+conda update --yes -n base conda   # Updating Python and Anaconda Conda 
 conda update --yes --all
+npm i -g npm -y                    # update npm node
 
-npm i -g npm -y
+vs_enterprise.exe --quiet --update  # First, update the Visual Studio installer: vs_enterprise.exe --quiet --update.
+                                    #  Then, update the Visual Studio application itself:
+vs_enterprise.exe update --installPath "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise" --quiet --wait --norestart
+# .NET web and .NET desktop development, run:
+vs_community.exe --layout c:\vs2017layout --add Microsoft.VisualStudio.Workload.ManagedDesktop --add Microsoft.VisualStudio.Workload.NetWeb --add Component.GitHub.VisualStudio --includeOptional --lang en-US
+# .NET desktop and Office development, run:
+vs_community.exe --layout c:\vs2017layout --add Microsoft.VisualStudio.Workload.ManagedDesktop --add Microsoft.VisualStudio.Workload.Office --includeOptional --lang en-US
+# C++ desktop development, run:
+vs_community.exe --layout c:\vs2017layout --add Microsoft.VisualStudio.Workload.NativeDesktop --includeRecommended --lang en-US
+# All features (this will take a long time—we have lots of features!), run:
+vs_community.exe --layout c:\vs2017layout --lang en-US
 
-http://github.com/tshort/ReactiveBasics.jl
-
-# -k, --insecure        Allow conda to perform "insecure" SSL connections and
-#                       transfers. Equivalent to setting 'ssl_verify' to
-#                       'false'.
-                       
+Microsoft.VisualStudio.Product.Community
+Microsoft.VisualStudio.Workload.WDExpress
+Microsoft.VisualStudio.Product.BuildTools
+Microsoft.VisualStudio.Product.TestAgent
+Microsoft.VisualStudio.Component.FSharp	     #: FSharp language support	15.8.27825.0	Required
+Microsoft.VisualStudio.Component.FSharp.WebTemplate
+                     
 Filter Get-Split {param([string[]]$Input,[string]$Delimiter=';') $Input | % { $_ -split $Delimiter} }
 
 $global:DefaultVIServers 
@@ -195,10 +213,6 @@ Dump all server Cis in the CMDB..
 Launch Service Flow from the DCS Portal home page > Published Reports > CMDB Assets > CMDB Assets Hardware > CMDB Hardware Asset Data.  
 Interact online, or Tools > Export to CSV
 
-setproxy /pac:http://proxyconf.my-it-solutions.net/proxy-na.pac
-  netsh winhttp show proxy
-  netsh winhttp import proxy source=ie
-  
   $webclient=New-Object System.Net.WebClient
   $creds=Get-Credential
   $webclient.Proxy.Credentials=$creds
@@ -1678,9 +1692,6 @@ $Newer | % {
   Install-Module -Name $_.Name  -Force -AllowClobber -Confirm:$False -ea Ignore 
 } | Format-Table
 
-https://github.com/dotnet/corefx/issues/29934
-WinHttpGetIEProxyConfigForCurrentUser
-WinHttpGetProxyForUrl
 
 Hacking the Human Operating System  -- Downloaded PDF 
 Cyber attackers often bypass the consciousness of their targets and attempt to manipulate victims through subconscious influences. This report from Intel Security offers advice on how to mitigate these risks.

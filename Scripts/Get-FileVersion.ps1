@@ -1,5 +1,20 @@
-[CmdletBinding()] 
-Param([Parameter(ValueFromRemainingArguments)]$args)
+# [CmdletBinding()] 
+# Param([Parameter(ValueFromRemainingArguments)]$args)
+  [CmdletBinding(DefaultParameterSetName='Path', SupportsTransactions)] 
+  [Alias('gfv','fv')]Param(
+    [Parameter(ParameterSetName='Path', Position=0, 
+      ValueFromPipeline, ValueFromPipelineByPropertyName)]
+      [string]$Path,
+    [Parameter(ParameterSetName='LiteralPath', Mandatory, 
+      ValueFromPipeline, ValueFromPipelineByPropertyName)]
+      [Alias('PSPath','PathName')][string]$LiteralPath,
+    [Parameter(ParameterSetName='LiteralPath')]
+    [Parameter(ParameterSetName='Path')]
+    [Switch]$WriteTime = $Null,
+    [Parameter(ParameterSetName='LiteralPath')]
+    [Parameter(ParameterSetName='Path')]
+    [Switch]$Recurse = $Null
+  )
 
 Function Get-FileVersion {
   [CmdletBinding(DefaultParameterSetName='Path', SupportsTransactions)] 
@@ -47,7 +62,7 @@ Function Get-FileVersion {
 
 Write-Verbose "Command line: [$($MyInvocation.Line | Out-String -stream)]"
 If ($MyInvocation.Line -notmatch '^\W*\.\W') {
-  Get-FileVersion @args
+  Get-FileVersion @PSBoundParameters
 }
 
 # tmlbl/TypedFunctions.jl

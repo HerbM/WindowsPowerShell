@@ -16,10 +16,10 @@ param (
   #[Alias('IAc','IAction','InfoAction')]
   #[ValidateSet('SilentlyContinue','')]                                  [switch]$InformationAction
 )
-If ((Get-Variable Env:NoPSProfile -value -ea Ignore) -or 
-    (Get-Variable Env:SkipPSProfile -value -ea Ignore)) { 
-  Write-Host "Skipping PS Profile due to environment settings" -Fore Yellow -Back DarkRed  
-  return 
+If ((Get-Variable Env:NoPSProfile -value -ea Ignore) -or
+    (Get-Variable Env:SkipPSProfile -value -ea Ignore)) {
+  Write-Host "Skipping PS Profile due to environment settings" -Fore Yellow -Back DarkRed
+  return
 }
 #region    Parameters
 If ((Get-Item Env:NoProfile -ea Ignore) -and $Env:NoProfile.Trim() -match '^(T|Y|Skip)' ) {
@@ -65,20 +65,20 @@ Function Get-Value {
   }
 }
 
-Function ConvertFrom-FileTime { 
+Function ConvertFrom-FileTime {
   [CmdletBinding()][OutputType([DateTime],[String])]Param(
     [Parameter(Mandatory)][Int64]$FileTime,    # 131775519645343599
     [string]$Format='',
     [switch]$Sortable
-  )    
-  try {  
+  )
+  try {
     If ($dt = [datetime]::FromFileTime($FileTime) ) {
       If ($Sortable) { $Format = 's'              }
-      If ($Format)   { $dt = "{0:$Format}" -f $dt }   
+      If ($Format)   { $dt = "{0:$Format}" -f $dt }
     }
     $dt
   } catch { }  # Just return $Null, no need to do more
-} 
+}
 
 # $LastLogon = ((nslookup $env:userdnsdomain | select -skip 3 ) -replace '.*\s+([\d.]{7,})?.*','$1').where{$_} | % { get-aduser martinh -Properties *  -server $_ } | Select name,@{N='LastLogon';E={ConvertFrom-FileTIme -sort $_.LastLogon}},LastLogonDate,@{N='LastLogonTimeStamp';E={ConvertFrom-FileTIme -sort $_.LastLogonTimeStamp}} 131775519645343599
 
@@ -102,24 +102,24 @@ Write-Host "$(LINE) Use `$PSProfile for path to Profile: $PSProfile" @Private:Co
 Write-Host "$(LINE) ProfileLogPath: $ProfileLogPath"                 @Private:Colors
 
 <#
-.Synopsis 
+.Synopsis
   Locate pre & post load profiles to run
 .Description
   Check for ComputerDomain, UserDomain, ComputerName, UserName profiles
   to run them either before (pre) or after the main profile (post)
-  
-  Will generate/locate 
+
+  Will generate/locate
     $ProfileDirectory\Profile + NAME + Suffix + .ps1
 .Parameter Suffix
   Usually Pre or Post
-  Will generate/locate 
+  Will generate/locate
     $ProfileDirectory\Profile + NAME + Suffix + .ps1
 #>
 Function Get-ExtraProfile {
   [CmdletBinding()]param(
     [String]$Suffix,
     [String[]]$Name = (@((Get-WMIObject win32_computersystem).Domain) +
-      @((nbtstat  -n) -match '(?-i:<00>\s+GROUP\b)' -replace 
+      @((nbtstat  -n) -match '(?-i:<00>\s+GROUP\b)' -replace
         '^\s*(\S+)\s*(?-i:<00>\s+GROUP\b).*$', '$1' | Select-Object -Uniq) +
       $Env:UserDomain + $Env:ComputerName + $Env:UserName
     )
@@ -137,7 +137,7 @@ Function Get-ExtraProfile {
 
 
 Function Get-ProcessFile {
-  (Get-Process @args).Where{$_.Name -notin 'System','Idle'} | 
+  (Get-Process @args).Where{$_.Name -notin 'System','Idle'} |
     Sort-Object -unique name,path | Get-Process -FileVersionInfo
 }
 
@@ -399,32 +399,32 @@ function Get-WmiClass {
   [CmdletBinding()]Param($Pattern='^.')
   Get-WmiNamespace | ForEach-Object {
     Get-WmiObject -Namespace $_ -List |
-      ForEach-Object { $_.Path.Path }         | 
-      Where-Object { $_ -match $Pattern } 
-  } | Sort-Object -Unique  
-} 
+      ForEach-Object { $_.Path.Path }         |
+      Where-Object { $_ -match $Pattern }
+  } | Sort-Object -Unique
+}
 
 Function Get-SpeechSynthesizer {
   [CmdletBinding()]Param(
     [Alias('gettype')][switch]$Type
   )
   If ($SpeechType = Add-Type -AssemblyName System.Speech -passthru) { # | gm
-    If ($Type) { 
+    If ($Type) {
       Write-Verbose "Returning Synthezizer, try:  $SpeechType | gm -static"
-      $SpeechType  
+      $SpeechType
     } else {
       $SpeechSynthesizer = New-Object -TypeName System.Speech.Synthesis.SpeechSynthesizer
       $SpeechSynthesizer
-      If ($SpeechSynthesizer) { 
+      If ($SpeechSynthesizer) {
         Write-Verbose "Speaking now..."
         If ($PSBoundParameters.ContainsKey('Verbose')) {
-          $SpeechSynthesizer.Speak('Hello World!') 
-        }        
+          $SpeechSynthesizer.Speak('Hello World!')
+        }
       } else {
         Write-Verbose "No synthesizer"
       }
-    }      
-  }  
+    }
+  }
 }
 <#  SpeechType
 IsPublic IsSerial Name                                     BaseType
@@ -435,23 +435,23 @@ False    False    SR                                       System.Object
     SpeechType | gm -static
 #>
 
-Function Get-MemberType{ 
+Function Get-MemberType{
   [CmdletBinding()][Alias('IsMember','Member?','MemberP')]
   Param(
-    [Parameter(Mandatory)][Object]$InputObject, 
+    [Parameter(Mandatory)][Object]$InputObject,
     [Alias('Name')][string]$MemberName
-  ) 
-  $ChildNames = $MemberName -split '\.'  
-  $Object = $InputObject; 
+  )
+  $ChildNames = $MemberName -split '\.'
+  $Object = $InputObject;
   Write-Verbose "ChildNames: $ChildNames"
   ForEach ($Name in $ChildNames) {
     Write-Verbose "1-Name: $Name $($Object.GetType())"
-    If (!($Member = Get-Member -Name $Name -InputObject $Object -ea Ignore)) { 
+    If (!($Member = Get-Member -Name $Name -InputObject $Object -ea Ignore)) {
       Write-Verbose "Returning with no child: $Name"
       return $Null            # nothing there
-    }  
+    }
     Write-Verbose "2-Name: $Name Type: $($Object.GetType()) MemberType $($Member.MemberType)"
-    $Object = $Object.$Name 
+    $Object = $Object.$Name
     If ($Member.MemberType -notmatch 'Property') { break }  # Function, etc.
   }
   $Object.GetType()
@@ -463,7 +463,7 @@ Function Set-StreamColor {
     [string]$BackGroundColor = 'DarkRed',
     [string]$ForeGroundColor = 'White'
   )
-  If (Get-MemberType $Host "PrivateData.$($StreamName)BackgroundColor") { 
+  If (Get-MemberType $Host "PrivateData.$($StreamName)BackgroundColor") {
     $host.PrivateData."$($StreamName)BackGroundColor" = $BackGroundColor
     $host.PrivateData."$($StreamName)ForeGroundColor" = $ForeGroundColor
     # $host.PrivateData.debugbackgroundcolor   = 'black'
@@ -471,7 +471,7 @@ Function Set-StreamColor {
 }
 
 
-    
+
 Function Get-NewLine { [environment]::NewLine }; new-alias NL Get-NewLine -force
 if (! (Get-Command write-log -type Function,cmdlet,alias -ea ignore)) {
   new-alias write-log write-verbose -force -scope Global -ea ignore
@@ -718,34 +718,34 @@ Function Get-CurrentIPAddress {(ipconfig) -split "`n" | Where-Object {
 
 Function Get-RegKey {
   param(
-               [string[]]$Key, 
+               [string[]]$Key,
                  [switch]$Double    = $Null,
                  [switch]$Single    = $Null,
                  [switch]$CmdOnly   = $Null,
                  [switch]$PSOnly    = $Null,
     [Alias('QO')][switch]$QuoteOnly = $Null,
                  [switch]$Quote     = $Null
-  )    
-  Begin { 
-    $Keys = New-Object System.Collections.ArrayList 
+  )
+  Begin {
+    $Keys = New-Object System.Collections.ArrayList
     If ($QuoteOnly) { $Quote = $True }
   }
   Process {
-    ForEach ($K in $key) { 
+    ForEach ($K in $key) {
       $K2 = $K -replace 'HK\w*_(.)\w*_(.)\w*:?','HK$1$2:'
       If (!$CmdOnly) { [Void]$Keys.Add($K2) }
       $K1 = $K2 -replace ':'
       If (!$PSOnly)  { [Void]$Keys.Add($K1) }
       If ($Keys) {
         ForEach ($K3 in $Keys) {
-          If ($Quote) { 
-            If (!$Double) {  "'$K3'"  } 
-            If (!$Single) { "`"$K3`"" } 
+          If ($Quote) {
+            If (!$Double) {  "'$K3'"  }
+            If (!$Single) { "`"$K3`"" }
           }
           If (!$QuoteOnly) { $K3 }
         }
       }
-    } 
+    }
   }
   End {}
 }
@@ -885,13 +885,13 @@ Function Get-Constructor {
   }
 }
 # [Net.Sockets.TCPClient]::New
-# Check TCP connection (New-Object Net.Sockets.TcpClient).Connect("<remote machine>",<port>) 
+# Check TCP connection (New-Object Net.Sockets.TcpClient).Connect("<remote machine>",<port>)
 # Check UDP conection  (New-Object Net.Sockets.UdpClient).Connect("<remote machine>",<port>)
 
-Function Test-TCP { 
+Function Test-TCP {
   [CmdletBinding()]Param($ComputerName='www.google.com',$Port=80)
-  try { 
-    (New-Object Net.Sockets.TcpClient).Connect($ComputerName,$Port) 
+  try {
+    (New-Object Net.Sockets.TcpClient).Connect($ComputerName,$Port)
     $True
   } Catch { $False }
 }
@@ -958,7 +958,7 @@ Get-ChildItem | Sort-Object LastWriteTime -desc | ForEach-Object { '{0,23} {1,11
 #>
 <#
 ts.ecs-support.com:32793  terminal server 10.10.11.80
-ts.ecs-support.com:32795  TS02  also FS02??? 
+ts.ecs-support.com:32795  TS02  also FS02???
 Efficient Computer Systems ECS EFFComSYS\hmartin ecs-support.com ts01 ts02
 S:\Organization Tools IPaddress v2
 
@@ -1155,7 +1155,7 @@ Write-Information "$(LINE) Test hex format: $("{0:X}" -f -2068774911)"
 Function Get-DriveType {
   [CmdletBinding()][Alias('Get-DriveTypeName')]
   [Alias('DriveTypeName','DriveType','Code','DriveCode')]Param($Type)
-  $DriveTypes = [Ordered]@{ 
+  $DriveTypes = [Ordered]@{
     0 = 'UNKNOWN'   # Type cannot be determined.
     1 = 'NOROOTDIR' # Root path is invalid, e.g., no volume mounted at specified path
     2 = 'REMOVABLE' # Removable media       e.g., floppy drive, thumb or flash card reader
@@ -1165,8 +1165,8 @@ Function Get-DriveType {
     6 = 'RAMDISK'   # RAM disk
   }
   # $a
-  If     (!$PSBoundParameters.ContainsKey('Type')) { $DriveTypes        } 
-  ElseIf ($DriveTypes.Contains($Type))             { $DriveTypes[$Type] } 
+  If     (!$PSBoundParameters.ContainsKey('Type')) { $DriveTypes        }
+  ElseIf ($DriveTypes.Contains($Type))             { $DriveTypes[$Type] }
   Else                                             { 'INVALID'          }
 }
 
@@ -1216,7 +1216,7 @@ Function Get-Free {
   )
   If ($Name.Count -eq 1 -and $Name -match '^[GMKBTEXP][a-z]*B') {
     $Units, $Name = $Name, '*'
-    $PSBoundParameters.Remove('Name') 
+    $PSBoundParameters.Remove('Name')
     Write-Verbose "Name=[$Name] $Units=$Units"
   }
   $Units, $Divisor, $Precision = Switch -regex ($Units) {
@@ -1239,12 +1239,12 @@ Function Get-Free {
   $PSBoundParameters.PSProvider = 'FileSystem'
   Get-PSDrive @PSBoundParameters | Where-Object Used -ne '' | ForEach-Object {
     [PSCustomObject]@{
-      "Used$Units"    = "{0,6:N$Precision}" -f ($_.Used / $Divisor) 
-      "Free$Units"    = "{0,6:N$Precision}" -f ($_.Free / $Divisor) 
-      Root            = $_.Root   # '{0,4}' -f  $_.Root           
+      "Used$Units"    = "{0,6:N$Precision}" -f ($_.Used / $Divisor)
+      "Free$Units"    = "{0,6:N$Precision}" -f ($_.Free / $Divisor)
+      Root            = $_.Root   # '{0,4}' -f  $_.Root
       CurrentLocation = $_.CurrentLocation
-    }  
-  }  
+    }
+  }
 }
 
 
@@ -1627,9 +1627,9 @@ new-alias dj dl -force -scope Global
 new-alias w  where.exe -force
 new-alias wh where.exe -force
 new-alias wi where.exe -force
-If (Test-Path 'C:\ProgramData\Local\Julia\bin\julia.exe') { 
+If (Test-Path 'C:\ProgramData\Local\Julia\bin\julia.exe') {
   new-alias julia 'C:\ProgramData\Local\Julia\bin\julia.exe' -force -scope global
-}  
+}
 Function od {
   param(
     [parameter(Position=0,ValueFromPipeline,ValueFromPipelineByPropertyName,
@@ -1870,18 +1870,18 @@ Function Get-Property {
     }
   }
 }
-Function GalDef { 
+Function GalDef {
   Param([string[]]$Definition,[string[]]$Exclude,[string]$Scope)
   Get-Alias @PSBoundParameters
 }
-New-Alias ts Test-Script -Force   
-Function Test-Clipboard { 
-  [CmdletBinding()][Alias('tcb','gcbt','tgcb')]Param() 
+New-Alias ts Test-Script -Force
+Function Test-Clipboard {
+  [CmdletBinding()][Alias('tcb','gcbt','tgcb')]Param()
   Get-Clipboard | Test-Script
 }
 Function Get-HistoryCount {
-  [CmdletBinding()][Alias('hcount','hc')]param([int]$Count) 
-  Get-History -count $Count 
+  [CmdletBinding()][Alias('hcount','hc')]param([int]$Count)
+  Get-History -count $Count
 }
 # }
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE) Before Go"
@@ -1915,94 +1915,11 @@ $goHash = [ordered]@{
   text       = 'c:\txt'
   txt        = 'c:\txt'
 }
-Function Set-GoAlias {
-  [CmdletBinding()]param([string]$Alias, [string]$Path)
-  if ($Alias) {
-    if ($global:goHash.Contains($Alias)) { $global:goHash.Remove($Alias) }
-    $global:goHash += @{$Alias = $path}
-  }
-  ForEach ($Alias in $goHash.Keys) {
-    write-verbose "New-Alias $Alias go -force -scope Global -Option allscope"
-    If (!($Command = Get-Command $Alias -ea ignore) -or 
-          $Command.Definition -match 'Set-GoLocation$') {
-      New-Alias $Alias Set-GoLocation -force -scope Global -Option allscope
-    } else { Write-Warning "Set-GoLocation: Alias $Alias conflicts with "}
-  }
-}
 # Import-Module "$Home\Documents\WindowsPowerShell\Set-LocationFile.ps1"
 If ($Script:SLF =
     Join-Path $ProfileDirectory,$Home\Documents\WindowsPowerShell Set-LocationFile.ps1 -resolve -ea Ignore |
     Select -First 1
 ) { . $Script:SLF }
-Function Set-GoLocation {
-  [CmdletBinding()]param (
-    [Parameter(Position='0')][string[]]$path=@(),
-    [Parameter(Position='1')][string[]]$subdirectory=@(),
-    [switch]$pushd,
-    [switch]$showInvocation   # for testing
-  )
-  $verbose = $true
-  write-verbose "$(LINE) Start In: $((Get-Location).path)"
-  if ($showInvocation) { write-warning "$($Myinvocation | out-string )" }
-  $InvocationName = $MyInvocation.InvocationName
-  if (Get-Command set-jumplocation -ea ignore) {
-           new-alias jpushd Set-JumpLocation -force -scope Global
-  } else { new-alias jpushd pushd            -force -scope Global }
-  if (!(get-variable gohash -ea ignore)) { $goHash = @{} }
-  write-verbose "$(LINE) Path: $Path InvocationName: $InvocationName"
-  $subdir = @($subdirectory.foreach{$_.split(';')}) ##### $subdirectory -split ';'
-  $Target = @(if ($goHash.Contains($InvocationName)) {
-    if (!$subdirectory) { $subdir = @($path.foreach{$_.split(';')}) }
-    $goHash.$InvocationName -split ';'
-  } else {
-    ForEach ($P in $Path) {
-      if ($gohash.Contains($P)) { $gohash.$path.foreach{$_.split(';')} }  # @($goHash.path.foreach{$_.split(';')})
-    }
-  })
-  if (!$Target ) { $Target = $Path.foreach{$_.split(';')} }
-  write-verbose "$(LINE) path: [$($Target -join '] [')] sub: [$($subdir -join '] [')]"
-  try {
-    $ValidPath = @()
-    :OuterForEach ForEach ($p in ($Target)) {    #  | ForEach-Object {$_ -split ';'}  ### @($path.foreach{$_.split(';')})
-      if ($goHash.Contains($p) -and (Test-Path $goHash.$p)) { $p = $goHash.$p}
-      write-verbose "$(LINE) Foreach P: $p"
-      if (Test-Path $p -ea ignore) {
-        $ValidPath += Resolve-Path $p -ea ignore
-        ForEach ($Sub in ($subdir)) {   #  | ForEach-Object {$_ -split ';'}
-          write-verbose "$(LINE) $p sub: $sub"
-          $TryPath = Join-Path (Resolve-Path $pr -ea ignore) $Sub
-          if (Test-Path $TryPath) {
-            $ValidPath = @(Resolve-Path (Join-Path $TryPath))
-            write-verbose "$(LINE) Try: $TryPath ValidPath: [$($ValidPath -join '] [')]"
-            break :OuterForEach
-          }
-        }
-      }
-    }
-    if ($ValidPath) {
-      write-verbose "$(LINE) Valid: $($ValidPath -join '; ')"
-      if ($true -or $pushd) { jpushd       $ValidPath    }
-      else                  { Set-Location $ValidPath[0] }
-    } else {
-      write-verbose "$(LINE) $($Path -join '] [') $($Subdirectory -join '] [')"
-      if ($Path -or $Subdirectory) {
-        write-verbose "$(LINE) Jump: jpushd $(($Path + $Subdirectory) -join '; ')"
-        jpushd ($Path + $Subdirectory)
-      } else  {
-        if ($InvocationName -notin 'go','g','Set-GoLocation','GoLocation') {
-          write-verbose "$(LINE) Jump: jpushd $InvocationName"
-          jpushd $InvocationName
-        } else {
-          jpushd $InvocationName
-          write-verbose "$(LINE) Jump: jpushd $InvocationName"
-        }
-      }
-    }
-  }  catch {
-    write-error $_
-  }
-  write-verbose "$(LINE) Current: $((Get-Location).path)"
-} New-Alias Go Set-GoLocation -force -scope global; New-Alias G Set-GoLocation -force -scope global
 Function Set-GoLocation {
   [CmdletBinding()]param (
     [Parameter(Position='0')][string[]]$path=@(),
@@ -2046,121 +1963,6 @@ Function Set-GoAlias {
     write-verbose "New-Alias $Alias go -force -scope Global -Option allscope"
     New-Alias $Alias Set-GoLocation -force -scope Global -Option allscope
   }
-}
-Function Set-GoLocation {
-  [CmdletBinding()]param (
-    [Parameter(Position='0')][string[]]$path=@(),
-    [Parameter(Position='1')][string[]]$subdirectory=@(),
-    [Parameter(ValueFromRemainingArguments=$true)][string[]]$args,
-    [switch]$pushd,
-    [switch]$showInvocation   # for testing
-  )
-  Function set-SafeJumpLocation {
-    $a = $args
-    $jumpsTaken = 0
-    if (!$a) { try { set-location (Get-Location) } catch { Write-Warning "JL: Failed1" }; return }
-                    #set-jumplocation x 4
-    foreach ($p in $a) {
-      while ($p -is 'array') { $p = $p[0] }
-      write-verbose "p:[$p]  a:[$($a -join '] [')]"
-      if ($p -and ($p = Resolve-Path $p -ea ignore)) {
-        write-verbose "p:[$p]  a:[$($a -join '] [')]"
-        if (Get-ChildItem $p -ea ignore -force | Where-Object PSIsContainer -eq $True) {
-          try { set-location $p ; $jumpsTaken++ } catch { Write-Warning "JL: Failed2" } # Set-JumpLocation
-        } else {
-          $pd = Split-Path $p
-          write-verbose "Target [$p] is a FILE, `n         change to PARENT DIRECTORY [$pd]"
-          try { set-location $pd; $jumpsTaken++  } catch { Write-Warning "JL: Failed3" } # Set-JumpLocation
-        }
-      }
-    }
-    if (!$jumpsTaken) {
-      $a = $a | ForEach-Object { $_ } | ForEach-Object { $_ } # flatten array
-      $p = Resolve-Path ($a -join ' ') -ea ignore
-      write-warning "$(LINE) Joined path: [$p]  a:[$($a -join '] [')]"
-      if ($p) { Set-Location $p; return }                  # Set-JumpLocation
-      write-warning "$(LINE) a:[$($a -join '] [')]"
-      Set-Location @a    ###
-    }
-  }
-  $verbose = $true
-  write-verbose "$(LINE) Start In: $((Get-Location).path)"
-  if ($showInvocation) { write-warning "$($Myinvocation | out-string )" }
-  $InvocationName = $MyInvocation.InvocationName
-  if (Get-Command set-jumplocation -ea ignore) {
-           new-alias jpushd Set-SafeJumpLocation -force
-  } else { new-alias jpushd pushd                -force }
-  if (!(get-variable gohash -ea ignore)) { $goHash = @{} }
-  write-verbose "$(LINE) Path: $Path InvocationName: $InvocationName"
-  if ($Path.count -eq 1 -and (Test-Path $Path[0])) {
-    write-verbose "$(LINE) Path: $Path Sub: $sub"
-    try {
-      $P = $Path[0]
-      ForEach ($sub in ,$subdirectory + $args + '' ) {
-        write-verbose "$(LINE) P: $P Sub: $P $sub"
-        $JP = Join-Path $P $sub
-        if (Test-Path $JP -leaf) { $P = (Resolve-Path $P -parent).ToString()}
-        write-verbose "$(LINE) P: $P Sub: $P $sub"
-      }
-      $Path = @($P)
-    } catch {
-      write-verbose "$(LINE) $P didn't work with the subs/args"
-      jpushd $P
-      return
-    }  # didn't work so just keep processing
-  }
-  $subdir = @($subdirectory.foreach{$_.split(';')}) ##### $subdirectory -split ';'
-  $Target = @(if ($goHash.Contains($InvocationName)) {
-    if (!$subdirectory) { $subdir = @($path.foreach{$_.split(';')}) }
-    $goHash.$InvocationName -split ';'
-  } else {
-    ForEach ($P in $Path) {
-      if ($gohash.Contains($P)) { $gohash.$path.foreach{$_.split(';')} }  # @($goHash.path.foreach{$_.split(';')})
-    }
-  })
-  if (!$Target ) { $Target = $Path.foreach{$_.split(';')} }
-  write-verbose "$(LINE) path: [$($Target -join '] [')] sub: [$($subdir -join '] [')]"
-  try {
-    $ValidPath = @()
-    :OuterForEach ForEach ($p in ($Target)) {    #  | ForEach-Object {$_ -split ';'}  ### @($path.foreach{$_.split(';')})
-      if ($goHash.Contains($p) -and (Test-Path $goHash.$p)) { $p = $goHash.$p}
-      write-verbose "$(LINE) Foreach P: $p"
-      if (Test-Path $p -ea ignore) {
-        $ValidPath += Resolve-Path $p -ea ignore
-        ForEach ($Sub in ($subdir)) {   #  | ForEach-Object {$_ -split ';'}
-          write-verbose "$(LINE) $p sub: $sub"
-          $TryPath = Join-Path (Resolve-Path $pr -ea ignore) $Sub
-          if (Test-Path $TryPath) {
-            $ValidPath = @(Resolve-Path (Join-Path $TryPath))
-            write-verbose "$(LINE) Try: $TryPath ValidPath: [$($ValidPath -join '] [')]"
-            break :OuterForEach
-          }
-        }
-      }
-    }
-    if ($ValidPath) {
-      write-verbose "$(LINE) Valid: $($ValidPath -join '; ')"
-      if ($true -or $pushd) { jpushd  $ValidPath @args }     #### :HM:
-      else        { Set-Location      $ValidPath[0] }
-    } else {
-      write-verbose "$(LINE) $($Path -join '] [') $($Subdirectory -join '] [')"
-      if ($Path -or $Subdirectory) {
-        write-verbose "$(LINE) Jump: jpushd $(($Path + $Subdirectory + $args) -join '; ')"
-        jpushd ($Path + $Subdirectory) @args
-      } else  {
-        if ($InvocationName -notin 'go','g','Set-GoLocation','GoLocation') {
-          write-verbose "$(LINE) Jump: jpushd $InvocationName args"
-          jpushd $InvocationName @args
-        } else {
-          jpushd $InvocationName @args
-          write-verbose "$(LINE) Jump: jpushd $InvocationName"
-        }
-      }
-    }
-  }  catch {
-    write-error $_
-  }
-  write-verbose "$(LINE) Current: $((Get-Location).path)"
 }
 
 Function Set-GoLocation {
@@ -2285,13 +2087,13 @@ Function Get-PSBoundParameter {
     [Alias('Parm')][string]$Parameter,
     [Alias('Present','IsPresent','ContainsKey')][switch]$Boolean,
     [Alias('RemoveParameter')]                  [switch]$RemoveKey
-  ) 
+  )
   If ($PSCmdlet -and $PSBoundParameters.ContainsKey($Parameter)) {
     If ($Boolean) { $True }
-    Else { 
-      $PSBoundParameters.$Parameter 
+    Else {
+      $PSBoundParameters.$Parameter
     }
-    If ($RemoveKey) { $PSBoundParameters.Remove($Parameter) }    
+    If ($RemoveKey) { $PSBoundParameters.Remove($Parameter) }
   } elseif ($Boolean) {
     $False
   } else {
@@ -2492,7 +2294,91 @@ If ($RDCMan) {
 # $objShortCut.TargetPath("path to program")
 # $objShortCut.Save()
 
-##  TODO:  Set-LocationEnvironment, Set-LocationPath 
+Function Set-EnvironmentVariable {
+  [CmdletBinding(SupportsShouldProcess,ConfirmImpact='Low')]
+  [Alias('Set-Environment','Set-Env','sev')]Param(
+    [string[]]$Variable=$Null,
+    [string[]]$Value='',
+    [string[]]$Scope='Local',
+    [switch]  $Local,
+    [switch]  $Process,
+    [switch]  $User,
+    [Alias('Computer','System')][switch]$Machine
+  )
+  Begin {
+    $Scope = Switch ($True) {
+      { $Local   } { 'Local'   }
+      { $Process } { 'Process' }
+      { $User    } { 'User'    }
+      { $Machine } { 'Machine' }
+      Default      { $Scope    }
+    }
+  }
+  Process {
+    ForEach ($Var in $Variable) {
+      If ($Var -is 'System.Collections.DictionaryEntry') {
+        $Var, $Val = $Var.Name, $Var.Value       
+      } Else {
+        If ($Value) { $Val, $Value = $Value }
+        If ($Scope) { $Env, $Scope = $Scope }
+      }
+      If ($Env -in 'Computer','System') { $Env = 'Machine'}
+      If ($Var -as [String]) {
+        $Val = If ($Val = Get-Variable Val -ea 4 -value) { $Val -as 'string' } Else { '' }
+        Write-Verbose "Set environment [$Var=$Val] in [$Env] scope"
+        If ($PSCmdlet.ShouldProcess("$Env scope", "Set [$Var=$Val]")) {
+          If ($Env -eq 'Local') { Set-Item -Path "Env:$Var" -Value $Val } 
+          Else { [Environment]::SetEnvironmentVariable($Var,$Val,$Env) }
+        }
+      }
+    }
+  }
+  End {}
+}
+Function Get-EnvironmentVariable {
+  [CmdletBinding()][Alias('Get-Environment','Get-Env','gev')]
+  Param(
+    [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
+    [Alias('Key','Name','Path')][string[]]$Variable=$Null,
+    [string[]]$Scope='Local',
+    [switch]  $Local,
+    [switch]  $Process,
+    [switch]  $User,
+    [Alias('Computer','System')][switch]$Machine
+  )
+  Begin {
+    $Scope = Switch ($True) {
+      { $Local   } { 'Local'   }
+      { $Process } { 'Process' }
+      { $User    } { 'User'    }
+      { $Machine } { 'Machine' }
+      Default      { $Scope    }
+    }
+  }
+  Process {
+    ForEach ($Var in $Variable) {
+      If ($Var -is 'System.Collections.DictionaryEntry') {
+        $Var, $Val = $Var.Name       
+      } Else {
+        If ($Scope) { $Env, $Scope = $Scope }
+      }
+      If ($Env -in 'Computer','System') { $Env = 'Machine'}
+      If ($Var -as [String]) {
+        If ($Env -eq 'Local') { 
+          Get-Item -Path "Env:$Var"
+        } Else {
+          If ($Null -ne ($Val = [Environment]::GetEnvironmentVariable($Var,$Env))) {
+            [System.Collections.DictionaryEntry]::New($Var, $Val)
+          }
+        }
+      }
+    }
+  }
+  End {}
+}
+
+
+##  TODO:  Set-LocationEnvironment, Set-LocationPath
 ## (dir ENV:*) |  ? value -match '\\'
 Function Get-UserFolder {
   [CmdletBinding()][Alias('guf','gf')]param(
@@ -2502,11 +2388,11 @@ Function Get-UserFolder {
     [switch]$Regex
   )
   Begin {
-    $Key = 
+    $Key =
       'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
     $Folders = @()
-    $RegistryFolders = 
-      (Get-ItemProperty $Key -name * -ea Ignore).psobject.get_properties() | 
+    $RegistryFolders =
+      (Get-ItemProperty $Key -name * -ea Ignore).psobject.get_properties() |
         Where-Object Name -notlike 'PS*' | ForEach {
           [PSCustomObject]@{ $_.Name = $_.Value }
           If ($_.Name -eq '{374DE290-123F-4565-9164-39C4925E467B}') {
@@ -2517,7 +2403,7 @@ Function Get-UserFolder {
   Process {
     $Folders += ForEach ($Folder in $Name) {
       $Folder = $Folder -replace '^Dow.*', '{374DE290-123F-4565-9164-39C4925E467B}'
-      $Folder = $Folder -replace '^Doc.*',  'Personal' 
+      $Folder = $Folder -replace '^Doc.*',  'Personal'
       $Folder = $Folder -replace '^(Pict|Vid|Mus).*$', 'My $1'
       $Folder = $Folder -replace '^(AppData)$', 'Local $1'
       Write-Verbose "Folder: Folder pattern: [$Folder]"
@@ -2525,10 +2411,10 @@ Function Get-UserFolder {
         Write-Verbose "Regex: User folders: [$($F.Name)]"
         $F
       } ElseIf ($F = Get-ItemProperty $Key -name $Folder -ea Ignore) {
-        $F.psobject.get_properties() | Where-Object Name -notlike 'PS*' 
+        $F.psobject.get_properties() | Where-Object Name -notlike 'PS*'
       } Else {
         Write-Warning "User folder: [$Folder] not found"
-      }   
+      }
     }
   }
   End {
@@ -2579,11 +2465,6 @@ If ($PSVersionTable.PSVersion -lt [version]'5.0.0.0') {
   New-Alias gcb Get-ClipBoard -force
 }
 
-<#
-General useful commands
- Get-Command *-rsjob*
- history[-10..-1]
-#>
 Function PSBoundParameter([string]$Parm) {
   return ($PSCmdlet -and $PSCmdlet.MyInvocation.BoundParameters[$Parm].IsPresent)
 }

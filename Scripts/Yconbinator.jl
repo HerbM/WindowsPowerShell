@@ -1,9 +1,10 @@
 julia> """
        # Y combinator
  
-       * `λf. (λx. f (x x)) (λx. f (x x))`
+       * `  `
        """
-       Y = f -> (x -> x(x))(y -> f((t...) -> y(y)(t...)))
+       Y = f -> (x -> x(x))(y -> 
+           f((t...) -> y(y)(t...)))
  
 Usage:
 
@@ -13,7 +14,7 @@ julia> "# Factorial"
  
 julia> "# Fibonacci"
        fib = f -> (n -> n == 0 ? 0 : (n == 1 ? 1 : f(n - 1) + f(n - 2)))
- 
+ countList = f -> (n -> n == )
 julia> [Y(fac)(i) for i = 1:10]
 10-element Array{Any,1}:
        1
@@ -39,3 +40,6 @@ julia> [Y(fib)(i) for i = 1:10]
  21
  34
  55
+ 
+ YFact = Y(fac)
+ [YFact(x) for x in 1:10]

@@ -56,12 +56,3 @@ if (Test-Path 'C:\tools\poshgit\dahlbyk-posh-git-a1795ab\profile.example.ps1') {
 
 # dir (split-path (w choco)[1])
 # PS> find-package choco*
-Name                           Version          Source           Summary
-----                           -------          ------           -------
-ChocolateyGet                  1.0.0.1          PSGallery        An PowerShell OneGet provider that discovers packag
-chocolatey                     0.10.8           NugetMS          Chocolatey is the package manager for Windows (like
-choco-package-list-backup      2017.12.17       chocolatey       Choco (unofficial) Package List Backup to Cloud and
-choco-persistent-packages      2017.08.20.01    chocolatey       choco-persistent-packages will create a Windows Sch
-choco-upgrade-all-at           0.0.3            chocolatey       choco-upgrade-all-at will create a Windows Schedule
-choco-upgrade-all-at-startup   2017.01.10       chocolatey       Powershell script to set choco upgrade all in sched
-chocomon                       1.0.1.1          chocolatey       Monitoring status package Chocolatey
