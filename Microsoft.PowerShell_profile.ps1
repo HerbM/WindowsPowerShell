@@ -286,7 +286,9 @@ try {
 }
 try {
   # Clean the $Env:Path
-  $Script:AddPath = "$PSScriptRoot\Tools", "$PSScriptRoot\Scripts"
+  $Global:Scripts = "$PSScriptRoot\Scripts"
+  $Global:Tools   = "$PSScriptRoot\Tools"
+  $Script:AddPath = $Tools, $Scripts
   $SavePath = (($Env:Path -split ';' -replace '(?<=[\w\)])[\\;\s]*$') + $Script:AddPath |
     Where-Object { $_ -and (Test-Path $_) } | Select-Object -uniq) -join ';'
   if ($SavePath) { $Env:Path, $SavePath = $SavePath, $Env:Path }
@@ -1462,6 +1464,35 @@ Write-Information "$(LINE) $home"
 Write-Information "$(LINE) Try: import-module -prefix cx Pscx"
 Write-Information "$(LINE) Try: import-module -prefix cb PowerShellCookbook"
 new-alias npdf 'C:\Program Files (x86)\Nitro\Reader 3\NitroPDFReader.exe' -force -scope Global
+#new-alias npdf 'C:\Program Files (x86)\Nitro\Reader 3\NitroPDFReader.exe' -force -scope Global
+Function npdf {
+  [CmdletBinding(DefaultParameterSetName='Path')]
+   param(
+     [Parameter(ParameterSetName='Path',Position=0,
+               ValueFromPipeline,ValueFromPipelineByPropertyName)]
+     [string[]]$Path=@(''),
+     [Parameter(ParameterSetName='LiteralPath', Mandatory=$true, ValueFromPipelineByPropertyName=$true)]
+     [Alias('PSPath')][string[]]$LiteralPath=@(),    
+     [Parameter(ValueFromRemainingArguments)][string[]]$args
+  )
+  Begin {
+    $NitroPDFReader = 'C:\Program Files (x86)\Nitro\Reader 3\NitroPDFReader.exe'
+    If (($N = Test-Variable NitroPDFReader) -and (Test-Path $N)) {
+      $NitroPDFReader = $N
+    } 
+  }
+  Process {
+    $Names = If ($Path) { $Path } ElseIf ($LiteralPath) { $LiteralPath }
+    ForEach ($Name in $Names) {
+      If ($Name -and ($N = Resolve-Path $Name -ea Ignore)) { 
+        & $NitroPDFReader $N.Path }
+      Else {
+        Write-Warning "File [$Name] not found" 
+      }
+    }
+  }
+  End {} #-force -scope Global
+}
 Function esf {
   $parms  = @('-dm')
   $target = @()
@@ -1485,6 +1516,18 @@ Function esf {
     } else { $_ }
   }
 }
+#e MATLAB – Programming with MATLAB for Beginners -verbose
+function e { 
+  [cmdletbinding()]param(
+    [Parameter(valuefromremainingarguments)]$args) 
+  $args = ($args -split '\W+').trim() | ? { $_ -and $_ -notmatch '^-?verbo' } | % { Write-verbose "[$_]"; $_ }; 
+  write-verbose "es $args" ; 
+  es @args 
+}
+If (Test-Path ($CCL = 'C:\Users\Herb\downloads\ccl\wx86cl64.exe') -ea Ignore) {
+  New-Alias ccl $CCL -Force -Scope Global -ea Ignore
+}
+
 <#  $foreach loop variable iterator WEIRD remove this junk
 foreach ($a in ('a','b','c','d','e')) { $a; [void]$foreach.movenext(); $foreach.gettype() }
 []
@@ -1697,12 +1740,13 @@ try {
   [string[]]$global:PromptStack  = @((Get-Command prompt).ScriptBlock)
 }
 Write-Information "$(LINE) Pushed previous prompt onto `$PromptStack: $($PromptStack.count) entries"
-Write-Information "$(LINE) prompt='PS $($executionContext.SessionState.Path.CurrentLocation) $('>' * $nestedPromptLevel + '>')'"
+Write-Information "$(LINE) prompt='PS $PWD $('>' * $nestedPromptLevel + '>')'"
+# Write-Information "$(LINE) prompt='PS $($executionContext.SessionState.Path.CurrentLocation) $('>' * $nestedPromptLevel + '>')'"
 #Function Global:prompt { "PS '$($executionContext.SessionState.Path.CurrentLocation)' $('>.' * $nestedPromptLevel + '>') "}
 Function Global:prompt {
   If (!(Test-Path Variable:Global:MaxPromptLength -ea ignore 2>$Null)) { $MaxPrompt = 45 }
-  $loc = (Get-Location).ProviderPath # -replace '^[^:]*::'
-  $Sig = " |>$('>' * $nestedPromptLevel)"
+  $loc = $PWD                                             # (Get-Location).ProviderPath # -replace '^[^:]*::'
+  $Sig = " |>$('>' * $nestedPromptLevel)"                 # Looks like:   <# C:\ #> 
   if (Test-Path Variable:Global:MaxPromptLength) {
     $LocLen = $Loc.length; $SigLen = $Sig.Length
     $Length = $LocLen + $SigLen
@@ -1712,7 +1756,7 @@ Function Global:prompt {
     }
   }
   write-host -nonewline "'$Loc'$Sig" -fore Cyan -back DarkGray
-  ' '   # Make normal background SPACE and give PS something to show
+  ' '                                    # Return a normal 'space' to PS to suppress PS adding it's own prompt
 }
 <#
 # https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_prompts?view=powershell-6

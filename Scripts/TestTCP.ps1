@@ -1,6 +1,29 @@
-#[CmdletBinding()]Param($ComputerName='www.google.com',$Port=80)
+$Script:OkVersion        = [Version]'1.7.0.0'
+$Script:PreferredVersion = [Version]'1.7.4.4'
+If ($PoshRSJob = Get-Module PoshRSJob -ea Ignore -ListAvailable) {
+$Script:HighestFound = $PoshRSJob | Sort Version -desc | Select -first 1 | ForEach Version
+  If (($PoshRSJob.Count -gt 1) -and 
+      ($PoshRSJobLoaded = Get-Module PoshRSJob -ea Ignore).Version -lt $Script:HighestFound) {
+    Remove-Module PoshRSJob -Force
+  }
+  Import-Module PoshRSJob -Force -ea Stop
+  If ($StartRSJob = Get-Command Start-RSJob -Module PoshRSJob -ea Ignore) {
+  } ElseIf ($PoshRSJob.Version -lt $OkVersion) {
+    Write-Warning "Older PoshRSJob"
+  } ElseIf ($PoshRSJob.Version -lt $PreferredVersion) {
+    Write-Warning "PoshRSJob $($PoshRSJob.Version)"
+  } Else {
+    Write-Verbose "PoshRSJob $($PoshRSJob.Version)"
+  }
+} Else {
+  Write-Warning "PoshRSJob not found"
+  Install-Module PoshRSJob -Confirm
+}
+
+# Write-Verbose "Returning EARLY....";                return
 
   Set-StrictMode -Version Latest
+  #Set-StrictMode -OFF
 
   <#
   .Example
