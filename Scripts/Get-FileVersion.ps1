@@ -38,6 +38,19 @@ Function Get-FileVersion {
     $Names   = If     ($Path)        { @{Path        = $Path}        } 
                ElseIf ($LiteralPath) { @{LiteralPath = $LiteralPath} }
                Else                  { '*'                           }
+    $Names = @(
+      ForEach ($N in $Names) {
+        If ($N -match '^\s+' -and 
+          (!(Test-path -Literal $N)) -and
+          (!(Test-path -Path    $N))) {
+          @($N -replace '^[^a-z]+(am|pm)?[^a-z]+(?=[A-Z]:[\\/])')
+          Write-Verbose "$(LINE) [$N]"
+        } Else {
+          Write-Verbose "$(LINE) [$N]"
+          $N
+        } 
+      }
+    )      
     Write-Verbose "PropertySet: $($PSCmdlet.ParameterSetName)"
     Get-ChildItem @Names -file -ea Ignore @Recurse | ForEach-Object {
       Write-Verbose $_.Fullname; $_ |    
