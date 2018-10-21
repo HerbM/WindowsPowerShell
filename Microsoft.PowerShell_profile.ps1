@@ -1203,10 +1203,6 @@ Function Get-Volume {
   Get-PSDrive @PSBoundParameters
 }
 
-
-
-
-
 Function Get-Free {
   [CmdletBinding(DefaultParameterSetName='Name')]Param(
     [String[]]$Name='*',
@@ -1220,14 +1216,14 @@ Function Get-Free {
     Write-Verbose "Name=[$Name] $Units=$Units"
   }
   $Units, $Divisor, $Precision = Switch -regex ($Units) {
-    '^G'    { 'GB'    ; 1GB, 1;     break }
-    '^M'    { 'MB'    ; 1MB, 1;     break }
-    '^K'    { 'KB'    ; 1KB, 1;     break }
-    '^B'    { 'Bytes' ; 1  , 0;     break }
-    '^T'    { 'TB'    ; 1TB, 1;     break }
-    '^P'    { 'PB'    ; 1PB, 1;     break }
+    '^G'    { 'GB'    ; 1GB,     1; break }
+    '^M'    { 'MB'    ; 1MB,     1; break }
+    '^K'    { 'KB'    ; 1KB,     1; break }
+    '^B'    { 'Bytes' ; 1  ,     0; break }
+    '^T'    { 'TB'    ; 1TB,     1; break }
+    '^P'    { 'PB'    ; 1PB,     1; break }
     '^[EX]' { 'EB'    ; 1PB*1KB, 1; break }
-    Default { 'GB'    , 1GB, 1;     break }
+    Default { 'GB'    , 1GB,     1; break }
   }
   If ($PSBoundParameters.ContainsKey('Units')) { $PSBoundParameters.Remove('Units')}
   If ($PSBoundParameters.ContainsKey('Name') -and $PSBoundParameters.'Name' -notmatch '^\*?$')  {
@@ -1237,10 +1233,16 @@ Function Get-Free {
     $PSBoundParameters.Name = $Name -replace '(:.*)'
   }
   $PSBoundParameters.PSProvider = 'FileSystem'
-  Get-PSDrive @PSBoundParameters | Where-Object Used -ne '' | ForEach-Object {
+  $PSDrives = Get-PSDrive @PSBoundParameters
+  $MaxUsed, $MaxFree = get-psdrive | measure -max Used,Free | Select Maximum | ForEach Maximum
+  $WidthUsed = [math]::floor([math]::Log10($MaxUsed/$Divisor)+1) + 2 + 1 #7; 
+  $WidthFree = [math]::floor([math]::Log10($MaxUsed/$Divisor)+1) + 2 + 1 #7; 
+  $PSDrives | Where-Object Used -ne '' | ForEach-Object {
+    # Write-Verbose "{0,$WidthUsed:N$Precision}" 
+    # Write-Verbose "{0,$WidthFree:N$Precision}" 
     [PSCustomObject]@{
-      "Used$Units"    = "{0,6:N$Precision}" -f ($_.Used / $Divisor)
-      "Free$Units"    = "{0,6:N$Precision}" -f ($_.Free / $Divisor)
+      "Used$Units"    = "{0,$($WidthUsed):N$Precision}" -f ($_.Used / $Divisor)
+      "Free$Units"    = "{0,$($WidthFree):N$Precision}" -f ($_.Free / $Divisor)
       Root            = $_.Root   # '{0,4}' -f  $_.Root
       CurrentLocation = $_.CurrentLocation
     }
@@ -1463,28 +1465,28 @@ Function Get-FullHelp { Get-Help -Full @Args }
 Write-Information "$(LINE) $home"
 Write-Information "$(LINE) Try: import-module -prefix cx Pscx"
 Write-Information "$(LINE) Try: import-module -prefix cb PowerShellCookbook"
-new-alias npdf 'C:\Program Files (x86)\Nitro\Reader 3\NitroPDFReader.exe' -force -scope Global
-#new-alias npdf 'C:\Program Files (x86)\Nitro\Reader 3\NitroPDFReader.exe' -force -scope Global
+# new-alias npdf 'C:\Program Files (x86)\Nitro\Reader 3\NitroPDFReader.exe' -force -scope Global
+# new-alias npdf 'C:\Program Files (x86)\Nitro\Reader 3\NitroPDFReader.exe' -force -scope Global
+If (Get-Alias npdf -ea Ignore) { Remote-Item Alias:npdf -ea Ignore }
 Function npdf {
   [CmdletBinding(DefaultParameterSetName='Path')]
-   param(
-     [Parameter(ParameterSetName='Path',Position=0,
-               ValueFromPipeline,ValueFromPipelineByPropertyName)]
-     [string[]]$Path=@(''),
-     [Parameter(ParameterSetName='LiteralPath', Mandatory=$true, ValueFromPipelineByPropertyName=$true)]
-     [Alias('PSPath')][string[]]$LiteralPath=@(),    
-     [Parameter(ValueFromRemainingArguments)][string[]]$args
+  Param(
+    [Parameter(ParameterSetName='Path',Position=0,
+      ValueFromPipeline,ValueFromPipelineByPropertyName)]
+    [string[]]$Path=@(''),
+    [Parameter(ParameterSetName='LiteralPath', Mandatory, 
+      ValueFromPipeLine, ValueFromPipelineByPropertyName)]
+    [Alias('PSPath')][string[]]$LiteralPath=@(),    
+    [Parameter(ValueFromRemainingArguments)][string[]]$args
   )
   Begin {
     $NitroPDFReader = 'C:\Program Files (x86)\Nitro\Reader 3\NitroPDFReader.exe'
-    If (($N = Test-Variable NitroPDFReader) -and (Test-Path $N)) {
-      $NitroPDFReader = $N
-    } 
   }
   Process {
     $Names = If ($Path) { $Path } ElseIf ($LiteralPath) { $LiteralPath }
     ForEach ($Name in $Names) {
-      If ($Name -and ($N = Resolve-Path $Name -ea Ignore)) { 
+      If ($N = Resolve-Path $Name -ea Ignore) { 
+        Write-Warning "Open Nitro with file [$($N.Path)]" 
         & $NitroPDFReader $N.Path }
       Else {
         Write-Warning "File [$Name] not found" 
