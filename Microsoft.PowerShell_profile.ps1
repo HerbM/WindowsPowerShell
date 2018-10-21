@@ -1864,42 +1864,6 @@ $goHash = [ordered]@{
   txt        = 'c:\txt'
 }
 # Import-Module "$Home\Documents\WindowsPowerShell\Set-LocationFile.ps1"
-If ($Script:SLF =
-    Join-Path $ProfileDirectory,$Home\Documents\WindowsPowerShell Set-LocationFile.ps1 -resolve -ea Ignore |
-    Select -First 1
-) { . $Script:SLF }
-Function Set-GoLocation {
-  [CmdletBinding()]param (
-    [Parameter(Position='0')][string[]]$path=@(),
-    [Parameter(Position='1')][string[]]$subdirectory=@(),
-    [switch]$pushd,
-    [switch]$showInvocation   # for testing
-  )
-  $verbose = $true
-  write-verbose "$(LINE) Start In: $((Get-Location).path)"
-  if ($showInvocation) { write-warning "$($Myinvocation | out-string )" }
-  $InvocationName = $MyInvocation.InvocationName
-  if (!(get-variable gohash -ea ignore)) { $goHash = @{} }
-  write-verbose "$(LINE) Path: $Path InvocationName: $InvocationName"
-  $Target = @(if ($goHash.Contains($InvocationName)) {
-    $goHash.$InvocationName -split ';' |  Where-Object { Test-Path $_ }
-  })
-  $Target += @($path.foreach{$_.split(';')})         ##### $path split on semicolon
-  $Target += @($subdirectory.foreach{$_.split(';')}) ##### $subdirectory -split ';'
-  $Target | ForEach-Object {
-    $_ = @(if ($goHash.Contains($_)) {
-      $goHash.$_ -split ';' |  Where-Object { Test-Path $_ }
-    } else {$_} )
-    $_ | ForEach-Object {
-      write-verbose "$(LINE) Target: $_ Current: $((Get-Location).path)"
-      Set-Location $_ -ea ignore 2>&1
-    }
-  }
-  write-verbose "$(LINE) Current: $((Get-Location).path)"
-}
-New-Alias Go Set-GoLocation -force -scope global;
-New-Alias G  Set-GoLocation -force -scope global
-Set-GoAlias
 
 Function Set-GoAlias {
   [CmdletBinding()]param([string]$Alias, [string]$Path)
@@ -1914,6 +1878,7 @@ Function Set-GoAlias {
 }
 
 Function Set-GoLocation {
+  [Alias('go','g')]
   [CmdletBinding()]param (
     [Parameter(Position='0')][string[]]$path=@(),
     [Parameter(Position='1')][string[]]$subdirectory=@(),
@@ -1949,8 +1914,8 @@ Function Set-GoLocation {
   write-verbose "$(LINE) Current: $((Get-Location).path)"
 }
 
-New-Alias Go Set-GoLocation -force -scope global -Desc "Set in Profile"
-New-Alias G  Set-GoLocation -force -scope global -Desc "Set in Profile"
+#New-Alias Go Set-GoLocation -force -scope global -Desc "Set in Profile"
+#New-Alias G  Set-GoLocation -force -scope global -Desc "Set in Profile"
 
 # Utility Functions (small)
 filter Test-Odd  { param([Parameter(valuefrompipeline)][int]$n) [boolean]($n % 2)}

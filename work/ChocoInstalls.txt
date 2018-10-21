@@ -1,0 +1,268 @@
+es 7z.exe | dir | ForEach { $LWT = $_.LastWriteTime.ToString('yyyy-MM-dd HH:mm'); $Len=$_.Length; $_ } | Select -expand VersionInfo | Select  ProductVersion,@{N='LastWriteTime';E={$LWT}}, @{N='Length';E={$Len}},FileName | Sort LastWriteTime
+
+choco install -y --allow-empty-checksums lessmsi xmlstarlet.portable sift google-shortcuts-firefox monitordetails armory grepwin jq baregrep  wingrep dngrep ripgrep ethanbrown.gitaliases batch-regex gron wixtoolset psake smartftp kitty asmspy cmdimg.install sudo sqlserver-cmdlineutils resharper-clt wget gow youtube-dl adb duck ln echoargs powershellgac rapidee swissfileknife bulkrenamecommand gpg4win-vanilla pstools imagemagick.tool lftp cs-script bulk-crap-uninstaller which devcon.portable nircmd blat diffutils err andy graphicsmagick pdfedit accesschk sync maxima pcwrunas xqilla kpcli gnuplot keepass-plugin-kpscript keepass.portable csvconverter 
+choco install -y --allow-empty-checksums ericzimmermantools ln lecmd upx trid handle smartmontools wkhtmltopdf fastcopy.portable naps2 colorconsole dotmemory whoiscl cmdow whosip scilab scut araxismerge jumplistexplorer 
+choco install -y --allow-empty-checksums  --ignore-checksums colorconsole drivergenius 
+
+choco install -y --allow-empty-checksums ussf tcpview pspasswd setacl pssuspend speedyfox ftpdmin 
+iscommandlineapp excelconverter envycoder patheditor taildotnet initool ptime sharpkeys 
+finddupe bluetoothcl macrocreator.install 
+
+hxd pdfxchangeeditor
+ 
+pandoc openssl autohotkey.install vmware-horizon-client qbittorrent ditto tixati 
+tor sharex mbsa duckietv dottrace dotnet.script gh-api-cli onedrive (17.3.6798.0207) cmder
+deepgit 
+
+x less (5.29) atom (1.31.1) git (2.19)  timrayburn.gitaliases jivkok.gitconfig coq sift
+
+My day job is a combination of advanced troubleshooter, primarily on Windows but across all OS, VM-platforms, and networks AND DevOps team lead for Cloud/Server-Build Automation which my main function is writing code to make this happen -- in any language, but mostly in PowerShell currently (or Perl or Python for Linux). I love computer languages in general, and Lisp-like languages have alway been my favorite. Lately this extends to anything that supports Functional Programming. In the main, my code gets better (in any language) to the extent I use functional programming methods. I'll try to help pretty much anybody with anything they wish to learn, and be the first to tell you that I spend much of my time "not knowing". I don't mind "being wrong", but I detest "staying wrong". Julia looks like FUN. Fast math, Lisp-like macros, cross platform, my main concerns with it are 1) Maturity (1.0 just released) 2) compiling to executables, 3) 1st class citizen on Windows 4) It pretty much has everything else.....
+
+$PSDefaultParameterValues.Add('dir:Force', $true)
+@(foreach ($k in @()+$sortd.getenumerator()+$dirp.getenumerator()) { $k.value.name  }) | group | sort count
+
+vmwarevsphereclient (6.0.0.5112508) tightvnc  ipfs (interplanetary file system) dotnetfx
+deluge miranda (IM) vboxguestadditions.install sqlserver-odbcdriver 
+
+powershell-core heidisql insomnia-rest-api-client
+
+
+https://docs.pulsesecure.net/WebHelp/PCS/8.3R1/Content/PCS/PCS_AdminGuide_8.3/Network_Connect_Launcher_NC.htm
+nclauncher.exe [-version|-help|-stop|-signout] -u user -p password -url ura-us.it-solutions.atos.net 
+-r realm -ir [true | false] -t seconds -c certificate-name -d DSID
+cd "C:\Program Files (x86)\Pulse Secure\Common Files"
+nclauncher.exe -u ww930\A469526 -p password -url  -r realm -ir [true | false] -t seconds -c certificate-name -d DSID
+cd "C:\Program Files (x86)\Pulse Secure\Common Files"
+& "C:\Program Files (x86)\Pulse Secure\Network Connect 8.3\nclauncher.exe" -u ww930\A469526 -p 'JJoll99$4' -url ura-us.it-solutions.atos.net -r ww930 -ir true -t 30 
+
+smartftp -- version is not suitable for this package. Windows 8.1 or higher
+adb -- C:\ProgramData\chocolatey\lib\adb\tools\platform-tools\systrace\catapult\common\py_vulcanize\third_party\rcssmin\tests\yui 
+              cannot be removed because it is not empty.
+ln
+gpg4win-vanilla v2.3.4.20170919 not successful 
+lftp v4.8.0 unauthorized?
+cs-script v3.28.7.0 Cannot find a process with the name "VBCSCompiler".
+bulk-crap-uninstaller has been installed. ??? maybe
+virtualbox v5.2.18 installed? probably???
+andy v0.46.2.25 doesn't exist/unauthorized
+chocolatey-uninstall.extension v1.2.0 failed
+Installed:
+ - csvconverter v3.1
+ - devcon.portable v10.0.10586.23
+ - gow v0.8.0
+ - xqilla v2.3.3
+ - sync v2.20
+ - lessmsi v1.6.1
+ - which v1.11
+ - pdfedit v2014.0526.1531
+ - err v6.0.4011.20150904
+ - resharper-clt v2018.2.3
+ - imagemagick.tool v7.0.8.10
+ - duck v6.8.0.28825
+ - pcwrunas v0.4.0.20161129
+ - resharper-clt.portable v2018.2.3
+ - adb v28.0.1
+ - kitty v0.70.0.5
+ - gnuplot v5.0.5
+ - google-shortcuts-firefox v1.1.7
+ - rapidee v9.2.937
+ - blat v3.2.17
+ - wget v1.19.4
+ - virtualbox v5.2.18
+ - accesschk v6.12
+ - nircmd v2.81.0.20171108
+ - keepass-plugin-kpscript v2.40
+ - bulkrenamecommand v1.3.3.20170403
+ - vcredist2005 v8.1.0.20160118
+ - swissfileknife v1.8.9.0
+ - graphicsmagick v1.3.30
+ - asmspy v1.3.71
+ - diffutils v2.8.7
+ - echoargs v3.2.0
+ - keepass.portable v2.40
+ - sqlserver-odbcdriver v13.1.4413.46
+ - maxima v5.42.0
+ - sqlserver-cmdlineutils v14.0
+ - keepass v2.40
+ - autohotkey.portable v1.1.30.00
+ - kpcli v3.1
+ - vcredist2010 v10.0.40219.2
+ - cmdimg.install v1.0.0
+ - cs-script v3.28.7.0
+ - pstools v1.2012.04.12
+ - chocolatey-uninstall.extension v1.2.0
+ - sudo v1.1.0
+ - keepass.install v2.40
+ - youtube-dl v2018.09.26
+ 
+Warnings:
+ethanbrown.gitaliases - EthanBrown.GitAliases v0.0.5 already installed
+grepwin               - grepwin v1.8.1 already installed.
+jq                    - jq v1.5 already installed.
+wingrep               - wingrep v2.3 already installed.
+batch-regex           - batch-regex v5.0.0 already installed.
+psake                 - psake v4.7.0 already installed.
+ripgrep               - ripgrep v0.10.0 already installed.
+sift                  - Sift v0.9.0 already installed.
+dngrep                - dngrep v2.9.93.0 already installed.
+monitordetails        - MonitorDetails v1.0.0.4 already installed.
+baregrep              - baregrep v3.50.0.20120225 already installed.
+xmlstarlet.portable   - xmlstarlet.portable v1.6.1 already installed.
+gron                  - gron v0.6.0 already installed.
+armory                - armory v0.96 already installed.
+wixtoolset            - wixtoolset v3.11.1 already installed.
+
+choco upgrade -y --allow-empty-checksums ethanbrown.gitaliase grepwin jq wingrep batch-regex psake ripgrep sift dngrep monitordetails baregrep xmlstarlet.portable gron armory wixtoolset 
+
+
+--allow-empty-checksums
+foxitreader bginfo avidemux nmap simplednscrypt psexec xmind groovy 
+keepass.portable ruby
+
+
+choco install -y wingrep --allow-empty-checksums  
+
+everything fzf notepadplusplus.commandline strawberryperl rdmagent
+console2 keepassxc texmaker mysql.utilities graphviz filezilla.commandline
+rktools.2003
+
+
+
+
+https://msdn.microsoft.com/en-us/library/aa392902%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
+https://msdn.microsoft.com/en-us/library/aa394606(v=vs.85).aspx
+https://msdn.microsoft.com/en-us/library/aa394605%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
+https://msdn.microsoft.com/en-us/library/aa394607(v=vs.85).aspx
+http://www.computerperformance.co.uk/powershell/powershell_wmi_query.htm
+
+https://stevenmurawski.com/2009/03/tip-sneaky-storage-whats-in-your-appdomain/
+[AppDomain]::CurrentDomain
+[system.appdomain]::CurrentDomain.SetData(‘AppDomData’, (‘Variable’,'OrCollection'))
+[system.appdomain]::CurrentDomain.GetData(‘AppDomData’)
+[system.appdomain]::CurrentDomain.SetData(‘MoreData’, 'mydata 23')
+[system.appdomain]::CurrentDomain.GetData(‘MoreData’)
+$moredata
+[system.appdomain]::CurrentDomain.GetData(‘MoreData’)
+https://stackoverflow.com/questions/1094478/what-is-a-net-application-domain?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
+
+function Get-WmiNamespace {
+  Param(
+    $Namespace='ROOT'
+  )
+  Get-WmiObject -Namespace $Namespace -Class __NAMESPACE | ForEach-Object {
+    ($ns = '{0}\{1}' -f $_.__NAMESPACE, $_.Name)
+    Get-WmiNamespace -Namespace $ns
+  }
+}
+
+$WmiClasses = Get-WmiNamespace | ForEach-Object {
+  $Namespace = $_
+  Get-WmiObject -Namespace $Namespace -List | ForEach-Object { 
+    $_.Path.Path 
+  }
+} | Sort-Object -Unique 
+
+Failures
+ - google-shortcuts-firefox (exited -1) - 
+ Error while running 
+ 'C:\ProgramData\chocolatey\lib\google-shortcuts-firefox\tools\chocolateyinstall.ps1'.
+ See log for details.
+ - wingrep (exited -1) - Error while running 
+ 'C:\ProgramData\chocolatey\lib\wingrep\tools\chocolateyInstall.ps1'.
+ See log for details.
+
+--allow-empty-checksums
+ 
+Something as simple as this will show you a log (and you can pull the select-string filter to see more but without the focus on 389):
+```PS> netstat -ap tcp | sls \b389\b
+
+  TCP    0.0.0.0:389            TestDC01:0        LISTENING
+  TCP    127.0.0.1:389          TestDC01:57506    ESTABLISHED
+  TCP    127.0.0.1:389          TestDC01:57823    ESTABLISHED
+  TCP    127.0.0.1:389          TestDC01:57824    ESTABLISHED
+  TCP    10.1.11.11:389         TestDC01:52032    ESTABLISHED
+  TCP    192.168.2.1:389        TestDC01:57493    ESTABLISHED
+  TCP    192.168.2.1:389        TestDC01:57496    ESTABLISHED
+  TCP    192.168.2.1:389        TestDC01:57497    ESTABLISHED
+```  
+
+get-module -list | 
+Where-Object { 
+  $_.Author -notmatch 'Microsoft|Azure|VMWare' -and  
+  $_.ModuleType -eq 'Script'                   -and 
+  $_.ExportedCommands.Count -lt 10 } | 
+ForEach-Object { 
+  Get-Command * -module $_.name 
+} | 
+Select Name, ModuleName,
+       @{N='ParmSetCount';E={$_.ParameterSets.Name.Count}},
+       ParameterSets | Where-Object { $_.ParmSetCount -gt 1 }
+
+
+================================================================================
+RIPGREP ISSUE       
+     Environment -> Config file causes file not found (on Windows Cmd &PowerShell)
+Environment -> Config file causes file not found (on Windows Cmd and PowerShell)
+
+#### What version of ripgrep are you using?
+
+ripgrep 0.10.0 (rev 8a7db1a918)
+-SIMD -AVX (compiled)
++SIMD +AVX (runtime)
+
+#### How did you install ripgrep?
+Build with carge according to readme
+
+#### What operating system are you using ripgrep on?
+
+Windows 7
+Microsoft Windows [Version 6.1.7601]
+#### Describe your question, feature request, or bug.
+
+Pointing Environment to Config file causes file not found (on Windows Cmd and PowerShell).
+Happens on both PowerShell and CMD consoles.
+ENV:
+RIPGREP_CONFIG_PATH=C:\Users\A469526\Documents\WindowsPowerShell\config\.ripgreprc
+
+Tried with slashes, double slashes, quotes.
+
+
+
+> If a feature request, please describe the behavior you want and the motivation.
+Please also provide an example of how ripgrep would be used if your feature
+request were added.
+
+Consider features:
+ 1. Make an invalid config file just be skipped.
+ 2. Print the file name instead of the 
+If a bug, please see below.
+
+#### If this is a bug, what are the steps to reproduce the behavior?
+
+If possible, please include both your search patterns and the corpus on which
+you are searching. Unless the bug is very obvious, then it is unlikely that it
+will be fixed if the ripgrep maintainers cannot reproduce it.
+
+If the corpus is too big and you cannot decrease its size, file the bug anyway
+and the ripgrep maintainers will help figure out next steps.
+
+#### If this is a bug, what is the actual behavior?
+
+Show the command you ran and the actual output. Include the `--debug` flag in
+your invocation of ripgrep.
+
+If the output is large, put it in a gist: https://gist.github.com/
+
+If the output is small, put it in code fences:
+
+```
+your
+output
+goes
+here
+```
+
+#### If this is a bug, what is the expected behavior?
+
+What do you think ripgrep should have done?
+  
