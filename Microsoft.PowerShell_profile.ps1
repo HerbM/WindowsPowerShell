@@ -1203,6 +1203,11 @@ Function Get-Volume {
   Get-PSDrive @PSBoundParameters
 }
 
+If ((Get-Command rg.exe -type application -ea Ignore) -and 
+    (Test-Path "$ProfileDirectory\config\.ripgreprc")) {
+  $ENV:RIPGREP_CONFIG_PATH = "$ProfileDirectory\config\.ripgreprc"
+} 
+
 Function Get-Free {
   [CmdletBinding(DefaultParameterSetName='Name')]Param(
     [String[]]$Name='*',
@@ -1467,7 +1472,7 @@ Write-Information "$(LINE) Try: import-module -prefix cx Pscx"
 Write-Information "$(LINE) Try: import-module -prefix cb PowerShellCookbook"
 # new-alias npdf 'C:\Program Files (x86)\Nitro\Reader 3\NitroPDFReader.exe' -force -scope Global
 # new-alias npdf 'C:\Program Files (x86)\Nitro\Reader 3\NitroPDFReader.exe' -force -scope Global
-If (Get-Alias npdf -ea Ignore) { Remote-Item Alias:npdf -ea Ignore }
+If (Get-Alias npdf -ea Ignore) { Remove-Item Alias:npdf -ea Ignore }
 Function npdf {
   [CmdletBinding(DefaultParameterSetName='Path')]
   Param(
@@ -1486,7 +1491,7 @@ Function npdf {
     $Names = If ($Path) { $Path } ElseIf ($LiteralPath) { $LiteralPath }
     ForEach ($Name in $Names) {
       If ($N = Resolve-Path $Name -ea Ignore) { 
-        Write-Warning "Open Nitro with file [$($N.Path)]" 
+        Write-Verbose "Open Nitro with file [$($N.Path)]" 
         & $NitroPDFReader $N.Path }
       Else {
         Write-Warning "File [$Name] not found" 
@@ -1889,7 +1894,7 @@ Function Get-HistoryCount {
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE) Before Go"
 try {
   $ECSTraining = "\Training"
-  $SearchPath  = 'C:\',"$Home\Downloads","S:$ECSTraining","T:$ECSTraining"
+  $SearchPath  = "$Home\Downloads", 'C:\',"$Home\Downloads","S:$ECSTraining","T:$ECSTraining"
   $Books = Join-Path $SearchPath 'Books' -ea ignore | Select-Object -First 1
 } catch {
   $Books = $PSProfile
@@ -1904,6 +1909,8 @@ $goHash = [ordered]@{
   download   = "$home\downloads"
   downloads  = "$home\downloads"
   esb        = 'c:\esb'
+  Home       = $Home
+  Buile      = 'C:\Build'
   power      = "$books\PowerShell"
   PowerShell = '$Books\PowerShell'
   pro        = $PSProfileDirectory
@@ -1926,8 +1933,9 @@ Function Set-GoAlias {
     $global:goHash += @{$Alias = $path}
   }
   ForEach ($Alias in $goHash.Keys) {
-    write-verbose "New-Alias $Alias go -force -scope Global -Option allscope"
-    New-Alias $Alias Set-GoLocation -force -scope Global -Option allscope
+    write-verbose "New-Alias $Alias go -force -scope Global"
+    If (Get-Alias $Alias -ea Ignore) { Remove-Item Alias:$Alias -force -ea Ignore }
+    New-Alias $Alias Set-GoLocation -force -scope Global 
   }
 }
 

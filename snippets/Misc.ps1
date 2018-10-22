@@ -13,6 +13,10 @@ Invoke-WebRequest #  remove errors
 # https://support.microsoft.com/en-us/help/3140245/update-to-enable-tls-1-1-and-tls-1-2-as-a-default-secure-protocols-in
 # http://www.catalog.update.microsoft.com/search.aspx?q=kb3140245
 
+##### Julia   multithreading
+# http://stackoverflow.com/questions/32143159/waiting-for-a-task-to-be-completed-on-remote-processor-in-julia/32148849#32148849
+# https://stackoverflow.com/questions/37287020/how-and-when-to-use-async-and-sync-in-julia/37287021#37287021
+
 # Decision Making under Uncertainty TIKZ LuaLatex->SGV PGFPlots.jl (Plots.jl)  POMDP_.jl SISL  Bellman Algorithm
 # TikzGraph.jl  juliaplots.sty (Pythontex but good with Julia)  BayesNets.jl
 # Mykel Kochenderfer Stanford ACAS TACAS Partially Observable Markov Decision Process
