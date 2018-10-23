@@ -708,15 +708,23 @@ if ($Quiet -and $global:informationpreference) {
   $script:informationpreference = 'SilentlyContinue'
   Write-Information "SHOULD NOT WRITE"
 }
-get-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive |
+
+If ([Environment]::OSVersion.Version -gt [version]'6.1') {
+  $Script:ImmersiveShell = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\ImmersiveShell'
+  Set-ItemProperty -path $ImmersiveShell -Name DisableCharmsHint -type DWORD -value 1 -force -ea Ignore
+  Set-ItemProperty -path $ImmersiveShell -Name DisableTLCorner   -type DWORD -value 1 -force -ea Ignore 
+}
+Get-ItemProperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive |
   Select-Object WindowArrangementActive | Format-List | findstr "WindowArrangementActive"
-set-itemproperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -value 0 -type dword -force
+Set-ItemProperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -value 0 -type dword -force
 # https://onedrive.live.com?invref=b8eb411511e1610e&invscr=90  Free one drive space
+
 Function Get-CurrentIPAddress {(ipconfig) -split "`n" | Where-Object {
   $_ -match 'IPv4' } | ForEach-Object { $_ -replace '^.*\s+' }
 }
 
 Function Get-RegKey {
+  [Alias('grk','get-reg','get-key')]
   param(
                [string[]]$Key,
                  [switch]$Double    = $Null,
