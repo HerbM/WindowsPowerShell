@@ -1881,7 +1881,7 @@ Function GalDef {
   Param([string[]]$Definition,[string[]]$Exclude,[string]$Scope)
   Get-Alias @PSBoundParameters
 }
-New-Alias ts Test-Script -Force
+New-Alias ts Test-Script -Force -scope Global
 Function Test-Clipboard {
   [CmdletBinding()][Alias('tcb','gcbt','tgcb')]Param()
   Get-Clipboard | Test-Script
@@ -1961,6 +1961,7 @@ try {
 $goHash = [ordered]@{
   book       = $books
   books      = $books
+  build      = 'C:\Build'
   dev        = 'c:\dev'
   doc        = "$home\documents"
   docs       = "$home\documents"
@@ -1970,6 +1971,12 @@ $goHash = [ordered]@{
   esb        = 'c:\esb'
   Home       = $Home
   Buile      = 'C:\Build'
+  P86        = ${ENV:ProgramFiles(x86)}
+  PF86       = ${ENV:ProgramFiles(x86)}
+  x86        = ${ENV:ProgramFiles(x86)}
+  Prog       = ${ENV:ProgramFiles}
+  PF         = ${ENV:ProgramFiles}
+  PD         = ${ENV:ProgramData}
   power      = "$books\PowerShell"
   PowerShell = "$Books\PowerShell"
   pro        = $PSProfileDirectory
@@ -2016,9 +2023,10 @@ Function Set-GoAlias {
   }
 }
 Set-GoAlias Get-UserFolder 
+# CD process/service 
 
 Function Set-GoLocation {
-  [Alias('go','g')]
+  [Alias('gd','g','gdp','gop')]
   [CmdletBinding()]param (
     [Parameter(Position='0')][string[]]$path                      = @(),
     [Parameter(Position='1')][string[]]$subdirectory              = @(),
@@ -2028,21 +2036,32 @@ Function Set-GoLocation {
     [switch]$showInvocation   # for testing
   )
   Begin {
-    If ($PushD) {
-      $Stack = If ($PSBoundParameters.ContainsKey('StackName')) {
-        @{ StackName = $StackName }
-        $Null = $PSBoundParameters.Remove('StackName')
-      } Else { @{} }
-      $Null = Push-Location '.' @Stack
-      $Null = $PSBoundParameters.Remove('PushD')
-    }
-  }
-  Process {
     Write-Verbose "$(LINE) Start In: $((Get-Location).path)"
     if ($showInvocation) { Write-Verbose "$($Myinvocation | out-string )" }
     $InvocationName = $MyInvocation.InvocationName
     If (!(get-variable gohash -ea ignore -Scope Global)) { $Global:GoHash = [ordered]@{} }
     write-verbose "$(LINE) Path: $Path InvocationName: $InvocationName"
+    If ($PushD -or $InvocationName -in'gdp','gop') {
+      $Stack = If ($PSBoundParameters.ContainsKey('StackName')) {
+        @{ StackName = $StackName }
+        $Null = $PSBoundParameters.Remove('StackName')
+      } Else { @{} }
+      $Null = Push-Location '.' @Stack
+      If ($PSBoundParameters.ContainsKey('PushD')) {
+        $Null = $PSBoundParameters.Remove('PushD')
+      }
+    }
+    $GoKeys = $goHash.Keys
+    Function TestKeyPath {
+      Param([string]$Arg='')
+      If ($Arg) {
+        ForEach ($Key in ($goKeys -match "^$Arg")) {
+          If (Test-Path ($Path = $goHash.$Key)) { Return $Path } 
+        }
+      }
+    }
+  }
+  Process {
     try {
       If ($goHash.Contains($InvocationName) -and
           (Test-Path $goHash.$InvocationName -PathType Container -ea Ignore)) {
@@ -2057,6 +2076,8 @@ Function Set-GoLocation {
           Microsoft.PowerShell.Management\Set-Location $Location -ea STOP
         } ElseIf (Test-Path $P -PathType Container -ea Ignore) {
           Microsoft.PowerShell.Management\Set-Location $P -ea Ignore
+        } ElseIf ($KeyPath = TestKeyPath $P) {
+          Microsoft.PowerShell.Management\Set-Location $KeyPath        
         } Else {
           Write-Verbose "$(Get-ChildItem "$P*" -ea STOP -dir | Select -first 1 | ForEach FullName)"
           Microsoft.PowerShell.Management\Set-Location (
