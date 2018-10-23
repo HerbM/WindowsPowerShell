@@ -27,8 +27,8 @@ If ((Get-Item Env:NoProfile -ea Ignore) -and $Env:NoProfile.Trim() -match '^(T|Y
   ForEach ($Key in $PSBoundParameters.Keys) {
     Write-Host "  $Key = $($PSBoundParameters.$Key)" -fore 'blue' -back 'Green'
   }
-  Exit 
-}  
+  Exit
+}
 $Private:StartTime  = Get-Date
 $ErrorCount = $Error.Count
 If (!(Get-Command Write-Information -ea 0)) { New-Alias Write-Information Write-Host -Scope Global }
@@ -1203,10 +1203,10 @@ Function Get-Volume {
   Get-PSDrive @PSBoundParameters
 }
 
-If ((Get-Command rg.exe -type application -ea Ignore) -and 
+If ((Get-Command rg.exe -type application -ea Ignore) -and
     (Test-Path "$ProfileDirectory\config\.ripgreprc")) {
   $ENV:RIPGREP_CONFIG_PATH = "$ProfileDirectory\config\.ripgreprc"
-} 
+}
 
 Function Get-Free {
   [CmdletBinding(DefaultParameterSetName='Name')]Param(
@@ -1240,11 +1240,11 @@ Function Get-Free {
   $PSBoundParameters.PSProvider = 'FileSystem'
   $PSDrives = Get-PSDrive @PSBoundParameters
   $MaxUsed, $MaxFree = get-psdrive | measure -max Used,Free | Select Maximum | ForEach Maximum
-  $WidthUsed = [math]::floor([math]::Log10($MaxUsed/$Divisor)+1) + 2 + 1 #7; 
-  $WidthFree = [math]::floor([math]::Log10($MaxUsed/$Divisor)+1) + 2 + 1 #7; 
+  $WidthUsed = [math]::floor([math]::Log10($MaxUsed/$Divisor)+1) + 2 + 1 #7;
+  $WidthFree = [math]::floor([math]::Log10($MaxUsed/$Divisor)+1) + 2 + 1 #7;
   $PSDrives | Where-Object Used -ne '' | ForEach-Object {
-    # Write-Verbose "{0,$WidthUsed:N$Precision}" 
-    # Write-Verbose "{0,$WidthFree:N$Precision}" 
+    # Write-Verbose "{0,$WidthUsed:N$Precision}"
+    # Write-Verbose "{0,$WidthFree:N$Precision}"
     [PSCustomObject]@{
       "Used$Units"    = "{0,$($WidthUsed):N$Precision}" -f ($_.Used / $Divisor)
       "Free$Units"    = "{0,$($WidthFree):N$Precision}" -f ($_.Free / $Divisor)
@@ -1479,9 +1479,9 @@ Function npdf {
     [Parameter(ParameterSetName='Path',Position=0,
       ValueFromPipeline,ValueFromPipelineByPropertyName)]
     [string[]]$Path=@(''),
-    [Parameter(ParameterSetName='LiteralPath', Mandatory, 
+    [Parameter(ParameterSetName='LiteralPath', Mandatory,
       ValueFromPipeLine, ValueFromPipelineByPropertyName)]
-    [Alias('PSPath')][string[]]$LiteralPath=@(),    
+    [Alias('PSPath')][string[]]$LiteralPath=@(),
     [Parameter(ValueFromRemainingArguments)][string[]]$args
   )
   Begin {
@@ -1490,11 +1490,11 @@ Function npdf {
   Process {
     $Names = If ($Path) { $Path } ElseIf ($LiteralPath) { $LiteralPath }
     ForEach ($Name in $Names) {
-      If ($N = Resolve-Path $Name -ea Ignore) { 
-        Write-Verbose "Open Nitro with file [$($N.Path)]" 
+      If ($N = Resolve-Path $Name -ea Ignore) {
+        Write-Verbose "Open Nitro with file [$($N.Path)]"
         & $NitroPDFReader $N.Path }
       Else {
-        Write-Warning "File [$Name] not found" 
+        Write-Warning "File [$Name] not found"
       }
     }
   }
@@ -1524,12 +1524,12 @@ Function esf {
   }
 }
 #e MATLAB – Programming with MATLAB for Beginners -verbose
-function e { 
+function e {
   [cmdletbinding()]param(
-    [Parameter(valuefromremainingarguments)]$args) 
-  $args = ($args -split '\W+').trim() | ? { $_ -and $_ -notmatch '^-?verbo' } | % { Write-verbose "[$_]"; $_ }; 
-  write-verbose "es $args" ; 
-  es @args 
+    [Parameter(valuefromremainingarguments)]$args)
+  $args = ($args -split '\W+').trim() | ? { $_ -and $_ -notmatch '^-?verbo' } | % { Write-verbose "[$_]"; $_ };
+  write-verbose "es $args" ;
+  es @args
 }
 If (Test-Path ($CCL = 'C:\Users\Herb\downloads\ccl\wx86cl64.exe') -ea Ignore) {
   New-Alias ccl $CCL -Force -Scope Global -ea Ignore
@@ -1753,7 +1753,7 @@ Write-Information "$(LINE) prompt='PS $PWD $('>' * $nestedPromptLevel + '>')'"
 Function Global:prompt {
   If (!(Test-Path Variable:Global:MaxPromptLength -ea ignore 2>$Null)) { $MaxPrompt = 45 }
   $loc = $PWD                                             # (Get-Location).ProviderPath # -replace '^[^:]*::'
-  $Sig = " |>$('>' * $nestedPromptLevel)"                 # Looks like:   <# C:\ #> 
+  $Sig = " |>$('>' * $nestedPromptLevel)"                 # Looks like:   <# C:\ #>
   if (Test-Path Variable:Global:MaxPromptLength) {
     $LocLen = $Loc.length; $SigLen = $Sig.Length
     $Length = $LocLen + $SigLen
@@ -1892,6 +1892,65 @@ Function Get-HistoryCount {
 }
 # }
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE) Before Go"
+##  TODO:  Set-LocationEnvironment, Set-LocationPath
+## (dir ENV:*) |  ? value -match '\\'
+Function Get-UserFolder {
+  [CmdletBinding()][Alias('guf','gf')]param(
+    [Alias('Folder', 'FolderName', 'Directory', 'DirectoryName','Path','PSPath')]
+    [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
+    [string[]]$Name='*',
+    [switch]$Regex
+  )
+  Begin {
+    $Key =
+      'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
+    $Folders = @()
+    $RegistryFolders =
+      (Get-ItemProperty $Key -name * -ea Ignore).psobject.get_properties() |
+        Where-Object Name -notlike 'PS*' | ForEach {
+          [PSCustomObject]@{ $_.Name = $_.Value }
+          If ($_.Name -eq '{374DE290-123F-4565-9164-39C4925E467B}') {
+            [PSCustomObject]@{ Downloads = $_.Value }
+          }
+        }
+  }
+  Process {
+    $Folders += ForEach ($Folder in $Name) {
+      $Folder = $Folder -replace '^Dow.*', '{374DE290-123F-4565-9164-39C4925E467B}'
+      $Folder = $Folder -replace '^Doc.*',  'Personal'
+      $Folder = $Folder -replace '^(Pict|Vid|Mus).*$', 'My $1'
+      $Folder = $Folder -replace '^(AppData)$', 'Local $1'
+      Write-Verbose "Folder: Folder pattern: [$Folder]"
+      If ($Regex -and ($F = $RegistryFolders | Where Name -match $Folder)) {
+        Write-Verbose "Regex: User folders: [$($F.Name)]"
+        $F
+      } ElseIf ($F = Get-ItemProperty $Key -name $Folder -ea Ignore) {
+        $F.psobject.get_properties() | Where-Object Name -notlike 'PS*'
+      } Else {
+        Write-Warning "User folder: [$Folder] not found"
+      }
+    }
+  }
+  End {
+    $Folders | Select -unique Name,@{N='PSPath';E={$_.Value}}
+  }
+}
+
+Function Set-LocationUserFolder {
+  [CmdletBinding()][Alias('cdu','cdf','cduf')]
+  Param(
+    [Alias('Folder', 'FolderName', 'Directory', 'DirectoryName','Path','PSPath')]
+    [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
+    [string[]]$Name='*',
+    [switch]$PassThru
+  )
+  If ($PSBoundParameters.ContainsKey('PassThru')) {
+  }
+  ForEach ($Folder in $Name) {
+    If ($F = Get-UserFolder $Folder) { Set-Location $F.Folder }
+  }
+}
+
 try {
   $ECSTraining = "\Training"
   $SearchPath  = "$Home\Downloads", 'C:\',"$Home\Downloads","S:$ECSTraining","T:$ECSTraining"
@@ -1912,7 +1971,7 @@ $goHash = [ordered]@{
   Home       = $Home
   Buile      = 'C:\Build'
   power      = "$books\PowerShell"
-  PowerShell = '$Books\PowerShell'
+  PowerShell = "$Books\PowerShell"
   pro        = $PSProfileDirectory
   prof       = $PSProfileDirectory
   profile    = $ProfileDirectory
@@ -1927,57 +1986,108 @@ $goHash = [ordered]@{
 # Import-Module "$Home\Documents\WindowsPowerShell\Set-LocationFile.ps1"
 
 Function Set-GoAlias {
-  [CmdletBinding()]param([string]$Alias, [string]$Path)
-  if ($Alias) {
-    if ($global:goHash.Contains($Alias)) { $global:goHash.Remove($Alias) }
-    $global:goHash += @{$Alias = $path}
+  [CmdletBinding()]param(
+    [Parameter(ValueFromPipeLine,ValueFromPipelineByPropertyName)][Alias('Name')]  [string[]]$Alias,
+    [Parameter(ValueFromPipeLine,ValueFromPipelineByPropertyName)][Alias('PSPath')][string[]]$Path)
+  Begin {
+    If (!(get-variable gohash -ea ignore -Scope Global)) { $Global:GoHash = [ordered]@{} }
   }
-  ForEach ($Alias in $goHash.Keys) {
-    write-verbose "New-Alias $Alias go -force -scope Global"
-    If (Get-Alias $Alias -ea Ignore) { Remove-Item Alias:$Alias -force -ea Ignore }
-    New-Alias $Alias Set-GoLocation -force -scope Global 
+  Process {
+    ForEach ($A in $Alias) {
+      If ($Path) {
+        $P, $Path = $Path
+        $A = $A -replace '\W+' -replace '374DE290123F4565916439C4925E467B', 'Downloads'
+        Write-Verbose "Add to GoHash: $A $Path"
+        if ($Global:goHash.Contains($A)) { $Null = $global:goHash.Remove($A) }
+        $Null = $Global:goHash += @{$A = $P}
+      }
+    }
+  }
+  End {
+    ForEach ($Name in $goHash.Keys) {
+      If (Get-Alias $Name -ea Ignore) { Remove-Item Alias:\$Name -Force -ea Ignore } 
+      Try {
+        If (Test-Path $goHash.$Name -PathType Container -ea Ignore) {
+          Write-Verbose "New-Alias $Name Set-GoLocation -force -scope Global -ea STOP"
+                         New-Alias $Name Set-GoLocation -force -scope Global -ea STOP
+        }
+      } Catch { Write-Warning "Can't recreate Alias $Name Set-GoLocation" }
+    }
   }
 }
+Set-GoAlias Get-UserFolder 
 
 Function Set-GoLocation {
   [Alias('go','g')]
   [CmdletBinding()]param (
-    [Parameter(Position='0')][string[]]$path=@(),
-    [Parameter(Position='1')][string[]]$subdirectory=@(),
-    [Parameter(ValueFromRemainingArguments=$true)][string[]]$args,
-    [switch]$pushd,
+    [Parameter(Position='0')][string[]]$path                      = @(),
+    [Parameter(Position='1')][string[]]$subdirectory              = @(),
+    [Parameter(ValueFromRemainingArguments=$true)][string[]]$Args = @(),
+    [Alias('PDirectory','PushDirectory')][switch]$pushd,
+                                         [string]$StackName       = '',
     [switch]$showInvocation   # for testing
   )
-  write-verbose "$(LINE) Start In: $((Get-Location).path)"
-  if ($showInvocation) { write-warning "$($Myinvocation | out-string )" }
-  $InvocationName = $MyInvocation.InvocationName
-  if (!(get-variable gohash -ea ignore)) { $goHash = @{} }
-  write-verbose "$(LINE) Path: $Path InvocationName: $InvocationName"
-  try {
-    if ($goHash.Contains($InvocationName) -and
-        (Test-Path $goHash.$InvocationName -ea Ignore)
-       ) {
-      cd $goHash.$InvocationName
-      If ($Path -and ($p = Resolve-Path $Path[0] -ea 0)) {
-        write-verbose "$(LINE) $p"
-        cd $p.path
-      }
-    } elseif ($goHash.Contains($Path[0]) -and
-        (Test-Path $goHash.$($Path[0]) -ea Ignore)) {
-      cd $goHash.$($Path[0])
-      If ($Subdirectory -and ($p = Resolve-Path $Subdirectory[0] -ea ignore)) {
-        write-verbose "$(LINE) $p"
-        cd $p.path
-      }
+  Begin {
+    If ($PushD) {
+      $Stack = If ($PSBoundParameters.ContainsKey('StackName')) {
+        @{ StackName = $StackName }
+        $Null = $PSBoundParameters.Remove('StackName')
+      } Else { @{} }
+      $Null = Push-Location '.' @Stack
+      $Null = $PSBoundParameters.Remove('PushD')
     }
-  }  catch {
-    write-error $_
   }
-  write-verbose "$(LINE) Current: $((Get-Location).path)"
+  Process {
+    Write-Verbose "$(LINE) Start In: $((Get-Location).path)"
+    if ($showInvocation) { Write-Verbose "$($Myinvocation | out-string )" }
+    $InvocationName = $MyInvocation.InvocationName
+    If (!(get-variable gohash -ea ignore -Scope Global)) { $Global:GoHash = [ordered]@{} }
+    write-verbose "$(LINE) Path: $Path InvocationName: $InvocationName"
+    try {
+      If ($goHash.Contains($InvocationName) -and
+          (Test-Path $goHash.$InvocationName -PathType Container -ea Ignore)) {
+        Write-Verbose "Using InvocationName: $($goHash.$InvocationName)"
+        Microsoft.PowerShell.Management\Set-Location $goHash.$InvocationName -ea STOP
+      } ElseIf ($Path) {
+        Write-Verbose "Not in hash"
+        $P, $Path = $Path
+        If ($goHash.Contains($P)     -and 
+            ($Location = $goHash.$P) -and 
+            (Test-Path $Location)) {
+          Microsoft.PowerShell.Management\Set-Location $Location -ea STOP
+        } ElseIf (Test-Path $P -PathType Container -ea Ignore) {
+          Microsoft.PowerShell.Management\Set-Location $P -ea Ignore
+        } Else {
+          Write-Verbose "$(Get-ChildItem "$P*" -ea STOP -dir | Select -first 1 | ForEach FullName)"
+          Microsoft.PowerShell.Management\Set-Location (
+            Get-ChildItem "$P*" -ea STOP -dir | Select -first 1 | ForEach FullName
+          )
+        } 
+      } 
+      $AllArgs = @($Path) + $SubDirectory + $Args
+      Write-Verbose "Finished with First part of first param [$AllArgs]"
+      ForEach ($P in $AllArgs) {
+        Write-Verbose "ForEach $P in AllArgs"
+        If ($P -and (Test-Path $P -PathType Container -ea Ignore)) {
+          Write-Verbose "cd to $P"
+          $Dir = Get-ChildItem -path .\ -filter "$P" -ea STOP -dir | Select -first 1 | ForEach FullName
+          Write-Verbose "P: [$P] GCI: [$Dir]"
+          If ($Dir) { Microsoft.PowerShell.Management\Set-Location $Dir } 
+        } ElseIf ($P) {
+          Write-Verbose "cd to $P*"
+          Write-Verbose "GCI: Get-ChildItem -path .\ `"$P*`" -ea STOP -dir | Select -first 1 | ForEach FullName"
+          $Dir = Get-ChildItem -path .\ -filter "$P*" -ea STOP -dir | Select -first 1 | ForEach FullName
+          Write-Verbose "P: [$P] GCI: [$Dir]"
+          If ($Dir) { Microsoft.PowerShell.Management\Set-Location $Dir } 
+        }
+      }
+    }  catch {
+      Write-Verbose $_
+    }
+    write-verbose "$(LINE) Current: $((Get-Location).path)"
+  }
+  End {}
 }
-
-#New-Alias Go Set-GoLocation -force -scope global -Desc "Set in Profile"
-#New-Alias G  Set-GoLocation -force -scope global -Desc "Set in Profile"
 
 # Utility Functions (small)
 filter Test-Odd  { param([Parameter(valuefrompipeline)][int]$n) [boolean]($n % 2)}
@@ -2292,7 +2402,7 @@ Function Set-EnvironmentVariable {
   Process {
     ForEach ($Var in $Variable) {
       If ($Var -is 'System.Collections.DictionaryEntry') {
-        $Var, $Val = $Var.Name, $Var.Value       
+        $Var, $Val = $Var.Name, $Var.Value
       } Else {
         If ($Value) { $Val, $Value = $Value }
         If ($Scope) { $Env, $Scope = $Scope }
@@ -2302,7 +2412,7 @@ Function Set-EnvironmentVariable {
         $Val = If ($Val = Get-Variable Val -ea 4 -value) { $Val -as 'string' } Else { '' }
         Write-Verbose "Set environment [$Var=$Val] in [$Env] scope"
         If ($PSCmdlet.ShouldProcess("$Env scope", "Set [$Var=$Val]")) {
-          If ($Env -eq 'Local') { Set-Item -Path "Env:$Var" -Value $Val } 
+          If ($Env -eq 'Local') { Set-Item -Path "Env:$Var" -Value $Val }
           Else { [Environment]::SetEnvironmentVariable($Var,$Val,$Env) }
         }
       }
@@ -2333,13 +2443,13 @@ Function Get-EnvironmentVariable {
   Process {
     ForEach ($Var in $Variable) {
       If ($Var -is 'System.Collections.DictionaryEntry') {
-        $Var, $Val = $Var.Name       
+        $Var, $Val = $Var.Name
       } Else {
         If ($Scope) { $Env, $Scope = $Scope }
       }
       If ($Env -in 'Computer','System') { $Env = 'Machine'}
       If ($Var -as [String]) {
-        If ($Env -eq 'Local') { 
+        If ($Env -eq 'Local') {
           Get-Item -Path "Env:$Var"
         } Else {
           If ($Null -ne ($Val = [Environment]::GetEnvironmentVariable($Var,$Env))) {
@@ -2350,66 +2460,6 @@ Function Get-EnvironmentVariable {
     }
   }
   End {}
-}
-
-
-##  TODO:  Set-LocationEnvironment, Set-LocationPath
-## (dir ENV:*) |  ? value -match '\\'
-Function Get-UserFolder {
-  [CmdletBinding()][Alias('guf','gf')]param(
-    [Alias('Folder', 'FolderName', 'Directory', 'DirectoryName','Path','PSPath')]
-    [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
-    [string[]]$Name='*',
-    [switch]$Regex
-  )
-  Begin {
-    $Key =
-      'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
-    $Folders = @()
-    $RegistryFolders =
-      (Get-ItemProperty $Key -name * -ea Ignore).psobject.get_properties() |
-        Where-Object Name -notlike 'PS*' | ForEach {
-          [PSCustomObject]@{ $_.Name = $_.Value }
-          If ($_.Name -eq '{374DE290-123F-4565-9164-39C4925E467B}') {
-            [PSCustomObject]@{ Downloads = $_.Value }
-          }
-        }
-  }
-  Process {
-    $Folders += ForEach ($Folder in $Name) {
-      $Folder = $Folder -replace '^Dow.*', '{374DE290-123F-4565-9164-39C4925E467B}'
-      $Folder = $Folder -replace '^Doc.*',  'Personal'
-      $Folder = $Folder -replace '^(Pict|Vid|Mus).*$', 'My $1'
-      $Folder = $Folder -replace '^(AppData)$', 'Local $1'
-      Write-Verbose "Folder: Folder pattern: [$Folder]"
-      If ($Regex -and ($F = $RegistryFolders | Where Name -match $Folder)) {
-        Write-Verbose "Regex: User folders: [$($F.Name)]"
-        $F
-      } ElseIf ($F = Get-ItemProperty $Key -name $Folder -ea Ignore) {
-        $F.psobject.get_properties() | Where-Object Name -notlike 'PS*'
-      } Else {
-        Write-Warning "User folder: [$Folder] not found"
-      }
-    }
-  }
-  End {
-    $Folders | Select -unique Name,@{N='PSPath';E={$_.Value}}
-  }
-}
-
-Function Set-LocationUserFolder {
-  [CmdletBinding()][Alias('cdu','cdf','cduf')]
-  Param(
-    [Alias('Folder', 'FolderName', 'Directory', 'DirectoryName','Path','PSPath')]
-    [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
-    [string[]]$Name='*',
-    [switch]$PassThru
-  )
-  If ($PSBoundParameters.ContainsKey('PassThru')) {
-  }
-  ForEach ($Folder in $Name) {
-    If ($F = Get-UserFolder $Folder) { Set-Location $F.Folder }
-  }
 }
 
 If ($PSVersionTable.PSVersion -lt [version]'5.0.0.0') {
