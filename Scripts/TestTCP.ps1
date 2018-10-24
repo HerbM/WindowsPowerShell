@@ -34,7 +34,7 @@ $Script:HighestFound = $PoshRSJob | Sort Version -desc | Select -first 1 | ForEa
     Read a line of file and keep data associated with results
     Parallel both host AND PORT
   #>
-  Function Test-TCPHelper {
+  Function Test-TCPPort {  # check actual IP & Port combination
     [CmdLetBinding()]Param(
       [string]$Server='127.0.0.1',
       [Uint16]$Port=135,
@@ -85,7 +85,17 @@ $Script:HighestFound = $PoshRSJob | Sort Version -desc | Select -first 1 | ForEa
     !$failed  # Return $true if connection Establish else $False
   }
 
-  
+# Return:
+#   ComputerName
+#   IPAddress
+#   Status
+#   Port
+#   Result
+#   QueryID
+#   Data 
+
+# check 1 IP/port by calling Test-TCPPort
+# check file or stream by calling Test-TCP   
   $TargetType = @{
      
   }
@@ -98,7 +108,7 @@ $Script:HighestFound = $PoshRSJob | Sort Version -desc | Select -first 1 | ForEa
     )
     Begin { 
 		  $Count = 0 
-			$FunctionsToImport = @{ FunctionsToImport = 'Test-TCPHelper' }
+			$FunctionsToImport = @{ FunctionsToImport = 'Test-TCPPort' }
 	  }
     Process {
       try {
@@ -110,8 +120,8 @@ $Script:HighestFound = $PoshRSJob | Sort Version -desc | Select -first 1 | ForEa
 							Name = "$($JobPrefix)_" + ($Name -replace '[^.\w]+', '_').trim('_') + "_$P"
 							VariablesToImport = 'Name','P'
 						}
-						Write-Warning "Start-RSJob: Test-TCPHelper $Name $P "
-										$Job = Start-RSJob @JobArguments { Test-TCPHelper $Name $P } @FunctionsToImport
+						Write-Warning "Start-RSJob: Test-TCPPort $Name $P "
+										$Job = Start-RSJob @JobArguments { Test-TCPPort $Name $P } @FunctionsToImport
 						[PSCustomObject]@{
 						  Job    = $Job
 							Target = $T
@@ -164,12 +174,13 @@ $Script:HighestFound = $PoshRSJob | Sort Version -desc | Select -first 1 | ForEa
 		  #get-rsjob | % { "$($_.id) $($_.Name) $($_.State) [$(Receive-RSJob $_)]" }
 		}
   }
+
 	
   Function Test-TCPParse {
     [CmdLetBinding()]Param(
       [Alias('Name','IPAddress','Address','Host','Server','EndPoint')]
-                [string[]]$ComputerName = 'local',
-      [Alias('Address')][string[]]     $IPAddress,
+                     [string[]]$ComputerName = '',
+      [Alias('Address')][string[]]$IPAddress,
                      [Uint16[]]   $Port = 135,
       [Alias('Wait','MaxWait')]$TimeOut = 3000,
                         [Object[]]$Data = $Null,
@@ -185,11 +196,11 @@ $Script:HighestFound = $PoshRSJob | Sort Version -desc | Select -first 1 | ForEa
       try {
         If ($Fail) { 1/0 }
         ForEach ($Target in $ComputerName) {
-          $Port | Foreach {
+          ForEach ($P in $Port) {
             $Count++          
             $JobName = "$Prefix$($Count)_" + ($Target -replace '[_\W]+', '_').trim('_') 
-            Write-Verbose "Start-RSJob -Name $JobName { Test-TCPHelper $Target $_ } -FunctionsToImport Test-TCPHelper}"
-            $Job = Start-RSJob -Name $JobName { Test-TCPHelper $Target $_ } -FunctionsToImport Test-TCPHelper
+            Write-Verbose "Start-RSJob -Name $JobName { Test-TCPPort $Target $P } -FunctionsToImport Test-TCPPort}"
+            $Job = Start-RSJob -Name $JobName { Test-TCPPort $Target $P } -FunctionsToImport Test-TCPPort
           }
         }  
       } Catch {
