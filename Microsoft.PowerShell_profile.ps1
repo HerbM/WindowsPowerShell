@@ -121,9 +121,13 @@ Function Get-ExtraProfile {
     [String[]]$Name = (@((Get-WMIObject win32_computersystem).Domain) +
       @((nbtstat  -n) -match '(?-i:<00>\s+GROUP\b)' -replace
         '^\s*(\S+)\s*(?-i:<00>\s+GROUP\b).*$', '$1' | Select-Object -Uniq) +
-      $Env:UserDomain + $Env:ComputerName + $Env:UserName
+      $Env:UserDomain + $Env:ComputerName + $Env:UserName,
+      [switch]$PreloadProfile,
+      [switch]$PostloadProfile
     )
   )
+  If ($PreLoadProfile)  { $Name = @($Name) + '' } 
+  If ($PostLoadProfile) { $Name = @('') + $Name } 
   $Name | Where-Object {
     If ($Extra = Join-Path $ProfileDirectory "Profile$($_)$($Suffix).ps1" -ea Ignore -resolve) {
       Write-Verbose $Extra
@@ -802,76 +806,8 @@ if ($CurrentWindowTitle -match 'Windows PowerShell([\(\)\s\d]*)$') {
   $Host.ui.RawUI.WindowTitle += " $(Get-WhoAmI) OS:" +
     (Get-WMIObject win32_operatingsystem).version + "PS: $PSVersionNumber"
 }
-Function Update-ModuleList {
-  [CmdLetBinding(SupportsShouldProcess = $true,ConfirmImpact='Medium')]
-  param(
-    [Parameter(ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$true)]
-    [string[]]$Name='pscx'
-  )
-  begin {}
-  process {
-    foreach ($ModuleName in $Name) {
-      $InstalledModule = @(get-module $ModuleName -ea ignore -list | Sort-Object-Object -desc Version)
-      $version = if ($InstalledModule) {
-        $InstalledModule | ForEach-Object {
-          write-warning "$(LINE) Installed module: $($_.Version) $($_.Name)"
-        }
-        $InstalledModule = $InstalledModule[0]
-        $InstalledModule.version
-      } else {
-        write-warning "Module $ModuleName not found, searching gallery..."
-        '0.0'  # set ZERO VERSION
-      }
-      $FoundModule = find-module $ModuleName -minimum $version -ea ignore |
-                     Sort-Object-Object version -desc  | Select-Object -Object -first 1
-      If ($FoundModule) {
-        Write-Warning "$($FoundModule.Version) $($FoundModule.Name)"
-        If ($InstalledModule) {
-          If ($FoundModule.version -gt $InstalledModule.version) {
-            write-warning "Updating module $ModuleName to version: $($FoundModule.version)..."
-            try {
-              update-module $ModuleName -force -confirm:$confirm -whatif:$whatif -required $FoundModule.version
-            } catch {
-              install-module -force -confirm:$confirm -minimum $version -scope 'AllUsers' -whatif:$whatif
-            }
-          }
-        } else {
-          write-warning "Installing module $ModuleName ... ";
-          install-module -force -confirm:$confirm -minimum $version -scope 'AllUsers' -whatif:$whatif
-        }
-      } else {
-        write-warning "Module $ModuleName NOT FOUND on repository!"
-      }
-    }
-  }  ## Process block
-  end {}
-}
-$RecommendedModules = @(
-  'pester',
-  'carbon',
-  'pscx',
-  'PowerShellCookbook',
-  'ImportExcel',
-  'VMWare.PowerCli',
-  'ThreadJob',
-  'PSScriptAnalyzer',
-  'PSGit',
-  'Veeam.PowerCLI-Interactions',
-  'PSReadLine',
-  'PSUtil'
-)
 
-if ($InstallModules) {
-  Install-ModuleList $RecommendedModules
-} else {
-  # get-module -list $RecommendedModules
-}
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE) Before Show-Module "
-if ($ShowModules) {
- get-module -list | Where-Object {$_.name -match 'PowerShellGet|PSReadline' -or $_.author -notmatch 'Microsoft' } |
-   Format-Table version,name,author,path
-} else {}
-write-warning "$(get-date -f 'HH:mm:ss') $(LINE) After Show-Module "
 
 # Get .Net Constructor parameters
 # ([type]"Net.Sockets.TCPClient").GetConstructors() | ForEach-Object { $_.GetParameters() } | Select-Object Name,ParameterType
@@ -944,12 +880,7 @@ Function Test-TCPService {
   # write-Verbose "$(LINE) $(Elapsed) Returning"
   !$failed  # Return $true if connection Establish else $False
 }
-Write-Information "Useful modules: https://blogs.technet.microsoft.com/pstips/2014/05/26/useful-powershell-modules/"
-$PSCXprofile = 'C:\Users\hmartin\Documents\WindowsPowerShell\Pscx.UserPreferences'
-Write-Information "import-module -noclobber PSCX $PSCXprofile"
-if ($psversiontable.psversion.major -lt 6) {
-  Write-Information "import-module -noclobber PowerShellCookbook"
-}
+
 <#
 [System.Windows.Forms.Screen]::AllScreens
 [System.Windows.Forms.Screen]::PrimaryScreen
@@ -967,14 +898,7 @@ S:\Organization Tools IPaddress v2
 # Import-Module ServerManager
 if (Join-Path $PSProfileDirectory "$($env:UserName).ps1" -ea ignore -ev $Null) {
 }
-# (Get-IPAddress).ipaddresstostring -match '^10.10'
-$ecs       = 'ts.ecs-support.com'
-# $ecsts01 = 'ts.ecs-support.com'
-# $ecsts02 = 'ts.ecs-support.com'
-$j1        = "$($ecs):32793"
-$j2        = "$($ecs):32795"
-$ts1       = "ecs-DCts01"
-$ts2       = "ecs-DCts02"
+
 # Join-Path 'C:\Util','c:\Program*\*','C:\ProgramData\chocolatey\bin\','T:\Programs\Tools\Util','T:\Programs\Util','S:\Programs\Tools\Util','S:\Programs\Util' 'NotePad++.exe' -resolve -ea ignore
 # PsExec64.exe -h \\REMOTECOMPUTER qwinsta | find "Active"
 # runas /noprofile /netonly /user:"DOMAIN\USERNAME" "mstsc /v:REMOTECOMPUTER /shadow:14 /control"
@@ -2566,7 +2490,6 @@ if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $i
   }
 }
 if ((Get-Location) -match '^.:\\Windows\\System32$') { pushd \ }
-$PSDefaultParameterValues['Get-ChildItem:Force'] = $True
 
 Get-ExtraProfile 'Post' | ForEach-Object {
   try {

@@ -1,11 +1,12 @@
 [CmdletBinding()] param(
   [Alias('InternetProxy','InetProxy')]
-                          [string]$Proxy = 'proxy-us.glb.my-it-solutions.net:84',
-           [Net.NetworkCredential]$Credential,
-                        [string[]]$BypassList,  # Array of regexes
-  [Alias('UseLocal')]     [switch]$UseProxyOnLocal=$Null,
-  [Alias('NDC','NoCred')] [switch]$NoDefaultCredential=$Null,
-  [Alias('Off','Reset','Clear','Disable')][switch]$Remove=$Null
+                 [string]$Proxy = 'proxy-us.glb.my-it-solutions.net:84',
+  [Net.NetworkCredential]$Credential,
+               [string[]]$BypassList,   # Array of regexes
+  [Alias('UseLocal')]     [switch]$UseProxyOnLocal        = $Null,
+  [Alias('NDC','NoCred')] [switch]$NoDefaultCredential    = $Null,
+  [Alias('On','Set','Add','Default')]     [switch]$Enable = $Null,
+  [Alias('Off','Reset','Clear','Disable')][switch]$Remove = $Null
 )
 
 
@@ -209,7 +210,7 @@ Function Set-HTTPProxy {
   }
 }
 
-If ($MyInvocation.Line -match '\s*\.(?![\w\\.\"''])') {
+If ((!$Enable) -and $MyInvocation.Line -match '\s*\.(?![\w\\.\"''])') {
   Write-Warning "$(FLINE) Dot source, load functions, and exit"
 } Else {
   If ($Proxy -and !$Remove) { 
@@ -228,6 +229,15 @@ If ($MyInvocation.Line -match '\s*\.(?![\w\\.\"''])') {
     If (Get-Command setproxy.exe -ea Ignore) { setproxy.exe /proxy:disable }
     Set-HTTPProxy -Disable    
     Set-GitProxy  -Reset
+  } Else {
+    Write-Warning "$(FLINE) Setting proxy"
+    Set-DefaultProxy # @$PSBoundParameters
+    Set-InternetProxy -Enable # -url $Proxy
+    If ((Get-Command setproxy.exe -ea Ignore) -and ($Env:ComputerName -like 'MC0*')) { 
+      setproxy /pac:http://proxyconf.my-it-solutions.net/proxy-na.pac  
+    }  
+    Set-HTTPProxy
+    Set-GitProxy
   }
 }
 
@@ -236,7 +246,7 @@ If ($MyInvocation.Line -match '\s*\.(?![\w\\.\"''])') {
 setproxy /pac:http://proxyconf.my-it-solutions.net/proxy-na.pac
   netsh winhttp show proxy
   netsh winhttp import proxy source=ie
-
+ 
 https://github.com/dotnet/corefx/issues/29934
 WinHttpGetIEProxyConfigForCurrentUser
 WinHttpGetProxyForUrl
@@ -286,3 +296,10 @@ Function Get-HTTPSecurity {
     } 
   }
 }
+<#
+String pattern = @"^[-/]+(\w+)(?:(?:[:=]+)(.+))?";
+foreach (Match m in Regex.Matches(s, pattern)) {
+  String name  = Groups[1].Value;
+  String value = Groups[2].Value;
+}
+#>
