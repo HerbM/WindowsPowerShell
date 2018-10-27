@@ -120,11 +120,10 @@ Function Get-ExtraProfile {
     [String]$Suffix,
     [String[]]$Name = (@((Get-WMIObject win32_computersystem).Domain) +
       @((nbtstat  -n) -match '(?-i:<00>\s+GROUP\b)' -replace
-        '^\s*(\S+)\s*(?-i:<00>\s+GROUP\b).*$', '$1' | Select-Object -Uniq) +
-      $Env:UserDomain + $Env:ComputerName + $Env:UserName,
-      [switch]$PreloadProfile,
-      [switch]$PostloadProfile
-    )
+        '^\s*(\S+)\s*(?-i:<00>\s+GROUP\b).*$', '$1') +
+      $Env:UserDomain + $Env:ComputerName + $Env:UserName | Select-Object -Uniq),
+    [switch]$PreloadProfile,
+    [switch]$PostloadProfile
   )
   If ($PreLoadProfile)  { $Name = @($Name) + '' } 
   If ($PostLoadProfile) { $Name = @('') + $Name } 
@@ -150,7 +149,8 @@ Function Get-ProcessUser {
   Get-Process @args -IncludeUserName
 }
 
-Get-ExtraProfile 'Pre' | ForEach-Object {
+$UsePreloadProfile = [Boolean](Get-Variable UsePreloadProfile -value -ea Ignore)
+Get-ExtraProfile 'Pre' -PreloadProfile:$UsePreloadProfile | ForEach-Object {
   try {
     $Private:Separator = "`n$('=' * 72)`n"
     $Private:Colors    = @{ForeGroundColor = 'Blue'; BackGroundColor = 'White'}
@@ -1886,7 +1886,7 @@ Function Set-LocationUserFolder {
 try {
   $ECSTraining = "\Training"
   $SearchPath  = "$Home\Downloads", 'C:\',"$Home\Downloads","S:$ECSTraining","T:$ECSTraining"
-  $Books = Join-Path $SearchPath 'Books' -ea ignore | Select-Object -First 1
+  $Books = Join-Path $SearchPath 'Books' -ea ignore -resolve | Select-Object -First 1
 } catch {
   $Books = $PSProfile
 }  # just ignore
@@ -1946,7 +1946,8 @@ Function Set-GoAlias {
     ForEach ($Name in $goHash.Keys) {
       If (Get-Alias $Name -ea Ignore) { Remove-Item Alias:\$Name -Force -ea Ignore } 
       Try {
-        If (Test-Path $goHash.$Name -PathType Container -ea Ignore) {
+        If ($goHash.$Name -and 
+            (Test-Path $goHash.$Name -PathType Container -ea Ignore)) {
           Write-Verbose "New-Alias $Name Set-GoLocation -force -scope Global -ea STOP"
                          New-Alias $Name Set-GoLocation -force -scope Global -ea STOP
         }
@@ -2499,7 +2500,8 @@ if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $i
 }
 if ((Get-Location) -match '^.:\\Windows\\System32$') { pushd \ }
 
-Get-ExtraProfile 'Post' | ForEach-Object {
+$UsePostloadProfile = [Boolean](Get-Variable UsePostloadProfile -value -ea Ignore)
+Get-ExtraProfile 'Post' -PostloadProfile:$UsePostloadProfile | ForEach-Object {
   try {
     $Private:Separator = "`n$('=' * 72)`n"
     $Private:Colors    = @{ForeGroundColor = 'Blue'; BackGroundColor = 'White'}
