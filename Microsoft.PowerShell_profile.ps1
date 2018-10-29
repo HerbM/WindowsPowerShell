@@ -36,12 +36,12 @@ If (!(Get-Command Write-Information -ea 0)) { New-Alias Write-Information Write-
 remove-item alias:type       -force -ea Ignore
 new-alias   type Get-Content -force -scope Global -ea Ignore
 
-New-Alias -Name LINE -Value Get-CurrentLineNumber -Description 'Returns the current (caller''s) line number in a script.' -force -Option allscope
-New-Alias -Name __LINE__ -Value Get-CurrentLineNumber -Description 'Returns the current (caller''s) line number in a script.' -force -Option allscope
-New-Alias -Name FILE -Value Get-CurrentFileName -Description 'Returns the name of the current script file.' -force -Option allscope
-New-Alias -Name FLINE -Value Get-CurrentFileLine -Description 'Returns the name of the current script file.' -force -Option allscope
-New-Alias -Name FILE1 -Value Get-CurrentFileName1 -Description 'Returns the name of the current script file.' -force -Option allscope
-New-Alias -Name __FILE__ -Value Get-CurrentFileName -Description 'Returns the name of the current script file.' -force -Option allscope
+New-Alias -Name LINE -Value Get-CurrentLineNumber -Description 'Returns the current (caller''s) line number in a script.' -force     -ea Ignore
+New-Alias -Name __LINE__ -Value Get-CurrentLineNumber -Description 'Returns the current (caller''s) line number in a script.' -force -ea Ignore
+New-Alias -Name FILE -Value Get-CurrentFileName -Description 'Returns the name of the current script file.' -force                   -ea Ignore
+New-Alias -Name FLINE -Value Get-CurrentFileLine -Description 'Returns the name of the current script file.' -force                  -ea Ignore
+New-Alias -Name FILE1 -Value Get-CurrentFileName1 -Description 'Returns the name of the current script file.' -force                 -ea Ignore
+New-Alias -Name __FILE__ -Value Get-CurrentFileName -Description 'Returns the name of the current script file.' -force               -ea Ignore
 New-Alias TV  Test-Variable -Force -ea Ignore
 New-Alias TVN Test-Variable -Force -ea Ignore
 
@@ -125,8 +125,8 @@ Function Get-ExtraProfile {
     [switch]$PreloadProfile,
     [switch]$PostloadProfile
   )
-  If ($PreLoadProfile)  { $Name = @($Name) + '' } 
-  If ($PostLoadProfile) { $Name = @('') + $Name } 
+  If ($PreLoadProfile)  { $Name = @($Name) + '' }
+  If ($PostLoadProfile) { $Name = @('') + $Name }
   $Name | Where-Object {
     If ($Extra = Join-Path $ProfileDirectory "Profile$($_)$($Suffix).ps1" -ea Ignore -resolve) {
       Write-Verbose $Extra
@@ -134,9 +134,6 @@ Function Get-ExtraProfile {
     }
   } | ForEach-Object { $Extra } | Select-Object -uniq
 }
-
-# Start-Process -FilePath 'https://www.google.com'
-# Start-Process -FilePath 'https://www.google.com/search?num=100&q=powershell+pssession'
 
 
 Function Get-ProcessFile {
@@ -373,24 +370,6 @@ Function Get-PSHistory {
     Write-Warning "PSHistory not found"
   }
 }
-<#
-Function Add-Path {
-  [CmdLetBinding()]param(
-    [string[]]$Path
-  )
-  $SpltPath = $Env:Path -split ';'
-  ForEach ($Get-ChildItem in Path) {
-    $Get-ChildItem = Split-Path -leaf $Get-ChildItem -ea ignore # get just final directory name
-    $OnPath = $SplitPath -match "\\$Get-ChildItem$"
-    $OnPath =
-    #If (! ())
-    if (!(Test-Path 'C:\Util')) {
-      # $env:path += ';T:\Programs\Herb\util;T:\Programs\Herb\Unx;T:\programs\Herb\Bat'
-    }
-  }
-}
-#>
-
 function Get-WmiNamespace {
   [CmdletBinding()]Param ($Namespace='ROOT')
   Get-WmiObject -Namespace $Namespace -Class __NAMESPACE | ForEach-Object {
@@ -502,11 +481,11 @@ Function Set-ItemTime {
      [string[]]$Path=@(Get-ChildItem | Where-Object PSIsContainer -eq $False),
      [Parameter(ParameterSetName='LiteralPath', Mandatory=$true, ValueFromPipelineByPropertyName=$true)]
      [Alias('PSPath')][string[]]$LiteralPath,
-    [Alias('WriteTime','Time','DateTime')]
-    [Parameter(Position=1)][DateTime]$Date=(Get-Date),
-    [string[]]$Property = @('LastWriteTime'),
-     [switch]$PassThru,
-     [string]$Filter,
+     [Alias('WriteTime','Time','DateTime')]
+     [Parameter(Position=1)][DateTime]$Date=(Get-Date),
+     [string[]]$Property = @('LastWriteTime'),
+       [switch]$PassThru,
+       [string]$Filter,
      [string[]]$Include,
      [string[]]$Exclude
      #[switch]${Force},
@@ -556,13 +535,7 @@ Function Set-ItemTime {
   }
   End { }
 }
-    ####If ($Date -as [DateTime]) {
-    ####} else {
-    ####  $ErrorMessage = "Date parameter must be convertible to a valid DateTime"
-    ####  Throw $ErrorMessage
-    ####  Write-Warning $ErrorMessage
-    ####  Get-Date
-    ####}
+
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE)"
 $LogFilePath = 'Microsoft.PowerShell_profile-Log.txt'
 $UtilityModule = 'PSUtility' # (Join-Path $ProfileDirectory Utility.psm1)
@@ -605,32 +578,6 @@ Write-Information "$(LINE) PowerShell version PSVersionNumber: [$PSVersionNumber
 $ForceModuleInstall = [boolean]$ForceModuleInstall
 $AllowClobber       = [boolean]$AllowClobber
 $Confirm            = [boolean]$Confirm
-# 'C:\util\notepad++.exe' -force
-# 'S:\Programs\Portable\Notepad++Portable\Notepad++Portable.exe' -force -scope global
-# 'C:\Program Files (x86)\Notepad++\Note*.exe'   # ECS-DCTS02  Dec 2017 7.5.4
-#  S:\Programs\Notepad++ # 1/2/2018 Notepad++Portable.exe
-#  S:\Programs\Notepad++\app\Notepad++\   # Dec 2017
-#  S:\Programs\Herb\util\notepad++Portable.exe
-### $SearchNotePadPlusPlus = @('S:\Programs' )
-<#
-$NotepadPlusPlus = (
-  @((get-childitem 'ENV:Notepad++','ENV:NotepadPlusPlus' -ea ignore).value -split ';'  |
-    Where-Object { $_ -match '\S'} |
-    ForEach-Object { $_,(Join-Path $_ 'Notepad++*'  2>$Null)} | Where-Object {Test-Path $_ -ea ignore})      +
-  (where.exe notepad++ 2>$null)                                +
-  (gal np -ea ignore).definition                                    +
-  ((get-childitem ENV:prog* -ea ignore).value | Select-Object -uniq        |
-    ForEach-Object {Join-Path $_ 'Notepad++*'} | Where-Object {Test-Path $_ -ea ignore})      +
-  ('C:\ProgramData\chocolatey\bin',
-   'S:\Programs\Notepad++*','S:\Programs\Portable\Notepad++*',
-   'T:\Programs\Notepad++*','T:\Programs\Portable\Notepad++*',
-   'S:\Programs\Herb\util', 'T:\Programs\Herb\util',
-   'D:\wintools\Tools\hm') |
-   Get-ChildItem -include 'notepad++*.exe' -excl '.paf.' -file -recurse -ea ignore |
-   ForEach-Object { write-warning "$(LINE) $_"; $_} |
-   select -first 1).fullname
-if ($NotepadPlusPlus) { new-alias np $NotepadPlusPlus -force -scope Global }
-#>
 
 Write-Warning "$(get-date -f 'HH:mm:ss') $(LINE) Before Set-ProgramAlias"
 Function Set-ProgramAlias {
@@ -703,7 +650,7 @@ if ($MyInvocation.HistoryID -eq 1) {
     $global:informationpreference = $warningpreference
   } else {
     write-warning '$(LINE) Use write-warning for information if Write-Information not available'
-    new-alias Write-Information write-warning -force # -option allscope
+    new-alias Write-Information write-warning -force -ea Ignore
   }
 }
 if ($Quiet -and $global:informationpreference) {
@@ -716,7 +663,7 @@ if ($Quiet -and $global:informationpreference) {
 If ([Environment]::OSVersion.Version -gt [version]'6.1') {
   $Script:ImmersiveShell = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\ImmersiveShell'
   Set-ItemProperty -path $ImmersiveShell -Name DisableCharmsHint -type DWORD -value 1 -force -ea Ignore
-  Set-ItemProperty -path $ImmersiveShell -Name DisableTLCorner   -type DWORD -value 1 -force -ea Ignore 
+  Set-ItemProperty -path $ImmersiveShell -Name DisableTLCorner   -type DWORD -value 1 -force -ea Ignore
 }
 Get-ItemProperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive |
   Select-Object WindowArrangementActive | Format-List | findstr "WindowArrangementActive"
@@ -839,55 +786,42 @@ Function Test-TCP {
     $True
   } Catch { $False }
 }
-<#
-.Example
-(measure-command { test-tcpservice 168.44.245.99 9999 }).TotalSeconds
-#>
-Function Test-TCPService {
-  [CmdLetBinding()]Param([string]$Server,$port=135,$MaxWait=3000)
-  if ($MaxWait -lt 30) { $MaxWait *= 1000 }
+
+
+Function Test-TCPPort {  # check actual IP & Port combination
+  [Alias('Test-TCPService','TestTCP','tcp')][CmdLetBinding()]Param(
+    [string]$Server='127.0.0.1',
+    [Uint16]$Port=135,
+    [Alias('Wait','MaxWait')]$TimeOut=3000
+  )
+  if ($TimeOut -lt 30) { $TimeOut *= 1000 }
   $Failed = $False
+  $Succeeded = $True
   try {
     $ErrorActionPreference = 'Continue'
     $tcpclient = new-Object system.Net.Sockets.TcpClient
     $Start = Get-Date
     Function Elapsed { param($Start = $Start) '{0,5:N0}ms' -f ((get-date) - $Start).TotalMilliseconds }
-    # Write-Verbose "$(LINE) $(Elapsed) Begin"
     $iar = $tcpclient.BeginConnect($Server, $port, $null, $null) # Create Client
-    # Write-Verbose "$(LINE) $(Elapsed) Wait"
-    $wait = $iar.AsyncWaitHandle.WaitOne($MaxWait,$false)         # Set timeout
-    # Write-Verbose "$(LINE) $(Elapsed) If !Wait"
+    $wait = $iar.AsyncWaitHandle.WaitOne($TimeOut,$false)         # Set timeout
     if (!$wait) {                                                 # Check if connection is complete
-        # Write-Verbose "$(LINE) $(Elapsed) NOT Wait"
-        #write-log "$(FLINE) Connection Timeout: $Server $Port $MaxWait"
         $Failed = $True
-        #try {$tcpclient.EndConnect($iar) | out-Null } catch {}
-        # Write-Verbose "$(LINE) $(Elapsed) After ENDConnect"
     }  else {
-      # Write-Verbose "$(LINE) $(Elapsed) Wait"
-      # $error.Clear()                                             # Close the connection, report any error
       $tcpclient.EndConnect($iar) | out-Null
-      # Write-Verbose "$(LINE) $(Elapsed) After End Connect 1"
       if (!$?) {
-        # write-Verbose "$(FLINE) $(Elapsed) `$?"
         $failed = $true
       }
     }
   } catch {
-    # write-Verbose "$(LINE) $(Elapsed) Catch"
     $Failed = $True
   } finally {
-    # write-Verbose "$(LINE) $(Elapsed) Finally"
     if ($tcpclient.Connected) {
-      # try {$tcpclient.EndConnect($iar) | out-Null } catch {}
-      # write-Verbose "$(LINE) $(Elapsed) After ENDConnect"
       $null = $tcpclient.Close
-      # write-Verbose "$(LINE) $(Elapsed) After Close"
     }
   }
-  # write-Verbose "$(LINE) $(Elapsed) Returning"
   !$failed  # Return $true if connection Establish else $False
 }
+
 
 <#
 [System.Windows.Forms.Screen]::AllScreens
@@ -895,21 +829,7 @@ Function Test-TCPService {
 # Make nicely formatted simple directory for notes:
 Get-ChildItem | Sort-Object LastWriteTime -desc | ForEach-Object { '{0,23} {1,11} {2}' -f $_.lastwritetime,$_.length,$_.name }
 #>
-<#
-ts.ecs-support.com:32793  terminal server 10.10.11.80
-ts.ecs-support.com:32795  TS02  also FS02???
-Efficient Computer Systems ECS EFFComSYS\hmartin ecs-support.com ts01 ts02
-S:\Organization Tools IPaddress v2
 
-#>
-# Get-WindowsFeature 'RSAT-DNS-Server'
-# Import-Module ServerManager
-if (Join-Path $PSProfileDirectory "$($env:UserName).ps1" -ea ignore -ev $Null) {
-}
-
-# Join-Path 'C:\Util','c:\Program*\*','C:\ProgramData\chocolatey\bin\','T:\Programs\Tools\Util','T:\Programs\Util','S:\Programs\Tools\Util','S:\Programs\Util' 'NotePad++.exe' -resolve -ea ignore
-# PsExec64.exe -h \\REMOTECOMPUTER qwinsta | find "Active"
-# runas /noprofile /netonly /user:"DOMAIN\USERNAME" "mstsc /v:REMOTECOMPUTER /shadow:14 /control"
 Function New-RDPSession {
   [CmdLetBinding()]param(
     [Alias('Remote','Target','Server')]$ComputerName,
@@ -1069,16 +989,128 @@ Function Start-Shadow {
 New-Alias rs     Start-Shadow -force
 New-Alias Shadow Start-Shadow -force
 
-function Get-CommandPath {
-  [CmdletBinding()]param(
-    [Alias('Clean')][switch]$Unique,
-    [Alias('Test')][switch]$Resolve
+Function Set-EnvironmentVariable {
+  [CmdletBinding(SupportsShouldProcess,ConfirmImpact='Low')]
+  [Alias('Set-Environment','Set-Env','sev')]Param(
+    [string[]]$Variable=$Null,
+    [string[]]$Value='',
+    [string[]]$Scope='Local',
+    [switch]  $Local,
+    [switch]  $Process,
+    [switch]  $User,
+    [Alias('Computer','System')][switch]$Machine
   )
-  $paths = $Env:path -split ';' | Select -Unique:$Unique
-  If ($Resolve) {
-    Resolve-Path $Paths
-  } else { $Paths }
+  Begin {
+    $Scope = Switch ($True) {
+      { $Local   } { 'Local'   }
+      { $Process } { 'Process' }
+      { $User    } { 'User'    }
+      { $Machine } { 'Machine' }
+      Default      { $Scope    }
+    }
+  }
+  Process {
+    ForEach ($Var in $Variable) {
+      If ($Var -is 'System.Collections.DictionaryEntry') {
+        $Var, $Val = $Var.Name, $Var.Value
+      } Else {
+        If ($Value) { $Val, $Value = $Value }
+        If ($Scope) { $Env, $Scope = $Scope }
+      }
+      If ($Env -in 'Computer','System') { $Env = 'Machine'}
+      If ($Var -as [String]) {
+        $Val = If ($Val = Get-Variable Val -ea 4 -value) { $Val -as 'string' } Else { '' }
+        Write-Verbose "Set environment [$Var=$Val] in [$Env] scope"
+        If ($PSCmdlet.ShouldProcess("$Env scope", "Set [$Var=$Val]")) {
+          If ($Env -eq 'Local') { Set-Item -Path "Env:$Var" -Value $Val }
+          Else { [Environment]::SetEnvironmentVariable($Var,$Val,$Env) }
+        }
+      }
+    }
+  }
+  End {}
 }
+Function Get-EnvironmentVariable {
+  [CmdletBinding()][Alias('Get-Environment','Get-Env','gev')]
+  Param(
+    [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
+    [Alias('Key','Name','Path')][string[]]$Variable=$Null,
+    [string[]]$Scope='Local',
+    [switch]  $Local,
+    [switch]  $Process,
+    [switch]  $User,
+    [switch]  $Value,
+    [Alias('Computer','System')][switch]$Machine
+  )
+  Begin {
+    $Scope = Switch ($True) {
+      { $Local   } { 'Local'   }
+      { $Process } { 'Process' }
+      { $User    } { 'User'    }
+      { $Machine } { 'Machine' }
+      Default      { $Scope    }
+    }
+  }
+  Process {
+    ForEach ($Var in $Variable) {
+      If ($Var -is 'System.Collections.DictionaryEntry') {
+        $Var, $Val = $Var.Name
+      } Else {
+        If ($Scope) { $Env, $Scope = $Scope }
+      }
+      If ($Env -in 'Computer','System') { $Env = 'Machine'}
+      If ($Var -as [String]) {
+        If ($Env -eq 'Local') {
+          $Item = Get-Item -Path "Env:$Var"
+          If ($Value) { $Item.Value } Else { $Item }
+        } Else {
+          If ($Null -ne ($Val = [Environment]::GetEnvironmentVariable($Var,$Env))) {
+            If ($Value) { $Val }
+            Else        { [System.Collections.DictionaryEntry]::New($Var, $Val) }
+          }
+        }
+      }
+    }
+  }
+  End {}
+}
+
+Function Get-CommandPath {
+  [CmdletBinding()]param(
+    [Alias('Prepend','Before')]   [string[]]$Prefix = '',
+    [Alias('Append', 'After' )]   [string[]]$Suffix = '',
+                                    [switch]$Unique,
+                                    [switch]$Clean,
+                                    [switch]$User,
+    [Alias('Computer')]             [switch]$Machine,
+                                    [switch]$Process,
+    [Alias('Length','size','Count')][switch]$Statistics,
+    [Alias('Test'  )]               [switch]$Resolve
+  )
+  $Unique = $Unique -or $Clean
+  $Path   = Switch ($True) {
+    { [Boolean]$User    } { Get-EnvironmentVariable 'Path' -Value -User    }
+    { [Boolean]$Machine } { Get-EnvironmentVariable 'Path' -Value -Machine }
+    { [Boolean]$Process } { Get-EnvironmentVariable 'Path' -Value -Process }
+    Default               { $Env:Path                                      }
+  }
+  $LengthPrior = ($Path).Length
+  $Path        =  $Path -split ';' | Where Length
+  $CountPrior  = $Path.Count
+  $Path        = $Prefix + $Path + $Suffix | Where Length
+  If ($Unique)  { $Path = $Path | Select -Unique:$Unique }
+  If ($Resolve) { $Path = Resolve-Path $Path -ea Ignore  }
+  $Joined = $Path -join ';'
+  If ($Statistics) {
+    $LengthAfter = $Joined.Length
+    $CountAfter  = $Path.Count
+    Write-Warning "Prior Length: $LengthPrior  Count:$CountPrior"
+    Write-Warning "After Length: $LengthAfter  Count:$CountAfter"
+  }
+  If ($Clean)   { $Path = $Joined }
+  $Path
+}
+
 #################################################################
 $InformationPreference = 'continue'
 Write-Information "$(LINE) InformationPreference: $InformationPreference"
@@ -1455,7 +1487,7 @@ Function esf {
     } else { $_ }
   }
 }
-#e MATLAB – Programming with MATLAB for Beginners -verbose
+
 function e {
   [cmdletbinding()]param(
     [Parameter(valuefromremainingarguments)]$args)
@@ -1467,68 +1499,6 @@ If (Test-Path ($CCL = 'C:\Users\Herb\downloads\ccl\wx86cl64.exe') -ea Ignore) {
   New-Alias ccl $CCL -Force -Scope Global -ea Ignore
 }
 
-<#  $foreach loop variable iterator WEIRD remove this junk
-foreach ($a in ('a','b','c','d','e')) { $a; [void]$foreach.movenext(); $foreach.gettype() }
-[]
-[SZArrayEnumerator] |gm
-foreach ($a in ('a','b','c','d','e')) { $a; [void]$foreach.movenext(); $foreach.gettype() | gm }
-foreach ($a in ('a','b','c','d','e')) { $a; [void]$foreach.movenext(); $foreach }
-foreach ($a in ('a','b','c','d','e')) { $foreach }
-foreach ($a in ('a','b','c','d','e')) { "$a $foreach" }
-foreach ($a in ('a','b','c','d','e')) { "$a $foreach"; $x++ }
-foreach ($a in ('a','b','c','d','e')) { $x++; "$a $foreach";  }
-$x
-$x; foreach ($a in ('a','b','c','d','e')) { $x++; "$a $foreach";  }
-$x; foreach ($a in ('a','b','c','d','e')) { $x++; "$a $foreach";  }
-$x
-$x=0; foreach ($a in ('a','b','c','d','e')) { $x++; "$a $foreach";  }
-$x
-$x=0; foreach ($a in ('a','b','c','d','e')) { ++$x; "$a $foreach";  }
-$x
-$x=0; foreach ($a in ('a','b','c','d','e')) { $x; $x++; "$a $foreach";  }
-$x=0; foreach ($a in ('a','b','c','d','e')) { $x; $x++; "$a $foreach"; $x+++  }
-$x=0; foreach ($a in ('a','b','c','d','e')) { $x; $x++; "$a $foreach"; $x++ }
-foreach ($a in ('a','b','c','d','e')) { $a; [void]$foreach.movenext(); $foreach.gettype() | gm }
-foreach ($a in ('a','b','c','d','e')) { $a; [void]$foreach.movenext(); $foreach }
-foreach ($a in ('a','b','c','d','e')) { $foreach }
-foreach ($a in ('a','b','c','d','e')) { "$a $foreach" }
-foreach ($a in ('a','b','c','d','e')) { "$a $foreach"; $x++ }
-foreach ($a in ('a','b','c','d','e')) { $x++; "$a $foreach";  }
-$x
-$x; foreach ($a in ('a','b','c','d','e')) { $x++; "$a $foreach";  }
-$x; foreach ($a in ('a','b','c','d','e')) { $x++; "$a $foreach";  }
-$x
-$x=0; foreach ($a in ('a','b','c','d','e')) { $x++; "$a $foreach";  }
-$x
-$x=0; foreach ($a in ('a','b','c','d','e')) { ++$x; "$a $foreach";  }
-$x
-$x=0; foreach ($a in ('a','b','c','d','e')) { $x; $x++; "$a $foreach";  }
-$x=0; foreach ($a in ('a','b','c','d','e')) { $x; $x++; "$a $foreach"; $x+++  }
-$x=0; foreach ($a in ('a','b','c','d','e')) { $x; $x++; "$a $foreach"; $x++ }
-h -count 20
-$x=0; foreach ($a in ('a','b','c','d','e')) { $foreach }
-$x=0; foreach ($a in ('a','b','c','d','e')) { $foreach.Current }
-$array = @(1,2,3)
-$array.GetEnumerator() |gm
-$array.GetEnumerator().gettype()
-$x=0; foreach ($a in ('a','b','c','d','e')) {[int]$foreach }
-$x=0; foreach ($a in ('a','b','c','d','e')) {$foreach.gettype() }
-$x=0; foreach ($a in ('a','b','c','d','e')) {$foreach.ToString() }
-$x=0; foreach ($a in ('a','b','c','d','e')) {$foreach.ToInt() }
-$x=0; foreach ($a in ('a','b','c','d','e')) {$foreach.ToInteger() }
-$x=0; foreach ($a in ('a','b','c','d','e')) {$foreach.ToInt32() }
-$x=0; foreach ($a in ('a','b','c','d','e')) {$foreach = get-member -static }
-$x=0; foreach ($a in ('a','b','c','d','e')) {$foreach = get-member  }
-$x=0; foreach ($a in ('a','b','c','d','e')) { [object]$foreach = gm  }
-$x=0; foreach ($a in ('a','b','c','d','e')) { $foreach.current  }
-$x=0; foreach ($a in ('a','b','c','d','e')) { $foreach.tostring()  }
-$x=0; foreach ($a in ('a','b','c','d','e')) { $foreach.getindex()  }
-$x=0; foreach ($a in ('a','b','c','d','e')) { $foreach.count  }
-$x=0; foreach ($a in ('a','b','c','d','e')) { $foreach.currentindex  }
-$x=0; foreach ($a in ('a','b','c','d','e')) { $foreach.index  }
-$x=0; foreach ($a in ('a','b','c','d','e')) { $foreach.position  }
-$x=0; foreach ($a in ('a','b','c','d','e')) { $foreach.upperbound  }
-#>
 Function ahk {
   if ($args[0]) { C:\util\AutoHotKey\autohotkey.exe @args               }
   else          { C:\util\AutoHotKey\autohotkey.exe /r "c:\bat\ahk.ahk" }
@@ -1621,7 +1591,7 @@ Function Get-Drive {
 $ICFile = "$PSProfileDirectory\ic.ps1"
 Write-Information "$(LINE) Create ic file: $ICFile"
 set-content  $ICFile '. ([scriptblock]::Create($((Get-Clipboard) -join "`n")))'
-set-alias ic $ICFile -force -scope global -option AllScope
+set-alias ic $ICFile -force -scope global -ea Ignore
 # get-uptime;Get-WURebootStatus;Is-RebootPending?;Get-Uptime;PSCx\get-uptime;boottime.cmd;uptime.cmd
 #
 Function Get-BootTime { (Get-CimInstance win32_operatingsystem).lastbootuptime }
@@ -1697,34 +1667,9 @@ Function Global:prompt {
   write-host -nonewline "'$Loc'$Sig" -fore Cyan -back DarkGray
   ' '                                    # Return a normal 'space' to PS to suppress PS adding it's own prompt
 }
-<#
-# https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_prompts?view=powershell-6
-function prompt {
-  $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
-  $principal = [Security.Principal.WindowsPrincipal] $identity
-  $(if (test-path variable:/PSDebugContext) { '[DBG]: ' }
-    elseif($principal.IsInRole([Security.Principal.WindowsBuiltInRole]
-      "Administrator")) { "[ADMIN]: " }
-    else { '' }
-  ) + 'PS ' + $(Get-Location) +
-    $(if ($nestedpromptlevel -ge 1) { '>>' }) + '> '
-}
-function prompt {   # displays the history ID of the next command
-   # The at sign creates an array in case only one history item exists.
-   $history = @(get-history)
-   if($history.Count -gt 0)
-   {
-      $lastItem = $history[$history.Count - 1]
-      $lastId = $lastItem.Id
-   }
-   $nextCommand = $lastId + 1
-   $currentDirectory = get-location
-   "PS: $nextCommand $currentDirectory >"
-}
-# Debuggers https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_debuggers?view=powershell-6
-#>
-new-alias v 'C:\Program Files (x86)\VLC\vlc.exe' -force -scope Global
-;;
+
+If (Test-Path 'C:\Program Files (x86)\VLC\vlc.exe' -ea Ignore) { new-alias v 'C:\Program Files (x86)\VLC\vlc.exe' -force -scope Global }
+
 Function Global:prompt {
   If (!((Test-Path Function:\MaxPromptLength) -and
         (Get-Variable MaxPromptLength -ea ignore 2>$Null))) {
@@ -1944,9 +1889,9 @@ Function Set-GoAlias {
   }
   End {
     ForEach ($Name in $goHash.Keys) {
-      If (Get-Alias $Name -ea Ignore) { Remove-Item Alias:\$Name -Force -ea Ignore } 
+      If (Get-Alias $Name -ea Ignore) { Remove-Item Alias:\$Name -Force -ea Ignore }
       Try {
-        If ($goHash.$Name -and 
+        If ($goHash.$Name -and
             (Test-Path $goHash.$Name -PathType Container -ea Ignore)) {
           Write-Verbose "New-Alias $Name Set-GoLocation -force -scope Global -ea STOP"
                          New-Alias $Name Set-GoLocation -force -scope Global -ea STOP
@@ -1955,8 +1900,8 @@ Function Set-GoAlias {
     }
   }
 }
-Set-GoAlias Get-UserFolder 
-# CD process/service 
+Set-GoAlias Get-UserFolder
+# CD process/service
 
 Function Set-GoLocation {
   [Alias('gd','g','gdp','gop')]
@@ -1989,7 +1934,7 @@ Function Set-GoLocation {
       Param([string]$Arg='')
       If ($Arg) {
         ForEach ($Key in ($goKeys -match "^$Arg")) {
-          If (Test-Path ($Path = $goHash.$Key)) { Return $Path } 
+          If (Test-Path ($Path = $goHash.$Key)) { Return $Path }
         }
       }
     }
@@ -2003,21 +1948,21 @@ Function Set-GoLocation {
       } ElseIf ($Path) {
         Write-Verbose "Not in hash"
         $P, $Path = $Path
-        If ($goHash.Contains($P)     -and 
-            ($Location = $goHash.$P) -and 
+        If ($goHash.Contains($P)     -and
+            ($Location = $goHash.$P) -and
             (Test-Path $Location)) {
           Microsoft.PowerShell.Management\Set-Location $Location -ea STOP
         } ElseIf (Test-Path $P -PathType Container -ea Ignore) {
           Microsoft.PowerShell.Management\Set-Location $P -ea Ignore
         } ElseIf ($KeyPath = TestKeyPath $P) {
-          Microsoft.PowerShell.Management\Set-Location $KeyPath        
+          Microsoft.PowerShell.Management\Set-Location $KeyPath
         } Else {
           Write-Verbose "$(Get-ChildItem "$P*" -ea STOP -dir | Select -first 1 | ForEach FullName)"
           Microsoft.PowerShell.Management\Set-Location (
             Get-ChildItem "$P*" -ea STOP -dir | Select -first 1 | ForEach FullName
           )
-        } 
-      } 
+        }
+      }
       $AllArgs = @($Path) + $SubDirectory + $Args
       Write-Verbose "Finished with First part of first param [$AllArgs]"
       ForEach ($P in $AllArgs) {
@@ -2026,13 +1971,13 @@ Function Set-GoLocation {
           Write-Verbose "cd to $P"
           $Dir = Get-ChildItem -path .\ -filter "$P" -ea STOP -dir | Select -first 1 | ForEach FullName
           Write-Verbose "P: [$P] GCI: [$Dir]"
-          If ($Dir) { Microsoft.PowerShell.Management\Set-Location $Dir } 
+          If ($Dir) { Microsoft.PowerShell.Management\Set-Location $Dir }
         } ElseIf ($P) {
           Write-Verbose "cd to $P*"
           Write-Verbose "GCI: Get-ChildItem -path .\ `"$P*`" -ea STOP -dir | Select -first 1 | ForEach FullName"
           $Dir = Get-ChildItem -path .\ -filter "$P*" -ea STOP -dir | Select -first 1 | ForEach FullName
           Write-Verbose "P: [$P] GCI: [$Dir]"
-          If ($Dir) { Microsoft.PowerShell.Management\Set-Location $Dir } 
+          If ($Dir) { Microsoft.PowerShell.Management\Set-Location $Dir }
         }
       }
     }  catch {
@@ -2107,19 +2052,6 @@ Function fileformat([string[]]$path = @('c:\dev'), [string[]]$include=@('*.txt')
   Get-ChildItem -path $path -include $include -recurse -force -ea ignore | Select-Object -Object -prop basename,extension,@{Name='WriteTime';Expression={$_.lastwritetime -f "yyyy-MM-dd-ddd-HH:mm:ss"}},length,directory,fullname | export-csv t.csv -force
 }
 #region Script Diagnostic & utility Functions
-#region Definitions
-        # Function Get-CurrentLineNumber
-        # Function Get-CurrentFileName
-        # Alias   LINE    Get-CurrentLineNumber
-        # Alias __LINE__  Get-CurrentLineNumber
-        # Alias   FILE    Get-CurrentFileName
-        # Alias __FILE__  Get-CurrentFileName
-        # Function write-log
-        # Function ExitWithCode($exitcode)
-        # Function Make-Credential
-        # Function Get-ErrorDetail
-        # Function MyPSHost
-#endregion
 Function Get-PSBoundParameter {
   [CmdletBinding()][Alias('PSBoundParameter','BoundParameter','IsBound')]
   Param(
@@ -2187,40 +2119,7 @@ If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])
 write-warning "$(get-date -f 'HH:mm:ss') $(LINE) After PSReadline "
 
 Write-Information "$(get-date -f 'HH:mm:ss') $(LINE) Error count: $($Error.Count)"
-<#
-$SearchPath = (("$PSProfile;.;" + $env:path) -split ';' |
-   ForEach-Object { join-path $_ 'utility.ps1' } |
-   Where-Object { test-path $_ -ea ignore}) -split '\s*\n'
-ForEach ($Path in $SearchPath) {
-  try {
-    $Utility = Join-Path $Path 'utility.ps1'
-    if (Test-Path $utility) {
-      Write-Information "$(LINE) Source: $utility"
-      .  (Resolve-Path $utility[0]).path
-      Write-Information "$(LINE) Finished sourcing: $utility"
-      break
-    }
-  } catch {
-    Write-Information "$(LINE) Caught error importing $Utility"
-    # $_
-  }
-  Write-Information "$(LINE) utility.ps1 not found local or on path"
-}
-#>
-#filter dt { if (get-variable _ -scope 0) { get-sortabledate $_ -ea ignore } else { get-sortabledate $args[1] } }
 Function dt {param([string[]]$datetime=(get-date)) $datetime | ForEach-Object { get-date $_ -format 'yyyy-MM-dd HH:mm:ss ddd' } }
-#Function dt {param([string[]]$datetime=(get-date)) $datetime | ForEach-Object { get-sortabledate $_) -creplace '\dT'  } }
-#echo 'Install DOSKey'
-#doskey /exename=powershell.exe /macrofile=c:\bat\macrosPS.txt
-#del alias:where -ea ignore
-# Find-file
-# where.exe autohotkey.exe 2>$Null
-# $env:PathExt
-# Search books (or Search Directory Find Books Find Directory Files)  ## :HM:
-# Get-ChildItem F:\bt\Programming\Python\*,c:\users\herb\downloads\books\python\* -include *hacking*
-# join-path $Books 'Python' -resolve
-# Get-ChildItem F:\bt\Programming\Python\*,c:\users\herb\downloads\books\python\* -include *hack* | Select-Object @{Name='LastWrite';E={get-date ($_.LastWriteTime) -f 'yyyy-mm-dd HH:mm'}},Length,Name
-# $FileFormat = @{N='LastWrite';E={get-date ($_.LastWriteTime) -f 'yyyy-MM-dd HH:mm'}},'Length','Name';
 Function Find-File {
   [CmdletBinding()]param(
     [Parameter(Mandatory=$true)][string[]]$File,
@@ -2333,89 +2232,6 @@ If ($RDCMan) {
 # $objShortCut.TargetPath("path to program")
 # $objShortCut.Save()
 
-Function Set-EnvironmentVariable {
-  [CmdletBinding(SupportsShouldProcess,ConfirmImpact='Low')]
-  [Alias('Set-Environment','Set-Env','sev')]Param(
-    [string[]]$Variable=$Null,
-    [string[]]$Value='',
-    [string[]]$Scope='Local',
-    [switch]  $Local,
-    [switch]  $Process,
-    [switch]  $User,
-    [Alias('Computer','System')][switch]$Machine
-  )
-  Begin {
-    $Scope = Switch ($True) {
-      { $Local   } { 'Local'   }
-      { $Process } { 'Process' }
-      { $User    } { 'User'    }
-      { $Machine } { 'Machine' }
-      Default      { $Scope    }
-    }
-  }
-  Process {
-    ForEach ($Var in $Variable) {
-      If ($Var -is 'System.Collections.DictionaryEntry') {
-        $Var, $Val = $Var.Name, $Var.Value
-      } Else {
-        If ($Value) { $Val, $Value = $Value }
-        If ($Scope) { $Env, $Scope = $Scope }
-      }
-      If ($Env -in 'Computer','System') { $Env = 'Machine'}
-      If ($Var -as [String]) {
-        $Val = If ($Val = Get-Variable Val -ea 4 -value) { $Val -as 'string' } Else { '' }
-        Write-Verbose "Set environment [$Var=$Val] in [$Env] scope"
-        If ($PSCmdlet.ShouldProcess("$Env scope", "Set [$Var=$Val]")) {
-          If ($Env -eq 'Local') { Set-Item -Path "Env:$Var" -Value $Val }
-          Else { [Environment]::SetEnvironmentVariable($Var,$Val,$Env) }
-        }
-      }
-    }
-  }
-  End {}
-}
-Function Get-EnvironmentVariable {
-  [CmdletBinding()][Alias('Get-Environment','Get-Env','gev')]
-  Param(
-    [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
-    [Alias('Key','Name','Path')][string[]]$Variable=$Null,
-    [string[]]$Scope='Local',
-    [switch]  $Local,
-    [switch]  $Process,
-    [switch]  $User,
-    [Alias('Computer','System')][switch]$Machine
-  )
-  Begin {
-    $Scope = Switch ($True) {
-      { $Local   } { 'Local'   }
-      { $Process } { 'Process' }
-      { $User    } { 'User'    }
-      { $Machine } { 'Machine' }
-      Default      { $Scope    }
-    }
-  }
-  Process {
-    ForEach ($Var in $Variable) {
-      If ($Var -is 'System.Collections.DictionaryEntry') {
-        $Var, $Val = $Var.Name
-      } Else {
-        If ($Scope) { $Env, $Scope = $Scope }
-      }
-      If ($Env -in 'Computer','System') { $Env = 'Machine'}
-      If ($Var -as [String]) {
-        If ($Env -eq 'Local') {
-          Get-Item -Path "Env:$Var"
-        } Else {
-          If ($Null -ne ($Val = [Environment]::GetEnvironmentVariable($Var,$Env))) {
-            [System.Collections.DictionaryEntry]::New($Var, $Val)
-          }
-        }
-      }
-    }
-  }
-  End {}
-}
-
 If ($PSVersionTable.PSVersion -lt [version]'5.0.0.0') {
   Function Get-Clipboard {
     [CmdletBinding()]Param(
@@ -2447,11 +2263,7 @@ If ($PSVersionTable.PSVersion -lt [version]'5.0.0.0') {
 Function PSBoundParameter([string]$Parm) {
   return ($PSCmdlet -and $PSCmdlet.MyInvocation.BoundParameters[$Parm].IsPresent)
 }
-#endregion Definitions
-#endregion Script Diagnostic & utility Functions
-#---------------- Snippets
-# Set-Location (split-path -parent $PSProfile )
-# Get-Command *zip*,*7z*,*archive*  | Where-Object {$_.Source -notmatch '\.(cmd|exe|bat)'}
+
 <#
   $watcher = New-Object System.IO.FileSystemWatcher
   $watcher.Path = 'C:\temp\'
