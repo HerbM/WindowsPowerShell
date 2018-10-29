@@ -16,11 +16,11 @@ web:*.{html,css,js,htm,asp,mhtml,mht}
 # --colors=line:style:bold
 --colors=match:fg:cyan  
 --colors=match:style:intense 
---colors=line:fg:yellow 
+--colors=line:fg:white 
 --colors=line:style:intense
 --colors=path:fg:magenta 
 --colors=path:style:intense
---colors=column:fg:red  
+--colors=column:fg:green  
 --colors=column:style:intense
 
 
