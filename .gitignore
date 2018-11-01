@@ -1,4 +1,9 @@
 .\config\npp\config.xml
+.#*
+#*#
+*/#*#
+*/.#*#
+*/.#*
 Profile*post.ps1
 Profile*pre.ps1
 config.xml
