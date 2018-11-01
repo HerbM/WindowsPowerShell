@@ -81,7 +81,7 @@ Function Set-LocationFile {
   Push-Location
 #>
   [CmdletBinding(DefaultParameterSetName='Path', SupportsTransactions)] 
-  [Alias('cd','Set-Location')]Param(
+  [Alias('cd','slf')]Param(
     [Parameter(ParameterSetName='Path', Position=0, ValueFromPipeline=$true,
       ValueFromPipelineByPropertyName=$true)][string]$Path,
     [Parameter(ParameterSetName='Path', ValueFromRemainingArguments)]
@@ -89,7 +89,7 @@ Function Set-LocationFile {
     [Parameter(ParameterSetName='LiteralPath', Mandatory=$true, ValueFromPipelineByPropertyName=$true)]
       [Alias('PSPath')][string]$LiteralPath,
     [switch]$PassThru,
-    [Alias('PushDirectory','pdirectory')][switch]$PushLocation,
+    [Alias('p','PushDirectory','pdirectory')][switch]$PushLocation,
     [Alias('s','pp','providerpath','string')][switch]$Simple,
     [Parameter(ParameterSetName='Stack', ValueFromPipelineByPropertyName=$true)]
       [string]$StackName
