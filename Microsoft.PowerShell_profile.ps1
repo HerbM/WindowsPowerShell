@@ -1437,6 +1437,156 @@ Write-Information "$(LINE) Try: import-module -prefix cb PowerShellCookbook"
 # new-alias npdf 'C:\Program Files (x86)\Nitro\Reader 3\NitroPDFReader.exe' -force -scope Global
 # new-alias npdf 'C:\Program Files (x86)\Nitro\Reader 3\NitroPDFReader.exe' -force -scope Global
 If (Get-Alias npdf -ea Ignore) { Remove-Item Alias:npdf -ea Ignore }
+
+
+New-Alias pdf2text 'C:\Program Files\MiKTeX\miktex\bin\x64\miktex-pdftotext.exe' -force -scope Global
+New-Alias pandoc   'C:\Users\Herb\AppData\Local\Pandoc\pandoc.exe'               -force -scope Global
+<#
+.Synopsis sbcl runs the Steele-Bank Common Lisp REPL
+.Notes
+  Common runtime options:
+  --help                     Print this message and exit.
+  --version                  Print version information and exit.
+  --core <filename>          Use the specified core file instead of the default.
+  --dynamic-space-size <MiB> Size of reserved dynamic space in megabytes.
+  --control-stack-size <MiB> Size of reserved control stack in megabytes.
+
+Common toplevel options:
+  --sysinit <filename>       System-wide init-file to use instead of default.
+  --userinit <filename>      Per-user init-file to use instead of default.
+  --no-sysinit               Inhibit processing of any system-wide init-file.
+  --no-userinit              Inhibit processing of any per-user init-file.
+  --disable-debugger         Invoke sb-ext:disable-debugger.
+  --noprint                  Run a Read-Eval Loop without printing results.
+  --script [<filename>]      Skip #! line, disable debugger, avoid verbosity.
+  --quit                     Exit with code 0 after option processing.
+  --non-interactive          Sets both --quit and --disable-debugger.
+Common toplevel options that are processed in order:
+  --eval <form>              Form to eval when processing this option.
+  --load <filename>          File to load when processing this option.
+C:\build\SBCLisp\sbcl.exe --core (resolve-path sbcl.core) --dynamic-space-size 10000 --load quicklisp.lisp
+
+Mastering the Vim Language
+  Vim  as a language  Ben McCormick
+  carbon5 definitive guide text objects
+  Emacs VIM Atom can't replace Vim composability 
+  Use VIm.com stop configuration madness mastering motins and operators
+  StackOverFlow You problem with Vim is you don't grok Vi 
+  Relative Number
+
+  Surround
+  Commentary
+  ReplaceWithRegister
+  TitleCase
+  Sort-Motion
+  System-Copy
+  
+  Indent 
+  ENtire 
+  line 
+  ruby doc
+  
+  Wiki custom test objects 
+  
+  MikTex Pandoc 
+  fast.com
+  google tr
+  wikipedia 
+  emoj
+  youtube
+  wego   weather
+  whereami
+  wordnet?  american heritage
+  hacker typer
+  
+  Ace Windows
+  lorem ipsum 
+  Swiper   ctrl-s swiper    AceJump, ivy Avy Hydra 
+  help ido -> 
+  Ace Jump Mode (Avy) Ce la vie Emacs.com
+  
+  use-package
+    :init
+    :config
+    
+  
+#>
+Function sbcl {
+  [CmdletBinding(DefaultParameterSetName='Path')]
+  Param(
+    [Alias('LoadFiles','Files')][Parameter(ParameterSetName='Path',Position=0,
+      ValueFromPipeline,ValueFromPipelineByPropertyName)]
+    [string[]]$Path                               = @(),
+    [Parameter(ParameterSetName='LiteralPath', Mandatory,
+      ValueFromPipeLine, ValueFromPipelineByPropertyName)]
+    [Alias('PSPath')][string[]]$LiteralPath       = @(),
+    [string]$SBCL                                 = 'C:\build\SBCLisp\sbcl.exe',
+    [string]$Core                                 = 'C:\build\SBCLisp\sbcl.core',
+    [Int32]$DynamicSpaceSize                      = 10000,
+    [Parameter(ValueFromRemainingArguments)]
+    [string[]]$Arguments                          = @(),
+    [switch]$help                                 = $False,
+    [switch]$version                              = $False,
+    [switch]$nosysinit                            = $False,
+    [switch]$nouserinit                           = $False,
+    [Alias('nodebugger')][switch]$disabledebugger = $False,
+    [switch]$noprint                              = $False,
+    [switch]$quit                                 = $False,
+    [switch]$noninteractive                       = $False
+  )
+  Begin {
+    Write-Verbose "Arguments: $($Arguments -join ' ')"
+    $Extra = @(Switch ($True) {
+      { [boolean]$help            } { '--help'             }
+      { [boolean]$version         } { '--version'          }
+      { [boolean]$nosysinit       } { '--no-sysinit'       }
+      { [boolean]$nouserinit      } { '--no-userinit'      }
+      { [boolean]$disabledebugger } { '--disable-debugger' }
+      { [boolean]$noprint         } { '--noprint'          }
+      { [boolean]$quit            } { '--quit'             }
+      { [boolean]$noninteractive  } { '--non-interactive'  }
+    })  
+    $Core = If ($C = Resolve-Path $Core) {
+      $C.Path
+    } ElseIf ($C = Join-Path '.','C:\build\SBCLisp' $Core -ea Ignore -resolve) {
+      $C
+    } ElseIf ($C = Join-Path (Split-Path $SBCL) 'sbcl.core' -ea Ignore -resolve) {
+      $C 
+    } Else {  
+      $Core 
+    }
+    $CoreParam = @('--core', ($Core -replace '\\', '/'))
+    $Extra2 = @(Switch ($True) {
+      { [boolean]$DynamicSpaceSize } { '--dynamic-space-size', $DynamicSpaceSize }
+      { [boolean]$controlstacksize } { '--control-stack-size', $controlstacksize } 
+      { [boolean]$sysinit          } { '--sysinit',            $sysinit          } 
+      { [boolean]$userinit         } { '--userinit',           $userinit         } 
+      { [boolean]$script           } { '--script',             $script           } 
+      { [boolean]$eval             } { '--eval',               $eval             } 
+      { [boolean]$load             } { '--load',               $load             } 
+    })
+    $Path = @(If ($Path) { $Path = '--load', $Load } Else { @() })
+    $Parameters = @(ForEach ($A in $Arguments) {
+      If ($A -match '^[-/][^-]' ) { 
+        $A -replace '^[-/]+', '--' 
+      } Else { $A }
+    })
+    # --core (resolve-path sbcl.core) --dynamic-space-size 10000 --load quicklisp.lisp
+  }
+  Process {
+    $Parameters = $CoreParam + $Path + $Parameters + $Extra + $Extra2
+    ForEach ($parm in 'Core','DynamicSpaceSize','load','literalpath','path') {
+      If ($PSBoundParameters.ContainsKey[$parm]) { $Null = $PSBoundParameters.Remove[$parm] }
+    }
+    $earg = 'C:\Program Files\WindowsPowerShell\Modules\Pscx\3.2.1.0\Apps\EchoArgs.exe'
+    Write-Verbose "EArg $($Parameters.getType()): & $EArg $($Parameters -join ' ')"
+    Write-Verbose "SBCL $($Parameters.getType()): & $SBCL $($Parameters -join ' ')"
+    & $earg @Parameters
+    & $SBCL @Parameters
+  }
+  End {} #-force -scope Global
+}
+
 Function npdf {
   [CmdletBinding(DefaultParameterSetName='Path')]
   Param(
@@ -1464,6 +1614,8 @@ Function npdf {
   }
   End {} #-force -scope Global
 }
+
+
 Function esf {
   $parms  = @('-dm')
   $target = @()
