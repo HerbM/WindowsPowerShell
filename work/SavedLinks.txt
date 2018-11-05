@@ -54,3 +54,34 @@ https://www.slant.co/topics/1552/viewpoints/7/~terminal-emulators-for-windows~co
 ConsoleZ - What are the best terminal emulators for Windows? - Slant
 http://ridicurious.com/2018/04/06/powershell-scripting-guide-to-python-2/
 PowerShell Scripting guide to Python | Part-2 | RidiCurious.com
+
+
+Python Learning Links
+=====================
+https://t.co/86nJJeioJr https://www.edx.org/course/subject/data-science
+https://t.co/qgByCxC4xm https://www.edx.org/course/cs50s-introduction-computer-science-harvardx-cs50x
+Machine learning book of @rasbt 
+https://t.co/oWNkkfpKnj Udacity Intro to Computer Science free
+ taking the @fastdotai ML class as the tangible goal combined with  Looks GOOD 
+  I had also taken @CodeAcadamy and some @MITOCW python courses but it never stuck until fastai
+https://twitter.com/alenushka/status/1057107340938235905  
+Harvard edX
+https://twitter.com/kaggle/status/1058026096191565824  KAGGLE
+@dabeaz Python Cookbook for a wealth of examples and explanation. 
+  Close second @katyhuff and @scopatz book for putting the entire development process into context.
+https://t.co/3tPz7Vfb0B  https://www.dataquest.io/m/5/modules Nice looking courses
+https://t.co/Gm7A4SoNLG  Bootcamp $11 (now) 0 to Hero Python 3
+https://t.co/pVJ6qYdPvu  Python 3 Masterclass
+n @DataCamp and
+
+https://t.co/59JtF1trPS
+book by @AlSweigart. 
+https://t.co/ox6pONESWE
+@jcjohnss Python-Numpy tutorial notebook from CS-231n (http://cs231n.github.io/python-numpy-tutorial/ …) imo is the coolest tutorial by far. Introduces some of my favourite Python lang features like list/dictionary comprehension very early. Teaches everything one needs to know as a ML student in 30 mins.
+https://twitter.com/Sentdex
+https://t.co/BS76M51JV3
+Codecademy and the interactive python book/website
+https://t.co/V3UNaRyrvp
+@CoreyMSchafer has a wonderful series (among other things) on Python OOP. https://www.youtube.com/watch?v=ZDa-Z5JzLYM&list=PL-osiE80TeTsqhIuOqKhwlXsIBIdSeYtc …
+This is what I recommend to my students.
+Check out @math_rachel’s Tweet: https://twitter.com/math_rachel/status/1058089708155166720?s=09

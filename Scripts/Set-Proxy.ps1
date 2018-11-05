@@ -163,26 +163,26 @@ Function Set-GitProxy {
     [Parameter(ParameterSetName='Proxy')][string]$UserName = '',
     [Parameter(ParameterSetName='HTTP')]
     [Parameter(ParameterSetName='Proxy')][switch]$CurrentUser,
-    [Parameter(ParameterSetName='Reset')][switch]$Reset
+    [Alias('Remove','Disable')][Parameter(ParameterSetName='Reset')][switch]$Reset
   )
   If ($PSBoundParameters.ContainsKey('CurrentUser') -and $CurrentUser) { 
     $UserName = whoami 
   }
   If ($UserName) {   
-    $UserName = ($UserName -replace '\b\\\b','\\') + '@'
+    $UserName   = ($UserName -replace '\b\\\b','\\') + '@'
     $HTTPProxy  = $HTTPProxy -replace  '//([^@]+)$', "//$UserName$1"
     $HTTPSProxy = $HTTPSProxy -replace '//([^@]+)$', "//$UserName$1"
   }  
   If ($Reset) {
-    remove-item Env:Git*,Env:HTTP*,Env:credential_helper* -ea ignore
+    remove-item Env:\Git*,Env:\HTTP*,Env:\credential_helper* -ea ignore
   } else {
     Write-Verbose "UserName: $UserName"
-    $Env:credential_helper     = 'wincred'
-    $Env:GIT_credential_helper = 'wincred'
-    $Env:GIT_HTTP_PROXY        = "$HTTPProxy"
-    $Env:GIT_HTTPS_PROXY       = "$HTTPSProxy" 
-    $Env:http_proxy            = "$HTTPProxy"
-    $Env:https_proxy           = "$HTTPSProxy"
+    $Env:\credential_helper     = 'wincred'
+    $Env:\GIT_credential_helper = 'wincred'
+    $Env:\GIT_HTTP_PROXY        = "$HTTPProxy"
+    $Env:\GIT_HTTPS_PROXY       = "$HTTPSProxy" 
+    $Env:\http_proxy            = "$HTTPProxy"
+    $Env:\https_proxy           = "$HTTPSProxy"
   }
 }
 
@@ -213,7 +213,14 @@ Function Set-HTTPProxy {
 If ((!$Enable) -and $MyInvocation.Line -match '\s*\.(?![\w\\.\"''])') {
   Write-Warning "$(FLINE) Dot source, load functions, and exit"
 } Else {
-  If ($Proxy -and !$Remove) { 
+  If ($Remove) { 
+    Write-Warning "$(FLINE) Reset proxy"
+    Set-DefaultProxy @$PSBoundParameters
+    Set-InternetProxy -State Disable
+    If (Get-Command setproxy.exe -ea Ignore) { setproxy.exe /proxy:disable }
+    Set-HTTPProxy -Disable    
+    Set-GitProxy  -Reset
+  } ElseIf ($Proxy) { 
     Write-Warning "$(FLINE) Setting proxy"
     Set-DefaultProxy # @$PSBoundParameters
     Set-InternetProxy -Enable # -url $Proxy
@@ -222,13 +229,6 @@ If ((!$Enable) -and $MyInvocation.Line -match '\s*\.(?![\w\\.\"''])') {
     }  
     Set-HTTPProxy
     Set-GitProxy
-  } ElseIf ($Remove) { 
-    Write-Warning "$(FLINE) Reset proxy"
-    Set-DefaultProxy @$PSBoundParameters
-    Set-InternetProxy -State Disable
-    If (Get-Command setproxy.exe -ea Ignore) { setproxy.exe /proxy:disable }
-    Set-HTTPProxy -Disable    
-    Set-GitProxy  -Reset
   } Else {
     Write-Warning "$(FLINE) Setting proxy"
     Set-DefaultProxy # @$PSBoundParameters
@@ -296,10 +296,14 @@ Function Get-HTTPSecurity {
     } 
   }
 }
-<#
-String pattern = @"^[-/]+(\w+)(?:(?:[:=]+)(.+))?";
-foreach (Match m in Regex.Matches(s, pattern)) {
-  String name  = Groups[1].Value;
-  String value = Groups[2].Value;
+
+Function Get-Proxy {
+  [CmdletBinding()] param(
+  )
+  get-httpsecurity | Select Default*,PSPath
+  Get-HttpProxy 
+  dir ENV:*git*,Env:*http*
+  Get-DefaultProxy
+  Get-InternetProxy
 }
-#>
+
