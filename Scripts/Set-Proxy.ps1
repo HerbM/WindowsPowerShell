@@ -169,20 +169,32 @@ Function Set-GitProxy {
     $UserName = whoami 
   }
   If ($UserName) {   
-    $UserName   = ($UserName -replace '\b\\\b','\\') + '@'
-    $HTTPProxy  = $HTTPProxy -replace  '//([^@]+)$', "//$UserName$1"
+    $UserName   = ($UserName  -replace '\b\\\b','\\') + '@'
+    $HTTPProxy  = $HTTPProxy  -replace '//([^@]+)$', "//$UserName$1"
     $HTTPSProxy = $HTTPSProxy -replace '//([^@]+)$', "//$UserName$1"
+    Set-EnvironmentVariable credential_helper     '' Process 
+    Set-EnvironmentVariable GIT_credential_helper '' Process 
+    Set-EnvironmentVariable GIT_HTTP_PROXY        '' Process 
+    Set-EnvironmentVariable GIT_HTTPS_PROXY       '' Process 
+    Set-EnvironmentVariable http_proxy            '' Process 
+    Set-EnvironmentVariable https_proxy           '' Process 
   }  
   If ($Reset) {
-    remove-item Env:\Git*,Env:\HTTP*,Env:\credential_helper* -ea ignore
+    remove-item Env:\Git*,Env:\HTTP*,Env:\credential_helper* -ea ignore -force
   } else {
     Write-Verbose "UserName: $UserName"
-    $Env:\credential_helper     = 'wincred'
-    $Env:\GIT_credential_helper = 'wincred'
-    $Env:\GIT_HTTP_PROXY        = "$HTTPProxy"
-    $Env:\GIT_HTTPS_PROXY       = "$HTTPSProxy" 
-    $Env:\http_proxy            = "$HTTPProxy"
-    $Env:\https_proxy           = "$HTTPSProxy"
+    Set-Variable Env:\credential_helper     -value 'wincred'     -force -scope Global 
+    Set-Variable Env:\GIT_credential_helper -value 'wincred'     -force -scope Global 
+    Set-Variable Env:\GIT_HTTP_PROXY        -value "$HTTPProxy"  -force -scope Global 
+    Set-Variable Env:\GIT_HTTPS_PROXY       -value "$HTTPSProxy" -force -scope Global 
+    Set-Variable Env:\http_proxy            -value "$HTTPProxy"  -force -scope Global 
+    Set-Variable Env:\https_proxy           -value "$HTTPSProxy" -force -scope Global 
+    Set-EnvironmentVariable credential_helper     'wincred'     Process 
+    Set-EnvironmentVariable GIT_credential_helper 'wincred'     Process 
+    Set-EnvironmentVariable GIT_HTTP_PROXY        "$HTTPProxy"  Process 
+    Set-EnvironmentVariable GIT_HTTPS_PROXY       "$HTTPSProxy" Process 
+    Set-EnvironmentVariable http_proxy            "$HTTPProxy"  Process 
+    Set-EnvironmentVariable https_proxy           "$HTTPSProxy" Process 
   }
 }
 

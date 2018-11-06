@@ -459,7 +459,9 @@ Function Get-NewLine { [environment]::NewLine }; new-alias NL Get-NewLine -force
 if (! (Get-Command write-log -type Function,cmdlet,alias -ea ignore)) {
   new-alias write-log write-verbose -force -scope Global -ea ignore
 }
+
 #(dir C:\Util\*64.???).fullname | Where { $_ -replace '64(?=\.)' | dir -name -ea ignore } | ForEach-Object { New-Alias $($Name -replace '\.exe') $_ -force -Scope Global }
+new-alias em       C:\emacs\bin\runemacs.exe                    -force -scope Global -ea ignore
 new-alias kp      'C:\Program Files (x86)\KeePass2\KeePass.exe' -force -scope Global -ea ignore
 new-alias KeePass 'C:\Program Files (x86)\KeePass2\KeePass.exe' -force -scope Global -ea ignore
 new-alias rdir    Remove-Item  -force -scope Global -ea ignore
@@ -473,6 +475,101 @@ new-alias typedir Get-Content  -force -scope Global -ea ignore
 new-alias ldir    less         -force -scope Global -ea ignore
 new-alias lessdir less         -force -scope Global -ea ignore
 new-alias l       less         -force -scope Global -ea ignore
+
+<#
+.Synopsis 
+  Start Emacs using server, start server if not running
+
+.Notes  
+    ;;  This makes Emacs ignore the "-e (make-frame-visible)" 
+    ;;  that it gets passed when started by emacsclientw.
+    ;;
+    ;(add-to-list 'command-switch-alist '("(make-frame-visible)" .
+    ;			     (lambda (s))))
+    -V, --version           Just print version info and return
+-H, --help              Print this usage information message
+-nw, -t, --tty          Open a new Emacs frame on the current terminal
+-c, --create-frame      Create a new frame instead of trying to
+                        use the current Emacs frame
+-F ALIST, --frame-parameters=ALIST
+                        Set the parameters of a new frame
+-e, --eval              Evaluate the FILE arguments as ELisp expressions
+-n, --no-wait           Don't wait for the server to return
+-q, --quiet             Don't display messages on success
+-d DISPLAY, --display=DISPLAY
+                        Visit the file in the given display
+--parent-id=ID          Open in parent window ID, via XEmbed
+-f SERVER, --server-file=SERVER
+                        Set filename of the TCP authentication file
+-a EDITOR, --alternate-editor=EDITOR
+                        Editor to fallback to if the server is not running
+                        If EDITOR is the empty string, start Emacs in daemon
+                        mode and try connecting again
+#>                        
+Function remacs {
+  [CmdletBinding(DefaultParameterSetName='Path', SupportsShouldProcess, SupportsTransactions)]
+  param(
+    [Parameter(Position=0, ParameterSetName='Path',
+      ValueFromPipeline,ValueFromPipelineByPropertyName)]
+      [string[]]$Path=@(Get-ChildItem | Where-Object PSIsContainer -eq $False),
+    [Parameter(Position=0, ParameterSetName='LiteralPath', Mandatory=$true, 
+      ValueFromPipelineByPropertyName=$true)][Alias('PSPath')][string[]]$LiteralPath,
+    [string[]]$Include,
+    [string[]]$Exclude,
+    [parameter(ValueFromRemainingArguments=$true)]$Remaining,
+    [switch]$Help    = $False,
+    [switch]$Version = $False,
+    [switch]$Test    = $False
+  )
+  Begin {
+    Set-StrictMode -Version Latest
+    $Process       = $True
+    $EmacsPath     = "c:\emacs\bin\"
+    $EmacsClient   = "$EmacsPath\emacsclientw.exe" 
+    $EmacsCLI      = "$EmacsPath\emacsclient.exe" 
+    $EmacsServer   = "$EmacsPath\runemacs.exe" 
+    $ServerOptions = '-n', "--alternate-editor=$EmacsServer" 
+    Write-Verbose "Property set: $($PSCmdlet.ParameterSetName)"
+  }
+  Process {
+    If ($Help) {
+      $Process = $False
+      & $EmacsCLI --help
+      & $EmacsCLI --version
+    } ElseIf ($Version) {
+      & $EmacsCLI --version
+      $Process = $False
+    } ElseIf ($Process) {
+      If ($PSBoundParameters.ContainsKey('LiteralPath')) {
+        $Path = @($PSBoundParameters.LiteralPath)
+      }
+      $Files = @(ForEach ($Item in $Path) {
+        If ($Item -match '(.*):?(\+\d+(?::\d+)?$)') {
+          $Matches[2]         
+          If ($Matches[1]) {
+            $Matches[1].trim(';: ')
+          } Else {
+            $ForEach.MoveNext()
+            $ForEach.Current 
+          }
+        } ElseIf (Test-Path $Item) { Get-ChildItem $Item -ea Ignore }
+        Else { $Item }
+      })
+      $Parameters = $Remaining + $Files + $ServerOptions
+      Write-Verbose "& $EmacsClient $Parameters"
+      If ($Test) {
+        & 'echoargs'   @Parameters 
+      } Else {
+        If ($Verbose) {
+        & 'echoargs'   @Parameters 
+        }
+        & $EmacsClient @Parameters 
+      }
+    }
+  }
+  End { }
+}
+
 Function Set-ItemTime {
   [CmdletBinding(DefaultParameterSetName='Path', SupportsShouldProcess, SupportsTransactions)]
    param(
