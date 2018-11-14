@@ -481,12 +481,12 @@ new-alias l       less         -force -scope Global -ea ignore
   Start Emacs using server, start server if not running
 
 .Notes  
-    ;;  This makes Emacs ignore the "-e (make-frame-visible)" 
-    ;;  that it gets passed when started by emacsclientw.
-    ;;
-    ;(add-to-list 'command-switch-alist '("(make-frame-visible)" .
-    ;			     (lambda (s))))
-    -V, --version           Just print version info and return
+;;  This makes Emacs ignore the "-e (make-frame-visible)" 
+;;  that it gets passed when started by emacsclientw.
+;;
+;(add-to-list 'command-switch-alist '("(make-frame-visible)" .
+;			     (lambda (s))))
+-V, --version           Just print version info and return
 -H, --help              Print this usage information message
 -nw, -t, --tty          Open a new Emacs frame on the current terminal
 -c, --create-frame      Create a new frame instead of trying to
@@ -505,26 +505,29 @@ new-alias l       less         -force -scope Global -ea ignore
                         Editor to fallback to if the server is not running
                         If EDITOR is the empty string, start Emacs in daemon
                         mode and try connecting again
-#>                        
+#>
 Function remacs {
   [CmdletBinding(DefaultParameterSetName='Path', SupportsShouldProcess, SupportsTransactions)]
-  param(
+  [Alias('emacs','em','e')]param(
     [Parameter(Position=0, ParameterSetName='Path',
       ValueFromPipeline,ValueFromPipelineByPropertyName)]
-      [string[]]$Path=@(Get-ChildItem | Where-Object PSIsContainer -eq $False),
+      [string[]]$Path=@(),
     [Parameter(Position=0, ParameterSetName='LiteralPath', Mandatory=$true, 
       ValueFromPipelineByPropertyName=$true)][Alias('PSPath')][string[]]$LiteralPath,
-    [string[]]$Include,
-    [string[]]$Exclude,
+                [string]$Filter  = '',
+                [string]$Include = '',
+                [string]$Exclude = '',
     [parameter(ValueFromRemainingArguments=$true)]$Remaining,
-    [switch]$Help    = $False,
-    [switch]$Version = $False,
-    [switch]$Test    = $False
+    [Alias('H')][switch]$Help    = $False,
+    [Alias('V')][switch]$Version = $False,
+                [switch]$Test    = $False
   )
   Begin {
     Set-StrictMode -Version Latest
+    $Verbose = $PSBoundParameters.ContainsKey('Verbose') -and $PSBoundParameters.Verbose 
+    If ($PSBoundParameters.ContainsKey('Verbose')) { $PSBoundParameters.Remove('Verbose') }
     $Process       = $True
-    $EmacsPath     = "c:\emacs\bin\"
+    $EmacsPath     = "c:\emacs\bin"
     $EmacsClient   = "$EmacsPath\emacsclientw.exe" 
     $EmacsCLI      = "$EmacsPath\emacsclient.exe" 
     $EmacsServer   = "$EmacsPath\runemacs.exe" 
@@ -537,8 +540,8 @@ Function remacs {
       & $EmacsCLI --help
       & $EmacsCLI --version
     } ElseIf ($Version) {
-      & $EmacsCLI --version
       $Process = $False
+      & $EmacsCLI --version
     } ElseIf ($Process) {
       If ($PSBoundParameters.ContainsKey('LiteralPath')) {
         $Path = @($PSBoundParameters.LiteralPath)
@@ -552,10 +555,16 @@ Function remacs {
             $ForEach.MoveNext()
             $ForEach.Current 
           }
-        } ElseIf (Test-Path $Item) { Get-ChildItem $Item -ea Ignore }
+        } ElseIf (Test-Path $Item) {
+          $Parms = @{}        
+          $Parms += If ($Filter)  { @{ Filter  = $Filter  }} Else { @{} }
+          $Parms += If ($Exclude) { @{ Exclude = $Exclude }} Else { @{} }
+          $Parms += If ($Include) { @{ Include = $Include }} Else { @{} }
+          Get-ChildItem $Item -ea Ignore @Parms
+        }
         Else { $Item }
       })
-      $Parameters = $Remaining + $Files + $ServerOptions
+      $Parameters = @() + $Remaining + $Files + $ServerOptions
       Write-Verbose "& $EmacsClient $Parameters"
       If ($Test) {
         & 'echoargs'   @Parameters 
@@ -570,6 +579,30 @@ Function remacs {
   End { }
 }
 
+Function Get-Line {
+  [CmdletBinding()][Alias('lines','clean')]
+  param(
+    [Alias('strings','lines')][Parameter(ValueFromPipeline)]
+                                   [string[]]$InputObject     = (Get-ClipBoard),
+    [Alias('SplitOn')]               [string]$Pattern         = '[\r\n]+',
+    [Alias('Ignore')]              [string[]]$Exclude         = @(''),
+    [Alias('OnlyIf')]              [string[]]$Include         = @(''),
+    [Alias('Blanks','AllowBlanks')]  [switch]$AllowBlankLines = $False
+  ) 
+  Begin {
+    If ($Exclude) { $Exclude = '(' + ($Exclude -join ')|(') + ')' }
+    If ($Include) { $Include = '(' + ($Include -join ')|(') + ')' }
+  }
+  Process {
+    ($InputObject -split $Pattern).trim().where{
+      ($_ -or $AllowBlankLines)               -and
+      (!$Exclude -or ($_ -notmatch $Exclude)) -and
+      (!$Include -or ($_ -match    $Include))
+    }
+  }
+  End {}
+}
+
 Function Set-ItemTime {
   [CmdletBinding(DefaultParameterSetName='Path', SupportsShouldProcess, SupportsTransactions)]
    param(
@@ -582,9 +615,9 @@ Function Set-ItemTime {
      [Parameter(Position=1)][DateTime]$Date=(Get-Date),
      [string[]]$Property = @('LastWriteTime'),
        [switch]$PassThru,
-       [string]$Filter,
-     [string[]]$Include,
-     [string[]]$Exclude
+       [string]$Filter  = '',
+     [string[]]$Include = '',
+     [string[]]$Exclude = ''
      #[switch]${Force},
      #[Parameter(ValueFromPipelineByPropertyName=$true)]
      #[pscredential]
@@ -1088,14 +1121,14 @@ New-Alias Shadow Start-Shadow -force
 
 Function Set-EnvironmentVariable {
   [CmdletBinding(SupportsShouldProcess,ConfirmImpact='Low')]
-  [Alias('Set-Environment','Set-Env','sev')]Param(
-    [string[]]$Variable=$Null,
-    [string[]]$Value='',
-    [string[]]$Scope='Local',
-    [switch]  $Local,
-    [switch]  $Process,
-    [switch]  $User,
-    [Alias('Computer','System')][switch]$Machine
+  [Alias('Set-Environment','Set-Env','sev','setenv')]Param(
+    [string[]]$Variable                          = $Null,
+    [string[]]$Value                             = @(),
+    [string[]]$Scope                             = 'Local',
+    [switch]  $Local                             = $False,
+    [switch]  $Process                           = $False,
+    [switch]  $User                              = $False,
+    [Alias('Computer','System')][switch]$Machine = $False
   )
   Begin {
     $Scope = Switch ($True) {
@@ -1127,17 +1160,20 @@ Function Set-EnvironmentVariable {
   }
   End {}
 }
+
 Function Get-EnvironmentVariable {
-  [CmdletBinding()][Alias('Get-Environment','Get-Env','gev')]
+  [CmdletBinding()][Alias('Get-Environment','Get-Env','gev','env')]
+  [OutputType([String],[String[]],
+    [System.Collections.DictionaryEntry],[System.Collections.DictionaryEntry[]])]
   Param(
     [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
-    [Alias('Key','Name','Path')][string[]]$Variable=$Null,
-    [string[]]$Scope='Local',
-    [switch]  $Local,
-    [switch]  $Process,
-    [switch]  $User,
-    [switch]  $Value,
-    [Alias('Computer','System')][switch]$Machine
+    [Alias('Key','Name','Path')][string[]]$Variable = $Null,
+    [string[]]$Scope                                = 'Local',
+    [switch]  $Local                                = $False,
+    [switch]  $Process                              = $False,
+    [switch]  $User                                 = $False,
+    [switch]  $Value                                = $False,
+    [Alias('Computer','System')][switch]$Machine    = $False
   )
   Begin {
     $Scope = Switch ($True) {
@@ -1145,7 +1181,7 @@ Function Get-EnvironmentVariable {
       { $Process } { 'Process' }
       { $User    } { 'User'    }
       { $Machine } { 'Machine' }
-      Default      { $Scope    }
+      DEFAULT      { $Scope    }
     }
   }
   Process {
@@ -1173,7 +1209,7 @@ Function Get-EnvironmentVariable {
 }
 
 Function Get-CommandPath {
-  [CmdletBinding()]param(
+  [CmdletBinding()][OutputType([String],[String[]])]param(
     [Alias('Prepend','Before')]   [string[]]$Prefix = '',
     [Alias('Append', 'After' )]   [string[]]$Suffix = '',
                                     [switch]$Unique,
@@ -1191,11 +1227,11 @@ Function Get-CommandPath {
     { [Boolean]$Process } { Get-EnvironmentVariable 'Path' -Value -Process }
     Default               { $Env:Path                                      }
   }
-  $LengthPrior = ($Path).Length
-  $Path        =  $Path -split ';' | Where Length
-  $CountPrior  = $Path.Count
-  $Path        = $Prefix + $Path + $Suffix | Where Length
-  If ($Unique)  { $Path = $Path | Select -Unique:$Unique }
+  $LengthPrior  = $Path.Length
+  $Path         = $Path -split ';' | Where-Object Length
+  $CountPrior   = $Path.Count
+  $Path         = $Prefix + $Path + $Suffix | Where-Object Length
+  If ($Unique)  { $Path = $Path | Select-Object -Unique:$Unique }
   If ($Resolve) { $Path = Resolve-Path $Path -ea Ignore  }
   $Joined = $Path -join ';'
   If ($Statistics) {
@@ -2117,6 +2153,7 @@ $goHash = [ordered]@{
   txt        = 'c:\txt'
 }
 # Import-Module "$Home\Documents\WindowsPowerShell\Set-LocationFile.ps1"
+. "$Home\Documents\WindowsPowerShell\Scripts\Set-LocationFile.ps1"
 
 Function Set-GoAlias {
   [CmdletBinding()]param(
