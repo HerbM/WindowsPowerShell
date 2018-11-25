@@ -818,6 +818,7 @@ Function Get-RegKey {
   Begin {
     $Keys = New-Object System.Collections.ArrayList
     If ($QuoteOnly) { $Quote = $True }
+    If ($Double -or $Single) { $Quote = $True }
   }
   Process {
     ForEach ($K in $key) {

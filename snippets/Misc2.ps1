@@ -2,7 +2,17 @@
 # SetProxy.exe plus PowerShell to set and disable proxy
 #
 
-# -k, --insecure        Allow conda to perform "insecure" SSL connections &
+#AutoHotKey 2.0 https://autohotkey.com/download/2.0/ 2018-10-05 on 2018-11-11
+#
+#https://github.com/PowerShellOrg/pesterbookcode
+#'string','STRING','String' -match '(String)(?<!(?-i:String))'
+#'string','STRING','String' -replace '(String)(?<!(?-i:String))', 'String'
+#https://github.com/dfinke/PowerShellHumanizer.git
+#https://github.com/adamdriscoll/snek.git  Use Python from PowerShell
+#https://github.com/PowerShellOrg/pesterbookcode.git
+
+
+# -k, --insecure        Allow conda to perform "insecure" SSL connections &  Anaconda/Conda update upgrade
 #                       transfers. Equivalent to setting 'ssl_verify' 'false'
 conda update --yes -n base conda   # Updating Python and Anaconda Conda 
 conda update --yes --all
@@ -1328,7 +1338,7 @@ https://github.com/manojlds/pslinq
 
 https://en.wikiversity.org/wiki/Windows_PowerShell/Functions
 
-Get-WMIobject win32_networkadapterconfiguration | where {$_.IPEnabled -eq “True”} | Select-Object pscomputername,ipaddress,defaultipgateway,ipsubnet,dnsserversearchorder,winsprimaryserver | format-Table -Auto
+Get-WMIobject win32_networkadapterconfiguration | where {$_.IPEnabled -eq??Tru??} | Select-Object pscomputername,ipaddress,defaultipgateway,ipsubnet,dnsserversearchorder,winsprimaryserver | format-Table -Auto
 Get-AdDomainController -Filter * | Select hostname,isglobalcatalog | Format-table -auto
 Search-ADAccount -PasswordNeverExpires | Select-Object Name, Enabled 
 cls;while($true){get-date;$t = New-Object Net.Sockets.TcpClient;try {$t.connect("10.45.2.68",3389);write-host "RDP is up"}catch{write-Host "RDP is down"}finally{$t.close();sleep 30}}
