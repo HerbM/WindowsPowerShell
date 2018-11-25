@@ -1784,21 +1784,145 @@ If (Test-Path ($CCL = 'C:\Users\Herb\downloads\ccl\wx86cl64.exe') -ea Ignore) {
   New-Alias ccl $CCL -Force -Scope Global -ea Ignore
 }
 
+<#
+.Notes
+/f or /force Launch unconditionally, skipping any warning dialogs. This has the same effect as #SingleInstance Off. Yes 
+/r or /restart Indicate that the script is being restarted (this is also used by the Reload command, internally). Yes 
+/ErrorStdOut Send syntax errors that prevent a script from launching to stderr rather than displaying a dialog. See #ErrorStdOut for details. This can be combined with /iLib to validate the script without running it. Yes 
+/Debug [v1.0.90+]: Connect to a debugging client. For more details, see Interactive Debugging. No 
+/CPn [v1.0.90+]: Overrides the default codepage used to read script files. For more details, see Script File Codepage. No 
+/iLib "OutFile" 
+[v1.0.47+]: AutoHotkey loads the script but does not run it. For each script file which is auto-included via the library mechanism, two lines are written to the file specified by OutFile. 
+These lines are written in the following format, 
+where LibDir is the full path of the Lib folder and LibFile is the filename of the library:
+#Include LibDir\
+#IncludeAgain LibDir\LibFile.ahk
+S↓
+If the output file exists, it is overwritten. OutFile can be * to write the output to stdout.
+If the script contains syntax errors, the output file may be empty. 
+The process exit code can be used to detect this condition; if there is a syntax error, the exit code is 2. 
+The /ErrorStdOut switch can be used to suppress or capture the error message.
+#>
 Function ahk {
-  if ($args[0]) { C:\util\AutoHotKey\autohotkey.exe @args               }
-  else          { C:\util\AutoHotKey\autohotkey.exe /r "c:\bat\ahk.ahk" }
-};
-Function ahk {
-  [CmdletBinding()]param([string[]]$Path=@('c:\bat\ahk.ahk'))
-  $argx = $args
-  write-verbose "Path [$($Path -join '] [')] Argc $($argx.count): [$($args -join '], [')]"
-  #if (!$argx.count) { $argx = [string[]]@('/r') }
-  [string[]]$a = if ($argx.count) { $argx } else { @('/r') }
-  write-verbose "ArgC: $($argx.count) [$($argx -join '], [')]"
-  $path | ForEach-Object { C:\util\AutoHotKey\AutoHotkey.exe $_ @a }
+  [CmdletBinding(DefaultParameterSetName='Path', SupportsShouldProcess)]
+  [Alias('a','autohotkey')]
+  param(
+    [Parameter(Position=0, ParameterSetName='Path',
+      ValueFromPipeline,ValueFromPipelineByPropertyName)]
+      [Alias('ScriptFile','FileName')][string[]]$Path=@('c:\bat\ahk.ahk'),
+    [Parameter(Position=0, ParameterSetName='LiteralPath', Mandatory=$true, 
+      ValueFromPipelineByPropertyName=$true)][Alias('PSPath')][string[]]$LiteralPath,
+    [parameter(ValueFromRemainingArguments=$true)]$Parameters,
+    [Alias('h')]            [switch]$Help        = $Null,
+    [Alias('cpage')]        [Uint16]$CodePage    = $Null,
+    [Alias('v2')]           [switch]$Version2    = $False,
+    [Alias('StdOut')]       [switch]$ErrorStdOut = $False,
+    [Alias('dbg','debu')]   [switch]$Debugging   = $False,
+    [Alias('nr','NoReload')][switch]$NoRestart   = $False
+  )
+  Begin {
+    Set-StrictMode -Version Latest
+    $AHKPath   = If ($Version2)      { 'C:\util\AutoHotKey2'  } 
+                 Else                { 'C:\util\AutoHotKey' }
+    $AHK       = Join-Path $AHKPath 'AutoHotKey.exe'             
+    $AHKHelp   = Join-Path $AHKPath 'AutoHotKey.chm'             
+    $Verbose   = $PSBoundParameters.ContainsKey('Verbose') -and $PSBoundParameters.Verbose
+    $Switches  = @(If ($CodePage)    { "/CP$CodePage" })
+    $Switches += @(If (!$NoRestart)  { '/r'           })
+    $Switches += @(If ($ErrorStdOut) { '/ErrorStdOut' })
+    $Switches += @(If ($Debugging)   { '/Debug'       })
+    If ($PSBoundParameters.ContainsKey('Verbose')) { $PSBoundParameters.Remove('Verbose') }
+    Write-Verbose "ParameterSet: $($PSCmdlet.ParameterSetName)"
+    If ($Help) { & $AHKHelp }
+    $EA  = @{ ErrorAction = 'Ignore'      }
+    $App = @{ CommandType = 'Application' }
+  }
+  Process {
+    If ($Help) { Return }
+    [string[]]$ArgX = @(If ($Parameters) { $Parameters })
+    write-verbose "$AHK [$($Path -join '] [')] Switches: [$($Switches -join '], [')] ArgX $($ArgX.count): [$($ArgX -join '], [')]"
+    $Path | ForEach-Object {
+      $P = $_
+      $S = ''
+      $Script = @(Switch ($True) {
+        {($S = Resolve-Path "$($P).ahk" @EA     ) -and $S} {If ($S) { $S.Path;       break}}  
+        {($S = Get-Command  "$($P).ahk" @EA @App) -and $S} {If ($S) { $S.Definition; break}}
+        {($S = Resolve-Path $P          @EA     ) -and $S} {If ($S) { $S.Path;       break}}  
+        {($S = Get-Command  $P          @EA @App) -and $S} {If ($S) { $S.Definition; break}}  
+        Default                                            {$P                  }
+      }) 
+      $Script | % { & $AHK @Switches $_ @ArgX }
+    }
+  }
 }
-Remove-Item Alias:a -force -ea ignore 2>$Null
-New-Alias a ahk -force -scope Global
+
+<#
+  [
+                [string]$Filter  = '',
+                [string]$Include = '',
+                [string]$Exclude = '',
+    [parameter(ValueFromRemainingArguments=$true)]$Remaining,
+    [Alias('H')][switch]$Help    = $False,
+    [Alias('V')][switch]$Version = $False,
+                [switch]$Test    = $False
+  )
+  Begin {
+    Set-StrictMode -Version Latest
+    $Verbose = $PSBoundParameters.ContainsKey('Verbose') -and $PSBoundParameters.Verbose 
+    If ($PSBoundParameters.ContainsKey('Verbose')) { $PSBoundParameters.Remove('Verbose') }
+    $Process       = $True
+    $EmacsPath     = "c:\emacs\bin"
+    $EmacsClient   = "$EmacsPath\emacsclientw.exe" 
+    $EmacsCLI      = "$EmacsPath\emacsclient.exe" 
+    $EmacsServer   = "$EmacsPath\runemacs.exe" 
+    $ServerOptions = '-n', "--alternate-editor=$EmacsServer" 
+    Write-Verbose "Property set: $($PSCmdlet.ParameterSetName)"
+  }
+  Process {
+    If ($Help) {
+      $Process = $False
+      & $EmacsCLI --help
+      & $EmacsCLI --version
+    } ElseIf ($Version) {
+      $Process = $False
+      & $EmacsCLI --version
+    } ElseIf ($Process) {
+      If ($PSBoundParameters.ContainsKey('LiteralPath')) {
+        $Path = @($PSBoundParameters.LiteralPath)
+      }
+      $Files = @(ForEach ($Item in $Path) {
+        If ($Item -match '(.*):?(\+\d+(?::\d+)?$)') {
+          $Matches[2]         
+          If ($Matches[1]) {
+            $Matches[1].trim(';: ')
+          } Else {
+            $ForEach.MoveNext()
+            $ForEach.Current 
+          }
+        } ElseIf (Test-Path $Item) {
+          $Parms = @{}        
+          $Parms += If ($Filter)  { @{ Filter  = $Filter  }} Else { @{} }
+          $Parms += If ($Exclude) { @{ Exclude = $Exclude }} Else { @{} }
+          $Parms += If ($Include) { @{ Include = $Include }} Else { @{} }
+          Get-ChildItem $Item -ea Ignore @Parms
+        }
+        Else { $Item }
+      })
+      $Parameters = @() + $Remaining + $Files + $ServerOptions
+      Write-Verbose "& $EmacsClient $Parameters"
+      If ($Test) {
+        & 'echoargs'   @Parameters 
+      } Else {
+        If ($Verbose) {
+        & 'echoargs'   @Parameters 
+        }
+        & $EmacsClient @Parameters 
+      }
+    }
+  }
+  End { }
+}
+#>
 Function d    { cmd /c dir @args}
 Function dw   { get-childitem $args -force       | sort-object lastwritetime }
 Function dfw  { get-childitem $args -force -file | sort-object lastwritetime }
@@ -2597,6 +2721,45 @@ if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $i
   }
 }
 if ((Get-Location) -match '^.:\\Windows\\System32$') { pushd \ }
+
+Function Convert-ClipBoard { 
+  [cmdletbinding()][Alias('clean','ccb')]param(
+    [string]$Join                             = '',
+    [string]$Trim                             = '',
+    [Alias('Blanks')][switch]$AllowBlankLines = $False,
+    [switch]$TrimAll                          = $False,
+    [switch]$NoTrim                           = $False
+  ) 
+  Begin {
+    $Trim = If     ($NoTrim)  { ''        }
+            ElseIf ($TrimAll) { '\W'      }
+            ElseIf ($Trim)    { $Trim     } 
+            Else              { ',;:\s\\' }
+    $MinimumLength = If ($AllowBlankLines) { -1 } Else { 0 }        
+  }
+  Process {
+    (Get-ClipBoard) -split "`n+" | ForEach-Object { $_.trim($Trim) } | 
+      Where-Object Length -gt $MinimumLength 
+  }
+  End {}
+}
+
+Function Select-EveryThing {    # es.exe everything 
+  [cmdletbinding()][Alias('se')]param(
+    [Parameter(valuefromremainingarguments)][string[]]$Args,
+    [switch]$Ordered = $False
+  ) 
+  Begin {
+    If (!$Args) { $Args = @(Convert-ClipBoard) }
+  }
+  Process {
+    $args = ($args -split '\W+').trim() | ? { $_ -and $_ -notmatch '^-?verbo' } | % { Write-verbose "[$_]"; $_ }; 
+    write-verbose "es $args" ; 
+    If ($Ordered) { $Args = @( '*' + ($Args -join '*') + '*') }
+    es @args 
+  }
+  End {}
+}
 
 $UsePostloadProfile = [Boolean](Get-Variable UsePostloadProfile -value -ea Ignore)
 Get-ExtraProfile 'Post' -PostloadProfile:$UsePostloadProfile | ForEach-Object {
