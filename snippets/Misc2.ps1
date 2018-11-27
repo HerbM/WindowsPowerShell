@@ -127,24 +127,34 @@ $SSMS.links | ? OuterHTML -match 'Download SQL Server Management Studio ([.\d]{3
 
 'C:\Program Files (x86)\Microsoft SQL Server\140\Tools\Binn\ManagementStudio'
 
+
 Function Get-WhoAmI {
   [CmdletBinding()]param(
-    [ValidatePattern('^(P|G|U|F|L|G|P|A)')]$Show = 'Privileges'
+    [ValidatePattern('^(P|G|U|F|L|G|P|A)')][string]$Show = '',
+    [switch]$UPN        = $False,
+    [switch]$FQDN       = $False,
+    [switch]$User       = $False,
+    [switch]$LoginID    = $False,
+    [switch]$Groups     = $False,
+    [switch]$Privileges = $False,
+    [switch]$All        = $False
   )
   $Switches = 'UPN', 'FQDN', 'USER', 'LOGONID', 'GROUPS', 'PRIV', 'ALL'
-  If ($Show -match '^(P|G|U|F|L|G|P|A)') {
-    $SwitchKey = $Matches[1]
-  }
+  $SwitchKey = If ($Show -match '^(P|G|UP|US|F|L|G|P|A)') {
+    $Matches[1]
+  } Else { 'xxx' }
   Write-Verbose "Show: $Show Switchkey: $Switchkey"
-  # $Args = "/$Switch"   
-  $Switch = $Switches -match "^$SwitchKey"
+  # $Args = "$Switch"   
+  $Switch = If ($Switches) { $Switches -match "^$SwitchKey" | Select -first 1 }
   If ($Switch -in 'GROUPS', 'PRIV', 'ALL') { 
-    Write-Verbose "WhoAmI `"/$Switch`" /fo csv | convertfrom-csv"
+    Write-Verbose "WhoAmI /$Switch /fo csv | convertfrom-csv"
     WhoAmI "/$Switch" /fo csv | convertfrom-csv
-  } {
-    Write-Verbose "WhoAmI /$Switch | % { [PSCustomObject]@{ $Switch = $_ } }"
+  } ElseIf ($Switch) {
+    Write-Verbose "WhoAmI /$Switch | % { [PSCustomObject]@{ $Switch = `$_ } }"
     WhoAmI "/$Switch" | ForEach-Object { [PSCustomObject]@{ $Switch = $_ } }
-  }  
+  } Else {
+    WhoAmI
+  }
 }
 
 #Codacy?

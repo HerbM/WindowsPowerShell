@@ -2,9 +2,10 @@
     <InternalCommands>
         <Shortcut id="41015" Ctrl="yes" Alt="no" Shift="yes" Key="65" />
         <Shortcut id="42047" Ctrl="yes" Alt="yes" Shift="yes" Key="81" />
-        <Shortcut id="42013" Ctrl="yes" Alt="no" Shift="yes" Key="74" />
+        <Shortcut id="42013" Ctrl="yes" Alt="no" Shift="no" Key="74" />
         <Shortcut id="42012" Ctrl="yes" Alt="no" Shift="no" Key="73" />
         <Shortcut id="42059" Ctrl="yes" Alt="yes" Shift="yes" Key="83" />
+        <Shortcut id="44051" Ctrl="no" Alt="no" Shift="no" Key="0" />
     </InternalCommands>
     <Macros>
         <Macro name="Trim Trailing and save" Ctrl="no" Alt="yes" Shift="yes" Key="83">
@@ -29,7 +30,15 @@
         <PluginCommand moduleName="ComparePlugin.dll" internalID="3" Ctrl="no" Alt="yes" Shift="yes" Key="88" />
         <PluginCommand moduleName="NppExec.dll" internalID="0" Ctrl="no" Alt="yes" Shift="yes" Key="117" />
         <PluginCommand moduleName="NppExec.dll" internalID="1" Ctrl="yes" Alt="no" Shift="yes" Key="117" />
-        <PluginCommand moduleName="XMLTools.dll" internalID="28" Ctrl="no" Alt="yes" Shift="yes" Key="82" />
+        <PluginCommand moduleName="ComparePlugin.dll" internalID="0" Ctrl="no" Alt="yes" Shift="no" Key="49" />
+        <PluginCommand moduleName="DoxyIt.dll" internalID="0" Ctrl="no" Alt="no" Shift="no" Key="0" />
+        <PluginCommand moduleName="ImgTag.dll" internalID="4" Ctrl="no" Alt="no" Shift="no" Key="0" />
+        <PluginCommand moduleName="ImgTag.dll" internalID="2" Ctrl="no" Alt="no" Shift="no" Key="0" />
+        <PluginCommand moduleName="HTMLTag.dll" internalID="0" Ctrl="yes" Alt="yes" Shift="yes" Key="84" />
+        <PluginCommand moduleName="HTMLTag.dll" internalID="1" Ctrl="yes" Alt="yes" Shift="no" Key="84" />
+        <PluginCommand moduleName="HTMLTag.dll" internalID="8" Ctrl="no" Alt="yes" Shift="yes" Key="74" />
+        <PluginCommand moduleName="NppFavorites.dll" internalID="7" Ctrl="yes" Alt="yes" Shift="yes" Key="66" />
+        <PluginCommand moduleName="NppToolBucket.dll" internalID="1" Ctrl="yes" Alt="no" Shift="yes" Key="72" />
     </PluginCommands>
     <ScintillaKeys />
 </NotepadPlus>

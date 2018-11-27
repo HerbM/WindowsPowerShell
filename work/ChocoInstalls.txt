@@ -33,7 +33,7 @@ nclauncher.exe [-version|-help|-stop|-signout] -u user -p password -url ura-us.i
 cd "C:\Program Files (x86)\Pulse Secure\Common Files"
 nclauncher.exe -u ww930\A469526 -p password -url  -r realm -ir [true | false] -t seconds -c certificate-name -d DSID
 cd "C:\Program Files (x86)\Pulse Secure\Common Files"
-& "C:\Program Files (x86)\Pulse Secure\Network Connect 8.3\nclauncher.exe" -u ww930\A469526 -p 'JJoll99$4' -url ura-us.it-solutions.atos.net -r ww930 -ir true -t 30 
+& "C:\Program Files (x86)\Pulse Secure\Network Connect 8.3\nclauncher.exe" -u ww930\A469526 -p xxxxxxx -url ura-us.it-solutions.atos.net -r ww930 -ir true -t 30 
 
 smartftp -- version is not suitable for this package. Windows 8.1 or higher
 adb -- C:\ProgramData\chocolatey\lib\adb\tools\platform-tools\systrace\catapult\common\py_vulcanize\third_party\rcssmin\tests\yui 

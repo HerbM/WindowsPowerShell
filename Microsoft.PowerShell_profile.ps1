@@ -805,15 +805,16 @@ Function Get-CurrentIPAddress {(ipconfig) -split "`n" | Where-Object {
 }
 
 Function Get-RegKey {
-  [Alias('grk','get-reg','get-key')]
+  [Alias('grk','get-reg','get-key','grk','hkey')]
   param(
-               [string[]]$Key,
-                 [switch]$Double    = $Null,
-                 [switch]$Single    = $Null,
-                 [switch]$CmdOnly   = $Null,
-                 [switch]$PSOnly    = $Null,
-    [Alias('QO')][switch]$QuoteOnly = $Null,
-                 [switch]$Quote     = $Null
+                              [string[]]$Key,
+                                [switch]$Double    = $Null,
+                                [switch]$Single    = $Null,
+    [Alias('DosOnly','RegOnly')][switch]$CmdOnly   = $Null,
+                                [switch]$PSOnly    = $Null,
+    [Alias('QO')]               [switch]$QuoteOnly = $Null,
+                                [switch]$NoQuote   = $Null,
+                                [switch]$Quote     = $Null
   )
   Begin {
     $Keys = New-Object System.Collections.ArrayList
@@ -821,6 +822,9 @@ Function Get-RegKey {
     If ($Double -or $Single) { $Quote = $True }
   }
   Process {
+    If (!$Key) {
+      $Key = @(((Get-ClipBoard) -split "`n").trim('\s\\''"').Where{$_ -and $_ -match '^HK'})
+    } 
     ForEach ($K in $key) {
       $K2 = $K -replace 'HK\w*_(.)\w*_(.)\w*:?','HK$1$2:'
       If (!$CmdOnly) { [Void]$Keys.Add($K2) }
@@ -831,6 +835,8 @@ Function Get-RegKey {
           If ($Quote) {
             If (!$Double) {  "'$K3'"  }
             If (!$Single) { "`"$K3`"" }
+          } ElseIf (!$NoQuote -and ($K3 -match '\s')) {
+            "'$K3'"  
           }
           If (!$QuoteOnly) { $K3 }
         }
@@ -841,6 +847,35 @@ Function Get-RegKey {
 }
 
 Function Get-WhoAmI { "[$PID]",(whoami),(hostname) + (Get-CurrentIPAddress) -join ' ' }
+Function Get-WhoAmI {
+  [CmdletBinding()]param(
+    [ValidatePattern('^(P|G|U|F|L|G|P|A)')][string]$Show = '',
+    [switch]$UPN        = $False,
+    [switch]$FQDN       = $False,
+    [switch]$User       = $False,
+    [switch]$LoginID    = $False,
+    [switch]$Groups     = $False,
+    [switch]$Privileges = $False,
+    [switch]$All        = $False
+  )
+  $Switches = 'UPN', 'FQDN', 'USER', 'LOGONID', 'GROUPS', 'PRIV', 'ALL'
+  $SwitchKey = If ($Show -match '^(P|G|UP|US|F|L|G|P|A)') {
+    $Matches[1]
+  } Else { 'xxx' }
+  Write-Verbose "Show: $Show Switchkey: $Switchkey"
+  # $Args = "$Switch"   
+  $Switch = If ($Switches) { $Switches -match "^$SwitchKey" | Select -first 1 }
+  If ($Switch -in 'GROUPS', 'PRIV', 'ALL') { 
+    Write-Verbose "WhoAmI /$Switch /fo csv | convertfrom-csv"
+    WhoAmI "/$Switch" /fo csv | convertfrom-csv
+  } ElseIf ($Switch) {
+    Write-Verbose "WhoAmI /$Switch | % { [PSCustomObject]@{ $Switch = `$_ } }"
+    WhoAmI "/$Switch" | ForEach-Object { [PSCustomObject]@{ $Switch = $_ } }
+  } Else {
+    WhoAmI
+  }
+}
+
 Function Get-DotNetVersion {
   [CmdletBinding()]param(
     [version]$MinimumVersion='0.0.0.0',
@@ -2502,6 +2537,10 @@ function Load-Assembly {
     }
     return -1
   }
+}
+
+If (Get-Command Set-Proxy.ps1 -ea Ignore -and (get-computerdomain).domain -match 'ww9') {
+ . Set-Proxy.ps1 
 }
 
 #Convenience aliases for RDCMan
