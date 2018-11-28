@@ -795,9 +795,56 @@ If ([Environment]::OSVersion.Version -gt [version]'6.1') {
   Set-ItemProperty -path $ImmersiveShell -Name DisableCharmsHint -type DWORD -value 1 -force -ea Ignore
   Set-ItemProperty -path $ImmersiveShell -Name DisableTLCorner   -type DWORD -value 1 -force -ea Ignore
 }
-Get-ItemProperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive |
-  Select-Object WindowArrangementActive | Format-List | findstr "WindowArrangementActive"
-Set-ItemProperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -value 0 -type dword -force
+
+# If (Get-ItemProperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -ea Ignore |
+#   Select-Object WindowArrangementActive | Format-List | findstr "WindowArrangementActive") {
+#   Set-ItemProperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -value 0 -type dword -force
+# }
+Function Set-PropertyForce {
+  [CmdletBinding()]Param(  
+    [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
+      [string[]]$Path = '',
+    [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
+      [string[]]$Name = $Null,
+    $Value = $Null,  
+    [switch]$Force = $False  
+  )
+  Begin {
+    $Force = $PSBoundParameters.ContainsKey('Force') -and $Force
+  }
+  Process {
+    If (!($Prop = (Get-ItemProperty -Path $Path -Name $Name -ea Ignore | 
+      Select $Name))) {
+      If (!(Test-Path $Path -ea ignore) -and $Force) {
+        Write-Warning "Creating path: $Path"
+        MkDir $Path -Force -ea Ignore
+      }      
+      Write-Warning "Set property: $Name"
+      Set-ItemProperty -Path $Path -Name $Name -value 1 -Force:$Force -ea Ignore
+    }
+  }
+}
+$Script:RegistryConfiguration = @(
+  ,@('HKCU:\Test', 'TestingScript', 99, $True)
+##  @('HKCU:\CONTROL PANEL\DESKTOP', 'WindowArrangementActive', 0, $True)
+## ,@('HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced', '1', 0, $True)
+ # ,@('', '', 0, $True)
+ # ,@('', '', 0, $True)
+)
+ForEach ($Entry in $Script:RegistryConfiguration) {
+  $Path, $Name, $Value, $Force = $Entry
+  Write-Warning "Set Property: [$Path] [$Name] [$Value] [$Force]"
+#  Set-PropertyForce -Path $Path -Name $Name -Value $Value -Force:$Force
+}
+# If (!(($Current = Get-ItemProperty $Path -name $Name -ea Ignore) -and 
+#       ($Current.$Value -eq $Value))) {
+#   Select-Object WindowArrangementActive | Format-List | findstr "WindowArrangementActive") {
+#   # If (!(Test-Path $Path)) 
+#     Set-ItemProperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -value 0 -type dword -force
+#   }  
+# }
+
+
 # https://onedrive.live.com?invref=b8eb411511e1610e&invscr=90  Free one drive space
 
 Function Get-CurrentIPAddress {(ipconfig) -split "`n" | Where-Object {
