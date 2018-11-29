@@ -1905,41 +1905,83 @@ Function ahk {
   )
   Begin {
     Set-StrictMode -Version Latest
+    $Verbose   = $PSBoundParameters.ContainsKey('Verbose') -and 
+                 $PSBoundParameters.Verbose
+    $Null      = $PSBoundParameters.Remove('Verbose') 
+    Write-Verbose "ParameterSet: $($PSCmdlet.ParameterSetName)"
     $AHKPath   = If ($Version2)      { 'C:\util\AutoHotKey2'  } 
-                 Else                { 'C:\util\AutoHotKey' }
+                 Else                { 'C:\util\AutoHotKey'   }
     $AHK       = Join-Path $AHKPath 'AutoHotKey.exe'             
     $AHKHelp   = Join-Path $AHKPath 'AutoHotKey.chm'             
-    $Verbose   = $PSBoundParameters.ContainsKey('Verbose') -and $PSBoundParameters.Verbose
     $Switches  = @(If ($CodePage)    { "/CP$CodePage" })
     $Switches += @(If (!$NoRestart)  { '/r'           })
     $Switches += @(If ($ErrorStdOut) { '/ErrorStdOut' })
     $Switches += @(If ($Debugging)   { '/Debug'       })
-    If ($PSBoundParameters.ContainsKey('Verbose')) { $PSBoundParameters.Remove('Verbose') }
-    Write-Verbose "ParameterSet: $($PSCmdlet.ParameterSetName)"
     If ($Help) { & $AHKHelp }
     $EA  = @{ ErrorAction = 'Ignore'      }
     $App = @{ CommandType = 'Application' }
-  }
+    $Ext = '.ahk'
+  }  
   Process {
     If ($Help) { Return }
     [string[]]$ArgX = @(If ($Parameters) { $Parameters })
     write-verbose "$AHK [$($Path -join '] [')] Switches: [$($Switches -join '], [')] ArgX $($ArgX.count): [$($ArgX -join '], [')]"
     $Path | ForEach-Object {
-      $P = $_
-      $S = ''
+      $P = $_.clone()
+      $S = @()
+      $ResolveBare = Get-Command -name "$P$Ext" @EA @App |
+                     Get-Property | ? Name -eq 'Path' | % Value
+      Write-Verbose "Path: $P Resolve: [$Path] [$($Path.GetType())]"
+      $ResolveWith = Get-Command -name "$P$Ext" @EA @App |
+                     Get-Property | ? Name -eq 'Path' | % Value
+      Write-Verbose "Path: $P Resolve: [$Path] [$($Path.GetType())]"
       $Script = @(Switch ($True) {
-        {($S = Resolve-Path "$($P).ahk" @EA     ) -and $S} {If ($S) { $S.Path;       break}}  
-        {($S = Get-Command  "$($P).ahk" @EA @App) -and $S} {If ($S) { $S.Definition; break}}
-        {($S = Resolve-Path $P          @EA     ) -and $S} {If ($S) { $S.Path;       break}}  
-        {($S = Get-Command  $P          @EA @App) -and $S} {If ($S) { $S.Definition; break}}  
-        Default                                            {$P                  }
+        {[boolean]($S = @(Resolve-Path $P @EA)) -and $S.count} { Get-ScriptPath $S 1; break }  
+        {[boolean]($ResolveBare)             }                { $ResolveBare; break }  
+        {[boolean]($S = @(Resolve-Path "$P$Ext" @EA      | Select -First 1)) } { Get-ScriptPath $S 3; break }  
+        {[boolean]($ResolveWith)             }                { $ResolveWith; break }  
+        Default                                             { $P                  }
       }) 
-      $Script | % { & $AHK @Switches $_ @ArgX }
+      Write-Verbose "Script: $Script"
+      $Script | % { 
+        EchoArgs @Switches $Script @ArgX 
+        & $AHK   @Switches $Script @ArgX 
+      }
     }
   }
 }
 
 <#
+    Function Get-ScriptPath {
+      [CmdletBinding(DefaultParameterSetName='Path')]
+      param(
+        [Parameter(Position=0, ParameterSetName='Path', ValueFromPipelineByPropertyName)]
+        [String[]]$Path = '',
+        [Alias('PSPath')]
+        [Parameter(Position=0, ParameterSetName='LiteralPath', ValueFromPipeLine)]
+        [string[]]$LiteralPath = '',
+        [Parameter(Position=0, ParameterSetName='String', ValueFromPipeline)]
+        [string[]]$String = '',
+        [Parameter(Position=1)]$Index = 0
+      )
+      $InputObject = Switch ($PSCmdlet.ParameterSetName) {
+        'Path'        { $Path        }
+        'LiteralPath' { $LiteralPath }
+        'String'      { $String      }
+      }
+      ForEach ($Item in $InputObject) {
+        write-verbose "Item $Index [$Item]";
+        If (!$Item) { Continue }
+        If (!(Test-Path $Item)) {
+          Write-Warning "Script not found: [$Item]"
+        } Else {
+          If ($Script = Resolve-Path $Item -ea Ignore) {
+            $Script
+          }
+        }
+      }      
+    } 
+
   [
                 [string]$Filter  = '',
                 [string]$Include = '',
