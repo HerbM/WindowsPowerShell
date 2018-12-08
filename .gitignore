@@ -40,3 +40,5 @@ Local*.ps1
 /work/Jesse/*
 /work/dev/*
 /work/bat/*
+Tools/suma*/*
+tools/SumatraPDF-settings.txt

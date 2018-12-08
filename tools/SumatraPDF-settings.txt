@@ -58,7 +58,7 @@ EnableTeXEnhancements = false
 DefaultDisplayMode = automatic
 DefaultZoom = fit page
 WindowState = 1
-WindowPos = 79 -9 748 706
+WindowPos = 79 0 1078 706
 ShowToc = true
 SidebarDx = 0
 TocDy = 0
@@ -66,6 +66,46 @@ ShowStartPage = true
 UseTabs = true
 
 FileStates [
+	[
+		FilePath = C:\Users\a469526\Documents\Fingerprint2018.pdf
+		Favorites [
+		]
+		IsPinned = false
+		IsMissing = false
+		OpenCount = 1
+		UseDefaultState = false
+		DisplayMode = continuous
+		ScrollPos = -1 -1
+		PageNo = 1
+		Zoom = fit page
+		Rotation = 0
+		WindowState = 1
+		WindowPos = 79 0 1078 706
+		ShowToc = false
+		SidebarDx = 0
+		DisplayR2L = false
+		ReparseIdx = 0
+	]
+	[
+		FilePath = C:\Users\a469526\Downloads\dosing.pdf
+		Favorites [
+		]
+		IsPinned = false
+		IsMissing = false
+		OpenCount = 1
+		UseDefaultState = false
+		DisplayMode = continuous
+		ScrollPos = -1 354
+		PageNo = 1
+		Zoom = fit width
+		Rotation = 0
+		WindowState = 1
+		WindowPos = 79 0 1078 706
+		ShowToc = false
+		SidebarDx = 0
+		DisplayR2L = false
+		ReparseIdx = 0
+	]
 	[
 		FilePath = C:\Users\a469526\Downloads\windows-7-keyboard-shortcuts.pdf
 		Favorites [
