@@ -60,14 +60,14 @@ DefaultZoom = fit page
 WindowState = 1
 WindowPos = 79 0 1078 706
 ShowToc = true
-SidebarDx = 0
+SidebarDx = 265
 TocDy = 0
 ShowStartPage = true
 UseTabs = true
 
 FileStates [
 	[
-		FilePath = C:\Users\a469526\Documents\Fingerprint2018.pdf
+		FilePath = C:\Users\a469526\Downloads\Final__Ultimate_Tutorial_Getting_Started_With_Kotlin_v1.4 (1).pdf
 		Favorites [
 		]
 		IsPinned = false
@@ -78,6 +78,66 @@ FileStates [
 		ScrollPos = -1 -1
 		PageNo = 1
 		Zoom = fit page
+		Rotation = 0
+		WindowState = 1
+		WindowPos = 79 0 1078 706
+		ShowToc = true
+		SidebarDx = 265
+		DisplayR2L = false
+		ReparseIdx = 0
+	]
+	[
+		FilePath = C:\Users\a469526\Downloads\WhyOfY.pdf
+		Favorites [
+		]
+		IsPinned = false
+		IsMissing = false
+		OpenCount = 1
+		UseDefaultState = false
+		DisplayMode = continuous
+		ScrollPos = -1 -1
+		PageNo = 1
+		Zoom = fit width
+		Rotation = 0
+		WindowState = 1
+		WindowPos = 79 0 1078 706
+		ShowToc = false
+		SidebarDx = 265
+		DisplayR2L = false
+		ReparseIdx = 0
+	]
+	[
+		FilePath = C:\Users\a469526\Downloads\Final__Ultimate_Tutorial_Getting_Started_With_Kotlin_v1.4.pdf
+		Favorites [
+		]
+		IsPinned = false
+		IsMissing = false
+		OpenCount = 0
+		UseDefaultState = false
+		DisplayMode = continuous
+		ScrollPos = -1 -1
+		PageNo = 1
+		Zoom = fit page
+		Rotation = 0
+		WindowState = 1
+		WindowPos = 79 0 1078 706
+		ShowToc = true
+		SidebarDx = 0
+		DisplayR2L = false
+		ReparseIdx = 0
+	]
+	[
+		FilePath = C:\Users\a469526\Documents\Fingerprint2018.pdf
+		Favorites [
+		]
+		IsPinned = false
+		IsMissing = false
+		OpenCount = 0
+		UseDefaultState = false
+		DisplayMode = continuous
+		ScrollPos = -1 155
+		PageNo = 1
+		Zoom = fit width
 		Rotation = 0
 		WindowState = 1
 		WindowPos = 79 0 1078 706
@@ -92,7 +152,7 @@ FileStates [
 		]
 		IsPinned = false
 		IsMissing = false
-		OpenCount = 1
+		OpenCount = 0
 		UseDefaultState = false
 		DisplayMode = continuous
 		ScrollPos = -1 354
@@ -112,7 +172,7 @@ FileStates [
 		]
 		IsPinned = false
 		IsMissing = false
-		OpenCount = 1
+		OpenCount = 0
 		UseDefaultState = false
 		DisplayMode = continuous
 		ScrollPos = -1 -1
@@ -128,8 +188,34 @@ FileStates [
 	]
 ]
 SessionData [
+	[
+		TabStates [
+			[
+				FilePath = C:\Users\a469526\Downloads\WhyOfY.pdf
+				DisplayMode = continuous
+				PageNo = 1
+				Zoom = fit width
+				Rotation = 0
+				ScrollPos = -1 -1
+				ShowToc = false
+			]
+			[
+				FilePath = C:\Users\a469526\Downloads\Final__Ultimate_Tutorial_Getting_Started_With_Kotlin_v1.4 (1).pdf
+				DisplayMode = continuous
+				PageNo = 1
+				Zoom = fit page
+				Rotation = 0
+				ScrollPos = -1 -1
+				ShowToc = true
+			]
+		]
+		TabIndex = 2
+		WindowState = 1
+		WindowPos = 79 0 1078 706
+		SidebarDx = 265
+	]
 ]
 TimeOfLastUpdateCheck = 0 0
-OpenCountWeek = 412
+OpenCountWeek = 414
 
 # Settings after this line have not been recognized by the current version
