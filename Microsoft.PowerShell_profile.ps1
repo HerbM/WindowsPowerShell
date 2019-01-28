@@ -1880,7 +1880,7 @@ These lines are written in the following format,
 where LibDir is the full path of the Lib folder and LibFile is the filename of the library:
 #Include LibDir\
 #IncludeAgain LibDir\LibFile.ahk
-S↓
+S???
 If the output file exists, it is overwritten. OutFile can be * to write the output to stdout.
 If the script contains syntax errors, the output file may be empty. 
 The process exit code can be used to detect this condition; if there is a syntax error, the exit code is 2. 
@@ -2851,6 +2851,8 @@ if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $i
 }
 if ((Get-Location) -match '^.:\\Windows\\System32$') { pushd \ }
 
+$eb = '*.epub|*.pdf|*.azw|*.azw?|*.mobi|*.doc'
+
 Function Convert-ClipBoard { 
   [cmdletbinding()][Alias('clean','ccb')]param(
     [string]$Join                             = '',
@@ -2863,7 +2865,7 @@ Function Convert-ClipBoard {
     $Trim = If     ($NoTrim)  { ''        }
             ElseIf ($TrimAll) { '\W'      }
             ElseIf ($Trim)    { $Trim     } 
-            Else              { ',;:\s\\' }
+            Else              { ',;: \' }
     $MinimumLength = If ($AllowBlankLines) { -1 } Else { 0 }        
   }
   Process {
