@@ -530,7 +530,7 @@ Function remacs {
     $EmacsPath     = "c:\emacs\bin"
     $EmacsClient   = "$EmacsPath\emacsclientw.exe" 
     $EmacsCLI      = "$EmacsPath\emacsclient.exe" 
-    $EmacsServer   = "$EmacsPath\runemacs.exe" 
+    $EmacsServer   = "$EmacsPath\runemacs.exe"
     $ServerOptions = '-n', "--alternate-editor=$EmacsServer" 
     Write-Verbose "Property set: $($PSCmdlet.ParameterSetName)"
   }
@@ -556,10 +556,9 @@ Function remacs {
             $ForEach.Current 
           }
         } ElseIf (Test-Path $Item) {
-          $Parms = @{}        
-          $Parms += If ($Filter)  { @{ Filter  = $Filter  }} Else { @{} }
-          $Parms += If ($Exclude) { @{ Exclude = $Exclude }} Else { @{} }
-          $Parms += If ($Include) { @{ Include = $Include }} Else { @{} }
+          $Parms  = If ($Filter ) { @{Filter  = $Filter } } Else { @{} }
+          $Parms += If ($Exclude) { @{Exclude = $Exclude} } Else { @{} }
+          $Parms += If ($Include) { @{Include = $Include} } Else { @{} }
           Get-ChildItem $Item -ea Ignore @Parms
         }
         Else { $Item }
@@ -576,7 +575,7 @@ Function remacs {
       }
     }
   }
-  End { }
+  End {}
 }
 
 Function Get-Line {
