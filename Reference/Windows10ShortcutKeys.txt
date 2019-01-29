@@ -1,0 +1,76 @@
+Windows 10               Keyboard Shortcut Description
+Windows                  Show the Windows 10 Start Menu
+Windows+Tab              Launch Windows 10 Task View
+Windows+Q                Search the web and Windows with Cortana (speech)
+Windows+S                Search the web and Windows with Cortana (keyboard input)
+Windows+I                Open Windows 10 settings
+Windows+A                Open Windows 10 notifications
+Windows+L                Lock your Windows 10 device
+Windows+Ctrl+D           Create new virtual desktop
+Windows+Ctrl+F4          Close current virtual desktop
+Windows+Ctrl+Left/Right  Switch between virtual desktops
+Windows+ARROWKEY         Position windows on your screen
+  E.g. Windows + [Left] moves the current window to left half of screen 
+       Windows + [Up] afterwards, current window to upper left quadrant
+       If you release the Windows key after positioning a window, 
+       Task View shows up on the opposite side of the positioned window to select and 
+       position another app.
+Windows+H                Share content (if supported by current app)
+Windows+K                Connect to wireless displays and audio devices
+Windows+X                Open Start button context menu
+Windows+G                Opens the Windows 10 Game Bar (game screenshots & record gaming videos) 
+Windows+D                Show Windows desktop
+Windows+E                Open Windows Explorer
+Windows+Space            Switch keyboard input language (if you have added at least a second one)
+Windows+Shift+Left/Right Move current Window from one monitor to another (when using a multiple monitor setup)
+Windows+[1][2][3][…]     Open programs that are pinned to task bar
+Windows+R                Run a command
+Windows+P                Project a screen
+Alt + Tab                Switch to previous window
+Alt + Space              Restore, move, size, minimize, maximize or close current window. Also works like a charm for Windows 10 modern apps.
+Alt + F4                 a) Close current window
+                         b) If you’re on your Windows 10 desktop, open shutdown/restart/sleep/logoff/switch 
+
+Win+down arrow (minimize current window)
+Win+up arrow (maximize current window)
+Win+M (minimize all windows)
+Win+Shift+up arrow (stretch windows to top and bottom but retain width)
+Win+Enter (open narrator)
+Win+Shft+M (restore all minimize windows)
+Win+O (lock orientation)
+Win+Prtsc (screen grab to image to Pictures\Screenshots)
+Win+"+" (magntify in)
+Win+"-" (magnify out)
+Win+Esc (exit magnify)
+Win+T (cycle through taskbar apps)
+Win+F1 (open help support in browser? Really should open new app)
+Win+B (focus to notification area)
+Win+, (desktop peek)
+Win+Shift+number (open new instance of pinned taskbar item)
+Win+Ctrl+number (open the last active number window for pinned taskbar item)
+Win+Alt+number (open jump list for pinned taskbar item)
+Win+V (cycle through notifications)
+Win+Shift+V (reverse through notifications)
+Win+Ctrl+F (search for computers on network, active directory required)
+Win+Home (minimize all but active desktop, restore on second hit)
+
+
+When game bar is loaded
+Win+Alt+G (start recording current screen activity)
+Win+Alt+R (stop recording)
+
+Ctrl+Shift+Esc (open taskmanager)
+F1 (help)
+F2 (rename item)
+F3 (show search in edge or file explorer)
+F4 (address bar in explorer)
+F5 or Ctrl+R (refresh active window)
+Ctrl+Enter (display properties of selected item)
+Ctrl+C (copy)
+Ctrl+V or Shift+Insert (Paste)
+Ctrl+D (Delete item)
+Ctrl+X (Cut)
+Ctrl+Y (Redo)
+Ctrl+Z (Undo)
+
+I thought there was a Win key grouping for moving an window to another virtual desktop (Win+Shift+Ctrl+arrow) but I could never get it to work.
