@@ -475,7 +475,7 @@ new-alias typedir Get-Content  -force -scope Global -ea ignore
 new-alias ldir    less         -force -scope Global -ea ignore
 new-alias lessdir less         -force -scope Global -ea ignore
 new-alias l       less         -force -scope Global -ea ignore
-
+new-alias iv 'C:\Program Files\IrfanView\i_view64.exe' -scope Global -force -ea Ignore
 <#
 .Synopsis 
   Start Emacs using server, start server if not running
@@ -2849,28 +2849,6 @@ if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $i
   }
 }
 if ((Get-Location) -match '^.:\\Windows\\System32$') { pushd \ }
-
-Function Convert-ClipBoard { 
-  [cmdletbinding()][Alias('clean','ccb')]param(
-    [string]$Join                             = '',
-    [string]$Trim                             = '',
-    [Alias('Blanks')][switch]$AllowBlankLines = $False,
-    [switch]$TrimAll                          = $False,
-    [switch]$NoTrim                           = $False
-  ) 
-  Begin {
-    $Trim = If     ($NoTrim)  { ''        }
-            ElseIf ($TrimAll) { '\W'      }
-            ElseIf ($Trim)    { $Trim     } 
-            Else              { ',;:\s\\' }
-    $MinimumLength = If ($AllowBlankLines) { -1 } Else { 0 }        
-  }
-  Process {
-    (Get-ClipBoard) -split "`n+" | ForEach-Object { $_.trim($Trim) } | 
-      Where-Object Length -gt $MinimumLength 
-  }
-  End {}
-}
 
 Function Select-EveryThing {    # es.exe everything 
   [cmdletbinding()][Alias('se')]param(
