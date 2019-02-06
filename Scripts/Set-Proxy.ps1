@@ -3,12 +3,133 @@
                  [string]$Proxy = 'proxy-us.glb.my-it-solutions.net:84',
   [Net.NetworkCredential]$Credential,
                [string[]]$BypassList,   # Array of regexes
-  [Alias('UseLocal')]     [switch]$UseProxyOnLocal        = $Null,
-  [Alias('NDC','NoCred')] [switch]$NoDefaultCredential    = $Null,
-  [Alias('On','Set','Add','Default')]     [switch]$Enable = $Null,
-  [Alias('Off','Reset','Clear','Disable')][switch]$Remove = $Null
+  [Alias('UseLocal')]     [switch]$UseProxyOnLocal            = $Null,
+  [Alias('NDC','NoCred')] [switch]$NoDefaultCredential        = $Null,
+  [Alias('On','Set','Add','Default')]     [switch]$Enable     = $Null,
+  [Alias('Off','Reset','Clear','Disable','D')][switch]$Remove = $Null
 )
 
+If (!(Get-Command FLINE -ea 4)) {
+  function Get-CurrentLineNumber { 
+    $Invocation = Get-Variable MyInvocation -value -ea 0 2>$Null
+    If (!$Invocation) { $Invocation = $MyInvocation } 
+    $Invocation.ScriptLineNumber 
+  }
+  function Get-CurrentFileName   { split-path -leaf $MyInvocation.PSCommandPath   }   #$MyInvocation.ScriptName
+  function Get-CurrentFileLine   { 
+    if ($MyInvocation.PSCommandPath) {
+      "$(split-path -leaf $MyInvocation.PSCommandPath):$($MyInvocation.ScriptLineNumber)" 
+    } else {"GLOBAL:$(LINE)"} 
+  }
+  function Get-CurrentFileName1  { 
+    if ($var = get-variable MyInvocation -scope 1 -value) {
+      if ($var.PSCommandPath) { split-path -leaf $var.PSCommandPath } 
+      else {'GLOBAL'} 
+    } else {"GLOBAL"}    
+  }   #$MyInvocation.ScriptName
+
+  try {
+  #    if (![boolean](get-alias line -ea 0)) {
+        New-Alias -Name   LINE   -Value Get-CurrentLineNumber -Description 'Returns the current (caller''s) line number in a script.' -force -ea Ignore
+        New-Alias -Name __LINE__ -Value Get-CurrentLineNumber -Description 'Returns the current (caller''s) line number in a script.' -force -ea Ignore
+        New-Alias -Name   FILE   -Value Get-CurrentFileName   -Description 'Returns the name of the current script file.' -force             -ea Ignore
+        New-Alias -Name   FLINE  -Value Get-CurrentFileLine   -Description 'Returns the name of the current script file.' -force             -ea Ignore
+        New-Alias -Name   FILE1  -Value Get-CurrentFileName1  -Description 'Returns the name of the current script file.' -force             -ea Ignore
+        New-Alias -Name __FILE__ -Value Get-CurrentFileName   -Description 'Returns the name of the current script file.' -force             -ea Ignore
+  #    } 
+  } catch {}
+}
+If (!(Get-Command Set-EnvironmentVariable -ea 4)) {
+  Function Set-EnvironmentVariable {
+    [CmdletBinding(SupportsShouldProcess,ConfirmImpact='Low')]
+    [Alias('Set-Environment','Set-Env','sev','setenv')]Param(
+      [string[]]$Variable                          = $Null,
+      [string[]]$Value                             = @(),
+      [string[]]$Scope                             = 'Local',
+      [switch]  $Local                             = $False,
+      [switch]  $Process                           = $False,
+      [switch]  $User                              = $False,
+      [Alias('Computer','System')][switch]$Machine = $False
+    )
+    Begin {
+      $Scope = Switch ($True) {
+        { $Local   } { 'Local'   }
+        { $Process } { 'Process' }
+        { $User    } { 'User'    }
+        { $Machine } { 'Machine' }
+        Default      { $Scope    }
+      }
+    }
+    Process {
+      ForEach ($Var in $Variable) {
+        If ($Var -is 'System.Collections.DictionaryEntry') {
+          $Var, $Val = $Var.Name, $Var.Value
+        } Else {
+          If ($Value) { $Val, $Value = $Value }
+          If ($Scope) { $Env, $Scope = $Scope }
+        }
+        If ($Env -in 'Computer','System') { $Env = 'Machine'}
+        If ($Var -as [String]) {
+          $Val = If ($Val = Get-Variable Val -ea 4 -value) { $Val -as 'string' } Else { '' }
+          Write-Verbose "Set environment [$Var=$Val] in [$Env] scope"
+          If ($PSCmdlet.ShouldProcess("$Env scope", "Set [$Var=$Val]")) {
+            If ($Env -eq 'Local') { Set-Item -Path "Env:$Var" -Value $Val }
+            Else { [Environment]::SetEnvironmentVariable($Var,$Val,$Env) }
+          }
+        }
+      }
+    }
+    End {}
+  }
+}
+If (!(Get-Command Get-EnvironmentVariable -ea 4)) {
+  Function Get-EnvironmentVariable {
+    [CmdletBinding()][Alias('Get-Environment','Get-Env','gev','env')]
+    [OutputType([String],[String[]],
+      [System.Collections.DictionaryEntry],[System.Collections.DictionaryEntry[]])]
+    Param(
+      [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
+      [Alias('Key','Name','Path')][string[]]$Variable = $Null,
+      [string[]]$Scope                                = 'Local',
+      [switch]  $Local                                = $False,
+      [switch]  $Process                              = $False,
+      [switch]  $User                                 = $False,
+      [switch]  $Value                                = $False,
+      [Alias('Computer','System')][switch]$Machine    = $False
+    )
+    Begin {
+      $Scope = Switch ($True) {
+        { $Local   } { 'Local'   }
+        { $Process } { 'Process' }
+        { $User    } { 'User'    }
+        { $Machine } { 'Machine' }
+        DEFAULT      { $Scope    }
+      }
+    }
+    Process {
+      ForEach ($Var in $Variable) {
+        If ($Var -is 'System.Collections.DictionaryEntry') {
+          $Var, $Val = $Var.Name
+        } Else {
+          If ($Scope) { $Env, $Scope = $Scope }
+        }
+        If ($Env -in 'Computer','System') { $Env = 'Machine'}
+        If ($Var -as [String]) {
+          If ($Env -eq 'Local') {
+            $Item = Get-Item -Path "Env:$Var"
+            If ($Value) { $Item.Value } Else { $Item }
+          } Else {
+            If ($Null -ne ($Val = [Environment]::GetEnvironmentVariable($Var,$Env))) {
+              If ($Value) { $Val }
+              Else        { [System.Collections.DictionaryEntry]::New($Var, $Val) }
+            }
+          }
+        }
+      }
+    }
+    End {}
+  }
+}
 
 Function Set-DefaultProxy {
   [CmdletBinding()] param(
@@ -79,11 +200,11 @@ Function Remove-DefaultProxy { Set-DefaultProxy -Remove }
 Function Get-InternetProxy {
   [CmdletBinding()][Alias('Show-InternetProxy')]param()
   $InternetSettingsKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings"
-  $urlEnvironment      = $Env:AutoConfigUrl
-  $urlDefault          = 'http://proxyconf.my-it-solutions.net/proxy-na.pac'
+  $UrlEnvironment      = $Env:AutoConfigUrl
+  $UrlDefault          = 'http://proxyconf.my-it-solutions.net/proxy-na.pac'
   $ProxyValues         = 'AutoConfig ProxyEnable Autodetect'
-  write-verbose "`$Env:AutoConfigUrl        : $($Env:AutoConfigUrl)"
-  write-verbose  "Default proxy             : $urlDefault"
+  Write-Verbose "`$Env:AutoConfigUrl        : $($Env:AutoConfigUrl)"
+  Write-Verbose  "Default proxy             : $urlDefault"
   $Settings = get-itemproperty $InternetSettingsKey -ea ignore | findstr /i $ProxyValues | Sort-Object
     Write-Output "             Registry settings"
     ForEach ($Line in $Settings) {
@@ -222,37 +343,6 @@ Function Set-HTTPProxy {
   }
 }
 
-If ((!$Enable) -and $MyInvocation.Line -match '\s*\.(?![\w\\.\"''])') {
-  Write-Warning "$(FLINE) Dot source, load functions, and exit"
-} Else {
-  If ($Remove) { 
-    Write-Warning "$(FLINE) Reset proxy"
-    Set-DefaultProxy @$PSBoundParameters
-    Set-InternetProxy -State Disable
-    If (Get-Command setproxy.exe -ea Ignore) { setproxy.exe /proxy:disable }
-    Set-HTTPProxy -Disable    
-    Set-GitProxy  -Reset
-  } ElseIf ($Proxy) { 
-    Write-Warning "$(FLINE) Setting proxy"
-    Set-DefaultProxy # @$PSBoundParameters
-    Set-InternetProxy -Enable # -url $Proxy
-    If (Get-Command setproxy.exe -ea Ignore) { 
-      setproxy /pac:http://proxyconf.my-it-solutions.net/proxy-na.pac  
-    }  
-    Set-HTTPProxy
-    Set-GitProxy
-  } Else {
-    Write-Warning "$(FLINE) Setting proxy"
-    Set-DefaultProxy # @$PSBoundParameters
-    Set-InternetProxy -Enable # -url $Proxy
-    If ((Get-Command setproxy.exe -ea Ignore) -and ($Env:ComputerName -like 'MC0*')) { 
-      setproxy /pac:http://proxyconf.my-it-solutions.net/proxy-na.pac  
-    }  
-    Set-HTTPProxy
-    Set-GitProxy
-  }
-}
-
 
 <#
 setproxy /pac:http://proxyconf.my-it-solutions.net/proxy-na.pac
@@ -312,10 +402,40 @@ Function Get-HTTPSecurity {
 Function Get-Proxy {
   [CmdletBinding()] param(
   )
-  get-httpsecurity | Select Default*,PSPath
+  Get-HTTPSecurity | Select Default*,PSPath
   Get-HttpProxy 
   dir ENV:*git*,Env:*http*
   Get-DefaultProxy
   Get-InternetProxy
 }
 
+If ((!$Enable) -and $MyInvocation.Line -match '\s*\.(?![\w\\.\"''])') {
+  Write-Warning "$(FLINE) Dot source, load functions, and exit"
+} Else {
+  If ($Remove) { 
+    Write-Warning "$(FLINE) Reset proxy"
+    Set-DefaultProxy @$PSBoundParameters
+    Set-InternetProxy -State Disable
+    If (Get-Command setproxy.exe -ea Ignore) { setproxy.exe /proxy:disable }
+    Set-HTTPProxy -Disable    
+    Set-GitProxy  -Reset
+  } ElseIf ($Proxy) { 
+    Write-Warning "$(FLINE) Setting proxy"
+    Set-DefaultProxy # @$PSBoundParameters
+    Set-InternetProxy -Enable # -url $Proxy
+    If (Get-Command setproxy.exe -ea Ignore) { 
+      setproxy /pac:http://proxyconf.my-it-solutions.net/proxy-na.pac  
+    }  
+    Set-HTTPProxy
+    Set-GitProxy
+  } Else {
+    Write-Warning "$(FLINE) Setting proxy"
+    Set-DefaultProxy # @$PSBoundParameters
+    Set-InternetProxy -Enable # -url $Proxy
+    If ((Get-Command setproxy.exe -ea Ignore) -and ($Env:ComputerName -like 'MC0*')) { 
+      setproxy /pac:http://proxyconf.my-it-solutions.net/proxy-na.pac  
+    }  
+    Set-HTTPProxy
+    Set-GitProxy
+  }
+}

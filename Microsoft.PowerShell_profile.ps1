@@ -475,7 +475,7 @@ new-alias typedir Get-Content  -force -scope Global -ea ignore
 new-alias ldir    less         -force -scope Global -ea ignore
 new-alias lessdir less         -force -scope Global -ea ignore
 new-alias l       less         -force -scope Global -ea ignore
-
+new-alias iv 'C:\Program Files\IrfanView\i_view64.exe' -scope Global -force -ea Ignore
 <#
 .Synopsis 
   Start Emacs using server, start server if not running
