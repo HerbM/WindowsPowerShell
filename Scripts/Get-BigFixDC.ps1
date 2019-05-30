@@ -8,9 +8,9 @@ Function Main {
 
 Function Get-BigFixDC {
   [CmdletBinding()]Param(
-    [Alias('Customer','CompanyName')][Parameter(Position=0)] [string[]]$Agency = '.*',
-    [Alias('PrimaryDomain')]         [Parameter(Position=1)] [string[]]$Domain = '.*',
-    [Alias('ComputerNames','DC')]    [Parameter(Position=2)] [Object[]]$Servers,
+    [Alias('Customer','CompanyName')][Parameter(Position=0)] [string[]]$Agency = '*',
+    [Alias('PrimaryDomain')]         [Parameter(Position=1)] [string[]]$Domain = '*',
+    [Alias('ComputerNames')]         [Parameter(Position=2)] [Object[]]$Servers,
     [string]$Path = "$Home\documents\Server-478.csv",
     [switch]$AllServers = $False
   )
@@ -21,9 +21,9 @@ Function Get-BigFixDC {
 
   Process {
     $Servers | 
-      Where-Object { $AllServers -or $_.DomainController      } |         
-      Where-Object { $_.PrimaryDomain | Select-String $Domain } | 
-      Where-Object { $_.Company       | Select-String $Agency } | 
+      Where-Object { $AllServers -or $_.DomainController                   } |         
+      Where-Object { ForEach ($D in $Domain) { $_.PrimaryDomain -like $D } } | 
+      Where-Object { ForEach ($A in $Agency) { $_.Company       -like $A } } | 
       Select-Object Company,ComputerName,IPAddress,OS,PrimaryDomain,Location,LastReportTime
     # | ft  Company,ComputerName,IPAddress,OS,PrimaryDomain,Location,LastReportTime
   }
