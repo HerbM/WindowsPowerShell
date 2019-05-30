@@ -11,6 +11,10 @@
   # 1/0
   x99 $a99
 
+Function ig {   # https://vexx32.github.io/2018/11/16/Invoke-Command-Global-Scope/
+  $GlobalScope = [psmoduleinfo]::new($true)
+  & $GlobalScope { $x = 27; } 
+}
 #>
   [CmdletBinding(SupportsShouldProcess,ConfirmImpact='Low',DefaultParameterSetName='Script')]
   Param(
