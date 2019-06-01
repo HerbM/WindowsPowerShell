@@ -475,7 +475,7 @@ new-alias typedir Get-Content  -force -scope Global -ea ignore
 new-alias ldir    less         -force -scope Global -ea ignore
 new-alias lessdir less         -force -scope Global -ea ignore
 new-alias l       less         -force -scope Global -ea ignore
-
+new-alias iv 'C:\Program Files\IrfanView\i_view64.exe' -scope Global -force -ea Ignore
 <#
 .Synopsis 
   Start Emacs using server, start server if not running
@@ -1879,7 +1879,7 @@ These lines are written in the following format,
 where LibDir is the full path of the Lib folder and LibFile is the filename of the library:
 #Include LibDir\
 #IncludeAgain LibDir\LibFile.ahk
-S↓
+S???
 If the output file exists, it is overwritten. OutFile can be * to write the output to stdout.
 If the script contains syntax errors, the output file may be empty. 
 The process exit code can be used to detect this condition; if there is a syntax error, the exit code is 2. 
@@ -2128,7 +2128,11 @@ set-alias ic $ICFile -force -scope global -ea Ignore
 # get-uptime;Get-WURebootStatus;Is-RebootPending?;Get-Uptime;PSCx\get-uptime;boottime.cmd;uptime.cmd
 #
 Function Get-BootTime { (Get-CimInstance win32_operatingsystem).lastbootuptime }
-Write-Information "$(LINE) Boot Time: $(Get-date ((Get-CimInstance win32_operatingsystem).lastbootuptime) -f 's')"
+try {
+  Write-Information "$(LINE) Boot Time: $(Get-date ((Get-CimInstance win32_operatingsystem).lastbootuptime) -f 's')"
+} catch { 
+  Write-Warning     "$(LINE) CIM call to get boot time failed"
+}
 Function ql {  $args  }
 Function qs { "$args" }
 Function qa {
@@ -2850,6 +2854,8 @@ if ($Quiet -and $informationpreferenceSave) { $global:informationpreference = $i
 }
 if ((Get-Location) -match '^.:\\Windows\\System32$') { pushd \ }
 
+$eb = '*.epub|*.pdf|*.azw|*.azw?|*.mobi|*.doc'
+
 Function Convert-ClipBoard { 
   [cmdletbinding()][Alias('clean','ccb')]param(
     [string]$Join                             = '',
@@ -2862,7 +2868,7 @@ Function Convert-ClipBoard {
     $Trim = If     ($NoTrim)  { ''        }
             ElseIf ($TrimAll) { '\W'      }
             ElseIf ($Trim)    { $Trim     } 
-            Else              { ',;:\s\\' }
+            Else              { ',;: \' }
     $MinimumLength = If ($AllowBlankLines) { -1 } Else { 0 }        
   }
   Process {

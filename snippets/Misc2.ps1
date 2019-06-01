@@ -1,16 +1,22 @@
-# Adopted RipGrep rg, runiq, xsv to supplement PowerShell 
-# SetProxy.exe plus PowerShell to set and disable proxy
-#
+Beefarino Stupid PowerShell Tricks
+  ScriptCS Linq queries
+  -repl (rudimentary)
+  StudioShell
+  Simplex  P2F on Nuget SeeShell (plot)
+  SQLite
+  AutoVars
 
+get-counter '\\.\processor(_total)\% processor time' -samp 1 -continu  | Select -expand CounterSamples | Select CookedValue
+netsh wlan show pro LearnQuick.com key=clear
+
+# Adopted RipGrep rg, runiq, xsv to supplement PowerShell 
 #AutoHotKey 2.0 https://autohotkey.com/download/2.0/ 2018-10-05 on 2018-11-11
-#
 #https://github.com/PowerShellOrg/pesterbookcode
 #'string','STRING','String' -match '(String)(?<!(?-i:String))'
 #'string','STRING','String' -replace '(String)(?<!(?-i:String))', 'String'
 #https://github.com/dfinke/PowerShellHumanizer.git
 #https://github.com/adamdriscoll/snek.git  Use Python from PowerShell
 #https://github.com/PowerShellOrg/pesterbookcode.git
-
 
 # -k, --insecure        Allow conda to perform "insecure" SSL connections &  Anaconda/Conda update upgrade
 #                       transfers. Equivalent to setting 'ssl_verify' 'false'
@@ -72,6 +78,7 @@ DOMAIN JOINED STATUS : ddaf516e-58c2-4866-9574-c3b615d42ea1 [NOT DOMAIN JOINED]
    DOMAIN JOINED STATUS         : 1ce20aba-9851-4421-9430-1ddeb766e809 [DOMAIN JOINED]
  STOP SERVICE
    DOMAIN JOINED STATUS         : ddaf516e-58c2-4866-9574-c3b615d42ea1 [NOT DOMAIN JOINED]
+
 
 Get-ItemProperty 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -name Personal
 Set-ItemProperty 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -name Personal -Value 'D:\%UserName%\Documents' -Type ExpandString -Force
@@ -1348,7 +1355,21 @@ https://github.com/manojlds/pslinq
 
 https://en.wikiversity.org/wiki/Windows_PowerShell/Functions
 
-Get-WMIobject win32_networkadapterconfiguration | where {$_.IPEnabled -eq??Tru??} | Select-Object pscomputername,ipaddress,defaultipgateway,ipsubnet,dnsserversearchorder,winsprimaryserver | format-Table -Auto
+Get-WMIobject win32_networkadapterconfiguration | where {$_.IPEnabled -eq $True} | 
+  Select-Object @{N='ComputerName'; E={$_.pscomputername}},
+                @{N='Name';         E={$_.Description}},
+                @{N='Index';        E={$_.InterFaceIndex}},
+                @{N='IPAddress';    E={$_.ipaddress -join ','}},
+                @{N='Router';       E={$_.defaultipgateway}},
+                @{N='Subnet';       E={$_.IPSubNet}},
+                @{N='DNSServer';    E={$_.DNSServerSearchOrder -join ','}},
+                @{N='WinsServer';   E={$_.winsprimaryserver -join ','}}
+                #@{N='';        E={$_.}},
+                #@{N='';        E={$_.}},
+
+MACAddress
+GatewayCostMetric
+Get-WMIobject win32_networkadapterconfiguration | where {$_.IPEnabled -eq $True} | Select-Object pscomputername,ipaddress,defaultipgateway,ipsubnet,dnsserversearchorder,winsprimaryserver | format-Table -Auto
 Get-AdDomainController -Filter * | Select hostname,isglobalcatalog | Format-table -auto
 Search-ADAccount -PasswordNeverExpires | Select-Object Name, Enabled 
 cls;while($true){get-date;$t = New-Object Net.Sockets.TcpClient;try {$t.connect("10.45.2.68",3389);write-host "RDP is up"}catch{write-Host "RDP is down"}finally{$t.close();sleep 30}}
@@ -1689,7 +1710,8 @@ With the Active Directory Best Practices Analyzer (ADBPA) tool provided by Micro
 
 #>
 
-$PSDefaultParameterValues['Get-ChildItem:Force'] = $True
+$PSDefaultParameterValues['Get-ChildItem:Force']         = $True  
+$PSDefaultParameterValues['Get-Process:IncludeUserName'] = $True
 # Install-UpdatedModule  Newer Modules Later Versions
 $Modules = Get-Module -ListAvailable | Group Name | ForEach-Object {
   $_.Group | Sort Version -Descending | Select-Object -First 1
