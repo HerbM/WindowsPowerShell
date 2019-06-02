@@ -416,7 +416,9 @@ If ((!$Enable) -and $MyInvocation.Line -match '\s*\.(?![\w\\.\"''])') {
     Write-Warning "$(FLINE) Reset proxy"
     Set-DefaultProxy @$PSBoundParameters
     Set-InternetProxy -State Disable
-    If (Get-Command setproxy.exe -ea Ignore) { setproxy.exe /proxy:disable }
+    If (Get-Command setproxy.exe -ea Ignore) { 
+      setproxy.exe /proxy:disable 
+    } Else { Write-Error "SetProxy.exe: NOT found on path" }
     Set-HTTPProxy -Disable    
     Set-GitProxy  -Reset
   } ElseIf ($Proxy) { 
@@ -425,16 +427,16 @@ If ((!$Enable) -and $MyInvocation.Line -match '\s*\.(?![\w\\.\"''])') {
     Set-InternetProxy -Enable # -url $Proxy
     If (Get-Command setproxy.exe -ea Ignore) { 
       setproxy /pac:http://proxyconf.my-it-solutions.net/proxy-na.pac  
-    }  
+    } Else { Write-Error "SetProxy.exe: NOT found on path" } 
     Set-HTTPProxy
     Set-GitProxy
   } Else {
     Write-Warning "$(FLINE) Setting proxy"
     Set-DefaultProxy # @$PSBoundParameters
     Set-InternetProxy -Enable # -url $Proxy
-    If ((Get-Command setproxy.exe -ea Ignore) -and ($Env:ComputerName -like 'MC0*')) { 
+    If ((Get-Command setproxy.exe -ea Ignore)) {  # -and ($Env:ComputerName -like 'MC0*')) { 
       setproxy /pac:http://proxyconf.my-it-solutions.net/proxy-na.pac  
-    }  
+    } Else { Write-Error "SetProxy.exe: NOT found on path" } 
     Set-HTTPProxy
     Set-GitProxy
   }

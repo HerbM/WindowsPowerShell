@@ -2128,7 +2128,11 @@ set-alias ic $ICFile -force -scope global -ea Ignore
 # get-uptime;Get-WURebootStatus;Is-RebootPending?;Get-Uptime;PSCx\get-uptime;boottime.cmd;uptime.cmd
 #
 Function Get-BootTime { (Get-CimInstance win32_operatingsystem).lastbootuptime }
-Write-Information "$(LINE) Boot Time: $(Get-date ((Get-CimInstance win32_operatingsystem).lastbootuptime) -f 's')"
+try {
+  Write-Information "$(LINE) Boot Time: $(Get-date ((Get-CimInstance win32_operatingsystem).lastbootuptime) -f 's')"
+} catch { 
+  Write-Warning     "$(LINE) CIM call to get boot time failed"
+}
 Function ql {  $args  }
 Function qs { "$args" }
 Function qa {
