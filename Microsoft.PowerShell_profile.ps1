@@ -1046,7 +1046,7 @@ Function New-RDPSession {
   [CmdLetBinding()]param(
     [Alias('Remote','Target','Server')]$ComputerName,
     [Alias('ConnectionFile','File','ProfileFile')]$path='c:\bat\good.rdp',
-    [int]$Width=1350, [int]$Height=730,
+    [int]$Width=2000, [int]$Height=1080,
     [Alias('NoConnectionFile','NoFile','NoPath')][switch]$NoProfileFile,
     [Parameter(ValueFromRemainingArguments=$true)][string[]]$RemArgs,
     [Alias('Assist')][switch]$Control,
@@ -2205,7 +2205,7 @@ Function Global:prompt {
   ' '                                    # Return a normal 'space' to PS to suppress PS adding it's own prompt
 }
 
-If (Test-Path 'C:\Program Files (x86)\VLC\vlc.exe' -ea Ignore) { new-alias v 'C:\Program Files (x86)\VLC\vlc.exe' -force -scope Global }
+If (Test-Path 'C:\Program Files\VLC\vlc.exe' -ea Ignore) { new-alias v 'C:\Program Files (x86)\VLC\vlc.exe' -force -scope Global }
 
 Function Global:prompt {
   If (!((Test-Path Function:\MaxPromptLength) -and
