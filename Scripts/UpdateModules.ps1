@@ -1,5 +1,71 @@
+[CmdLetBinding()]Param(
+  [switch]$Reload
+)
 # Get gallery modules
-$gallery = find-module
+If (!$PSGallery -and !$Reload) {
+  Write-Warning "$(FLINE) Loading module list from PSGallery"
+  $Global:PSGallery = Find-Module
+}
+Write-Warning "$(FLINE) PSGallery module count: $($PSGallery.Count)"
+
+Function Select-Version {  #TRASH Needs lots of work
+  [CmdLetBinding()]Param(
+    [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)][string[]]$Name = $Null,
+    [switch]$Oldest
+  )
+  If (!$Name) { $Name = Get-Module -ListAvailable }
+  $Name | Group-Object Name | ForEach-Object { $_.Group | Sort Version -desc | Select -first 1}
+}
+Function Select-Version {  
+  [CmdLetBinding()]Param(
+    [Parameter(ValueFromPipeline)][Object[]]$InputObject = @(Get-Module -ListAvailable),
+    [switch]$Oldest = $False
+  )
+  Begin { 
+    $Descending = !$Oldest
+  }
+  Process {
+    $InputObject | Group-Object Name | ForEach-Object { 
+      $_.Group | Sort-Object Version -Descending:$Descending | Select-Object -first 1
+    }
+  }
+  End {}
+}
+
+# (gcb | Select -skip 1 | ConvertFrom-CSV -Header Agency,Domain,Groups -delim "`t") 
+
+Function Select-OutOfDate {  
+  [CmdLetBinding()]Param(
+    [Parameter(ValueFromPipeline)][Object[]]$InputObject,# = @(Get-Module -ListAvailable),
+    [Object[]]$Available = @(Get-Variable PSGallery -ea Ignore -Value),
+    [switch]$ShowInstalledVersion = $False
+  )
+  Begin {   
+    Write-Warning "Begin $($MyInvocation.MyCommand)"
+    $Local:AvailableLookup = If (@($Available)[0] -is 'hashtable') {
+      $Available
+    } Else {
+      Write-Warning "Making hashtable"
+      $Available | Group-Object Name -AsHashTable
+    }   
+    Set-Strictmode -Off
+    Write-Warning "Begin completed $($MyInvocation.MyCommand)"
+  }
+  Process {
+    ForEach ($Item in $InputObject) { 
+      $Name = $Item.Name
+      # Write-Verbose "$Name found: $([Boolean]$AvailableLookup.$Name)"
+      If ($Gallery = $AvailableLookup.$Name) {
+        Write-Verbose "Installed/Gallery versions $($Name): $($Item.Version) $($Gallery.Version)"
+        If ($Gallery.Version -gt $Item.Version) { 
+          If ($ShowInstalledVersion) { $Item } Else { $Gallery } 
+        } 
+      } 
+    }  
+  }
+}
+
+
 # Uninstall older versions of modules with multiple versions
 $Installed = Get-Module -ListAvailable 
 $OlderVersions  = $Installed | Group Name | Where-Object count -gt 1 | ForEach-Object { 
