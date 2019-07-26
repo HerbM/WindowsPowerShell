@@ -2841,6 +2841,20 @@ Function Lock {
   )
   rundll32.exe 'user32.dll,LockWorkStation'
 }
+Function ip4 { ipconfig | sls IPv4 }
+Function ipv4 { ipconfig | sls IPv4 }
+
+LAPS Email for John, Carlos
+Active Directory Hardening
+Some servers in Tier2?
+JIT  MIM PAM
+
+
+Windows Credential Manager LSASS MimKatz
+
+RAP AD 
+PAD
+Premiere offerings
 
 <#
   $watcher = New-Object System.IO.FileSystemWatcher
