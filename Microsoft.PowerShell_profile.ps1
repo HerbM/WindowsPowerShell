@@ -2868,32 +2868,65 @@ Function Convert-ClipBoard {
     $Trim = If     ($NoTrim)  { ''        }
             ElseIf ($TrimAll) { '\W'      }
             ElseIf ($Trim)    { $Trim     } 
-            Else              { ',;: \' }
+            Else              { ',;: \\/' }
     $MinimumLength = If ($AllowBlankLines) { -1 } Else { 0 }        
   }
   Process {
-    (Get-ClipBoard) -split "`n+" | ForEach-Object { $_.trim($Trim) } | 
+    (Get-ClipBoard) -split "`n+" | ForEach-Object { $_ -replace "^(\$Trim)|(\$Trim$)" } | 
       Where-Object Length -gt $MinimumLength 
   }
   End {}
 }
 
-Function Select-EveryThing {    # es.exe everything 
+Function Select-Everything {    # es.exe everything 
   [cmdletbinding()][Alias('se')]param(
     [Parameter(valuefromremainingarguments)][string[]]$Args,
-    [switch]$Ordered = $False
+    [switch]$Complete   = $False,
+    [switch]$NoSubtitle = $False,
+    [switch]$NoEdition  = $False,
+    [switch]$Books      = $False,
+    [switch]$Archives   = $False,
+    [switch]$Ordered    = $False
   ) 
   Begin {
-    If (!$Args) { $Args = @(Convert-ClipBoard) }
+    $LineCount = 0
+    $Args,$ExtraArgs = $Args.Where({$_ -notmatch '^-'}, 'split')
+    Write-Verbose "Args: $Args"
+    Write-Verbose "Extra: $ExtraArgs"
+    $ArchiveExtensions = '*.zip','*.rar','*.lzw','*.7z'
+    $BookExtensions    = '*.pdf','*.azw','*.azw3','*.azw4','*.mobi','*.djv'
+    $Extensions      = @()
+    If ($Archives) { $Extensions  = $ArchiveExtensions }
+    If ($Books)    { $Extensions += $Extensions + $BookExtensions }
+    $Extensions = @($Extensions -join '|')
+    If (!$Args)    { 
+      $Args = @(Convert-ClipBoard) 
+      # If ($NoSubtitle) { $Args = $Args -replace '(?:^[^:]):.*' }
+      If ($NoSubtitle) { $Args = $Args -replace ':.*' }
+      Write-Verbose "Begin-NoSubtitle: $Args" ; 
+      If ($NoEdition)  { $Args = $Args -replace '((\d\s*(st|nd|rd)*)|first|second|third|fourth)\s*ed.*$' }
+      Write-Verbose "Begin-NoEdition: $Args" ; 
+    }
   }
   Process {
     $args = ($args -split '\W+').trim() | ? { $_ -and $_ -notmatch '^-?verbo' } | % { Write-verbose "[$_]"; $_ }; 
-    write-verbose "es $args" ; 
-    If ($Ordered) { $Args = @( '*' + ($Args -join '*') + '*') }
-    es @args 
+    If ($Ordered -or $Complete) {
+      $Args = $Args.trim() -join '*' -replace '[\s*]{2,}', '*' 
+      If (!$Complete) { $Args = "*$Args*" }
+    }
+    Write-Verbose "es $args $Extensions $ExtraArgs" ; 
+    ForEach ($Line in @(es @args @Extensions @ExtraArgs)) {
+      $LineCount++
+      $Line 
+    }    
+    If (!$LineCount) {
+      Write-Warning "es $args $Extensions $ExtraArgs"
+    }
   }
-  End {}
+  End {
+  }
 }
+
 
 $UsePostloadProfile = [Boolean](Get-Variable UsePostloadProfile -value -ea Ignore)
 Get-ExtraProfile 'Post' -PostloadProfile:$UsePostloadProfile | ForEach-Object {
