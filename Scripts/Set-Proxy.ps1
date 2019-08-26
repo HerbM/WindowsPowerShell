@@ -300,6 +300,8 @@ Function Set-GitProxy {
     Set-EnvironmentVariable http_proxy            '' Process 
     Set-EnvironmentVariable https_proxy           '' Process 
   }  
+  
+  # 
   If ($Reset) {
     remove-item Env:\Git*,Env:\HTTP*,Env:\credential_helper* -ea ignore -force
   } else {
@@ -441,3 +443,10 @@ If ((!$Enable) -and $MyInvocation.Line -match '\s*\.(?![\w\\.\"''])') {
     Set-GitProxy
   }
 }
+
+# set-proxy -d
+# & 'C:\Program Files (x86)\Common Files\Pulse Secure\jamui\pulse.exe' -url ura-us.it-solutions.atos.net/pulsesso -stop
+# Get-Process Pulse -ea 4 | Stop-Process
+# & 'C:\Program Files (x86)\Common Files\Pulse Secure\jamui\pulse.exe' -url ura-us.it-solutions.atos.net/pulsesso -login
+# Click on connect, add pin, enter
+# set-proxy -e

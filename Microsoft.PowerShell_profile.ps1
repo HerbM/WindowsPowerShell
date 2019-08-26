@@ -2579,6 +2579,27 @@ Function 4rank ($n, $d1, $d2, $d) {"{0:P2}   {1:P2}" -f ($n/$d),(1 - $n/$d)}
 Write-Information ("$(LINE) Use Function Get-PSVersion or variable `$PSVersionTable: $(Get-PSVersion)")
 Function down {Set-Location "$env:userprofile\downloads"}
 Function Get-SerialNumber {Get-WMIObject win32_operatingsystem  | Select-Object -prop SerialNumber}
+Function Get-DomainRoleName {
+  [CmdletBinding()]Param(
+    [int32]$Role = (Get-WMIObject Win32_ComputerSystem).DomainRole
+  ) 
+  $RoleNames = @(
+    'StandaloneWorkstation', 
+    'MemberWorkstation', 
+    'StandaloneServer',       
+    'MemberServer',           
+    'DomainController',       
+    'PrimaryDomainController'
+  )
+  $Count = $RoleNames.Count
+  For ($i=0;$i -lt $Count; $i++) { Write-Verbose "$i = $($RoleNames[$i])" }
+  Try { 
+    $RoleNames[$Role] 
+  } Catch {
+    'Unknown'
+  }
+}
+
 Function Get-ComputerDomain {
   Get-WMIObject win32_computersystem |
     Select-Object -property Name,Domain,DomainRole,@{
@@ -2805,8 +2826,37 @@ If ($PSVersionTable.PSVersion -lt [version]'5.0.0.0') {
 Function PSBoundParameter([string]$Parm) {
   return ($PSCmdlet -and $PSCmdlet.MyInvocation.BoundParameters[$Parm].IsPresent)
 }
+Function Scroll { 
+  Param(
+    $Count=(($Host.UI.RawUI.MaxWindowSize -split ',')[1]),
+    [Alias('CLS','C','Erase','Blank')][switch]$ClearScreen = $False    
+  )
+  $LinesToScroll = "`n" * $Count
+  Write-Host $LinesToScroll
+}
+Function Lock { 
+  Param(
+    # $Count=(($Host.UI.RawUI.MaxWindowSize -split ',')[1]),
+    # [Alias('CLS','C','Erase','Blank')][switch]$ClearScreen = $False    
+  )
+  rundll32.exe 'user32.dll,LockWorkStation'
+}
+Function ip4 { ipconfig | sls IPv4 }
+Function ipv4 { ipconfig | sls IPv4 }
 
 <#
+LAPS Email for John, Carlos
+Active Directory Hardening
+Some servers in Tier2?
+JIT  MIM PAM
+
+
+Windows Credential Manager LSASS MimKatz
+
+RAP AD 
+PAD
+Premiere offerings
+
   $watcher = New-Object System.IO.FileSystemWatcher
   $watcher.Path = 'C:\temp\'
   $watcher.Filter = 'test1.txt'
@@ -2920,7 +2970,7 @@ Function Select-Everything {    # es.exe everything
       $Line 
     }    
     If (!$LineCount) {
-      Write-Warning "es $args $Extensions $ExtraArgs"
+      Write-Warning "NOT Found: es $args $Extensions $ExtraArgs"
     }
   }
   End {
