@@ -202,15 +202,13 @@ Function Get-InternetProxy {
   $InternetSettingsKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings"
   $UrlEnvironment      = $Env:AutoConfigUrl
   $UrlDefault          = 'http://proxyconf.my-it-solutions.net/proxy-na.pac'
-  $ProxyValues         = 'AutoConfig ProxyEnable Autodetect'
-  Write-Verbose "`$Env:AutoConfigUrl        : $($Env:AutoConfigUrl)"
-  Write-Verbose  "Default proxy             : $urlDefault"
-  $Settings = get-itemproperty $InternetSettingsKey -ea ignore | findstr /i $ProxyValues | Sort-Object
-    Write-Output "             Registry settings"
-    ForEach ($Line in $Settings) {
-    Write-Output $Line
-  }
+  $ProxyValues         = 'AutoConfig*', 'ProxyEnable', 'Autodetect'
+  Write-Verbose "`$Env:AutoConfigUrl  : $($Env:AutoConfigUrl)"
+  Write-Verbose "Default proxy       : $urlDefault"
+  Write-Verbose "Checked values      : $ProxyValues"
+  get-itemproperty $InternetSettingsKey -ea ignore | Select $ProxyValues
 }
+
 Function Set-InternetProxy {
   [CmdletBinding()]
   param(

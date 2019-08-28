@@ -2843,18 +2843,9 @@ Function Lock {
 }
 Function ip4 { ipconfig | sls IPv4 }
 Function ipv4 { ipconfig | sls IPv4 }
+Function ak { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
+Function hk { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
 
-LAPS Email for John, Carlos
-Active Directory Hardening
-Some servers in Tier2?
-JIT  MIM PAM
-
-
-Windows Credential Manager LSASS MimKatz
-
-RAP AD 
-PAD
-Premiere offerings
 
 <#
   $watcher = New-Object System.IO.FileSystemWatcher

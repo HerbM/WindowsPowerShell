@@ -77,7 +77,8 @@ Function Get-FileVersion {
     }
     Write-Verbose "Type: $($Path; $LiteralPath; $Service)"
     $ItemName = ''
-    $Recurse  = If ($Recurse) { @{Recurse = $True} } Else { @{} }
+    $Recurse  =  [boolean](Get-Variable Recurse -scope 0 -value -ea Ignore) 
+    $RecurseParam = @{Recurse = $Recurse}
     $Names    = @(If     ($Path)        { CleanPath $Path        } 
                   ElseIf ($LiteralPath) { CleanPath $LiteralPath }
                   ElseIf ($Service)     { $ItemName = $Service.Name

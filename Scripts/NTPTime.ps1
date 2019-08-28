@@ -18,7 +18,7 @@
 .Notes
   https://www.madwithpowershell.com/2016/06/getting-current-time-from-ntp-service.html
   Import-csv .\Junk\Server-NTPCheck.csv | Sort { [Math]::Abs($_.offset) } | ft
-  w32tm /monitor /computers:204.67.71.10,204.67.184.28,204.67.182.226
+  w32tm /monitor /computers:j204.67.71.10,204.67.184.28,204.67.182.226
   Get-NTPTime (Import-CSV .\Server-DC.csv).ipaddress | Export-CSV .\junk\Server-NTPCheck.csv
   Import-CSV .\Server-DC.csv | Get-NTPTime | ft
   
@@ -104,15 +104,15 @@ Function Get-NtpTime {
         2 { 'Last minute 59 sec'       }
         3 { 'Server not synchronized)' }
       }
-      If ($Info) {
-        $Info | Add-Member -MemberType NoteProperty -Name Version     -Value $Version          -PassThru |
-                Add-Member -MemberType NoteProperty -Name Mode        -Value $Mode             -PassThru |
-                Add-Member -MemberType NoteProperty -Name ModeName    -Value $ModeName         -PassThru |
-                Add-Member -MemberType NoteProperty -Name Stratum     -Value $Stratum          -PassThru |
-                Add-Member -MemberType NoteProperty -Name StratumName -Value $StratumName      -PassThru |
-                Add-Member -MemberType NoteProperty -Name Precision   -Value $PrecisionSeconds -PassThru |
-                Add-Member -MemberType NoteProperty -Name LI          -Value $LI               -PassThru |
-                Add-Member -MemberType NoteProperty -Name LIText      -Value $LIText
+      If ($Info) { $Info | 
+        Add-Member -MemberType NoteProperty -Name Version     -Value $Version          -PassThru |
+        Add-Member -MemberType NoteProperty -Name Mode        -Value $Mode             -PassThru |
+        Add-Member -MemberType NoteProperty -Name ModeName    -Value $ModeName         -PassThru |
+        Add-Member -MemberType NoteProperty -Name Stratum     -Value $Stratum          -PassThru |
+        Add-Member -MemberType NoteProperty -Name StratumName -Value $StratumName      -PassThru |
+        Add-Member -MemberType NoteProperty -Name Precision   -Value $PrecisionSeconds -PassThru |
+        Add-Member -MemberType NoteProperty -Name LI          -Value $LI               -PassThru |
+        Add-Member -MemberType NoteProperty -Name LIText      -Value $LIText
       } Else {
         $Info = [PSCustomObject]@{
           Version     = $Version

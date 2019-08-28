@@ -1,3 +1,5 @@
+
+
 Beefarino Stupid PowerShell Tricks
   ScriptCS Linq queries
   -repl (rudimentary)
@@ -6,14 +8,97 @@ Beefarino Stupid PowerShell Tricks
   SQLite
   AutoVars
 
+PowerShell custom object typenames
+$p.pstypenames
+$p.pstypenames.clear()
+$p.pstypenames.Add('newtype')
+$p.pstypenames.insert(0,'another')
+$p.psobject.pstypenames.insert(0,'AThird')
+$O | Add-Member -Type ScriptMethod -Name ToString -Value { $this.value } -force
+
+
 get-counter '\\.\processor(_total)\% processor time' -samp 1 -continu  | Select -expand CounterSamples | Select CookedValue
 netsh wlan show pro LearnQuick.com key=clear
+
+# Find or replace matching string that does NOT match given case (in middle):
+'string','STRING','String' -replace '(String)(?<!(?-i:String))', 'String'
+'string','STRING','String' -match '(String)(?<!(?-i:String))'
+
+(Get-Culture).TextInfo.totitlecase((Get-Culture).TextInfo.tolower('NASA'))
+https://www.powershellmagazine.com/2013/07/24/pstip-how-to-convert-words-to-title-case/
+
+https://github.com/leppie/IronScheme
+https://github.com/BornToBeRoot/NETworkManager
+https://gallery.technet.microsoft.com/scriptcenter/Get-Constructor-a8911ebe
+https://cyberwardog.blogspot.com/2016/07/powershell-explore-net-classes-101.html
+
+Add-Type -AssemblyName System.Web; [System.Web.HttpUtility] | gm -static
+[System.Web.HttpUtility]::HtmlAttributeEncode((gc .\ic.ps1))
+
+https://devblogs.microsoft.com/scripting/use-powershell-to-work-with-the-net-framework-classes/
+Add-Type -AssemblyName System.ServiceProcess
+$sc = "System.ServiceProcess.ServiceController" -as [type]
+[reflection.assembly]::GetAssembly($sc)
+GAC    Version        Location
+—      ———            ——–
+True   v2.0.50727     C:\Windows\assembly\GAC_MSIL\System.ServiceProcess\2.0.0.0_…
+# The GetAssembly method returns the loaded assembly as an instance of the System.Reflection.Assembly class. This means that you can pass it to the Get-Member Windows PowerShell cmdlet and see what methods, properties and events are available. This is seen here.
+[reflection.assembly]::GetAssembly($sc) | Get-Member
+Add-Type -AssemblyName System.ServiceProcess
+[System.ServiceProcess.ServiceController]::GetDevices($Env:computer)
+Add-Type -AssemblyName System.speech
+$talker = New-Object System.Speech.Synthesis.SpeechSynthesizer
+$Talker.Speak("This is a test")
+$Talker.SpeakAsync("This is a test")
+ForEach ($Message in "This is a test", "another test", "A final test") { $Talker.SpeakAsync($message) }
+[appdomain]::CurrentDomain
+[appdomain]::currentdomain.GetAssemblies()
+[appdomain]::currentdomain.GetAssemblies() | Foreach-Object {$_.gettypes()} | sort basetype # slow
+https://social.technet.microsoft.com/Forums/scriptcenter/en-US/home?forum=ITCG
+https://social.technet.microsoft.com/Forums/en-US/home?category=sysinternals&amp;filter=alltypes&amp;sort=lastpostdesc
+https://social.technet.microsoft.com/wiki/contents/articles/25333.discover-the-dot-net-namespace-and-wmi-class-powershell.aspx#Domain_Controller_Port_Scanner
+
+https://github.com/quozd/awesome-dotnet
+https://github.com/aloisdg/awesome-linq
+https://github.com/Cybermaxs/awesome-analyzers .NET Compiler Platform ("Roslyn") diagnostic analyzers and code fixes.
+https://github.com/thangchung/awesome-dotnet-core
+https://github.com/adamsitnik/awesome-dot-net-performance
+https://github.com/heynickc/awesome-ddd
+https://discoverdot.net/
+https://csharpdigest.net/
+
+https://haacked.com/archive/2007/06/13/the-most-useful-.net-utility-classes-developers-tend-to-reinvent.aspx/
+[System.IO.Path] | gm -static
+[System.IO.Path]::ChangeExtension('x.ps1',test)
+$invalid = [System.IO.Path]::GetInValidFileNameChars()
+((0..127 | % { [char]$_ | ? {$_ -notin $Invalid}}) -join '')
+ChangeExtension
+Combine
+Equals
+GetDirectoryName
+GetExtension
+GetFileName
+GetFileNameWithoutExtension
+GetFullPath
+GetInvalidFileNameChars
+GetInvalidPathChars
+GetPathRoot
+GetRandomFileName
+GetTempFileName
+GetTempPath
+HasExtension
+IsPathRooted
+ReferenceEquals
+AltDirectorySeparatorChar
+DirectorySeparatorChar
+InvalidPathChars
+PathSeparator
+VolumeSeparatorChar
+
 
 # Adopted RipGrep rg, runiq, xsv to supplement PowerShell 
 #AutoHotKey 2.0 https://autohotkey.com/download/2.0/ 2018-10-05 on 2018-11-11
 #https://github.com/PowerShellOrg/pesterbookcode
-#'string','STRING','String' -match '(String)(?<!(?-i:String))'
-#'string','STRING','String' -replace '(String)(?<!(?-i:String))', 'String'
 #https://github.com/dfinke/PowerShellHumanizer.git
 #https://github.com/adamdriscoll/snek.git  Use Python from PowerShell
 #https://github.com/PowerShellOrg/pesterbookcode.git
@@ -21,6 +106,7 @@ netsh wlan show pro LearnQuick.com key=clear
 # -k, --insecure        Allow conda to perform "insecure" SSL connections &  Anaconda/Conda update upgrade
 #                       transfers. Equivalent to setting 'ssl_verify' 'false'
 conda update --yes -n base conda   # Updating Python and Anaconda Conda 
+conda update --all
 conda update --yes --all
 npm i -g npm -y                    # update npm node
 
