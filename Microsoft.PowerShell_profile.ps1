@@ -928,7 +928,7 @@ Function Get-DotNetVersion {
     [version]$MaximumVersion='999.9.9.9'
   )
   # $MinimumVersion = $MinimumVersion
-  Write-Information '.NET dotnet versions installed'
+  Write-Information '[Information] .NET dotnet versions installed'
   $DotNetKey = @('HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP',
                  'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4')
   @(foreach ($key in  $DotNetKey) { Get-ChildItem $key }) |
