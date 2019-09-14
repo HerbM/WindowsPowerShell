@@ -20,6 +20,21 @@
 $DefaultFile = 'C:\dev\WarAndPeaceStart.txt'
 $DefaultUrl  = 'http://www.gutenberg.org/files/2600/2600-0.txt'
 
+Function Main {
+  $Text = If ($Url -or $Download) {
+    If (!$Url) { $Url = $DefaultUrl }
+    (Invoke-WebRequest $Url).Content
+  } Else {
+    If (!$Path) { $Path = $DefaultFile }
+    Get-Content $Path  
+  }  
+  Write-Verbose "$(LINE) [$Path] [$Url]"
+  $Text | toLower | words | group | sort Count -Descending | select -first $n
+}
+
+filter ToLower { $_.toLower() }
+filter words   { $_ -split '\W+' | ? Length -gt 0 }
+
 Function CountRuns {
   Param([Parameter(ValueFromPipeline)][string[]]$Words) 
   Begin {
@@ -49,21 +64,37 @@ Function CountRuns {
   }    
   end { if ($Count) { New-WordCount $Count $LastWord }}  # Flush final word                      
 }
+Function CountRuns {
+  Param([Parameter(ValueFromPipeline)][string[]]$Words) 
+  Begin {
+    Function New-RunCount {
+      Param([string]$Word, [Int]$Count)     
+      [PSCustomObject]@{ Count = $Count; Word = $Word } 
+    }
+    
+    $Count, $LastWord = 0, ''      # Start with no word, count 0 
+  }   
+  Process {
+    If (!$PSBoundParameters.ContainsKey('Words')) { $Words = $_ }
+    ForEach ($Word in $Words) {
+      If ($LastWord -eq '') { $LastWord = $Word }
+      If ($Word -cne $LastWord) {
+        [PSCustomObject]@{
+          Count = ++$Count
+          Word  = $LastWord
+        }          
+        $Count, $LastWord = 1, $Word      # reset for new word 
+      } Else {
+        $Count++
+      }
+    }
+  }    
+  end { if ($Count) { New-WordCount $Count $LastWord }}  # Flush final word                      
+}
 
-filter ToLower { $_.toLower() }
-filter words   { $_ -split '\W+' | ? Length -gt 0 }
   
 
 
-$Text = If ($Url -or $Download) {
-  If (!$Url) { $Url = $DefaultUrl }
-  (Invoke-WebRequest $Url).Content
-} Else {
-  If (!$Path) { $Path = $DefaultFile }
-  Get-Content $Path  
-}  
-Write-Verbose "$(LINE) [$Path] [$Url]"
-$Text | toLower | words | group | sort Count -Descending | select -first $n
 
 
 <# Output of "War and Peace" from Project Gutenberg http://www.gutenberg.org/files/2600/2600-0.txt
