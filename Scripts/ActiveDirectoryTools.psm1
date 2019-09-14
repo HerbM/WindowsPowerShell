@@ -107,8 +107,60 @@ Set-StrictMode -Version Latest
     } 
   }
 
-Export-ModuleMember -Function *
 
+<#
+.Synopsis
+Execute RepAdmin to force SyncAll Push & Pull of Domain Controllers
+.Description
+Execute RepAdmin to force Push/Pull of some or all Domain Controllers in a Domain
+.Notes
+RepAdmin docs
+https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/cc835086%28v%3dws.11%29
+.Link
+https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/cc835086%28v%3dws.11%29
+  
+#>
+Function Invoke-SyncAll { 
+  [CmdletBinding(SupportsShouldProcess,ConfirmImpact='Medium')]
+  Param (
+    [Alias('DCName','Server','Name')]
+    [Object[]]$ComputerName = @(Get-DomainController -Computer),
+    [Parameter(ValueFromRemainingArguments)][string[]]$Args,
+    [switch]$NoDefaultOptions = $False,
+    [switch]$PushOnly = $False,
+    [switch]$PullOnly = $False
+  )
+  Begin {
+    If (!$NoDefaultOptions) {
+      $DefaultPush = @('/AdeP')
+      $DefaultPull = @('/Ade' )
+    }
+    $Push = If ($PullOnly) { '' } Else { 'Push' }
+    $Pull = If ($PushOnly) { '' } Else { 'Pull' }
+    $SyncMesage = ($Push,$Pull -join ' & ').Trim(' &') + ' SyncAll:' 
+    $WhatIf  = $PSBoundParameters.ContainsKey('WhatIf' )
+    $Confirm = $PSBoundParameters.ContainsKey('Confirm')
+    $Msg = If     ($WhatIf)  { 'WhatIf:'  }
+           ElseIf ($Confirm) { 'Confirm:' }
+           Else              { 'Invoke:'  }     
+  } 
+  Process {
+    ForEach ($DC in $ComputerName) {
+      If ($DC -isnot [string]) { $DC = $DC.ComputerName}  
+      If ($Push) { Write-Verbose "$Msg RepAdmin /syncall $(($DefaultPush -join ' ') +       ($Args -Join ' ')) $DC" } 
+      If ($Pull) { Write-Verbose "$Msg RepAdmin /syncall $(($DefaultPull -join ' ') + ' ' + ($Args -Join ' ')) $DC" }
+      If ($PSCmdLet.ShouldProcess($DC, $SyncMesage )) {
+        Write-Verbose "$('= * 20') $SyncMesage $($DC) $('= * 20')";
+        If ($Push) { RepAdmin /syncall @DefaultPush @Args $DC } 
+        If ($Pull) { RepAdmin /syncall @DefaultPull @Args $DC }
+      } Else {
+        If ($Confirm) { $Msg = 'Skipped:' }
+      }   
+    }    
+  }  
+}   
+
+Export-ModuleMember -Function *
 
 # From within the script? $PSBoundParameters
 # from outside the script? (get-command $scriptPath).Parameters.Keys
