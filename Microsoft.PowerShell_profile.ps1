@@ -2864,6 +2864,29 @@ Function ip4 { ipconfig | sls IPv4 }
 Function ipv4 { ipconfig | sls IPv4 }
 Function ak { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
 Function hk { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
+If (Test-Path 'C:\util\AutoHotKey\AutoHotkeyU64.exe') {
+  ForEach () {
+    If ($AHKFile) {
+      C:\util\AutoHotKey\AutoHotkeyU64.exe /r C:\bat\ahk.ahk
+	}  
+  }	
+}
+
+Function ToTitleCase { 
+  [CmdletBinding()]Param(
+    [Parameter(ValueFromPipeline,ValueFromPipeLineByPropertyName)]
+	  [string[]]$Title=$null,
+	[Alias('ToLowerCase','LowerCase')][switch]$ForceLowerCase = $False 
+  ) 
+  # If (!$Title) { $Title = $_ }
+  Begin { $TextInfo = (Get-Culture).TextInfo }
+  Process {
+    ForEach ($L in $Title) {
+      If ($ForceLowerCase) { $TextInfo.ToLower($L) }	
+	  $TextInfo.ToTitleCase($L) 
+	}
+  }
+}
 
 <#
 LAPS Email for John, Carlos

@@ -1,3 +1,7 @@
+PRO .\Scripts\AddNote.ps1
+$PSModules | ? Name -match ^conver | Sort Name | 
+  FT Version,Name,Description -auto
+
 # C:\Users\Herb\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1
 # https://keepass.info
 # https://keepass.info/plugins.html
@@ -80,7 +84,9 @@ function e {    # es.exe everything
 }
 
 if ($MyInvocation.InvocationName -ne '.') { Invoke-Main }
-else { ((Get-Command $PSCommandPath | Select -Expand ScriptBlock) -split "`n" | ? {$_ -match "^\s*function "}) -replace "^Function *| .*" }
+else { 
+  ((Get-Command $PSCommandPath | Select -Expand ScriptBlock) -split "`n" | ? {$_ -match "^\s*function "}) -replace "^Function *| .*" 
+}
 
 else { $Functions = "^[\t ]*function "; (gc $PSCommandPath | ? {$_ -match $Functions}) -replace "$Functions| .*"}
 
