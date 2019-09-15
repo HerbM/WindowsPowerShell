@@ -2649,10 +2649,10 @@ Function Get-PSBoundParameter {
     $Null
   }
 }
-if ($Private:PSRealineModule = Get-Module 'PSReadline' -ea ignore) {
+if ($Private:PSReadlineModule = Get-Module 'PSReadline' -ea ignore) {
   set-psreadlinekeyhandler -chord 'Tab'            -Func TabCompleteNext      ### !!!!!
   set-psreadlinekeyhandler -chord 'Shift+Tab'      -Func TabCompletePrevious  ### !!!!!
-  If ($Private:PSRealineModule.Version  -lt [version]'2.0.0') {
+  If ($Private:PSReadlineModule.Version  -lt [version]'2.0.0') {
     set-psreadlinekeyhandler -chord 'Shift+SpaceBar' -Func Complete             ### !!!!!
     Set-PSReadLineOption -ForeGround Yellow  -Token None
     Set-PSReadLineOption -ForeGround Green   -Token Comment  -back DarkBlue
