@@ -485,7 +485,7 @@ new-alias iv 'C:\Program Files\IrfanView\i_view64.exe' -scope Global -force -ea 
 ;;  that it gets passed when started by emacsclientw.
 ;;
 ;(add-to-list 'command-switch-alist '("(make-frame-visible)" .
-;			     (lambda (s))))
+;           (lambda (s))))
 -V, --version           Just print version info and return
 -H, --help              Print this usage information message
 -nw, -t, --tty          Open a new Emacs frame on the current terminal
@@ -2865,29 +2865,32 @@ Function ipv4 { ipconfig | sls IPv4 }
 Function ak { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
 Function hk { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
 If (Test-Path 'C:\util\AutoHotKey\AutoHotkeyU64.exe') {
-  ForEach () {
-    If ($AHKFile) {
-      C:\util\AutoHotKey\AutoHotkeyU64.exe /r C:\bat\ahk.ahk
-	}  
-  }	
+#  ForEach () {
+#    If ($AHKFile) {
+#      C:\util\AutoHotKey\AutoHotkeyU64.exe /r C:\bat\ahk.ahk
+#    }  
+#  }  
 }
 
 Function ToTitleCase { 
   [CmdletBinding()]Param(
     [Parameter(ValueFromPipeline,ValueFromPipeLineByPropertyName)]
-	  [string[]]$Title=$null,
-	[Alias('ToLowerCase','LowerCase')][switch]$ForceLowerCase = $False 
+      [string[]]$Title=$null,
+    [Alias('RemoveChars','ExcludeChars')][string]$RemoveCharacters = '$^',
+    [Alias('ToLowerCase','LowerCase')][switch]$ForceLowerCase = $False 
   ) 
-  # If (!$Title) { $Title = $_ }
-  Begin { $TextInfo = (Get-Culture).TextInfo }
+  Begin { 
+    $TextInfo = (Get-Culture).TextInfo 
+    # If (!$RemoveCharacters) { $RemoveCharacters = '$^' }
+  }
   Process {
     ForEach ($L in $Title) {
-      If ($ForceLowerCase) { $TextInfo.ToLower($L) }	
-	  $TextInfo.ToTitleCase($L) 
-	}
+      If ($ForceLowerCase) { $TextInfo.ToLower($L) }  
+      $TextInfo.ToTitleCase($L) -replace $RemoveCharacters 
+    }
   }
 }
-
+ 
 <#
 LAPS Email for John, Carlos
 Active Directory Hardening
