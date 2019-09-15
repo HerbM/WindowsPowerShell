@@ -27,5 +27,13 @@ Function Test-StrictMode {
 If ($MyInvocation.InvocationName -ne '.') { Test-StrictMode @args }
 
 <#
+
+  Function Get-EventSummary {
+    [CmdletBinding()]Param(
+    )
+    Begin {}
+    Process {}
+    End {}
+  }
 get-eventlog system -Newest 100 -EntryType Error | Group Source,EventID
 #>

@@ -1,0 +1,32 @@
+How to troubleshoot failure to build Open-XML-SDK (with VS Studion 2017)
+https://stackoverflow.com/questions/50322492/how-to-troubleshoot-failure-to-build-open-xml-sdk-with-vs-studion-2017
+
+Obviously I would like to solve this specific problem but would prefer to learn how to understand and troubleshoot such a problem or similar problems:
+
+Attempting to build Open-XML-SDK (cloned from GitHub 2018-05-13) but receiving errors in Visual Studion 2017, dotnet restore, and nuget restore.
+
+Windows 7
+Visual Studio 15.7.1 Community edition, DotNet Framework 4.7.0.2558
+6 pairs of errors: 327 & 167 (same messages except number)
+  Error		Assets file 
+  'C:\s\Open-XML-SDK\obj\DocumentFormat.OpenXml\/project.assets.json' not found. 
+  Run a NuGet package restore to generate this file.	DocumentFormat.OpenXml	
+  C:\Program Files\dotnet\sdk\2.1.200\Sdks\Microsoft.NET.Sdk\build\Microsoft.PackageDependencyResolution.targets	327	
+
+  Error		Assets file 
+  'C:\s\Open-XML-SDK\obj\DocumentFormat.OpenXml\/project.assets.json' not found. 
+  Run a NuGet package restore to generate this file.	DocumentFormat.OpenXml	
+  C:\Program Files\dotnet\sdk\2.1.200\Sdks\Microsoft.NET.Sdk\build\Microsoft.PackageDependencyResolution.targets	167	
+
+dotnet restore error includes: (Build Engine version 15.7.177.53362 for .NET Core)
+  C:\Program Files\dotnet\sdk\2.1.200\NuGet.targets(114,5): error : Failed to retrieve information about 'NETStandard.Library' from remote source 'http://go.microsoft.com/fwlink/?LinkID=206669/FindPackagesById()?id='NETStandard.Library'&semVerLevel=2.0.0'. [C:\s\Open-XML-SDK\Open-XML-SDK.sln]
+  C:\Program Files\dotnet\sdk\2.1.200\NuGet.targets(114,5): error :   The content at 'http://go.microsoft.com/fwlink/?LinkID=206669/FindPackagesById()?id='NETStandard.Library'&semVerLevel=2.0.0' is not valid XML. [C:\s\Open-XML-SDK\Open-XML-SDK.sln]
+  C:\Program Files\dotnet\sdk\2.1.200\NuGet.targets(114,5): error :   For security reasons DTD is prohibited in this XML document. To enable DTD processing set the DtdProcessing property on XmlReaderSettings to Parse and pass the settings into XmlReader.Create method. [C:\s\Open-XML-SDK\Open-XML-SDK.sln]
+
+nuget restore includes: (using msbuild version '15.7.177.53362')
+  Failed to retrieve information about 'xunit' from remote source 'http://go.microsoft.com/fwlink/?LinkID=206669/FindPackagesById()?id='xunit''.
+    The content at 'http://go.microsoft.com/fwlink/?LinkID=206669/FindPackagesById()?id='xunit'' is not valid XML.
+    For security reasons DTD is prohibited in this XML document. To enable DTD processing set the DtdProcessing property on XmlReaderSettings to Parse and pass the settings into XmlReader.Create method.
+      
+      
+      

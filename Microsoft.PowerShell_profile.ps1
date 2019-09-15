@@ -928,7 +928,7 @@ Function Get-DotNetVersion {
     [version]$MaximumVersion='999.9.9.9'
   )
   # $MinimumVersion = $MinimumVersion
-  Write-Information '.NET dotnet versions installed'
+  Write-Information '[Information] .NET dotnet versions installed'
   $DotNetKey = @('HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP',
                  'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4')
   @(foreach ($key in  $DotNetKey) { Get-ChildItem $key }) |
@@ -1046,7 +1046,7 @@ Function New-RDPSession {
   [CmdLetBinding()]param(
     [Alias('Remote','Target','Server')]$ComputerName,
     [Alias('ConnectionFile','File','ProfileFile')]$path='c:\bat\good.rdp',
-    [int]$Width=1350, [int]$Height=730,
+    [int]$Width=2000, [int]$Height=1080,
     [Alias('NoConnectionFile','NoFile','NoPath')][switch]$NoProfileFile,
     [Parameter(ValueFromRemainingArguments=$true)][string[]]$RemArgs,
     [Alias('Assist')][switch]$Control,
@@ -1504,16 +1504,35 @@ Function Get-TypeX {
   #}"
 [PSObject].Assembly.GetType('System.Management.Automation.TypeAccelerators')::Add('accelerators', [PSObject].Assembly.GetType('System.Management.Automation.TypeAccelerators'))
 Function Get-Accelerator {
-  param($Include='.', $Exclude='^$', [switch]$Like)
-  $Acc = [psobject].Assembly.GetType("System.Management.Automation.TypeAccelerators")::get
-  ForEach ($key in $Acc.Keys) {
-    if ($key -notmatch $Include -or $key -match $Exclude) {continue}
+  param(
+    [String[]]$Include = @(), 
+    [String[]]$Exclude = @(), 
+    [switch]$Like
+  )
+  # $Acc = [psobject].Assembly.GetType("System.Management.Automation.TypeAccelerators")::get
+  ForEach ($key in ([psobject].Assembly.GetType("System.Management.Automation.TypeAccelerators")::get).Keys) {
+    $Included = !$Include
+    $Excluded = [Boolean]$Exclude 
+    ForEach ($Pattern in $Include) {
+      If ($Key -match $Pattern) {
+        $Included = $True 
+        Break
+      }
+    }
+    ForEach ($Pattern in $Exclude) {
+      If ($Key -match $Pattern) {
+        $Excluded = $True 
+        Break
+      }
+    }
+    if ($key -notmatch $Include -or $Excluded) {continue}
     [pscustomobject]@{
       Accelerator = $key
       Definition  = $Acc.$key
     }
   }
 }
+
 Function Get-HistoryCommandline {
   [CmdLetBinding()]param(
     [string]$Pattern,
@@ -2205,7 +2224,7 @@ Function Global:prompt {
   ' '                                    # Return a normal 'space' to PS to suppress PS adding it's own prompt
 }
 
-If (Test-Path 'C:\Program Files (x86)\VLC\vlc.exe' -ea Ignore) { new-alias v 'C:\Program Files (x86)\VLC\vlc.exe' -force -scope Global }
+If (Test-Path 'C:\Program Files\VLC\vlc.exe' -ea Ignore) { new-alias v 'C:\Program Files (x86)\VLC\vlc.exe' -force -scope Global }
 
 Function Global:prompt {
   If (!((Test-Path Function:\MaxPromptLength) -and
@@ -2579,6 +2598,27 @@ Function 4rank ($n, $d1, $d2, $d) {"{0:P2}   {1:P2}" -f ($n/$d),(1 - $n/$d)}
 Write-Information ("$(LINE) Use Function Get-PSVersion or variable `$PSVersionTable: $(Get-PSVersion)")
 Function down {Set-Location "$env:userprofile\downloads"}
 Function Get-SerialNumber {Get-WMIObject win32_operatingsystem  | Select-Object -prop SerialNumber}
+Function Get-DomainRoleName {
+  [CmdletBinding()]Param(
+    [int32]$Role = (Get-WMIObject Win32_ComputerSystem).DomainRole
+  ) 
+  $RoleNames = @(
+    'StandaloneWorkstation', 
+    'MemberWorkstation', 
+    'StandaloneServer',       
+    'MemberServer',           
+    'DomainController',       
+    'PrimaryDomainController'
+  )
+  $Count = $RoleNames.Count
+  For ($i=0;$i -lt $Count; $i++) { Write-Verbose "$i = $($RoleNames[$i])" }
+  Try { 
+    $RoleNames[$Role] 
+  } Catch {
+    'Unknown'
+  }
+}
+
 Function Get-ComputerDomain {
   Get-WMIObject win32_computersystem |
     Select-Object -property Name,Domain,DomainRole,@{
@@ -2805,8 +2845,39 @@ If ($PSVersionTable.PSVersion -lt [version]'5.0.0.0') {
 Function PSBoundParameter([string]$Parm) {
   return ($PSCmdlet -and $PSCmdlet.MyInvocation.BoundParameters[$Parm].IsPresent)
 }
+Function Scroll { 
+  Param(
+    $Count=(($Host.UI.RawUI.MaxWindowSize -split ',')[1]),
+    [Alias('CLS','C','Erase','Blank')][switch]$ClearScreen = $False    
+  )
+  $LinesToScroll = "`n" * $Count
+  Write-Host $LinesToScroll
+}
+Function Lock { 
+  Param(
+    # $Count=(($Host.UI.RawUI.MaxWindowSize -split ',')[1]),
+    # [Alias('CLS','C','Erase','Blank')][switch]$ClearScreen = $False    
+  )
+  rundll32.exe 'user32.dll,LockWorkStation'
+}
+Function ip4 { ipconfig | sls IPv4 }
+Function ipv4 { ipconfig | sls IPv4 }
+Function ak { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
+Function hk { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
 
 <#
+LAPS Email for John, Carlos
+Active Directory Hardening
+Some servers in Tier2?
+JIT  MIM PAM
+
+
+Windows Credential Manager LSASS MimKatz
+
+RAP AD 
+PAD
+Premiere offerings
+
   $watcher = New-Object System.IO.FileSystemWatcher
   $watcher.Path = 'C:\temp\'
   $watcher.Filter = 'test1.txt'
@@ -2868,32 +2939,65 @@ Function Convert-ClipBoard {
     $Trim = If     ($NoTrim)  { ''        }
             ElseIf ($TrimAll) { '\W'      }
             ElseIf ($Trim)    { $Trim     } 
-            Else              { ',;: \' }
+            Else              { ',;: \\/' }
     $MinimumLength = If ($AllowBlankLines) { -1 } Else { 0 }        
   }
   Process {
-    (Get-ClipBoard) -split "`n+" | ForEach-Object { $_.trim($Trim) } | 
+    (Get-ClipBoard) -split "`n+" | ForEach-Object { $_ -replace "^(\$Trim)|(\$Trim$)" } | 
       Where-Object Length -gt $MinimumLength 
   }
   End {}
 }
 
-Function Select-EveryThing {    # es.exe everything 
+Function Select-Everything {    # es.exe everything 
   [cmdletbinding()][Alias('se')]param(
     [Parameter(valuefromremainingarguments)][string[]]$Args,
-    [switch]$Ordered = $False
+    [switch]$Complete   = $False,
+    [switch]$NoSubtitle = $False,
+    [switch]$NoEdition  = $False,
+    [switch]$Books      = $False,
+    [switch]$Archives   = $False,
+    [switch]$Ordered    = $False
   ) 
   Begin {
-    If (!$Args) { $Args = @(Convert-ClipBoard) }
+    $LineCount = 0
+    $Args,$ExtraArgs = $Args.Where({$_ -notmatch '^-'}, 'split')
+    Write-Verbose "Args: $Args"
+    Write-Verbose "Extra: $ExtraArgs"
+    $ArchiveExtensions = '*.zip','*.rar','*.lzw','*.7z'
+    $BookExtensions    = '*.pdf','*.azw','*.azw3','*.azw4','*.mobi','*.djv'
+    $Extensions      = @()
+    If ($Archives) { $Extensions  = $ArchiveExtensions }
+    If ($Books)    { $Extensions += $Extensions + $BookExtensions }
+    $Extensions = @($Extensions -join '|')
+    If (!$Args)    { 
+      $Args = @(Convert-ClipBoard) 
+      # If ($NoSubtitle) { $Args = $Args -replace '(?:^[^:]):.*' }
+      If ($NoSubtitle) { $Args = $Args -replace ':.*' }
+      Write-Verbose "Begin-NoSubtitle: $Args" ; 
+      If ($NoEdition)  { $Args = $Args -replace '((\d\s*(st|nd|rd)*)|first|second|third|fourth)\s*ed.*$' }
+      Write-Verbose "Begin-NoEdition: $Args" ; 
+    }
   }
   Process {
     $args = ($args -split '\W+').trim() | ? { $_ -and $_ -notmatch '^-?verbo' } | % { Write-verbose "[$_]"; $_ }; 
-    write-verbose "es $args" ; 
-    If ($Ordered) { $Args = @( '*' + ($Args -join '*') + '*') }
-    es @args 
+    If ($Ordered -or $Complete) {
+      $Args = $Args.trim() -join '*' -replace '[\s*]{2,}', '*' 
+      If (!$Complete) { $Args = "*$Args*" }
+    }
+    Write-Verbose "es $args $Extensions $ExtraArgs" ; 
+    ForEach ($Line in @(es @args @Extensions @ExtraArgs)) {
+      $LineCount++
+      $Line 
+    }    
+    If (!$LineCount) {
+      Write-Warning "NOT Found: es $args $Extensions $ExtraArgs"
+    }
   }
-  End {}
+  End {
+  }
 }
+
 
 $UsePostloadProfile = [Boolean](Get-Variable UsePostloadProfile -value -ea Ignore)
 Get-ExtraProfile 'Post' -PostloadProfile:$UsePostloadProfile | ForEach-Object {
