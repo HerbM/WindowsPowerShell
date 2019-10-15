@@ -1538,8 +1538,8 @@ Function Get-HistoryCommandline {
     [string]$Pattern,
     [uint16]$Count,
     $Exclude,
-    [Switch]$ShowID,
-    [Alias('ID','Object','FullObject')][switch]$HistoryInfo
+    [Alias('ID')]                 [Switch]$ShowID,
+    [Alias('Object','FullObject')][switch]$HistoryInfo
   )
   If ($PSBoundParameters.ContainsKey('ShowID')) {
     $ShowID = [boolean]$ShowID
@@ -1582,7 +1582,12 @@ Function Select-History {
         $_                      # Output the entire history object
       } else {
         $id = $IDFormat -f $_.id
-        "$id$($_.CommandLine)"
+        If ($IncludeID) {
+        } Else {
+          $H = Select-Object ID,CommandLine, StartExecutionTime,EndExecutionTime,ExcutionStatus,Status
+          
+          
+        } # 9/10/2019 9:48:41 AM
       }
       #if ($PSBoundParameters['Verbose'] -and $Verbose) {
         $LastID = $_.ID
@@ -1600,7 +1605,7 @@ Function Get-RunTime {
   param(
     [Parameter(ValueFromPipeline=$True)]
     [Microsoft.PowerShell.Commands.HistoryInfo[]]$historyitem,
-    $Count = 1,
+    $Count = 10,
     [switch]$Duration,
     [switch]$Format
   )
@@ -1633,12 +1638,14 @@ Function Get-RunTime {
         [PSCustomObject]@{
           Id          = $hi.Id
           RunTime     = If ($Duration) { $RunTime } else { $RunTime.TotalSeconds }
+          Completed   = $hi.EndExecutionTime.ToString('yyyy-MM-dd HH:mm')
           CommandLine = $hi.CommandLine
         }
       }
     }
   }
 }; New-Alias rt Get-RunTime -force -scope Global
+
 Function Get-Syntax {
   param(
   )
@@ -2947,6 +2954,18 @@ Function Convert-ClipBoard {
       Where-Object Length -gt $MinimumLength 
   }
   End {}
+}
+
+Function Get-About { 
+  Param([String[]]$Name='.*') 
+  Begin { 
+    $Topics = Import-CSV "$Home\Documents\WindowsPowerShell\Reference\About_HelpTopics.csv" 
+  }
+  Process { 
+    ForEach ($N in $Name) { 
+      $Topics | ? Name -match $N | Select-Object Name,Synopsis  
+    }  
+  } 
 }
 
 Function Select-Everything {    # es.exe everything 
