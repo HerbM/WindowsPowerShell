@@ -485,7 +485,7 @@ new-alias iv 'C:\Program Files\IrfanView\i_view64.exe' -scope Global -force -ea 
 ;;  that it gets passed when started by emacsclientw.
 ;;
 ;(add-to-list 'command-switch-alist '("(make-frame-visible)" .
-;			     (lambda (s))))
+;           (lambda (s))))
 -V, --version           Just print version info and return
 -H, --help              Print this usage information message
 -nw, -t, --tty          Open a new Emacs frame on the current terminal
@@ -2656,10 +2656,10 @@ Function Get-PSBoundParameter {
     $Null
   }
 }
-if ($Private:PSRealineModule = Get-Module 'PSReadline' -ea ignore) {
+if ($Private:PSReadlineModule = Get-Module 'PSReadline' -ea ignore) {
   set-psreadlinekeyhandler -chord 'Tab'            -Func TabCompleteNext      ### !!!!!
   set-psreadlinekeyhandler -chord 'Shift+Tab'      -Func TabCompletePrevious  ### !!!!!
-  If ($Private:PSRealineModule.Version  -lt [version]'2.0.0') {
+  If ($Private:PSReadlineModule.Version  -lt [version]'2.0.0') {
     set-psreadlinekeyhandler -chord 'Shift+SpaceBar' -Func Complete             ### !!!!!
     Set-PSReadLineOption -ForeGround Yellow  -Token None
     Set-PSReadLineOption -ForeGround Green   -Token Comment  -back DarkBlue
@@ -2871,7 +2871,33 @@ Function ip4 { ipconfig | sls IPv4 }
 Function ipv4 { ipconfig | sls IPv4 }
 Function ak { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
 Function hk { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
+If (Test-Path 'C:\util\AutoHotKey\AutoHotkeyU64.exe') {
+#  ForEach () {
+#    If ($AHKFile) {
+#      C:\util\AutoHotKey\AutoHotkeyU64.exe /r C:\bat\ahk.ahk
+#    }  
+#  }  
+}
 
+Function ToTitleCase { 
+  [CmdletBinding()]Param(
+    [Parameter(ValueFromPipeline,ValueFromPipeLineByPropertyName)]
+      [string[]]$Title=$null,
+    [Alias('RemoveChars','ExcludeChars')][string]$RemoveCharacters = '$^',
+    [Alias('ToLowerCase','LowerCase')][switch]$ForceLowerCase = $False 
+  ) 
+  Begin { 
+    $TextInfo = (Get-Culture).TextInfo 
+    # If (!$RemoveCharacters) { $RemoveCharacters = '$^' }
+  }
+  Process {
+    ForEach ($L in $Title) {
+      If ($ForceLowerCase) { $TextInfo.ToLower($L) }  
+      $TextInfo.ToTitleCase($L) -replace $RemoveCharacters 
+    }
+  }
+}
+ 
 <#
 LAPS Email for John, Carlos
 Active Directory Hardening
