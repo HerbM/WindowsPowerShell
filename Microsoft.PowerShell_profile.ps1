@@ -1,4 +1,4 @@
-#region    Parameters
+﻿#region    Parameters
 [CmdLetBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
 param (
                                                        [switch]$Force,
@@ -2457,8 +2457,8 @@ Function Set-GoAlias {
       Try {
         If ($goHash.$Name -and
             (Test-Path $goHash.$Name -PathType Container -ea Ignore)) {
-          Write-Verbose "New-Alias $Name Set-GoLocation -force -scope Global -ea STOP"
-                         New-Alias $Name Set-GoLocation -force -scope Global -ea STOP
+          Write-Verbose "New-Alias $Name Set-GoLocation -force -scope Global -ea Ignore"
+                         New-Alias $Name Set-GoLocation -force -scope Global -ea Ignore
         }
       } Catch { Write-Warning "Can't recreate Alias $Name Set-GoLocation" }
     }
@@ -3043,6 +3043,26 @@ Function Select-Everything {    # es.exe everything
   }
 }
 
+# es $PWD -dm -size dm:>2019/10/19 -sort-dm-ascending file: | sls -not '\.git','PostMan','Google','Everything','Microsoft\\Windows','CryptnetUr','McAfee','NTUSER'
+Function Get-Changed {
+  [cmdletbinding()][Alias('gcf')]param(
+    [string[]]$Path = @(),
+    [Alias('Since','DateTime')][DateTime]$After = (Get-Date).AddDays(-1),
+    [Switch]$Today = $False,
+    [Parameter(ValueFromRemainingArguments=$true)]$Args
+  )
+  If ($Today) { $After = Get-Date 0:00 }
+  $Date = @('dm:>' + (Get-Date $After -f 's'))
+  If (!$Path) {
+    Write-Warning "es -dm -size $Date -sort-dm-ascending file: $Args"  
+    es -dm -size @Date -sort-dm-ascending file: @Args 
+  } 
+  ForEach ($P in $Path) {
+    $P = @($P)
+    Write-Warning "es $P -dm -size $Date -sort-dm-ascending file: $Args"  
+    es @P -dm -size @Date -sort-dm-ascending file: @Args 
+  }
+}
 
 $UsePostloadProfile = [Boolean](Get-Variable UsePostloadProfile -value -ea Ignore)
 Get-ExtraProfile 'Post' -PostloadProfile:$UsePostloadProfile | ForEach-Object {
