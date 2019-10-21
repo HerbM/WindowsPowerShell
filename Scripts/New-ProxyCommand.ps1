@@ -149,6 +149,11 @@
      added parameter -Newname and functionality to use a new command name
      added ability to extract the help from origin command
      added parameter ExcludeHelp and functionality
+
+ Edited by: Herb Martin 
+ Initial release: 2019++
+ Version:   2.0.0+
+ LASTEDIT:  2019-09-14+
  
 #>
   [CmdletBinding(

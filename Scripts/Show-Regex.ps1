@@ -20,7 +20,7 @@ Function Main {
       If ($Parm -and $RegexInfo.Contains($Parm)) { "$_`n$($RegexInfo.$_)`n" }
       Else { $Patterns += $Parm }
     }  
-    $Info | Select-String $Patterns
+    $Info | Select-String $Patterns | Out-String -stream
   }
 }
 

@@ -5,7 +5,7 @@ Function Get-ADPrincipal {
     [switch]$NoRecursion = $False
   )
   Begin {
-    If (!$ParentGroup) { $GroupsSeen = @($ParentGroup) }
+    #If (!$ParentGroup) { $GroupsSeen = @($ParentGroup) }
     $CommonProperties = 'DistinguishedName', 'Enabled', 'Name', 
       'ObjectClass', 'SamAccountName', 'SID', 'UserPrincipalName' 
   }
@@ -21,13 +21,13 @@ Function Get-ADPrincipal {
         If (!$ParentGroup) { Write-Warning "User: [$($Principal.Name)] [SamAccountName]" }
         Write-Verbose "ADUser: $($Principal.Name)"
       } ElseIf ($Principal = Get-ADGroup    -Filter $Filter -ea IGNORE -properties Members) {
-        $Seen = Get-Variable GroupsSeen -Scope 1 -value -ea Ignore
+        $Seen = @(Get-Variable GroupsSeen -Scope 1 -value -ea Ignore)
         ForEach ($Group in $Principal) {
-          If          
+          If ($Seen -Contains $Group.Name) { continue }         
           Write-Verbose "ADUser: $($Group.Name)" 
           # If (!$NoRecursion) { $Members = Get-ADPrincipal $Group.Members $Group.Name }
           If (!$NoRecursion) { $Members = $Group.Members }
-          $Seen += $Group 
+          $Seen += $Group.Name 
         }
       } ElseIf ($Principal = Get-ADComputer -Filter $Filter -ea IGNORE -wa IGNORE) {
         If ($Principal) { 
