@@ -765,11 +765,15 @@ write-warning "$(FLINE) Before Ctrl+Alt+|"
 #	[Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
 #	[Microsoft.PowerShell.PSConsoleReadLine]::Insert($Line)
 Set-PSReadLineOption -HistorySearchCursorMovesToEnd 
-Set-PSReadLineKeyHandler -Chord 'Ctrl+Alt+|','Ctrl+Alt+?','Ctrl+\','Ctrl+Alt+\' `
+# ::HM::Todo:: Set-PSReadLineKeyHandler -Chord 'Ctrl+Alt+|','Ctrl+Alt+?','Ctrl+\','Ctrl+Alt+\' `
+Remove-PSReadLineKeyHandler -chord '?','|','\','/'
+
+Set-PSReadLineKeyHandler -Chord 'Ctrl+Alt+|','Ctrl+\','Ctrl+Alt+\','Ctrl-?' `
                          -BriefDescription InsertForEachObject `
                          -LongDescription "Insert ForEach-Object with scriptblock " `
                          -ScriptBlock {
   param($key, $arg)
+  # Write-Information "key: [$Key] arg: [$arg]"
   $selectionStart = $selectionLength = $line = $cursor = $null
   [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
   [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
@@ -790,6 +794,7 @@ Set-PSReadLineKeyHandler -Chord 'Ctrl+Alt+|','Ctrl+Alt+?','Ctrl+\','Ctrl+Alt+\' 
   }
   [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition([Math]::Min($cursor, $Line.Length - 3 ))
 }
+Remove-PSReadLineKeyHandler -chord '?','|','\','/'
 
 ###   WORKING HERE
 Set-PSReadLineKeyHandler -Chord 'Ctrl+|,s','Ctrl+|,f','Ctrl+|,o','Ctrl+|,w', 
