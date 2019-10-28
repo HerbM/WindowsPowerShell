@@ -11,6 +11,10 @@ portcheck 192.168.0.2 135,445,3389,5985
   3389 = RDP (Terminal Services)
   5985 = PowerShell Remoting (really it's WSMAN for WinRM service) 
 
+schtasks /query /tn TASKNAME /xml FILENAME
+
+schtasks /create /xml .\ShadowMuleSoftLogFix.xml /tn ShadowMuleSoftLogFix
+
 Testing DNS Server and network:
   nslookup ANYTHING 192.168.0.2        # 2nd param is address of DNS server
   nslookup www.Microsoft.com  8.8.8.8  # lookup MS on Google DNS server
@@ -50,6 +54,12 @@ Get-ADObject -LDAPFilter "(&(CN=TermServLicensing)(objectClass=serviceConnection
 # for pscx
 Get-ADObject -Filter "(&(CN=TermServLicensing)(objectClass=serviceConnectionPoint))"
 # xxx Get-ADObject -Filter {objectClass -eq 'serviceConnectionPoint' -and Name -eq 'TermServLicensing'}
+
+RDCMan RDP Ignore Remote Desktop Certificate errors
+https://blogs.technet.microsoft.com/askpfeplat/2017/12/18/remote-desktop-connection-rdp-certificate-warnings/
+reg add "HKEY_CURRENT_USER\Software\Microsoft\Terminal Server Client" /v "AuthenticationLevelOverride" /t "REG_DWORD" /d 0 /f
+https://stackoverflow.com/questions/20686361/how-to-ignore-the-certificate-warning-on-remote-desktop-connection
+reg add "HKEY_CURRENT_USER\Software\Microsoft\Terminal Server Client" /v "AuthenticationLevelOverride" /t "REG_DWORD" /d 0 /f
 
 Set IP attribs:
   netsh int ip set address local static 10.10.1.3

@@ -73,10 +73,10 @@ param(
                                             [Int32]$MaxParentPath= 248,
   [Alias('StringOutput')]                  [switch]$SimpleOutput, 
                                            [switch]$CSVOutput, 
-  [Alias('OutputOnlyLong','OnlyLongNames')][switch]$LongOnly, 
-                                            [Int32]$GCCount=5000                                
+  [Alias('OutputOnlyLong','OnlyLongNames')][switch]$LoadOnly, 
+                                           [Int32]$GCCount=5000                                
 )
-
+$Count = 0
 
 Function Get-ChildItem2 {
 <#
@@ -462,7 +462,7 @@ Function Get-ChildItem2 {
         }
         $Output = $Null
         if ($GCCount -and !(++$Script:IOInfoCount % $GCCount)) { 
-          Write-Warning "$(get-date -f 't') GC: $($Script:OutputCount) Total items: $($Script:IOInfoCount)"
+          Write-Verbose "$(get-date -f 't') GC: $($Script:OutputCount) Total items: $($Script:IOInfoCount)"
           [GC]::Collect() 
         }
         $Found = [poshfile]::FindNextFile($Handle,[ref]$findData)
@@ -474,12 +474,12 @@ Function Get-ChildItem2 {
 } 
 
 Set-Alias GCI2 Get-ChildItem2
-if ($LoadOnly) {
+if ($LoadOnly -or ($MyInvocation.Line -match '^\W*\.\W')) {
   write-warning "Function loaded, no action taken."
 } else {
   $Script:OutputCount = $Script:IOInfoCount = 0
   Get-ChildItem2 @PSBoundParameters 
-  Write-Warning "Output: $($Script:OutputCount) Total items: $($Script:IOInfoCount)"
+  Write-Verbose "Output: $($Script:OutputCount) Total items: $($Script:IOInfoCount)"
 }   
 
 

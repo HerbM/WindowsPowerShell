@@ -18,7 +18,7 @@ If ($QuoteMatching -and $BraceMatching) { $Matching = $True }
 # [Microsoft.PowerShell.PSConsoleReadLine]::AddToHistory('"This is a test"')
 # OEMKey https://msdn.microsoft.com/en-us/library/system.windows.forms.keys%28v=vs.110%29.aspx?f=255&MSPPError=-2147217396
 # [System.ConsoleKey] | gm -static | more
-# Alt-w current line to history
+# Alt+w current line to history
 $SaveHistory = (Get-History -count 3000) | ForEach-Object commandline
 If ($SaveHistory) {
   write-warning "History count $((Get-History).count)"
@@ -816,6 +816,10 @@ Set-PSReadLineKeyHandler -Chord 'Ctrl+|,s','Ctrl+|,f','Ctrl+|,o','Ctrl+|,w',
     'c' { '| Sort-Object CreationTime '   }  
     default { '{NO MATCH}' }
   }
+  ####    ##########   If es es($Insertion -match '\bLength\b' -and 
+  ####    ##########       ((Get-Variable Length -value -ea Ignore) -and
+  ####    ##########       ## #:HM: 
+  ####    ##########   )
   #[Microsoft.PowerShell.PSConsoleReadLine]::Insert("Key: [$($key.Keychar)] arg: [$arg] Ins: [$Insertion]")
   [Microsoft.PowerShell.PSConsoleReadLine]::Insert($Insertion)
   If ($False) {
@@ -894,6 +898,16 @@ if ($PSRL = Get-Module PSReadline -ea Ignore) {
   Set-PSReadLineKeyHandler -Key DownArrow             -Function HistorySearchForward
   Set-PSReadLineKeyHandler -Key 'F7','F9'             -Function HistorySearchBackward
   Set-PSReadLineKeyHandler -Key 'Shift+F7','Shift+F9' -Function HistorySearchForward
+  try {	
+		Set-PSReadLineKeyHandler -Key 'Ctrl+Alt+B'      -Function ViDeleteBrace -ea Continue
+		Set-PSReadLineKeyHandler -Key 'Ctrl+B'          -Function ViYankPercent -ea Continue
+		Set-PSReadLineKeyHandler -Key 'Ctrl+5'          -Function ViYankPercent -ea Continue
+		Set-PSReadLineKeyHandler -Key 'Ctrl+%'          -Function ViYankPercent -ea Continue
+#		Set-PSReadLineKeyHandler -Key 'Ctrl+b'          -Function ViGoToBrace   -ea Ignore -brief 'ViGotoBrace' -desc 'ViGotoBrace'
+  } Catch {
+		Write-Warning "$($_ | Format-Custom -Depth 2 -force | Out-String)" 
+		Write-Warning "Caught error at or after Ctrl+b"
+  }
   if ($SaveHistory -and !(Get-History).count) { Add-History $SaveHistory };
   try {
     if ($SaveHistory) {

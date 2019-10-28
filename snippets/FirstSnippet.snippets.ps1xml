@@ -1,0 +1,44 @@
+﻿<?xml version='1.0' encoding='utf-8' ?>
+    <Snippets  xmlns='http://schemas.microsoft.com/PowerShell/Snippets'>
+        <Snippet Version='1.0.0'>
+            <Header>
+                <Title>FirstSnippet</Title>
+                <Description>Test with Function template</Description>
+                <Author>Herb Martin</Author>
+                <SnippetTypes>
+                    <SnippetType>Expansion</SnippetType>
+                </SnippetTypes>
+            </Header>
+
+            <Code>
+                <Script Language='PowerShell' CaretOffset='410'>
+                    <![CDATA[<#
+.Synopsis
+  New function
+.Description
+  Explain the new function
+.Example 
+  New-Function -X "test"  # Show how function is called & used
+.Notes
+  Change control and other notes can go here
+    
+#>
+Function Get-XYZ {
+  [CmdletBinding()]Param(
+    [Parameter(ValueFromPipeline, ValueFromPipelineByPropertyName)][string]$X = '',
+    [switch]$LoadOnly = $False
+  )
+  Begin {}
+  Process {
+    
+  }
+  End {}
+}
+
+]]>
+                </Script>
+            </Code>
+
+    </Snippet>
+</Snippets>
+

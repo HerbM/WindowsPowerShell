@@ -1,9 +1,11 @@
 Much of this we have been using for years but it can be difficult to explain or remember during an incident or other issues, so after working to help on a recent problem it seemed useful to write it all down (again):
 
 Finding DCs:
-nslookup yourDomain.local.  # also use specific DNS listed in IPConfig /all
-nslookup yourDomain.local. 10.10.10.61
+$ComputerDNSDomain = (gwmi Win32_ComputerSystem).domain # get DNS domain name
 nslookup -type=srv _kerberos._tcp.yourADdomain.local
+.\dig.exe -t srv  _kerberos._tcp.txdcs.teamibm.com. # +short
+nslookup yourDomain.local.  # also use specific DNS listed in IPConfig /all
+nslookup yourDomain.local. 10.10.10.61 # Query specific server
 
 You can try testing from the "problem" server to a Windows Active directory domain, with ADExplorer.exe if you can downloaded the Microsoft SysInternals tool or transfer it to that server. I just tested this to the ATOS WW930 domain with my ORDINARY USER ACCOUNT (no domain admin required.)  Current version 2018-07 is 1.44.
 

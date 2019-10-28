@@ -1,0 +1,87 @@
+https://www.youtube.com/watch?v=CuI5rAoxhMk
+MVPDays - From Basic to Baller: Customizing Your PowerShell Prompt - Thomas Rayner - YouTube
+https://letsencrypt.org/docs/client-options/
+ACME Client Implementations - Let's Encrypt - Free SSL/TLS Certificates
+https://mail.google.com/mail/u/0/#inbox/1629251680f1d41c
+View your after visit summary on ARC MyChart - herbmartin@gmail.com - Gmail
+https://forums.iis.net/p/1238350/2140297.aspx?Re+Reverse+Proxy+to+SQL+Server
+Reverse Proxy to SQL Server : The Official Microsoft IIS Forums
+https://www.google.com/search?q=sql+server+forum+reverse+proxy&num=100&client=firefox-b-1-ab&source=lnt&tbs=cdr%3A1%2Ccd_min%3A1%2F1%2F2016%2Ccd_max%3A&tbm=
+sql server forum reverse proxy - Google Search
+https://community.spiceworks.com/topic/1849610-set-up-new-iis-reverse-proxy-with-kerberos-authentication
+Set up new IIS reverse proxy with Kerberos authentication - Windows Server - Spiceworks
+https://community.spiceworks.com/topic/1985560-reverse-proxy-iis
+Reverse Proxy IIS - Web Hosting - Spiceworks
+https://gitter.im/notepad-plus-plus/notepad-plus-plus
+➍ notepad-plus-plus/notepad-plus-plus - Gitter
+https://social.technet.microsoft.com/Forums/scriptcenter/en-US/8bedf252-ae59-4b0d-8f8b-17acb6a93680/use-powershell-check-the-local-time-on-a-group-of-servers-with-datetimenow?forum=ITCG
+Use PowerShell check the local time on a group of servers with [Datetime]::Now
+https://superuser.com/questions/502374/equivalent-of-linux-touch-to-create-an-empty-file-with-powershell
+windows - Equivalent of Linux `touch` to create an empty file with PowerShell? - Super User
+https://www.google.com/search?q=gnu+diff+windows&ie=utf-8&oe=utf-8&client=firefox-b-1-ab
+gnu diff windows - Google Search
+https://kc.mcafee.com/corporate/index?page=content&id=KB88205
+How to improve performance with Endpoint Security 10.x
+https://get.slack.help/hc/en-us/articles/115000769927
+Message threads – Slack Help Center
+https://get.slack.help/hc/en-us/articles/115000769927
+Message threads – Slack Help Center
+https://dzone.com/articles/git-commands-tutorial-part-1?edition=371217&utm_source=Daily%20Digest&utm_medium=email&utm_campaign=Daily%20Digest%202018-04-05
+Git Commands Tutorial - Part 1 - DZone Web Dev
+https://digitalkey.myatos.net/
+Atos Trustcenter
+https://kc.mcafee.com/corporate/index?page=content&id=KB74951&pmv=print
+How to troubleshoot high memory usage on systems with VirusScan Enterprise 8.8.x
+https://www.easeus.com/partition-manager/epm-unlimited.html
+Essential Partition manager server software for companies - EaseUS Partition Master Unlimited
+https://www.computerweekly.com/news/252438171/Ransomware-puts-pressure-on-incident-response?asrc=EM_EDA_93131071&utm_medium=EM&utm_source=EDA&utm_campaign=20180405_Microsoft%20outlines%20intellectual%20property%20approach
+Ransomware puts pressure on incident response
+https://www.petri.com/useful-powershell-script-document-active-directory-environment
+A Useful PowerShell Script to Document Your Active Directory Environment
+https://www.packtpub.com/packt/offers/free-learning
+Free Learning - Free Programming eBooks | PACKT Books
+https://wac.das.myatos.net/otp_sms/authenticate?smsOp=sendSMS&r=1&DXATargetUrlOrg=https%3A%2F%2Fwac.das.myatos.net%2Fsso_myatos%2FSingleSignOnService%3FSigAlg%3Dhttp%253A%252F%252Fwww.w3.org%252F2000%252F09%252Fxmldsig%2523rsa-sha1%26SAMLRequest%3DfZLLboMwEEV%252FBTlrsGPIAwsioUSVIvVN1UrdVA4YYgns1GNK8vc1Sapkky5nfGbm3isnWWe36lV8dwKslwEIY6VWS62ga4XJhfmRhVirUuxTRJC3cphUfGBStLV2BwzjnhdBySFoD9xqCJSwGEB%252FnUqcS1U3Ipe1elLnfchbr1KU03AaxlRQfx5NCz%252Bacu7HZTjxKxKTDZ3NSUU2DgXonAKwXNkUUTKe%252ByTyyeyNTFgYMUqCyZx%252BIu9dGDjKooETum8bBUwBTVFnFNMcpCt5K4DZguXZwz1zHON%252Fjs8T%252F9M7o60udHNZH51SGELo%252B6APA21qTAkZYxJhBwlVjC50eIMmmMQDXYKsR2iRONnsaNssBvCSa4KvnpJHJ3C9etaNLA5e1jS6XxrBrUhRxRtwKd9p03J729M4GB87svSrI8o%252BpCp1DyvdcqleOt7ISopyOITwIsHXv2XxCw%253D%253D%26RelayState%3Douccuwucmucrh%26Signature%3DsWdzKBS2E%252FIHKHbCQUg6615m1sU0C5VmHCdApZKkdsLXERtjavYaf22GLaFFg3Elwh%252BhWrziSr3dyY93StDnBEUnxmExeNiG4wGwWSUYc0p7cCW3r2odyYxM%252F2rxocdDmF8LMwBFZh7rK%252BysxvQJ%252BrdXNC5BcULTI%252FYeOxpKj5PehLOKPz%252F233PSpAip7B5Oq1HQl0moyt4dIqL7z6Eke51RSNnGIyNus3C68H58fj0t%252FNNQo2xhFo2g%252BugPhbg1BY9XH64%252FXBXP6zB%252B513DGuUmhb6Dhwr5Kx1kNLvhbIO4bqm%252FEtWojEN8T7CwU2SSQ4uZkG%252BXFNFwUnq7odwa%252Bw%253D%253D&DXASubsequentAuthentication=false&DXA-force-authn=false
+Atos SSO
+https://www.fosshub.com/VirtualBox.html
+Download VirtualBox
+https://mridgers.github.io/clink/
+Clink
+https://github.com/cmderdev/cmder
+cmderdev/cmder: Lovely console emulator package for Windows
+https://github.com/cbucher/console/wiki/Downloads
+Downloads · cbucher/console Wiki
+https://www.slant.co/topics/1552/viewpoints/7/~terminal-emulators-for-windows~consolez
+ConsoleZ - What are the best terminal emulators for Windows? - Slant
+http://ridicurious.com/2018/04/06/powershell-scripting-guide-to-python-2/
+PowerShell Scripting guide to Python | Part-2 | RidiCurious.com
+
+
+Python Learning Links
+=====================
+https://t.co/86nJJeioJr https://www.edx.org/course/subject/data-science
+https://t.co/qgByCxC4xm https://www.edx.org/course/cs50s-introduction-computer-science-harvardx-cs50x
+Machine learning book of @rasbt 
+https://t.co/oWNkkfpKnj Udacity Intro to Computer Science free
+ taking the @fastdotai ML class as the tangible goal combined with  Looks GOOD 
+  I had also taken @CodeAcadamy and some @MITOCW python courses but it never stuck until fastai
+https://twitter.com/alenushka/status/1057107340938235905  
+Harvard edX
+https://twitter.com/kaggle/status/1058026096191565824  KAGGLE
+@dabeaz Python Cookbook for a wealth of examples and explanation. 
+  Close second @katyhuff and @scopatz book for putting the entire development process into context.
+https://t.co/3tPz7Vfb0B  https://www.dataquest.io/m/5/modules Nice looking courses
+https://t.co/Gm7A4SoNLG  Bootcamp $11 (now) 0 to Hero Python 3
+https://t.co/pVJ6qYdPvu  Python 3 Masterclass
+n @DataCamp and
+
+https://t.co/59JtF1trPS
+book by @AlSweigart. 
+https://t.co/ox6pONESWE
+@jcjohnss Python-Numpy tutorial notebook from CS-231n (http://cs231n.github.io/python-numpy-tutorial/ …) imo is the coolest tutorial by far. Introduces some of my favourite Python lang features like list/dictionary comprehension very early. Teaches everything one needs to know as a ML student in 30 mins.
+https://twitter.com/Sentdex
+https://t.co/BS76M51JV3
+Codecademy and the interactive python book/website
+https://t.co/V3UNaRyrvp
+@CoreyMSchafer has a wonderful series (among other things) on Python OOP. https://www.youtube.com/watch?v=ZDa-Z5JzLYM&list=PL-osiE80TeTsqhIuOqKhwlXsIBIdSeYtc …
+This is what I recommend to my students.
+Check out @math_rachel’s Tweet: https://twitter.com/math_rachel/status/1058089708155166720?s=09

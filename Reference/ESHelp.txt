@@ -1,72 +1,53 @@
 ES 1.1.0.9
 Usage: es.exe [options] search text
--r, -regex
-	Search using regular expressions.
--i, -case
-	Match case.
--w, -ww, -whole-word, -whole-words
-	Match whole words.
--p, -match-path
-	Match full path and file name.
--h, -help
-	Display this help.
--o <offset>, -offset <offset>
-	Show results starting from offset.
--n <num>, -max-results <num>
-	Limit the number of results shown to <num>.
--s
-	sort by full path.
--a, -diacritics
-	Match diacritical marks.
+-r, -regex                          Search using regular expressions.
+-i, -case                           Match case.
+-w, -ww, -whole-word, -whole-words  Match whole words.
+-p, -match-path                     Match full path and file name.
+-h, -help                           Display help.
+-o <offset>, -offset <offset>       Show results starting from offset.
+-n <num>, -max-results <num>        Limit the number of results shown to <num>.
+-s                                  sort by full path.
+-a, -diacritics                     Match diacritical marks.
 -name
 -path-column
 -full-path-and-name, -filename-column
 -extension, -ext
 -size
--date-created, -dc
+-date-created,  -dc
 -date-modified, -dm
 -date-accessed, -da
 -attributes, -attribs, -attrib
 -file-list-file-name
 -run-count
 -date-run
--date-recently-changed, -rc
-	Show the specified column.
+-date-recently-changed, -rc         Show the specified column.
 -sort <name[-ascending|-descending]>, -sort-<name>[-ascending|-descending]
-	Set sort
-	name=name|path|size|extension|date-created|date-modified|date-accessed|
-	attributes|file-list-file-name|run-count|date-recently-changed|date-run
--sort-ascending, -sort-descending
-	Set sort order
--instance <name>
-	Connect to the unique Everything instance name.
--highlight
-	Highlight results.
--highlight-color <color>
-	Highlight color 0-255.
--csv
--efu
--txt
--m3u
--m3u8
-	Change display format.
+  Set sort
+  name=name|path|size|extension|date-created|date-modified|date-accessed|
+  attributes|file-list-file-name|run-count|date-recently-changed|date-run
+-sort-ascending, -sort-descending   Set sort order
+-instance <name>                    Connect to the unique Everything instance name.
+-highlight                          Highlight results.
+-highlight-color <color>            Highlight color 0-255.
+-csv -efu -txt -m3u -m3u8           Change display format.
 -export-csv <out.csv>
 -export-efu <out.efu>
 -export-txt <out.txt>
 -export-m3u <out.m3u>
 -export-m3u8 <out.m3u8>
-	Export to a file.
+  Export to a file.
 -size-format <format>
-	0=auto, 1=Bytes, 2=KB, 3=MB.
+  0=auto, 1=Bytes, 2=KB, 3=MB.
 -pause, -more
-	Pause after each page of output.
+  Pause after each page of output.
 -hide-empty-search-results
-	Don't show any results when there is no search.
+  Don't show any results when there is no search.
 -empty-search-help
-	Show help when no search is specified.
+  Show help when no search is specified.
 -timeout <milliseconds>
-	Timeout after the specified number of milliseconds to wait for
-	the Everything database to load before sending a query.
+  Timeout after the specified number of milliseconds to wait for
+  the Everything database to load before sending a query.
 -filename-color <color>
 -name-color <color>
 -path-color <color>
@@ -80,7 +61,7 @@ Usage: es.exe [options] search text
 -run-count-color <color>
 -date-run-color <color>
 -date-recently-changed-color <color>, -rc-color <color>
-	Set the column color 0-255.
+  Set the column color 0-255.
 -filename-width <width>
 -name-width <width>
 -path-width <width>
@@ -94,53 +75,53 @@ Usage: es.exe [options] search text
 -run-count-width <width>
 -date-run-width <width>
 -date-recently-changed-width <width>, -rc-width <width>
-	Set the column width 0-200.
+  Set the column width 0-200.
 -size-leading-zero
 -run-count-leading-zero
-	Format the number with leading zeros, use with -no-digit-grouping.
+  Format the number with leading zeros, use with -no-digit-grouping.
 -no-digit-grouping
-	Don't group numbers with commas.
+  Don't group numbers with commas.
 -path <path>
-	Search for subfolders and files in path.
+  Search for subfolders and files in path.
 -parent-path <path>
-	Search for subfolders and files in the parent of path.
+  Search for subfolders and files in the parent of path.
 -parent <path>
-	Search for files with the specified parent path.
+  Search for files with the specified parent path.
 /on, /o-n, /os, /o-s, /oe, /o-e, /od, /o-d
-	DIR style sorts.
-	N = Name.
-	S = Size.
-	E = Extension.
-	D = Date modified.
+  DIR style sorts.
+  N = Name.
+  S = Size.
+  E = Extension.
+  D = Date modified.
 /ad
-	Folders only.
+  Folders only.
 /a-d
-	Files only.
+  Files only.
 /a[RHSDAVNTPLCOIE]
-	DIR style attributes search.
-	R = Read only.
-	H = Hidden.
-	S = System.
-	D = Directory.
-	A = Archive.
-	V = Device.
-	N = Normal.
-	T = Temporary.
-	P = Sparse file.
-	L = Reparse point.
-	C = Compressed.
-	O = Offline.
-	I = Not content indexed.
-	E = Encrypted.
-	- = Prefix a flag with - to exclude.
+  DIR style attributes search.
+  R = Read only.
+  H = Hidden.
+  S = System.
+  D = Directory.
+  A = Archive.
+  V = Device.
+  N = Normal.
+  T = Temporary.
+  P = Sparse file.
+  L = Reparse point.
+  C = Compressed.
+  O = Offline.
+  I = Not content indexed.
+  E = Encrypted.
+  - = Prefix a flag with - to exclude.
 -set-run-count <filename> <count>
-	Set the run count for the specified filename.
+  Set the run count for the specified filename.
 -inc-run-count <filename>
-	Increment the run count for the specified filename by one.
+  Increment the run count for the specified filename by one.
 -get-run-count <filename>
-	Display the run count for the specified filename.
+  Display the run count for the specified filename.
 -save-settings, -clear-settings
-	Save or clear settings.
+  Save or clear settings.
 -'s can be omitted, eg: -nodigitgrouping
 Switches can also start with a /
 Use double quotes to escape spaces and switches.

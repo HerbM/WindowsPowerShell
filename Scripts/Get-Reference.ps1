@@ -4,7 +4,7 @@
 )
 
 Function Get-Reference {
-  [CmdletBinding()]param(
+  [CmdletBinding()][Alias('Get-Ref','Ref','gr')]param(
     [parameter(ValueFromPipeline=$True, ValueFromPipelineByPropertyName=$True)]
     [Alias('Filter','Reference')]
     [string[]]$Name = '.*',
@@ -18,7 +18,7 @@ Function Get-Reference {
     ForEach ($P in $Path) {
       Write-Verbose "$(FLINE)P"
       Write-Verbose "Get-ChildItem $P | Where-Object Name -match '$Name'"
-      $List += Get-ChildItem $P -File | Where-Object Name -match $Name
+      $List += Get-ChildItem $P -File | Where-Object BaseName -match $Name
     }
   }
   End {

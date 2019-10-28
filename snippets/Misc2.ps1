@@ -1,14 +1,134 @@
-conda update --yes -n base conda
+
+
+Beefarino Stupid PowerShell Tricks
+  ScriptCS Linq queries
+  -repl (rudimentary)
+  StudioShell
+  Simplex  P2F on Nuget SeeShell (plot)
+  SQLite
+  AutoVars
+
+PowerShell custom object typenames
+$p.pstypenames
+$p.pstypenames.clear()
+$p.pstypenames.Add('newtype')
+$p.pstypenames.insert(0,'another')
+$p.psobject.pstypenames.insert(0,'AThird')
+$O | Add-Member -Type ScriptMethod -Name ToString -Value { $this.value } -force
+
+
+get-counter '\\.\processor(_total)\% processor time' -samp 1 -continu  | Select -expand CounterSamples | Select CookedValue
+netsh wlan show pro LearnQuick.com key=clear
+
+# Find or replace matching string that does NOT match given case (in middle):
+'string','STRING','String' -replace '(String)(?<!(?-i:String))', 'String'
+'string','STRING','String' -match '(String)(?<!(?-i:String))'
+
+(Get-Culture).TextInfo.totitlecase((Get-Culture).TextInfo.tolower('NASA'))
+https://www.powershellmagazine.com/2013/07/24/pstip-how-to-convert-words-to-title-case/
+
+https://github.com/leppie/IronScheme
+https://github.com/BornToBeRoot/NETworkManager
+https://gallery.technet.microsoft.com/scriptcenter/Get-Constructor-a8911ebe
+https://cyberwardog.blogspot.com/2016/07/powershell-explore-net-classes-101.html
+
+Add-Type -AssemblyName System.Web; [System.Web.HttpUtility] | gm -static
+[System.Web.HttpUtility]::HtmlAttributeEncode((gc .\ic.ps1))
+
+https://devblogs.microsoft.com/scripting/use-powershell-to-work-with-the-net-framework-classes/
+Add-Type -AssemblyName System.ServiceProcess
+$sc = "System.ServiceProcess.ServiceController" -as [type]
+[reflection.assembly]::GetAssembly($sc)
+GAC    Version        Location
+—      ———            ——–
+True   v2.0.50727     C:\Windows\assembly\GAC_MSIL\System.ServiceProcess\2.0.0.0_…
+# The GetAssembly method returns the loaded assembly as an instance of the System.Reflection.Assembly class. This means that you can pass it to the Get-Member Windows PowerShell cmdlet and see what methods, properties and events are available. This is seen here.
+[reflection.assembly]::GetAssembly($sc) | Get-Member
+Add-Type -AssemblyName System.ServiceProcess
+[System.ServiceProcess.ServiceController]::GetDevices($Env:computer)
+Add-Type -AssemblyName System.speech
+$talker = New-Object System.Speech.Synthesis.SpeechSynthesizer
+$Talker.Speak("This is a test")
+$Talker.SpeakAsync("This is a test")
+ForEach ($Message in "This is a test", "another test", "A final test") { $Talker.SpeakAsync($message) }
+[appdomain]::CurrentDomain
+[appdomain]::currentdomain.GetAssemblies()
+[appdomain]::currentdomain.GetAssemblies() | Foreach-Object {$_.gettypes()} | sort basetype # slow
+https://social.technet.microsoft.com/Forums/scriptcenter/en-US/home?forum=ITCG
+https://social.technet.microsoft.com/Forums/en-US/home?category=sysinternals&amp;filter=alltypes&amp;sort=lastpostdesc
+https://social.technet.microsoft.com/wiki/contents/articles/25333.discover-the-dot-net-namespace-and-wmi-class-powershell.aspx#Domain_Controller_Port_Scanner
+
+https://github.com/quozd/awesome-dotnet
+https://github.com/aloisdg/awesome-linq
+https://github.com/Cybermaxs/awesome-analyzers .NET Compiler Platform ("Roslyn") diagnostic analyzers and code fixes.
+https://github.com/thangchung/awesome-dotnet-core
+https://github.com/adamsitnik/awesome-dot-net-performance
+https://github.com/heynickc/awesome-ddd
+https://discoverdot.net/
+https://csharpdigest.net/
+
+https://haacked.com/archive/2007/06/13/the-most-useful-.net-utility-classes-developers-tend-to-reinvent.aspx/
+[System.IO.Path] | gm -static
+[System.IO.Path]::ChangeExtension('x.ps1',test)
+$invalid = [System.IO.Path]::GetInValidFileNameChars()
+((0..127 | % { [char]$_ | ? {$_ -notin $Invalid}}) -join '')
+ChangeExtension
+Combine
+Equals
+GetDirectoryName
+GetExtension
+GetFileName
+GetFileNameWithoutExtension
+GetFullPath
+GetInvalidFileNameChars
+GetInvalidPathChars
+GetPathRoot
+GetRandomFileName
+GetTempFileName
+GetTempPath
+HasExtension
+IsPathRooted
+ReferenceEquals
+AltDirectorySeparatorChar
+DirectorySeparatorChar
+InvalidPathChars
+PathSeparator
+VolumeSeparatorChar
+
+
+# Adopted RipGrep rg, runiq, xsv to supplement PowerShell 
+#AutoHotKey 2.0 https://autohotkey.com/download/2.0/ 2018-10-05 on 2018-11-11
+#https://github.com/PowerShellOrg/pesterbookcode
+#https://github.com/dfinke/PowerShellHumanizer.git
+#https://github.com/adamdriscoll/snek.git  Use Python from PowerShell
+#https://github.com/PowerShellOrg/pesterbookcode.git
+
+# -k, --insecure        Allow conda to perform "insecure" SSL connections &  Anaconda/Conda update upgrade
+#                       transfers. Equivalent to setting 'ssl_verify' 'false'
+conda update --yes -n base conda   # Updating Python and Anaconda Conda 
+conda update --all
 conda update --yes --all
+npm i -g npm -y                    # update npm node
 
-npm i -g npm -y
+vs_enterprise.exe --quiet --update  # First, update the Visual Studio installer: vs_enterprise.exe --quiet --update.
+                                    #  Then, update the Visual Studio application itself:
+vs_enterprise.exe update --installPath "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise" --quiet --wait --norestart
+# .NET web and .NET desktop development, run:
+vs_community.exe --layout c:\vs2017layout --add Microsoft.VisualStudio.Workload.ManagedDesktop --add Microsoft.VisualStudio.Workload.NetWeb --add Component.GitHub.VisualStudio --includeOptional --lang en-US
+# .NET desktop and Office development, run:
+vs_community.exe --layout c:\vs2017layout --add Microsoft.VisualStudio.Workload.ManagedDesktop --add Microsoft.VisualStudio.Workload.Office --includeOptional --lang en-US
+# C++ desktop development, run:
+vs_community.exe --layout c:\vs2017layout --add Microsoft.VisualStudio.Workload.NativeDesktop --includeRecommended --lang en-US
+# All features (this will take a long time—we have lots of features!), run:
+vs_community.exe --layout c:\vs2017layout --lang en-US
 
-http://github.com/tshort/ReactiveBasics.jl
-
-# -k, --insecure        Allow conda to perform "insecure" SSL connections and
-#                       transfers. Equivalent to setting 'ssl_verify' to
-#                       'false'.
-                       
+Microsoft.VisualStudio.Product.Community
+Microsoft.VisualStudio.Workload.WDExpress
+Microsoft.VisualStudio.Product.BuildTools
+Microsoft.VisualStudio.Product.TestAgent
+Microsoft.VisualStudio.Component.FSharp	     #: FSharp language support	15.8.27825.0	Required
+Microsoft.VisualStudio.Component.FSharp.WebTemplate
+                     
 Filter Get-Split {param([string[]]$Input,[string]$Delimiter=';') $Input | % { $_ -split $Delimiter} }
 
 $global:DefaultVIServers 
@@ -44,6 +164,7 @@ DOMAIN JOINED STATUS : ddaf516e-58c2-4866-9574-c3b615d42ea1 [NOT DOMAIN JOINED]
    DOMAIN JOINED STATUS         : 1ce20aba-9851-4421-9430-1ddeb766e809 [DOMAIN JOINED]
  STOP SERVICE
    DOMAIN JOINED STATUS         : ddaf516e-58c2-4866-9574-c3b615d42ea1 [NOT DOMAIN JOINED]
+
 
 Get-ItemProperty 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -name Personal
 Set-ItemProperty 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -name Personal -Value 'D:\%UserName%\Documents' -Type ExpandString -Force
@@ -99,24 +220,34 @@ $SSMS.links | ? OuterHTML -match 'Download SQL Server Management Studio ([.\d]{3
 
 'C:\Program Files (x86)\Microsoft SQL Server\140\Tools\Binn\ManagementStudio'
 
+
 Function Get-WhoAmI {
   [CmdletBinding()]param(
-    [ValidatePattern('^(P|G|U|F|L|G|P|A)')]$Show = 'Privileges'
+    [ValidatePattern('^(P|G|U|F|L|G|P|A)')][string]$Show = '',
+    [switch]$UPN        = $False,
+    [switch]$FQDN       = $False,
+    [switch]$User       = $False,
+    [switch]$LoginID    = $False,
+    [switch]$Groups     = $False,
+    [switch]$Privileges = $False,
+    [switch]$All        = $False
   )
   $Switches = 'UPN', 'FQDN', 'USER', 'LOGONID', 'GROUPS', 'PRIV', 'ALL'
-  If ($Show -match '^(P|G|U|F|L|G|P|A)') {
-    $SwitchKey = $Matches[1]
-  }
+  $SwitchKey = If ($Show -match '^(P|G|UP|US|F|L|G|P|A)') {
+    $Matches[1]
+  } Else { 'xxx' }
   Write-Verbose "Show: $Show Switchkey: $Switchkey"
-  # $Args = "/$Switch"   
-  $Switch = $Switches -match "^$SwitchKey"
+  # $Args = "$Switch"   
+  $Switch = If ($Switches) { $Switches -match "^$SwitchKey" | Select -first 1 }
   If ($Switch -in 'GROUPS', 'PRIV', 'ALL') { 
-    Write-Verbose "WhoAmI `"/$Switch`" /fo csv | convertfrom-csv"
+    Write-Verbose "WhoAmI /$Switch /fo csv | convertfrom-csv"
     WhoAmI "/$Switch" /fo csv | convertfrom-csv
-  } {
-    Write-Verbose "WhoAmI /$Switch | % { [PSCustomObject]@{ $Switch = $_ } }"
+  } ElseIf ($Switch) {
+    Write-Verbose "WhoAmI /$Switch | % { [PSCustomObject]@{ $Switch = `$_ } }"
     WhoAmI "/$Switch" | ForEach-Object { [PSCustomObject]@{ $Switch = $_ } }
-  }  
+  } Else {
+    WhoAmI
+  }
 }
 
 #Codacy?
@@ -195,10 +326,6 @@ Dump all server Cis in the CMDB..
 Launch Service Flow from the DCS Portal home page > Published Reports > CMDB Assets > CMDB Assets Hardware > CMDB Hardware Asset Data.  
 Interact online, or Tools > Export to CSV
 
-setproxy /pac:http://proxyconf.my-it-solutions.net/proxy-na.pac
-  netsh winhttp show proxy
-  netsh winhttp import proxy source=ie
-  
   $webclient=New-Object System.Net.WebClient
   $creds=Get-Credential
   $webclient.Proxy.Credentials=$creds
@@ -1314,7 +1441,21 @@ https://github.com/manojlds/pslinq
 
 https://en.wikiversity.org/wiki/Windows_PowerShell/Functions
 
-Get-WMIobject win32_networkadapterconfiguration | where {$_.IPEnabled -eq �True�} | Select-Object pscomputername,ipaddress,defaultipgateway,ipsubnet,dnsserversearchorder,winsprimaryserver | format-Table -Auto
+Get-WMIobject win32_networkadapterconfiguration | where {$_.IPEnabled -eq $True} | 
+  Select-Object @{N='ComputerName'; E={$_.pscomputername}},
+                @{N='Name';         E={$_.Description}},
+                @{N='Index';        E={$_.InterFaceIndex}},
+                @{N='IPAddress';    E={$_.ipaddress -join ','}},
+                @{N='Router';       E={$_.defaultipgateway}},
+                @{N='Subnet';       E={$_.IPSubNet}},
+                @{N='DNSServer';    E={$_.DNSServerSearchOrder -join ','}},
+                @{N='WinsServer';   E={$_.winsprimaryserver -join ','}}
+                #@{N='';        E={$_.}},
+                #@{N='';        E={$_.}},
+
+MACAddress
+GatewayCostMetric
+Get-WMIobject win32_networkadapterconfiguration | where {$_.IPEnabled -eq $True} | Select-Object pscomputername,ipaddress,defaultipgateway,ipsubnet,dnsserversearchorder,winsprimaryserver | format-Table -Auto
 Get-AdDomainController -Filter * | Select hostname,isglobalcatalog | Format-table -auto
 Search-ADAccount -PasswordNeverExpires | Select-Object Name, Enabled 
 cls;while($true){get-date;$t = New-Object Net.Sockets.TcpClient;try {$t.connect("10.45.2.68",3389);write-host "RDP is up"}catch{write-Host "RDP is down"}finally{$t.close();sleep 30}}
@@ -1655,7 +1796,8 @@ With the Active Directory Best Practices Analyzer (ADBPA) tool provided by Micro
 
 #>
 
-$PSDefaultParameterValues['Get-ChildItem:Force'] = $True
+$PSDefaultParameterValues['Get-ChildItem:Force']         = $True  
+$PSDefaultParameterValues['Get-Process:IncludeUserName'] = $True
 # Install-UpdatedModule  Newer Modules Later Versions
 $Modules = Get-Module -ListAvailable | Group Name | ForEach-Object {
   $_.Group | Sort Version -Descending | Select-Object -First 1
@@ -1678,9 +1820,6 @@ $Newer | % {
   Install-Module -Name $_.Name  -Force -AllowClobber -Confirm:$False -ea Ignore 
 } | Format-Table
 
-https://github.com/dotnet/corefx/issues/29934
-WinHttpGetIEProxyConfigForCurrentUser
-WinHttpGetProxyForUrl
 
 Hacking the Human Operating System  -- Downloaded PDF 
 Cyber attackers often bypass the consciousness of their targets and attempt to manipulate victims through subconscious influences. This report from Intel Security offers advice on how to mitigate these risks.
