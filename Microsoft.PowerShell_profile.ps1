@@ -1538,8 +1538,8 @@ Function Get-HistoryCommandline {
     [string]$Pattern,
     [uint16]$Count,
     $Exclude,
-    [Switch]$ShowID,
-    [Alias('ID','Object','FullObject')][switch]$HistoryInfo
+    [Alias('ID')]                 [Switch]$ShowID,
+    [Alias('Object','FullObject')][switch]$HistoryInfo
   )
   If ($PSBoundParameters.ContainsKey('ShowID')) {
     $ShowID = [boolean]$ShowID
@@ -1582,7 +1582,12 @@ Function Select-History {
         $_                      # Output the entire history object
       } else {
         $id = $IDFormat -f $_.id
-        "$id$($_.CommandLine)"
+        If ($IncludeID) {
+        } Else {
+          $H = Select-Object ID,CommandLine, StartExecutionTime,EndExecutionTime,ExcutionStatus,Status
+
+
+        } # 9/10/2019 9:48:41 AM
       }
       #if ($PSBoundParameters['Verbose'] -and $Verbose) {
         $LastID = $_.ID
@@ -1600,7 +1605,7 @@ Function Get-RunTime {
   param(
     [Parameter(ValueFromPipeline=$True)]
     [Microsoft.PowerShell.Commands.HistoryInfo[]]$historyitem,
-    $Count = 1,
+    $Count = 10,
     [switch]$Duration,
     [switch]$Format
   )
@@ -1633,12 +1638,14 @@ Function Get-RunTime {
         [PSCustomObject]@{
           Id          = $hi.Id
           RunTime     = If ($Duration) { $RunTime } else { $RunTime.TotalSeconds }
+          Completed   = $hi.EndExecutionTime.ToString('yyyy-MM-dd HH:mm')
           CommandLine = $hi.CommandLine
         }
       }
     }
   }
 }; New-Alias rt Get-RunTime -force -scope Global
+
 Function Get-Syntax {
   param(
   )
@@ -2450,8 +2457,8 @@ Function Set-GoAlias {
       Try {
         If ($goHash.$Name -and
             (Test-Path $goHash.$Name -PathType Container -ea Ignore)) {
-          Write-Verbose "New-Alias $Name Set-GoLocation -force -scope Global -ea STOP"
-                         New-Alias $Name Set-GoLocation -force -scope Global -ea STOP
+          Write-Verbose "New-Alias $Name Set-GoLocation -force -scope Global -ea Ignore"
+                         New-Alias $Name Set-GoLocation -force -scope Global -ea Ignore
         }
       } Catch { Write-Warning "Can't recreate Alias $Name Set-GoLocation" }
     }
@@ -3005,6 +3012,18 @@ Function Convert-ClipBoard {
   End {}
 }
 
+Function Get-About {
+  Param([String[]]$Name='.*')
+  Begin {
+    $Topics = Import-CSV "$Home\Documents\WindowsPowerShell\Reference\About_HelpTopics.csv"
+  }
+  Process {
+    ForEach ($N in $Name) {
+      $Topics | ? Name -match $N | Select-Object Name,Synopsis
+    }
+  }
+}
+
 Function Select-Everything {    # es.exe everything
   [cmdletbinding()][Alias('se')]param(
     [Parameter(valuefromremainingarguments)][string[]]$Args,
@@ -3054,6 +3073,26 @@ Function Select-Everything {    # es.exe everything
   }
 }
 
+# es $PWD -dm -size dm:>2019/10/19 -sort-dm-ascending file: | sls -not '\.git','PostMan','Google','Everything','Microsoft\\Windows','CryptnetUr','McAfee','NTUSER'
+Function Get-Changed {
+  [cmdletbinding()][Alias('gcf')]param(
+    [string[]]$Path = @(),
+    [Alias('Since','DateTime')][DateTime]$After = (Get-Date).AddDays(-1),
+    [Switch]$Today = $False,
+    [Parameter(ValueFromRemainingArguments=$true)]$Args
+  )
+  If ($Today) { $After = Get-Date 0:00 }
+  $Date = @('dm:>' + (Get-Date $After -f 's'))
+  If (!$Path) {
+    Write-Warning "es -dm -size $Date -sort-dm-ascending file: $Args"
+    es -dm -size @Date -sort-dm-ascending file: @Args
+  }
+  ForEach ($P in $Path) {
+    $P = @($P)
+    Write-Warning "es $P -dm -size $Date -sort-dm-ascending file: $Args"
+    es @P -dm -size @Date -sort-dm-ascending file: @Args
+  }
+}
 
 Function Get-Length { $r = $input | measure -sum Length -Maximum; [PSCustomObject]@{
     Count       = '{0,5:N0}'  -f $R.Count
