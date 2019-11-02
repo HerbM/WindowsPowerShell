@@ -1,19 +1,3 @@
-:~*:##wl::Write-Log "$`(FLINE) "
-:~*:##ww::Write-Warning "$`(FLINE) "
-:~*:##wi::Write-Information "$`(FLINE) "
-:~*:##wh::Write-Host "$`(FLINE) "
-:~*:##wd::Write-Debug "$`(FLINE) "
-:~*:##sm::Set-StrictMode -Version Latest
-
-:~*:##cb::
-(
-`[CmdletBinding`()]Param`(
-    `[Parameter`(ValueFromPipeline)]`[Object`[]]$InputObject,
-    `[switch]$LoadOnly
-  `)
-return
-)
-
 :~*:##Fn::
 (
 Function Since {
