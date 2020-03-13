@@ -2868,26 +2868,6 @@ Function ipv4 { ipconfig | sls IPv4 }
 
 Function ak { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
 Function hk { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
-$AHKFiles = @(
-  'C:\bat\ahk.ahk'
-  "$Home\Documents\WindowsPowerShell\Scripts\PowerShell.ahk"
-)
-If (!(Get-Variable AHK -ea Ignore -value)  -or
-    !(Test-Path   $AHK -ea Ignore       )) {
-  $AHK = 'C:\util\AutoHotKey\AutoHotkeyU64.exe'
-  Function ak { & $AHK /r C:\bat\ahk.ahk }
-  Function hk { & $AHK /r C:\bat\ahk.ahk }
-} Else {
-  Remove-Item Variable:AHK, Function:ak, Function:hk  -ea Ignore
-}
-If ($AHK) {
-  ForEach ($File in $AHKFiles) {
-    If ($File) {
-	  Write-Warning "$(FLINE) Load AHK: $File"
-      & $AHK /r $File
-	}
-  }
-}
 
 Function ToTitleCase {
   [CmdletBinding()]Param(
