@@ -485,7 +485,7 @@ new-alias iv 'C:\Program Files\IrfanView\i_view64.exe' -scope Global -force -ea 
 ;;  that it gets passed when started by emacsclientw.
 ;;
 ;(add-to-list 'command-switch-alist '("(make-frame-visible)" .
-;           (lambda (s))))
+;			     (lambda (s))))
 -V, --version           Just print version info and return
 -H, --help              Print this usage information message
 -nw, -t, --tty          Open a new Emacs frame on the current terminal
@@ -1538,8 +1538,8 @@ Function Get-HistoryCommandline {
     [string]$Pattern,
     [uint16]$Count,
     $Exclude,
-    [Alias('ID')]                 [Switch]$ShowID,
-    [Alias('Object','FullObject')][switch]$HistoryInfo
+    [Switch]$ShowID,
+    [Alias('ID','Object','FullObject')][switch]$HistoryInfo
   )
   If ($PSBoundParameters.ContainsKey('ShowID')) {
     $ShowID = [boolean]$ShowID
@@ -1585,8 +1585,6 @@ Function Select-History {
         If ($IncludeID) {
         } Else {
           $H = Select-Object ID,CommandLine, StartExecutionTime,EndExecutionTime,ExcutionStatus,Status
-
-
         } # 9/10/2019 9:48:41 AM
       }
       #if ($PSBoundParameters['Verbose'] -and $Verbose) {
@@ -1605,7 +1603,7 @@ Function Get-RunTime {
   param(
     [Parameter(ValueFromPipeline=$True)]
     [Microsoft.PowerShell.Commands.HistoryInfo[]]$historyitem,
-    $Count = 10,
+    $Count = 1,
     [switch]$Duration,
     [switch]$Format
   )
@@ -1638,14 +1636,12 @@ Function Get-RunTime {
         [PSCustomObject]@{
           Id          = $hi.Id
           RunTime     = If ($Duration) { $RunTime } else { $RunTime.TotalSeconds }
-          Completed   = $hi.EndExecutionTime.ToString('yyyy-MM-dd HH:mm')
           CommandLine = $hi.CommandLine
         }
       }
     }
   }
 }; New-Alias rt Get-RunTime -force -scope Global
-
 Function Get-Syntax {
   param(
   )
@@ -2457,8 +2453,8 @@ Function Set-GoAlias {
       Try {
         If ($goHash.$Name -and
             (Test-Path $goHash.$Name -PathType Container -ea Ignore)) {
-          Write-Verbose "New-Alias $Name Set-GoLocation -force -scope Global -ea Ignore"
-                         New-Alias $Name Set-GoLocation -force -scope Global -ea Ignore
+          Write-Verbose "New-Alias $Name Set-GoLocation -force -scope Global -ea STOP"
+                         New-Alias $Name Set-GoLocation -force -scope Global -ea STOP
         }
       } Catch { Write-Warning "Can't recreate Alias $Name Set-GoLocation" }
     }
@@ -2656,10 +2652,10 @@ Function Get-PSBoundParameter {
     $Null
   }
 }
-if ($Private:PSReadlineModule = Get-Module 'PSReadline' -ea ignore) {
+if ($Private:PSRealineModule = Get-Module 'PSReadline' -ea ignore) {
   set-psreadlinekeyhandler -chord 'Tab'            -Func TabCompleteNext      ### !!!!!
   set-psreadlinekeyhandler -chord 'Shift+Tab'      -Func TabCompletePrevious  ### !!!!!
-  If ($Private:PSReadlineModule.Version  -lt [version]'2.0.0') {
+  If ($Private:PSRealineModule.Version  -lt [version]'2.0.0') {
     set-psreadlinekeyhandler -chord 'Shift+SpaceBar' -Func Complete             ### !!!!!
     Set-PSReadLineOption -ForeGround Yellow  -Token None
     Set-PSReadLineOption -ForeGround Green   -Token Comment  -back DarkBlue
@@ -2701,7 +2697,7 @@ If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])
   $Host.PrivateData.WarningBackgroundColor = 'Black'
   $Host.PrivateData.WarningForegroundColor = 'White'
 }
-write-warning "$(get-date -f 'HH:mm:ss') $(LINE) After PSReadline "
+write-warning "$(LINE) $(get-date -f 'HH:mm:ss') After PSReadline "
 
 Write-Information "$(get-date -f 'HH:mm:ss') $(LINE) Error count: $($Error.Count)"
 Function dt {param([string[]]$datetime=(get-date)) $datetime | ForEach-Object { get-date $_ -format 'yyyy-MM-dd HH:mm:ss ddd' } }
@@ -2869,6 +2865,9 @@ Function Lock {
 }
 Function ip4 { ipconfig | sls IPv4 }
 Function ipv4 { ipconfig | sls IPv4 }
+
+Function ak { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
+Function hk { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
 $AHKFiles = @(
   'C:\bat\ahk.ahk'
   "$Home\Documents\WindowsPowerShell\Scripts\PowerShell.ahk"
@@ -2881,7 +2880,7 @@ If (!(Get-Variable AHK -ea Ignore -value)  -or
 } Else {
   Remove-Item Variable:AHK, Function:ak, Function:hk  -ea Ignore
 }
-If ($AHK) {
+If (Get-Variable 'AHK' -ea Ignore -Value) {
   ForEach ($File in $AHKFiles) {
     If ($File) {
 	  Write-Warning "$(FLINE) Load AHK: $File"
@@ -2926,7 +2925,6 @@ Function ToTitleCase {
 # Windows Shell Experience Host ShellExperienceHost MiraCast remote display wireless
 # https://docs.microsoft.com/en-us/windows/whats-new/whats-new-windows-10-version-1809#wireless-projection-experience
 # gwmi Win32_OperatingSystem | fl * | findstr /i "version build name 1809 1803 1904 1903"
-
 
 <#
 LAPS Email for John, Carlos
@@ -3027,6 +3025,8 @@ Function Get-About {
 Function Select-Everything {    # es.exe everything
   [cmdletbinding()][Alias('se')]param(
     [Parameter(valuefromremainingarguments)][string[]]$Args,
+    [Switch]$Directory  = $False,
+    [Switch]$File       = $False,
     [switch]$Complete   = $False,
     [switch]$NoSubtitle = $False,
     [switch]$NoEdition  = $False,
@@ -3036,11 +3036,15 @@ Function Select-Everything {    # es.exe everything
   )
   Begin {
     $LineCount = 0
+    $Switches = If     ($File)      { @('/a-d') }
+                ElseIf ($Directory) { @('/ad' ) }
+                Else                { @()       }    
     $Args,$ExtraArgs = $Args.Where({$_ -notmatch '^-'}, 'split')
     Write-Verbose "Args: $Args"
     Write-Verbose "Extra: $ExtraArgs"
     $ArchiveExtensions = '*.zip','*.rar','*.lzw','*.7z'
-    $BookExtensions    = '*.pdf','*.azw','*.azw3','*.azw4','*.mobi','*.djv'
+    $BookExtensions    = '*.pdf', '*.azw','*.azw3','*.azw4',
+                         '*.mobi','*.djv','*.epub','*.mobi'
     $Extensions      = @()
     If ($Archives) { $Extensions  = $ArchiveExtensions }
     If ($Books)    { $Extensions += $Extensions + $BookExtensions }
@@ -3060,8 +3064,8 @@ Function Select-Everything {    # es.exe everything
       $Args = $Args.trim() -join '*' -replace '[\s*]{2,}', '*'
       If (!$Complete) { $Args = "*$Args*" }
     }
-    Write-Verbose "es $args $Extensions $ExtraArgs" ;
-    ForEach ($Line in @(es @args @Extensions @ExtraArgs)) {
+    Write-Verbose "es $Switches $args $Extensions $ExtraArgs" ;
+    ForEach ($Line in @(es @Switches @args @Extensions @ExtraArgs)) {
       $LineCount++
       $Line
     }

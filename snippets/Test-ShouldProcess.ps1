@@ -11,9 +11,6 @@ Function Test-PSCmdLet {
   [CmdletBinding()]Param() 
   $PSCmdLet.commandorigin
   $PSCmdLet.Host
-  $PSCmdLet.MyInvocation
-  $PSCmdLet.InvokeCommand
-  
   # 'https://docs.microsoft.com/en-us/dotnet/api/system.management.automation.pscmdlet?view=pscore-6.2.0'  
 }
 

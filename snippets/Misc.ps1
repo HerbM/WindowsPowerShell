@@ -1,13 +1,3 @@
-PRO .\Scripts\AddNote.ps1
-$PSModules | ? Name -match ^conver | Sort Name | 
-  FT Version,Name,Description -auto
-$PSModules | ? Name -match ^conver | Sort Name | FT Version,Name,Description -auto
-Find-Module ConversionModule,Convert,Convert2PDF,
-            ConvertADName,Convert-PDF,Convert-Time,
-			ConvertTo-BreakPoint,ConvertToClass,ConvertToHtml 
- | Install-Module -force -confirm:$False -allowclobber 
-  
-ConversionModule
 # C:\Users\Herb\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1
 # https://keepass.info
 # https://keepass.info/plugins.html
@@ -79,6 +69,8 @@ F:\BT\Download\pack11.75\Fundamentals of Deep Learning_ Designing Next-Generatio
 F:\BT\Programming\MachineLearning\OReilly.Fundamentals.of.Deep.Learning.1491925612.pdf
 
 
+
+
 function e {    # es.exe everything 
   [cmdletbinding()]param(
     [Parameter(valuefromremainingarguments)]$args) 
@@ -88,11 +80,11 @@ function e {    # es.exe everything
 }
 
 if ($MyInvocation.InvocationName -ne '.') { Invoke-Main }
-else { 
-  ((Get-Command $PSCommandPath | Select -Expand ScriptBlock) -split "`n" | ? {$_ -match "^\s*function "}) -replace "^Function *| .*" 
-}
+else { ((Get-Command $PSCommandPath | Select -Expand ScriptBlock) -split "`n" | ? {$_ -match "^\s*function "}) -replace "^Function *| .*" }
 
 else { $Functions = "^[\t ]*function "; (gc $PSCommandPath | ? {$_ -match $Functions}) -replace "$Functions| .*"}
+
+Simpler? Maybe? Maybe not? Hm
 
 # https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2003/cc772726(v=ws.10)
 # https://support.microsoft.com/en-us/help/832017/service-overview-and-network-port-requirements-for-windows
