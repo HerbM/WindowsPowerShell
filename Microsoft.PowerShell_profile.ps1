@@ -2885,7 +2885,7 @@ If (Get-Variable 'AHK' -ea Ignore -Value) {
     If ($File) {
 	  Write-Warning "$(FLINE) Load AHK: $File"
       & $AHK /r $File
-	}
+ 	  }
   }
 }
 
