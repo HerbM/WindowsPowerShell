@@ -115,6 +115,10 @@ Write-Host "$(LINE) ProfileLogPath: $ProfileLogPath"                 @Private:Co
   Will generate/locate
     $ProfileDirectory\Profile + NAME + Suffix + .ps1
 #>
+If (!(Get-Command Get-WmiObject -ea Ignore)) {
+  New-Alias Get-WMIObject Get-CIMInstance -force -scope Global -ea Ignore
+  New-Alias gwmi          Get-CIMInstance -force -scope Global -ea Ignore
+}
 Function Get-ExtraProfile {
   [CmdletBinding()]param(
     [String]$Suffix,
@@ -227,7 +231,7 @@ If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])
   #         Split out functions etc to "Scripts" directory
   #         Speed up History loading?
   #         get-process notepad++ | select name,starttime,productversion,path
-  #         gwmi win32_service -filter 'name = "everything"' | select name,StartMode,State,Status,Processid,StartName,DisplayName,PathName | ft
+  #         Get-WMIObject win32_service -filter 'name = "everything"' | select name,StartMode,State,Status,Processid,StartName,DisplayName,PathName | ft
   # Git-Windows Git (new file), previous commit worked on JR 2 machines
   # Improve goHash, Books & Dev more general, fix S: T: not found
   # Everything? es?
@@ -763,7 +767,7 @@ Set-ProgramAlias 7z   7z.exe @('C:Util\7-Zip\app\7-Zip64\7z.exe',
                              ) -FirstPath
 Write-Warning "$(get-date -f 'HH:mm:ss') $(LINE) After Set-ProgramAlias"
 
-# gwmi Win32_logicaldisk -filter 'drivetype = 3 or drivetype = 4'
+# Get-WMIObject Win32_logicaldisk -filter 'drivetype = 3 or drivetype = 4'
 
 Join-Path 'C:\Program Files*\Microsoft VS Code*' Code*.exe -resolve | Select -first 1
 
@@ -2924,7 +2928,7 @@ Function ToTitleCase {
 }
 # Windows Shell Experience Host ShellExperienceHost MiraCast remote display wireless
 # https://docs.microsoft.com/en-us/windows/whats-new/whats-new-windows-10-version-1809#wireless-projection-experience
-# gwmi Win32_OperatingSystem | fl * | findstr /i "version build name 1809 1803 1904 1903"
+# Get-WMIObject Win32_OperatingSystem | fl * | findstr /i "version build name 1809 1803 1904 1903"
 
 <#
 LAPS Email for John, Carlos
