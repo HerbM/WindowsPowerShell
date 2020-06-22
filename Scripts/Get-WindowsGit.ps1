@@ -65,7 +65,8 @@ $VimHelp = @'
   #  https://github.com/hackjutsu/vim-cheatsheet  Text, you can paste or git
   #  http://vimsheet.com/
   #  http://vimsheet.com/advanced.html  
-  #    "The best possible resource on vim is the book Practical Vim.
+  #    "The best possible resource on Vim is the book:
+  #    Practical Vim: Edit Text at the Speed of Thought"
   #    https://www.amazon.com/Practical-Vim-Thought-Pragmatic-Programmers/dp/1934356980
   
 '@   # <<<<<<<<<<<<<<< do NOT INDENT, must be a left margin

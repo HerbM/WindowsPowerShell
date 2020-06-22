@@ -115,6 +115,10 @@ Write-Host "$(LINE) ProfileLogPath: $ProfileLogPath"                 @Private:Co
   Will generate/locate
     $ProfileDirectory\Profile + NAME + Suffix + .ps1
 #>
+If (!(Get-Command Get-WmiObject -ea Ignore)) {
+  New-Alias Get-WMIObject Get-CIMInstance -force -scope Global -ea Ignore
+  New-Alias gwmi          Get-CIMInstance -force -scope Global -ea Ignore
+}
 Function Get-ExtraProfile {
   [CmdletBinding()]param(
     [String]$Suffix,
@@ -227,7 +231,7 @@ If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])
   #         Split out functions etc to "Scripts" directory
   #         Speed up History loading?
   #         get-process notepad++ | select name,starttime,productversion,path
-  #         gwmi win32_service -filter 'name = "everything"' | select name,StartMode,State,Status,Processid,StartName,DisplayName,PathName | ft
+  #         Get-WMIObject win32_service -filter 'name = "everything"' | select name,StartMode,State,Status,Processid,StartName,DisplayName,PathName | ft
   # Git-Windows Git (new file), previous commit worked on JR 2 machines
   # Improve goHash, Books & Dev more general, fix S: T: not found
   # Everything? es?
@@ -763,7 +767,7 @@ Set-ProgramAlias 7z   7z.exe @('C:Util\7-Zip\app\7-Zip64\7z.exe',
                              ) -FirstPath
 Write-Warning "$(get-date -f 'HH:mm:ss') $(LINE) After Set-ProgramAlias"
 
-# gwmi Win32_logicaldisk -filter 'drivetype = 3 or drivetype = 4'
+# Get-WMIObject Win32_logicaldisk -filter 'drivetype = 3 or drivetype = 4'
 
 Join-Path 'C:\Program Files*\Microsoft VS Code*' Code*.exe -resolve | Select -first 1
 
@@ -2697,7 +2701,7 @@ If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])
   $Host.PrivateData.WarningBackgroundColor = 'Black'
   $Host.PrivateData.WarningForegroundColor = 'White'
 }
-write-warning "$(get-date -f 'HH:mm:ss') $(LINE) After PSReadline "
+write-warning "$(LINE) $(get-date -f 'HH:mm:ss') After PSReadline "
 
 Write-Information "$(get-date -f 'HH:mm:ss') $(LINE) Error count: $($Error.Count)"
 Function dt {param([string[]]$datetime=(get-date)) $datetime | ForEach-Object { get-date $_ -format 'yyyy-MM-dd HH:mm:ss ddd' } }
@@ -2869,6 +2873,26 @@ Function ipv4 { ipconfig | sls IPv4 }
 
 Function ak { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
 Function hk { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
+$AHKFiles = @(
+  'C:\bat\ahk.ahk'
+  "$Home\Documents\WindowsPowerShell\Scripts\PowerShell.ahk"
+)
+If (!(Get-Variable AHK -ea Ignore -value)  -or
+    !(Test-Path   $AHK -ea Ignore       )) {
+  $AHK = 'C:\util\AutoHotKey\AutoHotkeyU64.exe'
+  Function ak { & $AHK /r C:\bat\ahk.ahk }
+  Function hk { & $AHK /r C:\bat\ahk.ahk }
+} Else {
+  Remove-Item Variable:AHK, Function:ak, Function:hk  -ea Ignore
+}
+If (Get-Variable 'AHK' -ea Ignore -Value) {
+  ForEach ($File in $AHKFiles) {
+    If ($File) {
+	  Write-Warning "$(FLINE) Load AHK: $File"
+      & $AHK /r $File
+ 	  }
+  }
+}
 
 Function ToTitleCase {
   [CmdletBinding()]Param(
@@ -2905,7 +2929,7 @@ Function ToTitleCase {
 }
 # Windows Shell Experience Host ShellExperienceHost MiraCast remote display wireless
 # https://docs.microsoft.com/en-us/windows/whats-new/whats-new-windows-10-version-1809#wireless-projection-experience
-# gwmi Win32_OperatingSystem | fl * | findstr /i "version build name 1809 1803 1904 1903"
+# Get-WMIObject Win32_OperatingSystem | fl * | findstr /i "version build name 1809 1803 1904 1903"
 
 <#
 LAPS Email for John, Carlos
@@ -3006,6 +3030,8 @@ Function Get-About {
 Function Select-Everything {    # es.exe everything
   [cmdletbinding()][Alias('se')]param(
     [Parameter(valuefromremainingarguments)][string[]]$Args,
+    [Switch]$Directory  = $False,
+    [Switch]$File       = $False,
     [switch]$Complete   = $False,
     [switch]$NoSubtitle = $False,
     [switch]$NoEdition  = $False,
@@ -3015,11 +3041,15 @@ Function Select-Everything {    # es.exe everything
   )
   Begin {
     $LineCount = 0
+    $Switches = If     ($File)      { @('/a-d') }
+                ElseIf ($Directory) { @('/ad' ) }
+                Else                { @()       }    
     $Args,$ExtraArgs = $Args.Where({$_ -notmatch '^-'}, 'split')
     Write-Verbose "Args: $Args"
     Write-Verbose "Extra: $ExtraArgs"
     $ArchiveExtensions = '*.zip','*.rar','*.lzw','*.7z'
-    $BookExtensions    = '*.pdf','*.azw','*.azw3','*.azw4','*.mobi','*.djv'
+    $BookExtensions    = '*.pdf', '*.azw','*.azw3','*.azw4',
+                         '*.mobi','*.djv','*.epub','*.mobi'
     $Extensions      = @()
     If ($Archives) { $Extensions  = $ArchiveExtensions }
     If ($Books)    { $Extensions += $Extensions + $BookExtensions }
@@ -3039,8 +3069,8 @@ Function Select-Everything {    # es.exe everything
       $Args = $Args.trim() -join '*' -replace '[\s*]{2,}', '*'
       If (!$Complete) { $Args = "*$Args*" }
     }
-    Write-Verbose "es $args $Extensions $ExtraArgs" ;
-    ForEach ($Line in @(es @args @Extensions @ExtraArgs)) {
+    Write-Verbose "es $Switches $args $Extensions $ExtraArgs" ;
+    ForEach ($Line in @(es @Switches @args @Extensions @ExtraArgs)) {
       $LineCount++
       $Line
     }
