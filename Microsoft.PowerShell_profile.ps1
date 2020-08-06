@@ -2885,7 +2885,7 @@ If (!(Get-Variable AHK -ea Ignore -value)  -or
 } Else {
   Remove-Item Variable:AHK, Function:ak, Function:hk  -ea Ignore
 }
-If (Get-Variable 'AHK' -ea Ignore -Value) {
+If ((Get-Variable 'AHK' -ea Ignore -Value) -and (Test-Path $AHK -ea ignore)) {
   ForEach ($File in $AHKFiles) {
     If ($File) {
 	  Write-Warning "$(FLINE) Load AHK: $File"

@@ -5,6 +5,7 @@
   [Alias('AllMatching','BothMatching')][switch]$Matching
 )
 
+try {
 # using namespace System.Management.Automation
 # using namespace System.Management.Automation.Language
 
@@ -768,7 +769,7 @@ Set-PSReadLineOption -HistorySearchCursorMovesToEnd
 # ::HM::Todo:: Set-PSReadLineKeyHandler -Chord 'Ctrl+Alt+|','Ctrl+Alt+?','Ctrl+\','Ctrl+Alt+\' `
 Remove-PSReadLineKeyHandler -chord '?','|','\','/'
 
-Set-PSReadLineKeyHandler -Chord 'Ctrl+Alt+|','Ctrl+\','Ctrl+Alt+\','Ctrl-?' `
+Set-PSReadLineKeyHandler -Chord 'Ctrl+Alt+|','Ctrl+\','Ctrl+Alt+\','Ctrl+?' `
                          -BriefDescription InsertForEachObject `
                          -LongDescription "Insert ForEach-Object with scriptblock " `
                          -ScriptBlock {
@@ -903,11 +904,11 @@ if ($PSRL = Get-Module PSReadline -ea Ignore) {
   Set-PSReadLineKeyHandler -Key DownArrow             -Function HistorySearchForward
   Set-PSReadLineKeyHandler -Key 'F7','F9'             -Function HistorySearchBackward
   Set-PSReadLineKeyHandler -Key 'Shift+F7','Shift+F9' -Function HistorySearchForward
-  Set-PSReadLineKeyHandler -Key 'Ctrl-b'              -Function ViGoToBrace 
-  Set-PSReadLineKeyHandler -Key 'Ctrl-Alt-B'          -Function ViDeleteBrace
-  Set-PSReadLineKeyHandler -Key 'Ctrl-B'              -Function ViYankPercent
-  Set-PSReadLineKeyHandler -Key 'Ctrl-5'              -Function ViYankPercent
-  Set-PSReadLineKeyHandler -Key 'Ctrl-%'              -Function ViYankPercent
+  Set-PSReadLineKeyHandler -Key 'Ctrl+b'              -Function ViGoToBrace 
+  Set-PSReadLineKeyHandler -Key 'Ctrl+Alt-B'          -Function ViDeleteBrace
+  Set-PSReadLineKeyHandler -Key 'Ctrl+B'              -Function ViYankPercent
+  Set-PSReadLineKeyHandler -Key 'Ctrl+5'              -Function ViYankPercent
+  Set-PSReadLineKeyHandler -Key 'Ctrl+%'              -Function ViYankPercent
 
   if ($SaveHistory -and !(Get-History).count) { Add-History $SaveHistory };
   try {
@@ -931,3 +932,6 @@ Write-Warning "$(FLINE) New Errors: $($Error.Count - $Private:ErrorCount)"
     $h = [ConsoleColor]::DarkGray
 
 #>
+} Catch {
+  $_ | Format-List -Force * | Out-String
+}
