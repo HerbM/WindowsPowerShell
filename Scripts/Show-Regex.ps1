@@ -7,23 +7,6 @@ $Params = ForEach ($a in $Args) {
   $a | ForEach-Object  { $_ }  
 }
 
-Function Main {
-  [CmdLetBinding()]param(
-    [parameter(ValueFromRemainingArguments=$true)][string[]]$Args
-  )
-  $Info =  $RegexInfo.Keys | ForEach-Object { "$_`n$($RegexInfo.$_)`n" }
-  If (!($Args | Where-Object { $_ } )) {
-    $Info
-  } else {
-    $Patterns = @()
-    ForEach ($Parm in $Params) {
-      If ($Parm -and $RegexInfo.Contains($Parm)) { "$_`n$($RegexInfo.$_)`n" }
-      Else { $Patterns += $Parm }
-    }  
-    $Info | Select-String $Patterns | Out-String -stream
-  }
-}
-
 $RegexInfo = [Ordered]@{
   Title = @'
   .Net Framework Regular Expressions'
@@ -218,4 +201,14 @@ Reference = @'
 '@
 }
 
-Main @PSBoundParameters
+$Info =  $RegexInfo.Keys | ForEach-Object { "$_`n$($RegexInfo.$_)`n" }
+If (!($Args | Where-Object { $_ } )) {
+  $Info
+} else {
+  $Patterns = @()
+  ForEach ($Parm in $Params) {
+    If ($Parm -and $RegexInfo.Contains($Parm)) { "$_`n$($RegexInfo.$_)`n" }
+    Else { $Patterns += $Parm }
+  }  
+  $Info | Select-String $Patterns
+}

@@ -8,7 +8,7 @@ $Source = @"
   using System.Collections.Generic;
   public class TCPPort12 {
     
-    public static bool IsPortOpen(string host, ushort port, int timeout=3) {
+    public static bool IsPortOpen(string host, ushort port, uint timeout=3, uint index=0) {
       using(var client = new TcpClient()) {
         try {
           if (timeout < 100) { timeout *= 1000; }
@@ -46,6 +46,7 @@ Add-Type -TypeDefinition $Source
 $BasicTestObject.Multiply(5, 2)
 
 return
+
 
   <#
   .Example

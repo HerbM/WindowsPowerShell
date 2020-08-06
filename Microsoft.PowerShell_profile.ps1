@@ -1,4 +1,4 @@
-﻿#region    Parameters
+#region    Parameters
 [CmdLetBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
 param (
                                                        [switch]$Force,
@@ -115,6 +115,10 @@ Write-Host "$(LINE) ProfileLogPath: $ProfileLogPath"                 @Private:Co
   Will generate/locate
     $ProfileDirectory\Profile + NAME + Suffix + .ps1
 #>
+If (!(Get-Command Get-WmiObject -ea Ignore)) {
+  New-Alias Get-WMIObject Get-CIMInstance -force -scope Global -ea Ignore
+  New-Alias gwmi          Get-CIMInstance -force -scope Global -ea Ignore
+}
 Function Get-ExtraProfile {
   [CmdletBinding()]param(
     [String]$Suffix,
@@ -227,7 +231,7 @@ If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])
   #         Split out functions etc to "Scripts" directory
   #         Speed up History loading?
   #         get-process notepad++ | select name,starttime,productversion,path
-  #         gwmi win32_service -filter 'name = "everything"' | select name,StartMode,State,Status,Processid,StartName,DisplayName,PathName | ft
+  #         Get-WMIObject win32_service -filter 'name = "everything"' | select name,StartMode,State,Status,Processid,StartName,DisplayName,PathName | ft
   # Git-Windows Git (new file), previous commit worked on JR 2 machines
   # Improve goHash, Books & Dev more general, fix S: T: not found
   # Everything? es?
@@ -477,15 +481,15 @@ new-alias lessdir less         -force -scope Global -ea ignore
 new-alias l       less         -force -scope Global -ea ignore
 new-alias iv 'C:\Program Files\IrfanView\i_view64.exe' -scope Global -force -ea Ignore
 <#
-.Synopsis 
+.Synopsis
   Start Emacs using server, start server if not running
 
-.Notes  
-;;  This makes Emacs ignore the "-e (make-frame-visible)" 
+.Notes
+;;  This makes Emacs ignore the "-e (make-frame-visible)"
 ;;  that it gets passed when started by emacsclientw.
 ;;
 ;(add-to-list 'command-switch-alist '("(make-frame-visible)" .
-;           (lambda (s))))
+;			     (lambda (s))))
 -V, --version           Just print version info and return
 -H, --help              Print this usage information message
 -nw, -t, --tty          Open a new Emacs frame on the current terminal
@@ -512,7 +516,7 @@ Function remacs {
     [Parameter(Position=0, ParameterSetName='Path',
       ValueFromPipeline,ValueFromPipelineByPropertyName)]
       [string[]]$Path=@(),
-    [Parameter(Position=0, ParameterSetName='LiteralPath', Mandatory=$true, 
+    [Parameter(Position=0, ParameterSetName='LiteralPath', Mandatory=$true,
       ValueFromPipelineByPropertyName=$true)][Alias('PSPath')][string[]]$LiteralPath,
                 [string]$Filter  = '',
                 [string]$Include = '',
@@ -524,14 +528,14 @@ Function remacs {
   )
   Begin {
     Set-StrictMode -Version Latest
-    $Verbose = $PSBoundParameters.ContainsKey('Verbose') -and $PSBoundParameters.Verbose 
+    $Verbose = $PSBoundParameters.ContainsKey('Verbose') -and $PSBoundParameters.Verbose
     If ($PSBoundParameters.ContainsKey('Verbose')) { $PSBoundParameters.Remove('Verbose') }
     $Process       = $True
     $EmacsPath     = "c:\emacs\bin"
-    $EmacsClient   = "$EmacsPath\emacsclientw.exe" 
-    $EmacsCLI      = "$EmacsPath\emacsclient.exe" 
+    $EmacsClient   = "$EmacsPath\emacsclientw.exe"
+    $EmacsCLI      = "$EmacsPath\emacsclient.exe"
     $EmacsServer   = "$EmacsPath\runemacs.exe"
-    $ServerOptions = '-n', "--alternate-editor=$EmacsServer" 
+    $ServerOptions = '-n', "--alternate-editor=$EmacsServer"
     Write-Verbose "Property set: $($PSCmdlet.ParameterSetName)"
   }
   Process {
@@ -548,12 +552,12 @@ Function remacs {
       }
       $Files = @(ForEach ($Item in $Path) {
         If ($Item -match '(.*):?(\+\d+(?::\d+)?$)') {
-          $Matches[2]         
+          $Matches[2]
           If ($Matches[1]) {
             $Matches[1].trim(';: ')
           } Else {
             $ForEach.MoveNext()
-            $ForEach.Current 
+            $ForEach.Current
           }
         } ElseIf (Test-Path $Item) {
           $Parms  = If ($Filter ) { @{Filter  = $Filter } } Else { @{} }
@@ -566,12 +570,12 @@ Function remacs {
       $Parameters = @() + $Remaining + $Files + $ServerOptions
       Write-Verbose "& $EmacsClient $Parameters"
       If ($Test) {
-        & 'echoargs'   @Parameters 
+        & 'echoargs'   @Parameters
       } Else {
         If ($Verbose) {
-        & 'echoargs'   @Parameters 
+        & 'echoargs'   @Parameters
         }
-        & $EmacsClient @Parameters 
+        & $EmacsClient @Parameters
       }
     }
   }
@@ -587,7 +591,7 @@ Function Get-Line {
     [Alias('Ignore')]              [string[]]$Exclude         = @(''),
     [Alias('OnlyIf')]              [string[]]$Include         = @(''),
     [Alias('Blanks','AllowBlanks')]  [switch]$AllowBlankLines = $False
-  ) 
+  )
   Begin {
     If ($Exclude) { $Exclude = '(' + ($Exclude -join ')|(') + ')' }
     If ($Include) { $Include = '(' + ($Include -join ')|(') + ')' }
@@ -763,7 +767,7 @@ Set-ProgramAlias 7z   7z.exe @('C:Util\7-Zip\app\7-Zip64\7z.exe',
                              ) -FirstPath
 Write-Warning "$(get-date -f 'HH:mm:ss') $(LINE) After Set-ProgramAlias"
 
-# gwmi Win32_logicaldisk -filter 'drivetype = 3 or drivetype = 4'
+# Get-WMIObject Win32_logicaldisk -filter 'drivetype = 3 or drivetype = 4'
 
 Join-Path 'C:\Program Files*\Microsoft VS Code*' Code*.exe -resolve | Select -first 1
 
@@ -800,24 +804,24 @@ If ([Environment]::OSVersion.Version -gt [version]'6.1') {
 #   Set-ItemProperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -value 0 -type dword -force
 # }
 Function Set-PropertyForce {
-  [CmdletBinding()]Param(  
+  [CmdletBinding()]Param(
     [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
       [string[]]$Path = '',
     [Parameter(ValueFromPipeline,ValueFromPipelineByPropertyName)]
       [string[]]$Name = $Null,
-    $Value = $Null,  
-    [switch]$Force = $False  
+    $Value = $Null,
+    [switch]$Force = $False
   )
   Begin {
     $Force = $PSBoundParameters.ContainsKey('Force') -and $Force
   }
   Process {
-    If (!($Prop = (Get-ItemProperty -Path $Path -Name $Name -ea Ignore | 
+    If (!($Prop = (Get-ItemProperty -Path $Path -Name $Name -ea Ignore |
       Select $Name))) {
       If (!(Test-Path $Path -ea ignore) -and $Force) {
         Write-Warning "Creating path: $Path"
         MkDir $Path -Force -ea Ignore
-      }      
+      }
       Write-Warning "Set property: $Name"
       Set-ItemProperty -Path $Path -Name $Name -value 1 -Force:$Force -ea Ignore
     }
@@ -835,12 +839,12 @@ ForEach ($Entry in $Script:RegistryConfiguration) {
   Write-Warning "Set Property: [$Path] [$Name] [$Value] [$Force]"
 #  Set-PropertyForce -Path $Path -Name $Name -Value $Value -Force:$Force
 }
-# If (!(($Current = Get-ItemProperty $Path -name $Name -ea Ignore) -and 
+# If (!(($Current = Get-ItemProperty $Path -name $Name -ea Ignore) -and
 #       ($Current.$Value -eq $Value))) {
 #   Select-Object WindowArrangementActive | Format-List | findstr "WindowArrangementActive") {
-#   # If (!(Test-Path $Path)) 
+#   # If (!(Test-Path $Path))
 #     Set-ItemProperty 'HKCU:\CONTROL PANEL\DESKTOP' -name WindowArrangementActive -value 0 -type dword -force
-#   }  
+#   }
 # }
 
 
@@ -870,7 +874,7 @@ Function Get-RegKey {
   Process {
     If (!$Key) {
       $Key = @(((Get-ClipBoard) -split "`n").trim('\s\\''"').Where{$_ -and $_ -match '^HK'})
-    } 
+    }
     ForEach ($K in $key) {
       $K2 = $K -replace 'HK\w*_(.)\w*_(.)\w*:?','HK$1$2:'
       If (!$CmdOnly) { [Void]$Keys.Add($K2) }
@@ -882,7 +886,7 @@ Function Get-RegKey {
             If (!$Double) {  "'$K3'"  }
             If (!$Single) { "`"$K3`"" }
           } ElseIf (!$NoQuote -and ($K3 -match '\s')) {
-            "'$K3'"  
+            "'$K3'"
           }
           If (!$QuoteOnly) { $K3 }
         }
@@ -909,9 +913,9 @@ Function Get-WhoAmI {
     $Matches[1]
   } Else { 'xxx' }
   Write-Verbose "Show: $Show Switchkey: $Switchkey"
-  # $Args = "$Switch"   
+  # $Args = "$Switch"
   $Switch = If ($Switches) { $Switches -match "^$SwitchKey" | Select -first 1 }
-  If ($Switch -in 'GROUPS', 'PRIV', 'ALL') { 
+  If ($Switch -in 'GROUPS', 'PRIV', 'ALL') {
     Write-Verbose "WhoAmI /$Switch /fo csv | convertfrom-csv"
     WhoAmI "/$Switch" /fo csv | convertfrom-csv
   } ElseIf ($Switch) {
@@ -1505,23 +1509,23 @@ Function Get-TypeX {
 [PSObject].Assembly.GetType('System.Management.Automation.TypeAccelerators')::Add('accelerators', [PSObject].Assembly.GetType('System.Management.Automation.TypeAccelerators'))
 Function Get-Accelerator {
   param(
-    [String[]]$Include = @(), 
-    [String[]]$Exclude = @(), 
+    [String[]]$Include = @(),
+    [String[]]$Exclude = @(),
     [switch]$Like
   )
   # $Acc = [psobject].Assembly.GetType("System.Management.Automation.TypeAccelerators")::get
   ForEach ($key in ([psobject].Assembly.GetType("System.Management.Automation.TypeAccelerators")::get).Keys) {
     $Included = !$Include
-    $Excluded = [Boolean]$Exclude 
+    $Excluded = [Boolean]$Exclude
     ForEach ($Pattern in $Include) {
       If ($Key -match $Pattern) {
-        $Included = $True 
+        $Included = $True
         Break
       }
     }
     ForEach ($Pattern in $Exclude) {
       If ($Key -match $Pattern) {
-        $Excluded = $True 
+        $Excluded = $True
         Break
       }
     }
@@ -1538,8 +1542,8 @@ Function Get-HistoryCommandline {
     [string]$Pattern,
     [uint16]$Count,
     $Exclude,
-    [Alias('ID')]                 [Switch]$ShowID,
-    [Alias('Object','FullObject')][switch]$HistoryInfo
+    [Switch]$ShowID,
+    [Alias('ID','Object','FullObject')][switch]$HistoryInfo
   )
   If ($PSBoundParameters.ContainsKey('ShowID')) {
     $ShowID = [boolean]$ShowID
@@ -1585,8 +1589,6 @@ Function Select-History {
         If ($IncludeID) {
         } Else {
           $H = Select-Object ID,CommandLine, StartExecutionTime,EndExecutionTime,ExcutionStatus,Status
-          
-          
         } # 9/10/2019 9:48:41 AM
       }
       #if ($PSBoundParameters['Verbose'] -and $Verbose) {
@@ -1605,7 +1607,7 @@ Function Get-RunTime {
   param(
     [Parameter(ValueFromPipeline=$True)]
     [Microsoft.PowerShell.Commands.HistoryInfo[]]$historyitem,
-    $Count = 10,
+    $Count = 1,
     [switch]$Duration,
     [switch]$Format
   )
@@ -1638,14 +1640,12 @@ Function Get-RunTime {
         [PSCustomObject]@{
           Id          = $hi.Id
           RunTime     = If ($Duration) { $RunTime } else { $RunTime.TotalSeconds }
-          Completed   = $hi.EndExecutionTime.ToString('yyyy-MM-dd HH:mm')
           CommandLine = $hi.CommandLine
         }
       }
     }
   }
 }; New-Alias rt Get-RunTime -force -scope Global
-
 Function Get-Syntax {
   param(
   )
@@ -1710,9 +1710,9 @@ C:\build\SBCLisp\sbcl.exe --core (resolve-path sbcl.core) --dynamic-space-size 1
 Mastering the Vim Language
   Vim  as a language  Ben McCormick
   carbon5 definitive guide text objects
-  Emacs VIM Atom can't replace Vim composability 
+  Emacs VIM Atom can't replace Vim composability
   Use VIm.com stop configuration madness mastering motins and operators
-  StackOverFlow You problem with Vim is you don't grok Vi 
+  StackOverFlow You problem with Vim is you don't grok Vi
   Relative Number
 
   Surround
@@ -1721,36 +1721,36 @@ Mastering the Vim Language
   TitleCase
   Sort-Motion
   System-Copy
-  
-  Indent 
-  ENtire 
-  line 
+
+  Indent
+  ENtire
+  line
   ruby doc
-  
-  Wiki custom test objects 
-  
-  MikTex Pandoc 
+
+  Wiki custom test objects
+
+  MikTex Pandoc
   fast.com
   google tr
-  wikipedia 
+  wikipedia
   emoj
   youtube
   wego   weather
   whereami
   wordnet?  american heritage
   hacker typer
-  
+
   Ace Windows
-  lorem ipsum 
-  Swiper   ctrl-s swiper    AceJump, ivy Avy Hydra 
-  help ido -> 
+  lorem ipsum
+  Swiper   ctrl-s swiper    AceJump, ivy Avy Hydra
+  help ido ->
   Ace Jump Mode (Avy) Ce la vie Emacs.com
-  
+
   use-package
     :init
     :config
-    
-  
+
+
 #>
 Function sbcl {
   [CmdletBinding(DefaultParameterSetName='Path')]
@@ -1786,30 +1786,30 @@ Function sbcl {
       { [boolean]$noprint         } { '--noprint'          }
       { [boolean]$quit            } { '--quit'             }
       { [boolean]$noninteractive  } { '--non-interactive'  }
-    })  
+    })
     $Core = If ($C = Resolve-Path $Core) {
       $C.Path
     } ElseIf ($C = Join-Path '.','C:\build\SBCLisp' $Core -ea Ignore -resolve) {
       $C
     } ElseIf ($C = Join-Path (Split-Path $SBCL) 'sbcl.core' -ea Ignore -resolve) {
-      $C 
-    } Else {  
-      $Core 
+      $C
+    } Else {
+      $Core
     }
     $CoreParam = @('--core', ($Core -replace '\\', '/'))
     $Extra2 = @(Switch ($True) {
       { [boolean]$DynamicSpaceSize } { '--dynamic-space-size', $DynamicSpaceSize }
-      { [boolean]$controlstacksize } { '--control-stack-size', $controlstacksize } 
-      { [boolean]$sysinit          } { '--sysinit',            $sysinit          } 
-      { [boolean]$userinit         } { '--userinit',           $userinit         } 
-      { [boolean]$script           } { '--script',             $script           } 
-      { [boolean]$eval             } { '--eval',               $eval             } 
-      { [boolean]$load             } { '--load',               $load             } 
+      { [boolean]$controlstacksize } { '--control-stack-size', $controlstacksize }
+      { [boolean]$sysinit          } { '--sysinit',            $sysinit          }
+      { [boolean]$userinit         } { '--userinit',           $userinit         }
+      { [boolean]$script           } { '--script',             $script           }
+      { [boolean]$eval             } { '--eval',               $eval             }
+      { [boolean]$load             } { '--load',               $load             }
     })
     $Path = @(If ($Path) { $Path = '--load', $Load } Else { @() })
     $Parameters = @(ForEach ($A in $Arguments) {
-      If ($A -match '^[-/][^-]' ) { 
-        $A -replace '^[-/]+', '--' 
+      If ($A -match '^[-/][^-]' ) {
+        $A -replace '^[-/]+', '--'
       } Else { $A }
     })
     # --core (resolve-path sbcl.core) --dynamic-space-size 10000 --load quicklisp.lisp
@@ -1894,21 +1894,21 @@ If (Test-Path ($CCL = 'C:\Users\Herb\downloads\ccl\wx86cl64.exe') -ea Ignore) {
 
 <#
 .Notes
-/f or /force Launch unconditionally, skipping any warning dialogs. This has the same effect as #SingleInstance Off. Yes 
-/r or /restart Indicate that the script is being restarted (this is also used by the Reload command, internally). Yes 
-/ErrorStdOut Send syntax errors that prevent a script from launching to stderr rather than displaying a dialog. See #ErrorStdOut for details. This can be combined with /iLib to validate the script without running it. Yes 
-/Debug [v1.0.90+]: Connect to a debugging client. For more details, see Interactive Debugging. No 
-/CPn [v1.0.90+]: Overrides the default codepage used to read script files. For more details, see Script File Codepage. No 
-/iLib "OutFile" 
-[v1.0.47+]: AutoHotkey loads the script but does not run it. For each script file which is auto-included via the library mechanism, two lines are written to the file specified by OutFile. 
-These lines are written in the following format, 
+/f or /force Launch unconditionally, skipping any warning dialogs. This has the same effect as #SingleInstance Off. Yes
+/r or /restart Indicate that the script is being restarted (this is also used by the Reload command, internally). Yes
+/ErrorStdOut Send syntax errors that prevent a script from launching to stderr rather than displaying a dialog. See #ErrorStdOut for details. This can be combined with /iLib to validate the script without running it. Yes
+/Debug [v1.0.90+]: Connect to a debugging client. For more details, see Interactive Debugging. No
+/CPn [v1.0.90+]: Overrides the default codepage used to read script files. For more details, see Script File Codepage. No
+/iLib "OutFile"
+[v1.0.47+]: AutoHotkey loads the script but does not run it. For each script file which is auto-included via the library mechanism, two lines are written to the file specified by OutFile.
+These lines are written in the following format,
 where LibDir is the full path of the Lib folder and LibFile is the filename of the library:
 #Include LibDir\
 #IncludeAgain LibDir\LibFile.ahk
 S???
 If the output file exists, it is overwritten. OutFile can be * to write the output to stdout.
-If the script contains syntax errors, the output file may be empty. 
-The process exit code can be used to detect this condition; if there is a syntax error, the exit code is 2. 
+If the script contains syntax errors, the output file may be empty.
+The process exit code can be used to detect this condition; if there is a syntax error, the exit code is 2.
 The /ErrorStdOut switch can be used to suppress or capture the error message.
 #>
 Function ahk {
@@ -1918,7 +1918,7 @@ Function ahk {
     [Parameter(Position=0, ParameterSetName='Path',
       ValueFromPipeline,ValueFromPipelineByPropertyName)]
       [Alias('ScriptFile','FileName')][string[]]$Path=@('c:\bat\ahk.ahk'),
-    [Parameter(Position=0, ParameterSetName='LiteralPath', Mandatory=$true, 
+    [Parameter(Position=0, ParameterSetName='LiteralPath', Mandatory=$true,
       ValueFromPipelineByPropertyName=$true)][Alias('PSPath')][string[]]$LiteralPath,
     [parameter(ValueFromRemainingArguments=$true)]$Parameters,
     [Alias('h')]            [switch]$Help        = $Null,
@@ -1930,14 +1930,14 @@ Function ahk {
   )
   Begin {
     Set-StrictMode -Version Latest
-    $Verbose   = $PSBoundParameters.ContainsKey('Verbose') -and 
+    $Verbose   = $PSBoundParameters.ContainsKey('Verbose') -and
                  $PSBoundParameters.Verbose
-    $Null      = $PSBoundParameters.Remove('Verbose') 
+    $Null      = $PSBoundParameters.Remove('Verbose')
     Write-Verbose "ParameterSet: $($PSCmdlet.ParameterSetName)"
-    $AHKPath   = If ($Version2)      { 'C:\util\AutoHotKey2'  } 
+    $AHKPath   = If ($Version2)      { 'C:\util\AutoHotKey2'  }
                  Else                { 'C:\util\AutoHotKey'   }
-    $AHK       = Join-Path $AHKPath 'AutoHotKey.exe'             
-    $AHKHelp   = Join-Path $AHKPath 'AutoHotKey.chm'             
+    $AHK       = Join-Path $AHKPath 'AutoHotKey.exe'
+    $AHKHelp   = Join-Path $AHKPath 'AutoHotKey.chm'
     $Switches  = @(If ($CodePage)    { "/CP$CodePage" })
     $Switches += @(If (!$NoRestart)  { '/r'           })
     $Switches += @(If ($ErrorStdOut) { '/ErrorStdOut' })
@@ -1946,7 +1946,7 @@ Function ahk {
     $EA  = @{ ErrorAction = 'Ignore'      }
     $App = @{ CommandType = 'Application' }
     $Ext = '.ahk'
-  }  
+  }
   Process {
     If ($Help) { Return }
     [string[]]$ArgX = @(If ($Parameters) { $Parameters })
@@ -1961,16 +1961,16 @@ Function ahk {
                      Get-Property | ? Name -eq 'Path' | % Value
       Write-Verbose "Path: $P Resolve: [$Path] [$($Path.GetType())]"
       $Script = @(Switch ($True) {
-        {[boolean]($S = @(Resolve-Path $P @EA)) -and $S.count} { Get-ScriptPath $S 1; break }  
-        {[boolean]($ResolveBare)             }                { $ResolveBare; break }  
-        {[boolean]($S = @(Resolve-Path "$P$Ext" @EA      | Select -First 1)) } { Get-ScriptPath $S 3; break }  
-        {[boolean]($ResolveWith)             }                { $ResolveWith; break }  
+        {[boolean]($S = @(Resolve-Path $P @EA)) -and $S.count} { Get-ScriptPath $S 1; break }
+        {[boolean]($ResolveBare)             }                { $ResolveBare; break }
+        {[boolean]($S = @(Resolve-Path "$P$Ext" @EA      | Select -First 1)) } { Get-ScriptPath $S 3; break }
+        {[boolean]($ResolveWith)             }                { $ResolveWith; break }
         Default                                             { $P                  }
-      }) 
+      })
       Write-Verbose "Script: $Script"
-      $Script | % { 
-        EchoArgs @Switches $Script @ArgX 
-        & $AHK   @Switches $Script @ArgX 
+      $Script | % {
+        EchoArgs @Switches $Script @ArgX
+        & $AHK   @Switches $Script @ArgX
       }
     }
   }
@@ -2004,8 +2004,8 @@ Function ahk {
             $Script
           }
         }
-      }      
-    } 
+      }
+    }
 
   [
                 [string]$Filter  = '',
@@ -2018,14 +2018,14 @@ Function ahk {
   )
   Begin {
     Set-StrictMode -Version Latest
-    $Verbose = $PSBoundParameters.ContainsKey('Verbose') -and $PSBoundParameters.Verbose 
+    $Verbose = $PSBoundParameters.ContainsKey('Verbose') -and $PSBoundParameters.Verbose
     If ($PSBoundParameters.ContainsKey('Verbose')) { $PSBoundParameters.Remove('Verbose') }
     $Process       = $True
     $EmacsPath     = "c:\emacs\bin"
-    $EmacsClient   = "$EmacsPath\emacsclientw.exe" 
-    $EmacsCLI      = "$EmacsPath\emacsclient.exe" 
-    $EmacsServer   = "$EmacsPath\runemacs.exe" 
-    $ServerOptions = '-n', "--alternate-editor=$EmacsServer" 
+    $EmacsClient   = "$EmacsPath\emacsclientw.exe"
+    $EmacsCLI      = "$EmacsPath\emacsclient.exe"
+    $EmacsServer   = "$EmacsPath\runemacs.exe"
+    $ServerOptions = '-n', "--alternate-editor=$EmacsServer"
     Write-Verbose "Property set: $($PSCmdlet.ParameterSetName)"
   }
   Process {
@@ -2042,15 +2042,15 @@ Function ahk {
       }
       $Files = @(ForEach ($Item in $Path) {
         If ($Item -match '(.*):?(\+\d+(?::\d+)?$)') {
-          $Matches[2]         
+          $Matches[2]
           If ($Matches[1]) {
             $Matches[1].trim(';: ')
           } Else {
             $ForEach.MoveNext()
-            $ForEach.Current 
+            $ForEach.Current
           }
         } ElseIf (Test-Path $Item) {
-          $Parms = @{}        
+          $Parms = @{}
           $Parms += If ($Filter)  { @{ Filter  = $Filter  }} Else { @{} }
           $Parms += If ($Exclude) { @{ Exclude = $Exclude }} Else { @{} }
           $Parms += If ($Include) { @{ Include = $Include }} Else { @{} }
@@ -2061,12 +2061,12 @@ Function ahk {
       $Parameters = @() + $Remaining + $Files + $ServerOptions
       Write-Verbose "& $EmacsClient $Parameters"
       If ($Test) {
-        & 'echoargs'   @Parameters 
+        & 'echoargs'   @Parameters
       } Else {
         If ($Verbose) {
-        & 'echoargs'   @Parameters 
+        & 'echoargs'   @Parameters
         }
-        & $EmacsClient @Parameters 
+        & $EmacsClient @Parameters
       }
     }
   }
@@ -2156,7 +2156,7 @@ set-alias ic $ICFile -force -scope global -ea Ignore
 Function Get-BootTime { (Get-CimInstance win32_operatingsystem).lastbootuptime }
 try {
   Write-Information "$(LINE) Boot Time: $(Get-date ((Get-CimInstance win32_operatingsystem).lastbootuptime) -f 's')"
-} catch { 
+} catch {
   Write-Warning     "$(LINE) CIM call to get boot time failed"
 }
 Function ql {  $args  }
@@ -2457,8 +2457,8 @@ Function Set-GoAlias {
       Try {
         If ($goHash.$Name -and
             (Test-Path $goHash.$Name -PathType Container -ea Ignore)) {
-          Write-Verbose "New-Alias $Name Set-GoLocation -force -scope Global -ea Ignore"
-                         New-Alias $Name Set-GoLocation -force -scope Global -ea Ignore
+          Write-Verbose "New-Alias $Name Set-GoLocation -force -scope Global -ea STOP"
+                         New-Alias $Name Set-GoLocation -force -scope Global -ea STOP
         }
       } Catch { Write-Warning "Can't recreate Alias $Name Set-GoLocation" }
     }
@@ -2608,19 +2608,19 @@ Function Get-SerialNumber {Get-WMIObject win32_operatingsystem  | Select-Object 
 Function Get-DomainRoleName {
   [CmdletBinding()]Param(
     [int32]$Role = (Get-WMIObject Win32_ComputerSystem).DomainRole
-  ) 
+  )
   $RoleNames = @(
-    'StandaloneWorkstation', 
-    'MemberWorkstation', 
-    'StandaloneServer',       
-    'MemberServer',           
-    'DomainController',       
+    'StandaloneWorkstation',
+    'MemberWorkstation',
+    'StandaloneServer',
+    'MemberServer',
+    'DomainController',
     'PrimaryDomainController'
   )
   $Count = $RoleNames.Count
   For ($i=0;$i -lt $Count; $i++) { Write-Verbose "$i = $($RoleNames[$i])" }
-  Try { 
-    $RoleNames[$Role] 
+  Try {
+    $RoleNames[$Role]
   } Catch {
     'Unknown'
   }
@@ -2656,10 +2656,10 @@ Function Get-PSBoundParameter {
     $Null
   }
 }
-if ($Private:PSReadlineModule = Get-Module 'PSReadline' -ea ignore) {
+if ($Private:PSRealineModule = Get-Module 'PSReadline' -ea ignore) {
   set-psreadlinekeyhandler -chord 'Tab'            -Func TabCompleteNext      ### !!!!!
   set-psreadlinekeyhandler -chord 'Shift+Tab'      -Func TabCompletePrevious  ### !!!!!
-  If ($Private:PSReadlineModule.Version  -lt [version]'2.0.0') {
+  If ($Private:PSRealineModule.Version  -lt [version]'2.0.0') {
     set-psreadlinekeyhandler -chord 'Shift+SpaceBar' -Func Complete             ### !!!!!
     Set-PSReadLineOption -ForeGround Yellow  -Token None
     Set-PSReadLineOption -ForeGround Green   -Token Comment  -back DarkBlue
@@ -2701,7 +2701,7 @@ If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])
   $Host.PrivateData.WarningBackgroundColor = 'Black'
   $Host.PrivateData.WarningForegroundColor = 'White'
 }
-write-warning "$(get-date -f 'HH:mm:ss') $(LINE) After PSReadline "
+write-warning "$(LINE) $(get-date -f 'HH:mm:ss') After PSReadline "
 
 Write-Information "$(get-date -f 'HH:mm:ss') $(LINE) Error count: $($Error.Count)"
 Function dt {param([string[]]$datetime=(get-date)) $datetime | ForEach-Object { get-date $_ -format 'yyyy-MM-dd HH:mm:ss ddd' } }
@@ -2770,6 +2770,7 @@ Function Get-ErrorDetail {
     $Exception = $Exception.InnerException
   }
 }
+
 Function Get-PSHost {
   $bit = if ([Environment]::Is64BitProcess) {'64-bit'} else {'32-bit'}
   If ($Host) {
@@ -2803,7 +2804,7 @@ function Load-Assembly {
 }
 
 If (Get-Command Set-Proxy.ps1 -ea Ignore -and (get-computerdomain).domain -match 'ww9') {
- . Set-Proxy.ps1 
+ . Set-Proxy.ps1
 }
 
 #Convenience aliases for RDCMan
@@ -2852,52 +2853,84 @@ If ($PSVersionTable.PSVersion -lt [version]'5.0.0.0') {
 Function PSBoundParameter([string]$Parm) {
   return ($PSCmdlet -and $PSCmdlet.MyInvocation.BoundParameters[$Parm].IsPresent)
 }
-Function Scroll { 
+Function Scroll {
   Param(
     $Count=(($Host.UI.RawUI.MaxWindowSize -split ',')[1]),
-    [Alias('CLS','C','Erase','Blank')][switch]$ClearScreen = $False    
+    [Alias('CLS','C','Erase','Blank')][switch]$ClearScreen = $False
   )
   $LinesToScroll = "`n" * $Count
   Write-Host $LinesToScroll
 }
-Function Lock { 
+Function Lock {
   Param(
     # $Count=(($Host.UI.RawUI.MaxWindowSize -split ',')[1]),
-    # [Alias('CLS','C','Erase','Blank')][switch]$ClearScreen = $False    
+    # [Alias('CLS','C','Erase','Blank')][switch]$ClearScreen = $False
   )
   rundll32.exe 'user32.dll,LockWorkStation'
 }
 Function ip4 { ipconfig | sls IPv4 }
 Function ipv4 { ipconfig | sls IPv4 }
+
 Function ak { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
 Function hk { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
-If (Test-Path 'C:\util\AutoHotKey\AutoHotkeyU64.exe') {
-#  ForEach () {
-#    If ($AHKFile) {
-#      C:\util\AutoHotKey\AutoHotkeyU64.exe /r C:\bat\ahk.ahk
-#    }  
-#  }  
+$AHKFiles = @(
+  'C:\bat\ahk.ahk'
+  "$Home\Documents\WindowsPowerShell\Scripts\PowerShell.ahk"
+)
+If (!(Get-Variable AHK -ea Ignore -value)  -or
+    !(Test-Path   $AHK -ea Ignore       )) {
+  $AHK = 'C:\util\AutoHotKey\AutoHotkeyU64.exe'
+  Function ak { & $AHK /r C:\bat\ahk.ahk }
+  Function hk { & $AHK /r C:\bat\ahk.ahk }
+} Else {
+  Remove-Item Variable:AHK, Function:ak, Function:hk  -ea Ignore
+}
+If (Get-Variable 'AHK' -ea Ignore -Value) {
+  ForEach ($File in $AHKFiles) {
+    If ($File) {
+	  Write-Warning "$(FLINE) Load AHK: $File"
+      & $AHK /r $File
+ 	  }
+  }
 }
 
-Function ToTitleCase { 
+Function ToTitleCase {
   [CmdletBinding()]Param(
     [Parameter(ValueFromPipeline,ValueFromPipeLineByPropertyName)]
       [string[]]$Title=$null,
     [Alias('RemoveChars','ExcludeChars')][string]$RemoveCharacters = '$^',
-    [Alias('ToLowerCase','LowerCase')][switch]$ForceLowerCase = $False 
-  ) 
-  Begin { 
-    $TextInfo = (Get-Culture).TextInfo 
+    [Alias('Clean','Squash')]            [switch]$AlphaNumeric     = $False,
+    [Alias('RemoveNewLine','Online')]    [switch]$Join             = $False,
+    [Alias('ToLowerCase','LowerCase')]   [switch]$ForceLowerCase   = $False
+  )
+  Begin {
+    # Separator '-', '_'  -Dash -UnderScore ;  _ is word char?
+    $JoinOn = $Separator = ''
+    $Results = @()
+    If ($AlphaNumeric) { $RemoveCharacters = '\W' }
+    $TextInfo = (Get-Culture).TextInfo
     # If (!$RemoveCharacters) { $RemoveCharacters = '$^' }
   }
   Process {
     ForEach ($L in $Title) {
-      If ($ForceLowerCase) { $TextInfo.ToLower($L) }  
-      $TextInfo.ToTitleCase($L) -replace $RemoveCharacters 
+      If ($ForceLowerCase) { $L = $TextInfo.ToLower($L) }
+      If ($AlphaNumeric)   { $L = $L -replace '\s', $Separator }
+      $Results += $TextInfo.ToTitleCase($L) -replace $RemoveCharacters
+    }
+  }
+  End {
+    If ($Results) {
+      If ($Join) {
+        $Results = ($Results.Trim() -join $JoinOn).trim('\s')
+  	  }
+      $Results
     }
   }
 }
- 
+# Windows Shell Experience Host ShellExperienceHost MiraCast remote display wireless
+# https://docs.microsoft.com/en-us/windows/whats-new/whats-new-windows-10-version-1809#wireless-projection-experience
+# Get-WMIObject Win32_OperatingSystem | fl * | findstr /i "version build name 1809 1803 1904 1903"
+
 <#
 LAPS Email for John, Carlos
 Active Directory Hardening
@@ -2907,7 +2940,7 @@ JIT  MIM PAM
 
 Windows Credential Manager LSASS MimKatz
 
-RAP AD 
+RAP AD
 PAD
 Premiere offerings
 
@@ -2960,81 +2993,87 @@ if ((Get-Location) -match '^.:\\Windows\\System32$') { pushd \ }
 
 $eb = '*.epub|*.pdf|*.azw|*.azw?|*.mobi|*.doc'
 
-Function Convert-ClipBoard { 
+Function Convert-ClipBoard {
   [cmdletbinding()][Alias('clean','ccb')]param(
     [string]$Join                             = '',
     [string]$Trim                             = '',
     [Alias('Blanks')][switch]$AllowBlankLines = $False,
     [switch]$TrimAll                          = $False,
     [switch]$NoTrim                           = $False
-  ) 
+  )
   Begin {
     $Trim = If     ($NoTrim)  { ''        }
             ElseIf ($TrimAll) { '\W'      }
-            ElseIf ($Trim)    { $Trim     } 
+            ElseIf ($Trim)    { $Trim     }
             Else              { ',;: \\/' }
-    $MinimumLength = If ($AllowBlankLines) { -1 } Else { 0 }        
+    $MinimumLength = If ($AllowBlankLines) { -1 } Else { 0 }
   }
   Process {
-    (Get-ClipBoard) -split "`n+" | ForEach-Object { $_ -replace "^(\$Trim)|(\$Trim$)" } | 
-      Where-Object Length -gt $MinimumLength 
+    (Get-ClipBoard) -split "`n+" | ForEach-Object { $_ -replace "^(\$Trim)|(\$Trim$)" } |
+      Where-Object Length -gt $MinimumLength
   }
   End {}
 }
 
-Function Get-About { 
-  Param([String[]]$Name='.*') 
-  Begin { 
-    $Topics = Import-CSV "$Home\Documents\WindowsPowerShell\Reference\About_HelpTopics.csv" 
+Function Get-About {
+  Param([String[]]$Name='.*')
+  Begin {
+    $Topics = Import-CSV "$Home\Documents\WindowsPowerShell\Reference\About_HelpTopics.csv"
   }
-  Process { 
-    ForEach ($N in $Name) { 
-      $Topics | ? Name -match $N | Select-Object Name,Synopsis  
-    }  
-  } 
+  Process {
+    ForEach ($N in $Name) {
+      $Topics | ? Name -match $N | Select-Object Name,Synopsis
+    }
+  }
 }
 
-Function Select-Everything {    # es.exe everything 
+Function Select-Everything {    # es.exe everything
   [cmdletbinding()][Alias('se')]param(
     [Parameter(valuefromremainingarguments)][string[]]$Args,
+    [Switch]$Directory  = $False,
+    [Switch]$File       = $False,
     [switch]$Complete   = $False,
     [switch]$NoSubtitle = $False,
     [switch]$NoEdition  = $False,
     [switch]$Books      = $False,
     [switch]$Archives   = $False,
     [switch]$Ordered    = $False
-  ) 
+  )
   Begin {
     $LineCount = 0
+    $Switches = If     ($File)      { @('/a-d') }
+                ElseIf ($Directory) { @('/ad' ) }
+                Else                { @()       }    
     $Args,$ExtraArgs = $Args.Where({$_ -notmatch '^-'}, 'split')
     Write-Verbose "Args: $Args"
     Write-Verbose "Extra: $ExtraArgs"
     $ArchiveExtensions = '*.zip','*.rar','*.lzw','*.7z'
-    $BookExtensions    = '*.pdf','*.azw','*.azw3','*.azw4','*.mobi','*.djv'
+    $BookExtensions    = '*.pdf', '*.azw','*.azw3','*.azw4',
+                         '*.mobi','*.djv','*.epub','*.mobi'
     $Extensions      = @()
     If ($Archives) { $Extensions  = $ArchiveExtensions }
     If ($Books)    { $Extensions += $Extensions + $BookExtensions }
     $Extensions = @($Extensions -join '|')
-    If (!$Args)    { 
-      $Args = @(Convert-ClipBoard) 
+    If (!$Args)    {
+      $Args = @(Convert-ClipBoard)
       # If ($NoSubtitle) { $Args = $Args -replace '(?:^[^:]):.*' }
       If ($NoSubtitle) { $Args = $Args -replace ':.*' }
-      Write-Verbose "Begin-NoSubtitle: $Args" ; 
+      Write-Verbose "Begin-NoSubtitle: $Args" ;
       If ($NoEdition)  { $Args = $Args -replace '((\d\s*(st|nd|rd)*)|first|second|third|fourth)\s*ed.*$' }
-      Write-Verbose "Begin-NoEdition: $Args" ; 
+      Write-Verbose "Begin-NoEdition: $Args" ;
     }
   }
   Process {
-    $args = ($args -split '\W+').trim() | ? { $_ -and $_ -notmatch '^-?verbo' } | % { Write-verbose "[$_]"; $_ }; 
+    $args = ($args -split '\W+').trim() | ? { $_ -and $_ -notmatch '^-?verbo' } | % { Write-verbose "[$_]"; $_ };
     If ($Ordered -or $Complete) {
-      $Args = $Args.trim() -join '*' -replace '[\s*]{2,}', '*' 
+      $Args = $Args.trim() -join '*' -replace '[\s*]{2,}', '*'
       If (!$Complete) { $Args = "*$Args*" }
     }
-    Write-Verbose "es $args $Extensions $ExtraArgs" ; 
-    ForEach ($Line in @(es @args @Extensions @ExtraArgs)) {
+    Write-Verbose "es $Switches $args $Extensions $ExtraArgs" ;
+    ForEach ($Line in @(es @Switches @args @Extensions @ExtraArgs)) {
       $LineCount++
-      $Line 
-    }    
+      $Line
+    }
     If (!$LineCount) {
       Write-Warning "NOT Found: es $args $Extensions $ExtraArgs"
     }
@@ -3054,13 +3093,21 @@ Function Get-Changed {
   If ($Today) { $After = Get-Date 0:00 }
   $Date = @('dm:>' + (Get-Date $After -f 's'))
   If (!$Path) {
-    Write-Warning "es -dm -size $Date -sort-dm-ascending file: $Args"  
-    es -dm -size @Date -sort-dm-ascending file: @Args 
-  } 
+    Write-Warning "es -dm -size $Date -sort-dm-ascending file: $Args"
+    es -dm -size @Date -sort-dm-ascending file: @Args
+  }
   ForEach ($P in $Path) {
     $P = @($P)
-    Write-Warning "es $P -dm -size $Date -sort-dm-ascending file: $Args"  
-    es @P -dm -size @Date -sort-dm-ascending file: @Args 
+    Write-Warning "es $P -dm -size $Date -sort-dm-ascending file: $Args"
+    es @P -dm -size @Date -sort-dm-ascending file: @Args
+  }
+}
+
+Function Get-Length { $r = $input | measure -sum Length -Maximum; [PSCustomObject]@{
+    Count       = '{0,5:N0}'  -f $R.Count
+    TotalLength = '{0,12:N0}' -f $R.Sum
+    TotalGB     = '{0,7:N3}'  -f ($R.Sum     / 1GB)
+    Maximum     = '{0,7:N3}'  -f ($R.Maximum / 1GB)
   }
 }
 

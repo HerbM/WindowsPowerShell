@@ -18,7 +18,7 @@ If ($QuoteMatching -and $BraceMatching) { $Matching = $True }
 # [Microsoft.PowerShell.PSConsoleReadLine]::AddToHistory('"This is a test"')
 # OEMKey https://msdn.microsoft.com/en-us/library/system.windows.forms.keys%28v=vs.110%29.aspx?f=255&MSPPError=-2147217396
 # [System.ConsoleKey] | gm -static | more
-# Alt+w current line to history
+# Alt-w current line to history
 $SaveHistory = (Get-History -count 3000) | ForEach-Object commandline
 If ($SaveHistory) {
   write-warning "History count $((Get-History).count)"
@@ -765,11 +765,15 @@ write-warning "$(FLINE) Before Ctrl+Alt+|"
 #	[Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
 #	[Microsoft.PowerShell.PSConsoleReadLine]::Insert($Line)
 Set-PSReadLineOption -HistorySearchCursorMovesToEnd 
-Set-PSReadLineKeyHandler -Chord 'Ctrl+Alt+|','Ctrl+Alt+?','Ctrl+\','Ctrl+Alt+\' `
+# ::HM::Todo:: Set-PSReadLineKeyHandler -Chord 'Ctrl+Alt+|','Ctrl+Alt+?','Ctrl+\','Ctrl+Alt+\' `
+Remove-PSReadLineKeyHandler -chord '?','|','\','/'
+
+Set-PSReadLineKeyHandler -Chord 'Ctrl+Alt+|','Ctrl+\','Ctrl+Alt+\','Ctrl-?' `
                          -BriefDescription InsertForEachObject `
                          -LongDescription "Insert ForEach-Object with scriptblock " `
                          -ScriptBlock {
   param($key, $arg)
+  # Write-Information "key: [$Key] arg: [$arg]"
   $selectionStart = $selectionLength = $line = $cursor = $null
   [Microsoft.PowerShell.PSConsoleReadLine]::GetSelectionState([ref]$selectionStart, [ref]$selectionLength)
   [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
@@ -790,6 +794,7 @@ Set-PSReadLineKeyHandler -Chord 'Ctrl+Alt+|','Ctrl+Alt+?','Ctrl+\','Ctrl+Alt+\' 
   }
   [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition([Math]::Min($cursor, $Line.Length - 3 ))
 }
+Remove-PSReadLineKeyHandler -chord '?','|','\','/'
 
 ###   WORKING HERE
 Set-PSReadLineKeyHandler -Chord 'Ctrl+|,s','Ctrl+|,f','Ctrl+|,o','Ctrl+|,w', 
@@ -898,16 +903,12 @@ if ($PSRL = Get-Module PSReadline -ea Ignore) {
   Set-PSReadLineKeyHandler -Key DownArrow             -Function HistorySearchForward
   Set-PSReadLineKeyHandler -Key 'F7','F9'             -Function HistorySearchBackward
   Set-PSReadLineKeyHandler -Key 'Shift+F7','Shift+F9' -Function HistorySearchForward
-  try {	
-		Set-PSReadLineKeyHandler -Key 'Ctrl+Alt+B'      -Function ViDeleteBrace -ea Continue
-		Set-PSReadLineKeyHandler -Key 'Ctrl+B'          -Function ViYankPercent -ea Continue
-		Set-PSReadLineKeyHandler -Key 'Ctrl+5'          -Function ViYankPercent -ea Continue
-		Set-PSReadLineKeyHandler -Key 'Ctrl+%'          -Function ViYankPercent -ea Continue
-#		Set-PSReadLineKeyHandler -Key 'Ctrl+b'          -Function ViGoToBrace   -ea Ignore -brief 'ViGotoBrace' -desc 'ViGotoBrace'
-  } Catch {
-		Write-Warning "$($_ | Format-Custom -Depth 2 -force | Out-String)" 
-		Write-Warning "Caught error at or after Ctrl+b"
-  }
+  Set-PSReadLineKeyHandler -Key 'Ctrl-b'              -Function ViGoToBrace 
+  Set-PSReadLineKeyHandler -Key 'Ctrl-Alt-B'          -Function ViDeleteBrace
+  Set-PSReadLineKeyHandler -Key 'Ctrl-B'              -Function ViYankPercent
+  Set-PSReadLineKeyHandler -Key 'Ctrl-5'              -Function ViYankPercent
+  Set-PSReadLineKeyHandler -Key 'Ctrl-%'              -Function ViYankPercent
+
   if ($SaveHistory -and !(Get-History).count) { Add-History $SaveHistory };
   try {
     if ($SaveHistory) {

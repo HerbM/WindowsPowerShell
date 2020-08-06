@@ -5,14 +5,14 @@
 :~*:##wd::Write-Debug "$`(FLINE) "
 :~*:##sm::Set-StrictMode -Version Latest
 
-:~*:##cb::
-(
-`[CmdletBinding`()]Param`(
-    `[Parameter`(ValueFromPipeline)]`[Object`[]]$InputObject,
-    `[switch]$LoadOnly
-  `)
-return
-)
+;;;;  :~*:##cb::
+;;;;  (
+;;;;  `[CmdletBinding`()]Param`(
+;;;;      `[Parameter`(ValueFromPipeline)]`[Object`[]]$InputObject,
+;;;;      `[switch]$LoadOnly
+;;;;    `)
+;;;;  return
+;;;;  )
 
 :~*:##Fn::
 (
