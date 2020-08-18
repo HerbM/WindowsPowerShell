@@ -20,9 +20,9 @@ If ($QuoteMatching -and $BraceMatching) { $Matching = $True }
 # OEMKey https://msdn.microsoft.com/en-us/library/system.windows.forms.keys%28v=vs.110%29.aspx?f=255&MSPPError=-2147217396
 # [System.ConsoleKey] | gm -static | more
 # Alt-w current line to history
-$SaveHistory = (Get-History -count 3000) | ForEach-Object commandline
+$SaveHistory = @((Get-History -count 3000) | ForEach-Object commandline)
 If ($SaveHistory) {
-  write-warning "History count $((Get-History).count)"
+  write-warning "History count $($SaveHistory.count)"
 } else {
   write-warning "No history to load"
 }
@@ -910,7 +910,7 @@ if ($PSRL = Get-Module PSReadline -ea Ignore) {
   Set-PSReadLineKeyHandler -Key 'Ctrl+5'              -Function ViYankPercent
   Set-PSReadLineKeyHandler -Key 'Ctrl+%'              -Function ViYankPercent
 
-  if ($SaveHistory -and !(Get-History).count) { Add-History $SaveHistory };
+  if ($SaveHistory -and !@(Get-History).count) { Add-History $SaveHistory };
   try {
     if ($SaveHistory) {
       $SaveHistory | ForEach-Object { [Microsoft.PowerShell.PSConsoleReadLine]::AddToHistory($_) }
