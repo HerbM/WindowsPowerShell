@@ -31,10 +31,9 @@ Error 0x80073701 installing AD role -- might be language settings
 
 Additional commands for our DC cutovers and checking servers:
 
-# If you can’t demote the OLD DC, the use DCPromo /forceremoval  (or equivalent)
-# BUT THEN you must do metadata cleanup before finishing.
+If you can’t demote the OLD DC, the use DCPromo /forceremoval  (or equivalent)
+BUT THEN you must do metadata cleanup before finishing.
 
-<#
 Metadata cleanup, run NTDSUtil, Sites and Services, AD Users/Computers (dsa), and dnscmd:
 ntdsutil 
   metadata cleanup
@@ -53,11 +52,10 @@ ntdsutil
   Quit
 Remove from Site in AD Sites & Services
 Remove from AD Domain Controllers OU (in DSA ADUC) 
-#>
 
 #Use DNScmd to FIND any dead records for the departing DC:
 
-Function Get-DomainRoleName {  # Server/Workstation & StandAlone/Domain or DC 
+Function Get-DomainRoleName {
   [CmdletBinding()]Param(
     [int32]$Role = (Get-WMIObject Win32_ComputerSystem).DomainRole
   ) 
@@ -85,11 +83,11 @@ Function Get-ComputerDomain {
     }
 }
 
-$Domain = (Get-ComputerDomain).domain; $Domain
+      $Domain = (Get-ComputerDomain).domain
 # Check the domain zone and the _msdcs zone
-dnscmd /enumrecords $Domain .          | findstr /i $env:computername
+dnscmd /enumrecords $Domain . | findstr /i $env:computername
 dnscmd /enumrecords "_msdcs.$Domain" . | findstr /i $env:computername
-# If you find a GUID record for the DC, then also recheck the _MSDCS for that GUID:
+# If you find a GUID record for the DC, then also recheck the _MSDCS for that GUI you found:
 dnscmd /enumrecords "_msdcs.$Domain" . | findstr /i 9befed69-aa2e-4d36-bee2-ab891e8fd34a # <- change to found GUID
 
       
@@ -435,82 +433,6 @@ nslookup -type=srv _kpasswd._tcp.$ComputerDNSDomain
 nslookup -type=srv _ldap._tcp.$ComputerDNSDomain
 nslookup -type=srv _ldap._tcp.dc._msdcs.$ComputerDNSDomain
 .\dig.exe -t srv  _kerberos._tcp.txdcs.teamibm.com. # +short
-
-[System.DirectoryServices.ActiveDirectory.forest]::GetCurrentForest()
-$ForestName    = 'ww930.my-it-solutions.net'
-$ForestContext = [System.DirectoryServices.ActiveDirectory.DirectoryContext]::New('forest', $ForestName)
-[System.DirectoryServices.ActiveDirectory.forest]::GetForest($ForestContext)
-
-  Function Get-Forest {
-    #[OutputType('PSCustomOBject')]
-    [CmdletBinding()]Param(
-      [Alias('ForestName')][string[]]$Name           = @(),
-                           [switch]  $ComputerForest = $False,
-                           [switch]  $BothForests    = $False
-    )
-    Begin {
-      $AlreadySeen = @{}
-      If ($BothForests -or $ComputerForest) {
-        $Name += (Get-ComputerDomain).Domain
-      }
-      If ($BothForests -or !$Name) { 
-        $Name += $Env:UserDNSDomain
-      }
-    }
-    Process {
-      ForEach ($Domain in $Name.trim('.')) {
-        nslookup -type=srv "_kerberos._tcp.$($Domain)." | 
-          Select-String '^[a-z][^:]+[.\d]{7}$'          | 
-          ForEach-Object {
-            $a = $_ -split '\s+'
-            If (!$AlreadySeen.ContainsKey($a[0])) {
-              $AlreadySeen.$($a[0]) = 1  # just remember it
-              [PSCustomObject]@{ 
-                ComputerName = $a[0] -replace '\..*'
-                DNSDomain    = $a[0] -replace '^\w+\.'
-                IPAddress    = $a[-1] 
-              }
-            }
-          } 
-      }  
-    } 
-  }
-  
-  Function Get-DomainController {
-    [OutputType('PSCustomOBject')]
-    [CmdletBinding()]Param(
-      [Alias('DomainName')]
-      [string[]]$Name           = @(),
-      [switch]  $ComputerDomain = $False,
-      [switch]  $BothDomains    = $False
-    )
-    Begin {
-      $AlreadySeen = @{}
-      If ($BothDomains -or $ComputerDomain) {
-        $Name += (Get-ComputerDomain).Domain
-      }
-      If ($BothDomains -or !$Name) { 
-        $Name += $Env:UserDNSDomain
-      }
-    }
-    Process {
-      ForEach ($Domain in $Name.trim('.')) {
-        nslookup -type=srv "_kerberos._tcp.$($Domain)." | 
-          Select-String '^[a-z][^:]+[.\d]{7}$'          | 
-          ForEach-Object {
-            $a = $_ -split '\s+'
-            If (!$AlreadySeen.ContainsKey($a[0])) {
-              $AlreadySeen.$($a[0]) = 1  # just remember it
-              [PSCustomObject]@{ 
-                ComputerName = $a[0] -replace '\..*'
-                DNSDomain    = $a[0] -replace '^\w+\.'
-                IPAddress    = $a[-1] 
-              }
-            }
-          } 
-      }  
-    } 
-  }
 
 nslookup -type=srv _kerberos._tcp.ad.portal.texas.gov.
     nslookup gc._msdcs.example.root   xx x _gc._tcp
