@@ -16,6 +16,7 @@ param (
   #[Alias('IAc','IAction','InfoAction')]
   #[ValidateSet('SilentlyContinue','')]                                  [switch]$InformationAction
 )
+Set-StrictMode -off
 $Script:PSLog = "$Home\PowerShellLog.txt"
 Get-Date -Format 's' >> $Script:PSLog
 '-' * 60      | Format-List * -force | Out-String >> $Script:PSLog
@@ -1543,7 +1544,7 @@ Function Get-Accelerator {
     if ($key -notmatch $Include -or $Excluded) {continue}
     [pscustomobject]@{
       Accelerator = $key
-      Definition  = $Acc.$key
+      # Definition  = $Acc.$key
     }
   }
 }
@@ -2883,31 +2884,35 @@ Function Lock {
 Function ip4  { ipconfig | Select-String IPv4 }
 Function ipv4 { ipconfig | Select-String IPv4 }
 
-Function ak { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
-Function hk { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
-$AHKFiles = @(
-  'C:\bat\ahk.ahk'
-  "$Home\Documents\WindowsPowerShell\Scripts\PowerShell.ahk"
-)
-If (!(Get-Variable AHK -ea Ignore -value)  -or
-    !(Test-Path   $AHK -ea Ignore       )) {
-  $AHK = 'C:\util\AutoHotKey\AutoHotkeyU64.exe'
-  Function ak { & $AHK /r C:\bat\ahk.ahk }
-  Function hk { & $AHK /r C:\bat\ahk.ahk }
-} Else {
-  Remove-Item Variable:AHK, Function:ak, Function:hk  -ea Ignore
-}
-If (($Host.Name -match 'Visual Studio') -or
-    (@(Get-Process AutoHotKey* -ea Ignore).count -lt 2)) {
-  If (Get-Variable 'AHK' -ea Ignore -Value) {
-    ForEach ($File in $AHKFiles) {
-      If ($File) {
-        Write-Warning "$(FLINE) Load AHK: $File"
-        & $AHK /r $File
+$AHK = If     (Test-Path 'C:\util\AutoHotKey\AutoHotkeyU64.exe') { 'C:\util\AutoHotKey\AutoHotkeyU64.exe' }
+       ElseIf (Test-Path 'C:\util\AutoHotKey\AutoHotkey.exe'   ) { 'C:\util\AutoHotKey\AutoHotkey.exe' }
+       Else   { '' }
+If ($AHK) {  
+  Function ak { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
+  Function hk { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
+  $AHKFiles = @(
+    'C:\bat\ahk.ahk'
+    "$Home\Documents\WindowsPowerShell\Scripts\PowerShell.ahk"
+  )
+  If (!(Get-Variable AHK -ea Ignore -value)  -or
+      !(Test-Path   $AHK -ea Ignore       )) {
+    Function ak { & $AHK /r C:\bat\ahk.ahk }
+    Function hk { & $AHK /r C:\bat\ahk.ahk }
+  } Else {
+    Remove-Item Variable:AHK, Function:ak, Function:hk  -ea Ignore
+  }
+  If (($Host.Name -match 'Visual Studio') -or
+      (@(Get-Process AutoHotKey* -ea Ignore).count -lt 2)) {
+    If (Get-Variable 'AHK' -ea Ignore -Value) {
+      ForEach ($File in $AHKFiles) {
+        If ($File) {
+          Write-Warning "$(FLINE) Load AHK: $File"
+          & $AHK /r $File
+        }
       }
     }
   }
-}
+}       
 
 Function ToTitleCase {
   [CmdletBinding()]Param(
@@ -3162,6 +3167,8 @@ If (Test-Path "$Home\Documents\WindowsPowerShell\ProfileHansenApost.ps1" ) {
 
   . "$Home\Documents\WindowsPowerShell\ProfileHansenApost.ps1"
 }
+
+Set-StrictMode -Version Latest
 
 <#
 $ScriptBlock = {
