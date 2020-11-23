@@ -3,7 +3,7 @@
 ## Use the following to download Git if not present:
 
 ```
-If (!($ProfileDir = Test-Path (Split-Path $Profile))) { mkdir $ProfileDir -force -ea Ignore; cd $ProfileDir -ea Stop}; Invoke-WebRequest https://raw.githubusercontent.com/HerbM/WindowsPowerShell/master/Scripts/Get-WindowsGit.ps1 -out Get-WindowsGit.ps1
+If (!(Test-Path ($ProfileDir = Split-Path $Profile))) { mkdir $ProfileDir -force -ea Ignore; cd $ProfileDir -ea Stop}; Invoke-WebRequest https://raw.githubusercontent.com/HerbM/WindowsPowerShell/master/Scripts/Get-WindowsGit.ps1 -out Get-WindowsGit.ps1
 ```
 
 ```
