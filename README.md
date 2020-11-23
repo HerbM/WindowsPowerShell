@@ -60,8 +60,8 @@ $VersionPattern = If ($bits32) { 'git-.*-32-bit.exe' } else { 'git-.*-64-bit.exe
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 $VimHelp = @'
   
-  # Git brings up Vim to edit commits etc. default
-  # Exiting Vim (with & without saving changes)
+  # By default Git runs Vim to edit commits automatically
+  # How to Exit Vim (with & without saving changes)
   #   :w - write (save) the file, but don't exit
   #   :w !sudo tee % - write out the current file using sudo
   #   :wq or :x or ZZ - write (save) and quit
