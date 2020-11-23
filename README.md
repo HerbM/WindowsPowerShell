@@ -1,9 +1,9 @@
-# My idiosyncratic PowerShell utilities and profile -- much of this is junky but I need to get it under source control.
+# My idiosyncratic PowerShell utilities and profile
 
 ## Use the following to download Git if not present:
 
 ```
-invoke-webrequest https://raw.githubusercontent.com/HerbM/WindowsPowerShell/master/Scripts/Get-WindowsGit.ps1 -out Get-WindowsGit.ps1
+If (!($ProfileDir = Test-Path (Split-Path $Profile))) { mkdir $ProfileDir -force -ea Ignore; cd $ProfileDir -ea Stop}; Invoke-WebRequest https://raw.githubusercontent.com/HerbM/WindowsPowerShell/master/Scripts/Get-WindowsGit.ps1 -out Get-WindowsGit.ps1
 ```
 
 ```
@@ -22,6 +22,7 @@ invoke-webrequest https://raw.githubusercontent.com/HerbM/WindowsPowerShell/mast
 #   Find project on GitHub -- search "Herb Martin" USERS WindowsPowerShell
 #    Clone (green button) copy URL, which is also on next line:
 #      https://github.com/HerbM/WindowsPowerShell
+
 
   md  (Split-Path) $Profile -ea 0 # OR:  md $Home\Documents\WindowsPowerShell -ea 0
   cd  (Split-Path) $Profile -ea 0 # OR:  cd $Home\Documents\WindowsPowerShell   
