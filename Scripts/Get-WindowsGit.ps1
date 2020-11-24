@@ -1,3 +1,12 @@
+# My idiosyncratic PowerShell utilities and profile
+
+## Use the following to download Git if not present:
+
+```
+If (!(Test-Path ($ProfileDir = Split-Path $Profile))) { mkdir $ProfileDir -force -ea Ignore; cd $ProfileDir -ea Stop}; Invoke-WebRequest https://raw.githubusercontent.com/HerbM/WindowsPowerShell/master/Scripts/Get-WindowsGit.ps1 -out Get-WindowsGit.ps1
+```
+
+```
 <#
 .Synopsis 
   Get git for Windows and clone WindowsPowerShell to profile directory
@@ -13,6 +22,7 @@
 #   Find project on GitHub -- search "Herb Martin" USERS WindowsPowerShell
 #    Clone (green button) copy URL, which is also on next line:
 #      https://github.com/HerbM/WindowsPowerShell
+
 
   md  (Split-Path) $Profile -ea 0 # OR:  md $Home\Documents\WindowsPowerShell -ea 0
   cd  (Split-Path) $Profile -ea 0 # OR:  cd $Home\Documents\WindowsPowerShell   
@@ -48,10 +58,11 @@ param (
                                
 $VersionPattern = If ($bits32) { 'git-.*-32-bit.exe' } else { 'git-.*-64-bit.exe' }  
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+<#
 $VimHelp = @'
   
-  # Git brings up Vim by to edit commits etc. default
-  # Exiting Vim (with & without saving changes)
+  # By default Git runs Vim to edit commits automatically
+  # How to Exit Vim (with & without saving changes)
   #   :w - write (save) the file, but don't exit
   #   :w !sudo tee % - write out the current file using sudo
   #   :wq or :x or ZZ - write (save) and quit
@@ -65,12 +76,12 @@ $VimHelp = @'
   #  https://github.com/hackjutsu/vim-cheatsheet  Text, you can paste or git
   #  http://vimsheet.com/
   #  http://vimsheet.com/advanced.html  
-  #    "The best possible resource on Vim is the book:
-  #    Practical Vim: Edit Text at the Speed of Thought"
+  #    "The best possible resource on vim is the book Practical Vim.
   #    https://www.amazon.com/Practical-Vim-Thought-Pragmatic-Programmers/dp/1934356980
-  
+
 '@   # <<<<<<<<<<<<<<< do NOT INDENT, must be a left margin
 write-host $VimHelp -fore yellow -back darkblue
+#>
 
 write-verbose "Uri: $Uri"    
 $page = Invoke-WebRequest -Uri $uri -UseBasicParsing -verbose:$false # get the web page 
@@ -97,10 +108,9 @@ if (Test-Path $Out) {
     }
   }
   $Instructions = @"
+
+    $out /verysilent # To install Git"
     
-    # $out to install Git"
-    
-    $out /verysilent
     `$Env:Path += ';C:\Program Files\Git\cmd'
     cd  $Home\Documents -ea ignore # OR:  cd `$Home\Documents\WindowsPowerShell   
     git clone https://github.com/HerbM/WindowsPowerShell WindowsPowerShell
@@ -109,11 +119,11 @@ if (Test-Path $Out) {
     #  origin     https://github.com/HerbM/WindowsPowerShell
     #  origin     https://github.com/HerbM/WindowsPowerShell
  
-    #  You will need a decent .gitprofile, usually in `:$Home 
+    #  Eventually you will need a decent .gitprofile, usually in $Home 
     #    $Home/.gitprofile
     #    but `$Env:Home may point somewhere else: [$($Env:Home)]
 "@
-  Write-Host $Instructions -fore white -back darkgreen
+  Write-Host $Instructions -fore white -back blue
 } else {
   "Download FAILED to $Out"
 }
@@ -124,3 +134,5 @@ if (Test-Path $Out) {
 # https://www.ssllabs.com/ssltest/analyze.html?d=git-scm.com&s=104.20.12.91&latest
                               
 #>
+
+```
