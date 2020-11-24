@@ -125,5 +125,3 @@ if (Test-Path $Out) {
 # https://www.ssllabs.com/ssltest/analyze.html?d=git-scm.com&s=104.20.12.91&latest
                               
 #>
-
-```
