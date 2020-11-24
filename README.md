@@ -58,6 +58,7 @@ param (
                                
 $VersionPattern = If ($bits32) { 'git-.*-32-bit.exe' } else { 'git-.*-64-bit.exe' }  
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+<#
 $VimHelp = @'
   
   # By default Git runs Vim to edit commits automatically
@@ -77,9 +78,10 @@ $VimHelp = @'
   #  http://vimsheet.com/advanced.html  
   #    "The best possible resource on vim is the book Practical Vim.
   #    https://www.amazon.com/Practical-Vim-Thought-Pragmatic-Programmers/dp/1934356980
-  
+
 '@   # <<<<<<<<<<<<<<< do NOT INDENT, must be a left margin
 write-host $VimHelp -fore yellow -back darkblue
+#>
 
 write-verbose "Uri: $Uri"    
 $page = Invoke-WebRequest -Uri $uri -UseBasicParsing -verbose:$false # get the web page 
@@ -107,9 +109,8 @@ if (Test-Path $Out) {
   }
   $Instructions = @"
     
-    # $out to install Git"
+    $out /verysilent # To install Git"
     
-    $out /verysilent
     `$Env:Path += ';C:\Program Files\Git\cmd'
     cd  $Home\Documents -ea ignore # OR:  cd `$Home\Documents\WindowsPowerShell   
     git clone https://github.com/HerbM/WindowsPowerShell WindowsPowerShell
@@ -118,11 +119,11 @@ if (Test-Path $Out) {
     #  origin     https://github.com/HerbM/WindowsPowerShell
     #  origin     https://github.com/HerbM/WindowsPowerShell
  
-    #  You will need a decent .gitprofile, usually in `:$Home 
+    #  Eventually you will need a decent .gitprofile, usually in $Home 
     #    $Home/.gitprofile
     #    but `$Env:Home may point somewhere else: [$($Env:Home)]
 "@
-  Write-Host $Instructions -fore white -back darkgreen
+  Write-Host $Instructions -fore white -back blue
 } else {
   "Download FAILED to $Out"
 }
