@@ -108,7 +108,7 @@ if (Test-Path $Out) {
     }
   }
   $Instructions = @"
-    
+
     $out /verysilent # To install Git"
     
     `$Env:Path += ';C:\Program Files\Git\cmd'
