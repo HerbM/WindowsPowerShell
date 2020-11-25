@@ -2565,6 +2565,8 @@ Function Set-GoLocation {
 }
 
 # Utility Functions (small)
+$IsOdd = { If ($_ -and ($_ -as [Int]) -and $_ % 2) { $_ }}
+filter Where-Odd { Where-Object -InputObject $_ -FilterScript $IsOdd }
 filter Test-Odd  { param([Parameter(valuefrompipeline)][int]$n) [boolean]($n % 2)}
 filter Test-Even { param([Parameter(valuefrompipeline)][int]$n) -not (Test-Odd $n)}
 Function Convert-ObjectToJson ($object, $depth=2) { $object | ConvertTo-Json -Depth $depth }
@@ -2742,7 +2744,7 @@ Function Find-File {
     $Location += $Environment | ForEach-Object {
       $Location += ";$((Get-ChildItem -ea ignore Env:$_).value)"
     }
-    If ($EPath) {$Location += ";$($Env:Path)"}
+    If (Get-Variable EPath -value -ea Ignore) {$Location += ";$($Env:Path)"}
     $Location = $Location | ForEach-Object { $_ -split ';' } | Select-Object -uniq | Where-Object { $_ -notmatch '^\s*$' }
     write-verbose ("$($Location.Count)`n" + ($Location -join "`n"))
     write-verbose ('-' * 72)
