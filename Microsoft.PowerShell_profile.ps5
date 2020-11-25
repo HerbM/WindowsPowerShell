@@ -1,0 +1,23 @@
+<#
+.Synopsis 
+  Stub profile for PowerShell 7+ 
+.Description
+  Stub profile for PowerShell 7+ which calls the PowerShell 5 profile
+  in $Home\Documents\WindowsPowerShell
+.Notes
+
+  Alternatives:
+    
+    Copy the contents of the PowerShell 5 profile to
+    directory where the 7 profile is kept:  $Profile5
+    
+    Link/redirector the 7 profile directory to the 5 directory ***
+    
+#>
+$ProfileDir5 = "$Home\Documents\WindowsPowerShell"
+$Profile5    = "$ProfileDir5\Microsoft.PowerShell_profile.ps1"
+If (Test-Path $Profile5) {
+  Push-Location $ProfileDir5
+  . $Profile5
+  Pop-Location
+}
