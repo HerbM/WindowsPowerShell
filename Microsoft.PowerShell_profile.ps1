@@ -2171,6 +2171,7 @@ try {
 } catch {
   Write-Warning     "$(LINE) CIM call to get boot time failed"
 }
+## Function ul {  $(if ($args) { $args } Else { ul ((gcb)}) -split "`n") }
 Function ql {  $args  }
 Function qs { "$args" }
 Function qa {
