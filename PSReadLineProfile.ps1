@@ -760,8 +760,11 @@ Set-PSReadLineKeyHandler -Chord 'Alt+|','Alt+%','Alt+\' `
   }
   [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition([Math]::Min($cursor, $Line.Length - 3 ))
 }
-Set-PSReadLineOption -PredictionSource History
 
+If ($PSVersionTable.PSVersion -ge [Version]'7.1.9999')  {
+  Write-Warning "Set-PSReadLineOption -PredictionSource History -ea Ignore"
+  Set-PSReadLineOption -PredictionSource History -ea Ignore
+}
 Set-PSReadLineKeyHandler -Chord 'Shift+Alt+&','Shift+Ctrl+Alt+&','Ctrl+&','Alt+&','Ctrl+Alt+7','Ctrl+7','Alt+7' `
                          -BriefDescription AddExecuteWithWrap `
                          -LongDescription "Prefix with & and wrap line to cursor with Parens" `
@@ -773,6 +776,7 @@ Set-PSReadLineKeyHandler -Chord 'Shift+Alt+&','Shift+Ctrl+Alt+&','Ctrl+&','Alt+&
   $Line = "& ($($Line.SubString(0,$Cursor)))"
   [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $Cursor, $Line)
 }
+Remove-PSReadLineKeyHandler -Chord 7
 
 write-warning "$(FLINE) Before Ctrl+Alt+|"
 
