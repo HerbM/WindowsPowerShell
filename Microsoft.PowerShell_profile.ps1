@@ -107,6 +107,10 @@ $PSProfileLogPath   = $PSProfile -replace '\.ps1$','LOG.txt'
 Write-Host "$(LINE) Use `$Profile   for path to Profile: $Profile"   @Private:Colors
 Write-Host "$(LINE) Use `$PSProfile for path to Profile: $PSProfile" @Private:Colors
 Write-Host "$(LINE) ProfileLogPath: $ProfileLogPath"                 @Private:Colors
+If (${Function:Help} -match ($PagerPattern = '(\$IsWindows)\s*\)')) {
+  $Function:Help = ${Function:Help} -replace $PagerPattern, '$1 -and !(Get-Command less.exe))'
+} Else { Write-Verbose "${Function:Help}" }
+
 
 <#
 .Synopsis
@@ -3051,59 +3055,93 @@ Function Get-About {
 }
 
 Function Select-Everything {    # es.exe everything
-  [cmdletbinding()][Alias('se')]param(
-    [Parameter(valuefromremainingarguments)][string[]]$Args,
-    [Switch]$Directory  = $False,
-    [Switch]$File       = $False,
-    [switch]$Complete   = $False,
-    [switch]$NoSubtitle = $False,
-    [switch]$NoEdition  = $False,
-    [switch]$Books      = $False,
-    [switch]$Archives   = $False,
-    [switch]$Ordered    = $False
+  [cmdletbinding(PositionalBinding=$False)][Alias('se')]param(
+    [Parameter(valuefromremainingarguments)][string[]]$Args = @(),
+    [String]$Path                                           = '',
+    [Alias('MoreArgs')][String[]]$AddArgs                   = @(),
+    [Switch]$Directory                                      = $False,
+    [Switch]$File                                           = $False,
+    [switch]$Complete                                       = $False,
+    [switch]$Date                                           = $False,
+    [switch]$Ascending                                      = $False,
+    [switch]$NoSubtitle                                     = $False,
+    [switch]$NoEdition                                      = $False,
+    [Alias('EBooks')][switch]$Books                         = $False,
+    [switch]$PDF                                            = $False,
+    [switch]$EPUB                                           = $False,
+    [switch]$ZIP                                            = $False,
+    [switch]$Video                                          = $False,
+    [switch]$Archives                                       = $False,
+    [switch]$Ordered                                        = $False
   )
   Begin {
-    $LineCount = 0
-    $Switches = If     ($File)      { @('/a-d') }
-                ElseIf ($Directory) { @('/ad' ) }
-                Else                { @()       }
-    $Args,$ExtraArgs = $Args.Where({$_ -notmatch '^-'}, 'split')
+    $ExtraArgs, $Args = $Args.Where({$_ -match '^[-/]'}, 'split')
+    $Local:PathX = $Null
+    If ($Args -and (Test-Path $Args[0] -PathType Container -ea Ignore)) {
+      $Local:PathX, $Args = @($Args)  # move 1st item fromm Args to Path
+      $Local:PathX = (Resolve-Path $Local:PathX -ea Ignore).Path
+      Write-Verbose "PathX: $Local:PathX Args: [$Args]"
+      $Local:PathX = @($Local:PathX)
+    } 
     Write-Verbose "Args: $Args"
     Write-Verbose "Extra: $ExtraArgs"
-    $ArchiveExtensions = '*.zip','*.rar','*.lzw','*.7z'
-    $BookExtensions    = '*.pdf', '*.azw','*.azw3','*.azw4',
-                         '*.mobi','*.djv','*.epub','*.mobi'
-    $Extensions      = @()
-    If ($Archives) { $Extensions  = $ArchiveExtensions }
-    If ($Books)    { $Extensions += $Extensions + $BookExtensions }
+    $ArchiveExtensions = '*.zip','*.rar','*.lzw','*.7z','.gz','.gzip','.tar'
+    $BookExtensions    = '*.pdf','*.azw','*.azw3','*.azw4',
+                         '*.djv','*.epub','*.djvu','*.mobi'
+    $VideoExtensions   = '*.mp4','*.mov','*.wmv','*.mpg','*.flv','*.divx','*.rm',
+                         '*.avi','*.mkv','*.mv4','*.asf','*.m4v','*.mpeg'                     
+    Switch ($True) {
+      $True      { $Extensions  = $Switches = @()             }
+      $File      { $Switches   += '/a-d'                      }
+      $Directory { $Switches   += '/ad'                       }
+      $Date      { $Switches   += '-dm', '-sort-dm-ascending' }
+      $Ascending { $Switches   += '-sort-dm-ascending'        }
+      $PDF       { $Extensions += '*.pdf'                     } 
+      $Epub      { $Extensions += '*.epub'                    } 
+      $Zip       { $Extensions += '*.zip'                     } 
+      $Archives  { $Extensions += $ArchiveExtensions          }
+      $Video     { $Extensions += $VideoExtensions            }
+      $Books     { $Extensions += $BookExtensions             }
+      Default    {                                            }
+    }
     $Extensions = @($Extensions -join '|')
     If (!$Args)    {
       $Args = @(Convert-ClipBoard)
-      # If ($NoSubtitle) { $Args = $Args -replace '(?:^[^:]):.*' }
       If ($NoSubtitle) { $Args = $Args -replace ':.*' }
       Write-Verbose "Begin-NoSubtitle: $Args" ;
-      If ($NoEdition)  { $Args = $Args -replace '((\d\s*(st|nd|rd)*)|first|second|third|fourth)\s*ed.*$' }
+      If ($NoEdition)  { $Args = $Args -replace 
+        '((\d{1,2}\s*(st|nd|rd|th)*)|first|second|third|([fsent][eiolwh][-a-z]+th))\s*ed.*$' }
       Write-Verbose "Begin-NoEdition: $Args" ;
     }
   }
   Process {
-    $args = ($args -split '\W+').trim() | ? { $_ -and $_ -notmatch '^-?verbo' } | % { Write-verbose "[$_]"; $_ };
+    $Args = ($Args -split '\W+').trim()                  | 
+      Where-Object   { $_ -and $_ -notmatch '^-?verbo' } | 
+      ForEach-Object { Write-verbose "[$_]"; $_        }
     If ($Ordered -or $Complete) {
       $Args = $Args.trim() -join '*' -replace '[\s*]{2,}', '*'
       If (!$Complete) { $Args = "*$Args*" }
     }
-    Write-Verbose "es $Switches $args $Extensions $ExtraArgs" ;
-    ForEach ($Line in @(es @Switches @args @Extensions @ExtraArgs)) {
-      $LineCount++
-      $Line
-    }
-    If (!$LineCount) {
-      Write-Warning "NOT Found: es $args $Extensions $ExtraArgs"
-    }
+    Write-Verbose "es $Local:PathX $Switches $args $Extensions $ExtraArgs" ;
+    ForEach ($Line in @(echoargs @Local:PathX @Switches @Args @AddArgs @Extensions @ExtraArgs)) { Write-Verbose $Line }
+    es @Local:PathX @Switches @Args @AddArgs @Extensions @ExtraArgs |
+      ForEach-Object -Begin { $LineCount = 0 } { $LineCount++; $_ }
+    
   }
   End {
+    If (!$LineCount) {
+      Write-Warning "NOT Found: es $Local:PathX $args $Extensions $ExtraArgs"
+    }
   }
 }
+<#
+80,445,3389,5985 | ForEach-Object {
+  $Port = $_ 
+  ‘Server1’, ‘Server2’, ‘Server3’ | ForEach-Object {
+    Test-NetConnection -ComputerName $_ -Port $Port
+  }
+}
+#>
 
 # es $PWD -dm -size dm:>2019/10/19 -sort-dm-ascending file: | sls -not '\.git','PostMan','Google','Everything','Microsoft\\Windows','CryptnetUr','McAfee','NTUSER'
 Function Get-Changed {

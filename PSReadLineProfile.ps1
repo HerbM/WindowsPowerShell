@@ -760,6 +760,19 @@ Set-PSReadLineKeyHandler -Chord 'Alt+|','Alt+%','Alt+\' `
   }
   [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition([Math]::Min($cursor, $Line.Length - 3 ))
 }
+Set-PSReadLineOption -PredictionSource History
+
+Set-PSReadLineKeyHandler -Chord 'Shift+Alt+&','Shift+Ctrl+Alt+&','Ctrl+&','Alt+&','Ctrl+Alt+7','Ctrl+7','Alt+7' `
+                         -BriefDescription AddExecuteWithWrap `
+                         -LongDescription "Prefix with & and wrap line to cursor with Parens" `
+                         -ScriptBlock {
+  param($key, $arg)
+  $Line = $Cursor = $Null
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$Line, [ref]$cursor)
+  If ($Cursor -eq 0) { $Cursor = $Line.Length }
+  $Line = "& ($($Line.SubString(0,$Cursor)))"
+  [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $Cursor, $Line)
+}
 
 write-warning "$(FLINE) Before Ctrl+Alt+|"
 
