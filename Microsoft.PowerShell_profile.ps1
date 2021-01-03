@@ -1371,7 +1371,7 @@ Function Get-DriveType {
 
 Function Get-DriveType {
   [CmdletBinding()][Alias('Get-DriveTypeName')]
-  [Alias('DriveTypeName','Type','Code','DriveCode')]
+  [Alias('DriveTypeName','Type')]
   Param(
     [UInt16[]]$Type=@(0..6)
   )
@@ -2891,25 +2891,21 @@ Function Lock {
 Function ip4  { ipconfig | Select-String IPv4 }
 Function ipv4 { ipconfig | Select-String IPv4 }
 
+Write-Warning "Before AutoHotKey definition"
 $AHK = If     (Test-Path 'C:\util\AutoHotKey\AutoHotkeyU64.exe') { 'C:\util\AutoHotKey\AutoHotkeyU64.exe' }
        ElseIf (Test-Path 'C:\util\AutoHotKey\AutoHotkey.exe'   ) { 'C:\util\AutoHotKey\AutoHotkey.exe' }
        Else   { '' }
 If ($AHK) {  
-  Function ak { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
-  Function hk { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
+  Write-Warning "AutoHotKey defined"
+  Function ak { & $AHK /r C:\bat\ahk.ahk }
+  Function hk { & $AHK /r C:\bat\ahk.ahk }
   $AHKFiles = @(
     'C:\bat\ahk.ahk'
     "$Home\Documents\WindowsPowerShell\Scripts\PowerShell.ahk"
   )
-  If (!(Get-Variable AHK -ea Ignore -value)  -or
-      !(Test-Path   $AHK -ea Ignore       )) {
-    Function ak { & $AHK /r C:\bat\ahk.ahk }
-    Function hk { & $AHK /r C:\bat\ahk.ahk }
-  } Else {
-    Remove-Item Variable:AHK, Function:ak, Function:hk  -ea Ignore
-  }
-  If (($Host.Name -match 'Visual Studio') -or
-      (@(Get-Process AutoHotKey* -ea Ignore).count -lt 2)) {
+  If (($Host.Name -notmatch 'Visual Studio') -and
+      (@(Get-Process AutoHotKey* -ea Ignore).Count -lt $AHKFiles.Count)) {
+    Write-Warning "Run AutoHotKey scripts"
     If (Get-Variable 'AHK' -ea Ignore -Value) {
       ForEach ($File in $AHKFiles) {
         If ($File) {
@@ -3106,7 +3102,8 @@ Function Select-Everything {    # es.exe everything
     }
     $Extensions = @($Extensions -join '|')
     If (!$Args)    {
-      $Args = @(Convert-ClipBoard)
+      $Args = @(Convert-ClipBoard).Trim()
+      If ($Args -and ($Args[0] -ceq 'Downloaded')) { $Null, $Args = $Args }
       If ($NoSubtitle) { $Args = $Args -replace ':.*' }
       Write-Verbose "Begin-NoSubtitle: $Args" ;
       If ($NoEdition)  { $Args = $Args -replace 
@@ -3134,6 +3131,7 @@ Function Select-Everything {    # es.exe everything
     }
   }
 }
+
 <#
 80,445,3389,5985 | ForEach-Object {
   $Port = $_ 
