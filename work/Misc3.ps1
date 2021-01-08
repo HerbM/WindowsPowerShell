@@ -1,3 +1,19 @@
+https://github.com/jrussellfreelance/powershell-scripts
+https://github.com/BornToBeRoot/PowerShell
+https://www.reddit.com/r/PowerShell/comments/7ni1z2/share_all_the_scripts/
+https://blog.kloud.com.au/2019/07/30/darrens-powershell-snippets-volume-2/
+https://blog.kloud.com.au/tag/powershell/page/3/
+Using AutoRest for PowerShell to generate PowerShell Modules
+12TH OF APRIL, 2019 / DARREN ROBINSON / NO COMMENTS
+Recently the Beta of the AutoRest for PowerShell Generator has been made available. At the recent Microsoft MVP Summit in Seattle Garrett Serack gave those that were interested a 1 hr corridor session on getting started with AutoRest for PowerShell.
+https://blog.kloud.com.au/2019/03/08/darrens-powershell-snippets-volume-1/
+Join-Object Rambling Cookie Monster
+
+https://poshoholic.com/
+gci -r -force | measure -sum PSIsContainer,Length | select Property,Count,Sum  Kirk Munro
+
+https://old.ironmansoftware.com/50-of-the-top-powershell-modules-to-check-out
+
 Computer Configuration\Windows Settings\Security Settings\Local Policies\User Rights Assignment\Deny log on locally
 secedit /configure /db %temp%\temp.sdb /cfg yourcreated.inf
 http://www.microsoft.com/resources/documentation/windows/xp/all/proddocs/en-us/secedit_cmds.mspx?mfr=true

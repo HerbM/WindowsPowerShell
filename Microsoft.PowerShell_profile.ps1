@@ -16,8 +16,15 @@ param (
   #[Alias('IAc','IAction','InfoAction')]
   #[ValidateSet('SilentlyContinue','')]                                  [switch]$InformationAction
 )
+Set-StrictMode -off
+$Script:PSLog = "$Home\PowerShellLog.txt"
+Get-Date -Format 's' >> $Script:PSLog
+'-' * 60      | Format-List * -force | Out-String >> $Script:PSLog
+$MyInvocation | Format-List * -force | Out-String >> $Script:PSLog
+$Host         | Format-List * -force | Out-String >> $Script:PSLog
+'=' * 60      | Format-List * -force | Out-String >> $Script:PSLog
 If ((Get-Variable Env:NoPSProfile -value -ea Ignore) -or
-    (Get-Variable Env:SkipPSProfile -value -ea Ignore)) {
+     (Get-Variable Env:SkipPSProfile -value -ea Ignore)) {
   Write-Host "Skipping PS Profile due to environment settings" -Fore Yellow -Back DarkRed
   return
 }
@@ -86,7 +93,7 @@ Function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
 remove-item Alias:LINE -ea Ignore -force
 New-Alias -Name LINE -Value Get-CurrentLineNumber -force -ea Ignore -Description 'Returns the caller''s current line number'
 $Private:Colors     = @{ForeGroundColor = 'White'; BackGroundColor = 'DarkGreen'}
-Write-Host "$(LINE) $(get-date -Format 'yyyy-MM-dd HH:mm:ss') PowerShell $($psversiontable.PSVersion.tostring())" @Private:Colors
+Write-Host "$(LINE) $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') PowerShell $($psversiontable.PSVersion.tostring())" @Private:Colors
 Write-Host "$(LINE) Starting error count: $ErrorCount" @Private:Colors
 
 $ProfileDirectory   = Split-Path $Profile
@@ -100,6 +107,10 @@ $PSProfileLogPath   = $PSProfile -replace '\.ps1$','LOG.txt'
 Write-Host "$(LINE) Use `$Profile   for path to Profile: $Profile"   @Private:Colors
 Write-Host "$(LINE) Use `$PSProfile for path to Profile: $PSProfile" @Private:Colors
 Write-Host "$(LINE) ProfileLogPath: $ProfileLogPath"                 @Private:Colors
+If (${Function:Help} -match ($PagerPattern = '(\$IsWindows)\s*\)')) {
+  $Function:Help = ${Function:Help} -replace $PagerPattern, '$1 -and !(Get-Command less.exe))'
+} Else { Write-Verbose "${Function:Help}" }
+
 
 <#
 .Synopsis
@@ -155,14 +166,14 @@ Get-ExtraProfile 'Pre' -PreloadProfile:$UsePreloadProfile | ForEach-Object {
   try {
     $Private:Separator = "`n$('=' * 72)`n"
     $Private:Colors    = @{ForeGroundColor = 'Blue'; BackGroundColor = 'White'}
-    $Private:StartTimeProfile  = Get-date -Format 'yyyy-MM-dd HH:mm:ss'
+    $Private:StartTimeProfile  = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
     $Private:ErrorCountProfile = $Error.Count
     Write-Host "$($Private:Separator)$($Private:EndTimeProfile) Extra Profile`n$_$($Private:Separator)" @Private:Colors
     . $_
   } catch {
     Write-Error "ERROR sourcing: $_`n`n$_"
   } finally {
-    $Private:EndTimeProfile  = Get-date -Format 'yyyy-MM-dd HH:mm:ss'
+    $Private:EndTimeProfile  = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
     $Private:Duration = ((Get-Date $Private:EndTimeProfile) - (Get-Date $Private:StartTimeProfile)).TotalSeconds
     Write-Host "$($Private:Separator)$($Private:EndTimeProfile) Duration:$($Private:Duration) seconds Extra Profile`n$_$($Private:Separator)" @Private:Colors
   }
@@ -313,7 +324,7 @@ try {
   if ($AdminEnabled = Test-Administrator) {
            Write-Information "$(LINE) Administrator privileges enabled"
   } else { Write-Information "$(LINE) Administrator privileges DISABLED"}
-write-warning "$(get-date -Format 'HH:mm:ss') $(LINE)"
+write-warning "$(Get-Date -Format 'HH:mm:ss') $(LINE)"
 If ($WinMerge = Join-Path -resolve -ea ignore 'C:\Program*\WinMerge*' 'WinMerge*.exe' |
   ? { $_ -notmatch 'proxy' } | select -first 1) {
   new-alias WinMerge $WinMerge -force -scope Global
@@ -344,7 +355,7 @@ Function Add-ToolPath {
   }
   Write-Warning "Unabled to put tools on path: PortCheck.exe"
 }
-write-warning "$(get-date -Format 'HH:mm:ss') $(LINE)"
+write-warning "$(Get-Date -Format 'HH:mm:ss') $(LINE)"
 $PlacesToLook = 'C:\','T:\Programs\Herb','T:\Programs\Tools','T:\Programs',
                 'S:\Programs\Tools','S:\Programs\Herb''S:\Programs'        |
                 Where-Object  { Test-Path $_ -ea ignore }
@@ -628,7 +639,7 @@ Function Set-ItemTime {
      #${Credential})
   )
   Begin   {
-    $DateString = Get-Date $date -Format 'yyyy-MM-dd HH:mm:ss'
+    $DateString = Get-Date $Date -Format 'yyyy-MM-dd HH:mm:ss'
     Set-StrictMode -Version Latest
     Write-Verbose "Property set: $($PSCmdlet.ParameterSetName)"
   }
@@ -669,7 +680,7 @@ Function Set-ItemTime {
   End { }
 }
 
-write-warning "$(get-date -Format 'HH:mm:ss') $(LINE)"
+write-warning "$(Get-Date -Format 'HH:mm:ss') $(LINE)"
 $LogFilePath = 'Microsoft.PowerShell_profile-Log.txt'
 $UtilityModule = 'PSUtility' # (Join-Path $ProfileDirectory Utility.psm1)
 If ($PSVersionTable.PSVersion -gt '7.0.0') {
@@ -690,18 +701,18 @@ If ($PSVersionTable.PSVersion -gt '7.0.0') {
 If ($LoadUtilityFile) {
   try {
     $TryPath = $PSProfileDirectory,$ProfileDirectory,'C:\Bat','.'
-    Write-Warning "$(get-date -Format 'HH:mm:ss') $(LINE) Try Utility path: $($TryPath -join '; ')"
+    Write-Warning "$(Get-Date -Format 'HH:mm:ss') $(LINE) Try Utility path: $($TryPath -join '; ')"
     If ($Util=(Join-Path $TryPath 'utility.ps1' -ea ignore | Select -First 1)) {
       Write-Warning "Utility: $Util"
       . $Util
-      Get-Command Write-Log -syntax
-      Write-Log "$(LINE) Using Write-Log from Utility.ps1"
+      ## Get-Command Write-Log -syntax
+      ## Write-Log "$(LINE) Using Write-Log from Utility.ps1"
     }
   } catch { # just ignore and take care of below
     Write-Log "$(LINE) Failed loading Utility.ps1 $Util"
   } finally {}
 }
-write-warning "$(get-date -Format 'HH:mm:ss') $(LINE) ##338"
+write-warning "$(Get-Date -Format 'HH:mm:ss') $(LINE) ##338"
 if ((Get-Command 'Write-Log' -type Function,CmdLet -ea ignore)) {
   Remove-Item alias:write-log -force -ea ignore
 } else {
@@ -716,7 +727,7 @@ $ForceModuleInstall = [boolean]$ForceModuleInstall
 $AllowClobber       = [boolean]$AllowClobber
 $Confirm            = [boolean]$Confirm
 
-Write-Warning "$(get-date -Format 'HH:mm:ss') $(LINE) Before Set-ProgramAlias"
+Write-Warning "$(Get-Date -Format 'HH:mm:ss') $(LINE) Before Set-ProgramAlias"
 Function Set-ProgramAlias {
   param(
     [Alias('Alias')]  $Name,
@@ -769,7 +780,8 @@ Set-ProgramAlias 7z   7z.exe @('C:Util\7-Zip\app\7-Zip64\7z.exe',
                                'C:\ProgramData\chocolatey\bin\7z.exe',
                                'S:\Programs\7-Zip\app\7-Zip64\7z.exe'
                              ) -FirstPath
-Write-Warning "$(get-date -Format 'HH:mm:ss') $(LINE) After Set-ProgramAlias"
+
+Write-Warning "$(Get-Date -Format 'HH:mm:ss') $(LINE) After Set-ProgramAlias"
 
 # Get-WMIObject Win32_logicaldisk -filter 'drivetype = 3 or drivetype = 4'
 
@@ -946,7 +958,7 @@ Function Get-DotNetVersion {
       Where-Object { $MaximumVersion -ge $_.Version -and $MinimumVersion -le $_.Version }
 }
 If ($ShowDotNetVersions) { Get-DotNetVersion }
-Write-Warning "$(get-date -Format 'HH:mm:ss') $(LINE) After ShowDotNetVersions"
+Write-Warning "$(Get-Date -Format 'HH:mm:ss') $(LINE) After ShowDotNetVersions"
 $DefaultConsoleTitle = 'Windows PowerShell'
 Function Update-PackageManager {
   If (Test-Administrator) {
@@ -955,7 +967,7 @@ Function Update-PackageManager {
     try {
       if ((Get-PSVersion) -lt 6.0) {
         If (Get-Package 'Nuget' -ea ignore) {
-          write-warning "$(get-date -Format 'HH:mm:ss') $(LINE)"
+          write-warning "$(Get-Date -Format 'HH:mm:ss') $(LINE)"
         } else {
           Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
         }
@@ -982,7 +994,7 @@ if ($CurrentWindowTitle -match 'Windows PowerShell([\(\)\s\d]*)$') {
     (Get-WMIObject win32_operatingsystem).version + "PS: $PSVersionNumber"
 }
 
-write-warning "$(get-date -Format 'HH:mm:ss') $(LINE) Before Show-Module "
+write-warning "$(Get-Date -Format 'HH:mm:ss') $(LINE) Before Show-Module "
 
 # Get .Net Constructor parameters
 # ([type]"Net.Sockets.TCPClient").GetConstructors() | ForEach-Object { $_.GetParameters() } | Select-Object Name,ParameterType
@@ -1021,7 +1033,7 @@ Function Test-TCPPort {  # check actual IP & Port combination
     $ErrorActionPreference = 'Continue'
     $tcpclient = new-Object system.Net.Sockets.TcpClient
     $Start = Get-Date
-    Function Elapsed { param($Start = $Start) '{0,5:N0}ms' -f ((get-date) - $Start).TotalMilliseconds }
+    Function Elapsed { param($Start = $Start) '{0,5:N0}ms' -f ((Get-Date) - $Start).TotalMilliseconds }
     $iar = $tcpclient.BeginConnect($Server, $port, $null, $null) # Create Client
     $wait = $iar.AsyncWaitHandle.WaitOne($TimeOut,$false)         # Set timeout
     if (!$wait) {                                                 # Check if connection is complete
@@ -1359,7 +1371,7 @@ Function Get-DriveType {
 
 Function Get-DriveType {
   [CmdletBinding()][Alias('Get-DriveTypeName')]
-  [Alias('DriveTypeName','Type','Code','DriveCode')]
+  [Alias('DriveTypeName','Type')]
   Param(
     [UInt16[]]$Type=@(0..6)
   )
@@ -1536,7 +1548,7 @@ Function Get-Accelerator {
     if ($key -notmatch $Include -or $Excluded) {continue}
     [pscustomobject]@{
       Accelerator = $key
-      Definition  = $Acc.$key
+      # Definition  = $Acc.$key
     }
   }
 }
@@ -1880,7 +1892,7 @@ Function esf {
   # write-verbose "$(& 'C:\Program Files\WindowsPowerShell\Modules\Pscx\3.2.1.0\Apps\EchoArgs.exe' $target @args)"
   es $target @args | ForEach-Object {
     if ($_ -match '^(\d\d/\d\d/\d{4})\s+') {
-      $_ -replace '^(\d\d/\d\d/\d{4})\s+', "$(Get-Date $Matches[1] -format 'yyyy-MM-dd') "
+      $_ -replace '^(\d\d/\d\d/\d{4})\s+', "$(Get-Date $Matches[1] -Format 'yyyy-MM-dd') "
     } else { $_ }
   }
 }
@@ -2159,10 +2171,11 @@ set-alias ic $ICFile -force -scope global -ea Ignore
 #
 Function Get-BootTime { (Get-CimInstance win32_operatingsystem).lastbootuptime }
 try {
-  Write-Information "$(LINE) Boot Time: $(Get-date ((Get-CimInstance win32_operatingsystem).lastbootuptime) -f 's')"
+  Write-Information "$(LINE) Boot Time: $(Get-Date ((Get-CimInstance win32_operatingsystem).lastbootuptime) -Format 's')"
 } catch {
   Write-Warning     "$(LINE) CIM call to get boot time failed"
 }
+## Function ul {  $(if ($args) { $args } Else { ul ((gcb)}) -split "`n") }
 Function ql {  $args  }
 Function qs { "$args" }
 Function qa {
@@ -2335,7 +2348,7 @@ Function Get-HistoryCount {
   Get-History -count $Count
 }
 # }
-write-warning "$(get-date -Format 'HH:mm:ss') $(LINE) Before Go"
+write-warning "$(Get-Date -Format 'HH:mm:ss') $(LINE) Before Go"
 ##  TODO:  Set-LocationEnvironment, Set-LocationPath
 ## (dir ENV:*) |  ? value -match '\\'
 Function Get-UserFolder {
@@ -2557,6 +2570,8 @@ Function Set-GoLocation {
 }
 
 # Utility Functions (small)
+$IsOdd = { If ($_ -and ($_ -as [Int]) -and $_ % 2) { $_ }}
+filter Where-Odd { Where-Object -InputObject $_ -FilterScript $IsOdd }
 filter Test-Odd  { param([Parameter(valuefrompipeline)][int]$n) [boolean]($n % 2)}
 filter Test-Even { param([Parameter(valuefrompipeline)][int]$n) -not (Test-Odd $n)}
 Function Convert-ObjectToJson ($object, $depth=2) { $object | ConvertTo-Json -Depth $depth }
@@ -2573,17 +2588,17 @@ Function Privs? {
 }
 Function Get-DayOfYear([DateTime]$date=(Get-Date)) {"{0:D3}" -f ($date).DayofYear}
 Function Get-FormattedDate ([DateTime]$Date = (Get-Date)) {
-  Get-date "$date" ?f "yyyy-MM-ddTHH:mm:ss-ddd"
+  Get-Date "$date" ?f "yyyy-MM-ddTHH:mm:ss-ddd"
 }
 #([System.TimeZoneInfo]::Local.StandardName) -replace '([A-Z])\w+\s*', '$1'
 Function Get-SortableDate {
   [CmdletBinding()]param([DateTime]$Date = (Get-Date))
-  Get-Date $date -format 's'
+  Get-Date $date -Format 's'
 }
 #$Myinvocation
 #Resolve-Path $MyInvocation.MyCommand -ea ignore
 #if ($myinvocation.pscommandpath) {$myinvocation.pscommandpath}
-write-warning "$(get-date -Format 'HH:mm:ss') $(LINE) Before PSReadline "
+write-warning "$(Get-Date -Format 'HH:mm:ss') $(LINE) Before PSReadline "
 #$PSReadLineProfile = Join-Path $myinvocation.pscommandpath 'PSReadLineProfile.ps1'
 $PSReadLineProfile = Join-Path (Split-Path $PSProfile) 'PSReadLineProfile.ps1'
 Write-Information $PSReadLineProfile
@@ -2705,10 +2720,11 @@ If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])
   $Host.PrivateData.WarningBackgroundColor = 'Black'
   $Host.PrivateData.WarningForegroundColor = 'White'
 }
-write-warning "$(LINE) $(get-date -Format 'HH:mm:ss') After PSReadline "
 
-Write-Information "$(get-date -Format 'HH:mm:ss') $(LINE) Error count: $($Error.Count)"
-Function dt {param([string[]]$datetime=(get-date)) $datetime | ForEach-Object { get-date $_ -format 'yyyy-MM-dd HH:mm:ss ddd' } }
+write-warning "$(LINE) $(Get-Date -Format 'HH:mm:ss') After PSReadline "
+Write-Information "$(Get-Date -Format 'HH:mm:ss') $(LINE) Error count: $($Error.Count)"
+
+Function dt {param([string[]]$datetime=(Get-Date)) $datetime | ForEach-Object { Get-Date $_ -Format 'yyyy-MM-dd HH:mm:ss ddd' } }
 Function Find-File {
   [CmdletBinding()]param(
     [Parameter(Mandatory=$true)][string[]]$File,
@@ -2733,7 +2749,7 @@ Function Find-File {
     $Location += $Environment | ForEach-Object {
       $Location += ";$((Get-ChildItem -ea ignore Env:$_).value)"
     }
-    If ($EPath) {$Location += ";$($Env:Path)"}
+    If (Get-Variable EPath -value -ea Ignore) {$Location += ";$($Env:Path)"}
     $Location = $Location | ForEach-Object { $_ -split ';' } | Select-Object -uniq | Where-Object { $_ -notmatch '^\s*$' }
     write-verbose ("$($Location.Count)`n" + ($Location -join "`n"))
     write-verbose ('-' * 72)
@@ -2872,31 +2888,34 @@ Function Lock {
   )
   rundll32.exe 'user32.dll,LockWorkStation'
 }
-Function ip4 { ipconfig | sls IPv4 }
-Function ipv4 { ipconfig | sls IPv4 }
+Function ip4  { ipconfig | Select-String IPv4 }
+Function ipv4 { ipconfig | Select-String IPv4 }
 
-Function ak { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
-Function hk { C:\util\AutoHotKey\AutoHotkey.exe /r C:\bat\ahk.ahk }
-$AHKFiles = @(
-  'C:\bat\ahk.ahk'
-  "$Home\Documents\WindowsPowerShell\Scripts\PowerShell.ahk"
-)
-If (!(Get-Variable AHK -ea Ignore -value)  -or
-    !(Test-Path   $AHK -ea Ignore       )) {
-  $AHK = 'C:\util\AutoHotKey\AutoHotkeyU64.exe'
+Write-Warning "Before AutoHotKey definition"
+$AHK = If     (Test-Path 'C:\util\AutoHotKey\AutoHotkeyU64.exe') { 'C:\util\AutoHotKey\AutoHotkeyU64.exe' }
+       ElseIf (Test-Path 'C:\util\AutoHotKey\AutoHotkey.exe'   ) { 'C:\util\AutoHotKey\AutoHotkey.exe' }
+       Else   { '' }
+If ($AHK) {  
+  Write-Warning "AutoHotKey defined"
   Function ak { & $AHK /r C:\bat\ahk.ahk }
   Function hk { & $AHK /r C:\bat\ahk.ahk }
-} Else {
-  Remove-Item Variable:AHK, Function:ak, Function:hk  -ea Ignore
-}
-If ((Get-Variable 'AHK' -ea Ignore -Value) -and (Test-Path $AHK -ea ignore)) {
-  ForEach ($File in $AHKFiles) {
-    If ($File) {
-	  Write-Warning "$(FLINE) Load AHK: $File"
-      & $AHK /r $File
- 	  }
+  $AHKFiles = @(
+    'C:\bat\ahk.ahk'
+    "$Home\Documents\WindowsPowerShell\Scripts\PowerShell.ahk"
+  )
+  If (($Host.Name -notmatch 'Visual Studio') -and
+      (@(Get-Process AutoHotKey* -ea Ignore).Count -lt $AHKFiles.Count)) {
+    Write-Warning "Run AutoHotKey scripts"
+    If (Get-Variable 'AHK' -ea Ignore -Value) {
+      ForEach ($File in $AHKFiles) {
+        If ($File) {
+          Write-Warning "$(FLINE) Load AHK: $File"
+          & $AHK /r $File
+        }
+      }
+    }
   }
-}
+}       
 
 Function ToTitleCase {
   [CmdletBinding()]Param(
@@ -3032,59 +3051,95 @@ Function Get-About {
 }
 
 Function Select-Everything {    # es.exe everything
-  [cmdletbinding()][Alias('se')]param(
-    [Parameter(valuefromremainingarguments)][string[]]$Args,
-    [Switch]$Directory  = $False,
-    [Switch]$File       = $False,
-    [switch]$Complete   = $False,
-    [switch]$NoSubtitle = $False,
-    [switch]$NoEdition  = $False,
-    [switch]$Books      = $False,
-    [switch]$Archives   = $False,
-    [switch]$Ordered    = $False
+  [cmdletbinding(PositionalBinding=$False)][Alias('se')]param(
+    [Parameter(valuefromremainingarguments)][string[]]$Args = @(),
+    [String]$Path                                           = '',
+    [Alias('MoreArgs')][String[]]$AddArgs                   = @(),
+    [Switch]$Directory                                      = $False,
+    [Switch]$File                                           = $False,
+    [switch]$Complete                                       = $False,
+    [switch]$Date                                           = $False,
+    [switch]$Ascending                                      = $False,
+    [switch]$NoSubtitle                                     = $False,
+    [switch]$NoEdition                                      = $False,
+    [Alias('EBooks')][switch]$Books                         = $False,
+    [switch]$PDF                                            = $False,
+    [switch]$EPUB                                           = $False,
+    [switch]$ZIP                                            = $False,
+    [switch]$Video                                          = $False,
+    [switch]$Archives                                       = $False,
+    [switch]$Ordered                                        = $False
   )
   Begin {
-    $LineCount = 0
-    $Switches = If     ($File)      { @('/a-d') }
-                ElseIf ($Directory) { @('/ad' ) }
-                Else                { @()       }    
-    $Args,$ExtraArgs = $Args.Where({$_ -notmatch '^-'}, 'split')
+    $ExtraArgs, $Args = $Args.Where({$_ -match '^[-/]'}, 'split')
+    $Local:PathX = $Null
+    If ($Args -and (Test-Path $Args[0] -PathType Container -ea Ignore)) {
+      $Local:PathX, $Args = @($Args)  # move 1st item fromm Args to Path
+      $Local:PathX = (Resolve-Path $Local:PathX -ea Ignore).Path
+      Write-Verbose "PathX: $Local:PathX Args: [$Args]"
+      $Local:PathX = @($Local:PathX)
+    } 
     Write-Verbose "Args: $Args"
     Write-Verbose "Extra: $ExtraArgs"
-    $ArchiveExtensions = '*.zip','*.rar','*.lzw','*.7z'
-    $BookExtensions    = '*.pdf', '*.azw','*.azw3','*.azw4',
-                         '*.mobi','*.djv','*.epub','*.mobi'
-    $Extensions      = @()
-    If ($Archives) { $Extensions  = $ArchiveExtensions }
-    If ($Books)    { $Extensions += $Extensions + $BookExtensions }
+    $ArchiveExtensions = '*.zip','*.rar','*.lzw','*.7z','.gz','.gzip','.tar'
+    $BookExtensions    = '*.pdf','*.azw','*.azw3','*.azw4',
+                         '*.djv','*.epub','*.djvu','*.mobi'
+    $VideoExtensions   = '*.mp4','*.mov','*.wmv','*.mpg','*.flv','*.divx','*.rm',
+                         '*.avi','*.mkv','*.mv4','*.asf','*.m4v','*.mpeg'                     
+    Switch ($True) {
+      $True      { $Extensions  = $Switches = @()             }
+      $File      { $Switches   += '/a-d'                      }
+      $Directory { $Switches   += '/ad'                       }
+      $Date      { $Switches   += '-dm', '-sort-dm-ascending' }
+      $Ascending { $Switches   += '-sort-dm-ascending'        }
+      $PDF       { $Extensions += '*.pdf'                     } 
+      $Epub      { $Extensions += '*.epub'                    } 
+      $Zip       { $Extensions += '*.zip'                     } 
+      $Archives  { $Extensions += $ArchiveExtensions          }
+      $Video     { $Extensions += $VideoExtensions            }
+      $Books     { $Extensions += $BookExtensions             }
+      Default    {                                            }
+    }
     $Extensions = @($Extensions -join '|')
     If (!$Args)    {
-      $Args = @(Convert-ClipBoard)
-      # If ($NoSubtitle) { $Args = $Args -replace '(?:^[^:]):.*' }
+      $Args = @(Convert-ClipBoard).Trim()
+      If ($Args -and ($Args[0] -ceq 'Downloaded')) { $Null, $Args = $Args }
       If ($NoSubtitle) { $Args = $Args -replace ':.*' }
       Write-Verbose "Begin-NoSubtitle: $Args" ;
-      If ($NoEdition)  { $Args = $Args -replace '((\d\s*(st|nd|rd)*)|first|second|third|fourth)\s*ed.*$' }
+      If ($NoEdition)  { $Args = $Args -replace 
+        '((\d{1,2}\s*(st|nd|rd|th)*)|first|second|third|([fsent][eiolwh][-a-z]+th))\s*ed.*$' }
       Write-Verbose "Begin-NoEdition: $Args" ;
     }
   }
   Process {
-    $args = ($args -split '\W+').trim() | ? { $_ -and $_ -notmatch '^-?verbo' } | % { Write-verbose "[$_]"; $_ };
+    $Args = ($Args -split '\W+').trim()                  | 
+      Where-Object   { $_ -and $_ -notmatch '^-?verbo' } | 
+      ForEach-Object { Write-verbose "[$_]"; $_        }
     If ($Ordered -or $Complete) {
       $Args = $Args.trim() -join '*' -replace '[\s*]{2,}', '*'
       If (!$Complete) { $Args = "*$Args*" }
     }
-    Write-Verbose "es $Switches $args $Extensions $ExtraArgs" ;
-    ForEach ($Line in @(es @Switches @args @Extensions @ExtraArgs)) {
-      $LineCount++
-      $Line
-    }
-    If (!$LineCount) {
-      Write-Warning "NOT Found: es $args $Extensions $ExtraArgs"
-    }
+    Write-Verbose "es $Local:PathX $Switches $args $Extensions $ExtraArgs" ;
+    ForEach ($Line in @(echoargs @Local:PathX @Switches @Args @AddArgs @Extensions @ExtraArgs)) { Write-Verbose $Line }
+    es @Local:PathX @Switches @Args @AddArgs @Extensions @ExtraArgs |
+      ForEach-Object -Begin { $LineCount = 0 } { $LineCount++; $_ }
+    
   }
   End {
+    If (!$LineCount) {
+      Write-Warning "NOT Found: es $Local:PathX $args $Extensions $ExtraArgs"
+    }
   }
 }
+
+<#
+80,445,3389,5985 | ForEach-Object {
+  $Port = $_ 
+  ‘Server1’, ‘Server2’, ‘Server3’ | ForEach-Object {
+    Test-NetConnection -ComputerName $_ -Port $Port
+  }
+}
+#>
 
 # es $PWD -dm -size dm:>2019/10/19 -sort-dm-ascending file: | sls -not '\.git','PostMan','Google','Everything','Microsoft\\Windows','CryptnetUr','McAfee','NTUSER'
 Function Get-Changed {
@@ -3095,7 +3150,7 @@ Function Get-Changed {
     [Parameter(ValueFromRemainingArguments=$true)]$Args
   )
   If ($Today) { $After = Get-Date 0:00 }
-  $Date = @('dm:>' + (Get-Date $After -f 's'))
+  $Date = @('dm:>' + (Get-Date $After -Format 's'))
   If (!$Path) {
     Write-Warning "es -dm -size $Date -sort-dm-ascending file: $Args"
     es -dm -size @Date -sort-dm-ascending file: @Args
@@ -3120,14 +3175,14 @@ Get-ExtraProfile 'Post' -PostloadProfile:$UsePostloadProfile | ForEach-Object {
   try {
     $Private:Separator = "`n$('=' * 72)`n"
     $Private:Colors    = @{ForeGroundColor = 'Blue'; BackGroundColor = 'White'}
-    $Private:StartTimeProfile  = Get-date -Format 'yyyy-MM-dd HH:mm:ss'
+    $Private:StartTimeProfile  = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
     try { $Private:ErrorCountProfile = $Error.Count } catch {}
     Write-Host "$($Private:Separator)$($Private:EndTimeProfile) Extra Profile`n$_$($Private:Separator)" @Private:Colors
     . $_
   } catch {
     Write-Warning "$(FLINE) ERROR sourcing: $_`n`n$_"
   } finally {
-    $Private:EndTimeProfile  = Get-date -Format 'yyyy-MM-dd HH:mm:ss'
+    $Private:EndTimeProfile  = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
     $Private:Duration = ((Get-Date $Private:EndTimeProfile) - (Get-Date $Private:StartTimeProfile)).TotalSeconds
     Write-Host "$($Private:Separator)$($Private:EndTimeProfile) Duration:$($Private:Duration) seconds Extra Profile`n$_$($Private:Separator)" @Private:Colors
   }
@@ -3140,7 +3195,7 @@ remove-item alias:type       -force -ea Ignore
 new-alias   type Get-Content -force -scope Global -ea Ignore
 
 $Private:Duration = ((Get-Date) - $Private:StartTime).TotalSeconds
-Write-Warning "$(LINE) $(get-date -Format 'HH:mm:ss') New errors: $($Error.Count - $ErrorCount)"
+Write-Warning "$(LINE) $(Get-Date -Format 'HH:mm:ss') New errors: $($Error.Count - $ErrorCount)"
 Write-Warning "$(LINE) Duration: $Private:Duration Completed: $Profile"
 
 If ((Get-Command git -ea Ignore) -and (Get-Module Posh-Git -ea Ignore -ListAvailable)) {
@@ -3151,6 +3206,8 @@ If (Test-Path "$Home\Documents\WindowsPowerShell\ProfileHansenApost.ps1" ) {
 
   . "$Home\Documents\WindowsPowerShell\ProfileHansenApost.ps1"
 }
+
+Set-StrictMode -Version Latest
 
 <#
 $ScriptBlock = {

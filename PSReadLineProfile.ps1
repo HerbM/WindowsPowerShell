@@ -761,6 +761,23 @@ Set-PSReadLineKeyHandler -Chord 'Alt+|','Alt+%','Alt+\' `
   [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition([Math]::Min($cursor, $Line.Length - 3 ))
 }
 
+If ($PSVersionTable.PSVersion -ge [Version]'7.1.9999')  {
+  Write-Warning "Set-PSReadLineOption -PredictionSource History -ea Ignore"
+  Set-PSReadLineOption -PredictionSource History -ea Ignore
+}
+Set-PSReadLineKeyHandler -Chord 'Alt+&','Ctrl+Alt+&','Ctrl+&','Alt+&','Ctrl+Alt+7','Ctrl+7','Alt+7' `
+                         -BriefDescription AddExecuteWithWrap `
+                         -LongDescription "Prefix with & and wrap line to cursor with Parens" `
+                         -ScriptBlock {
+  param($key, $arg)
+  $Line = $Cursor = $Null
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$Line, [ref]$cursor)
+  If ($Cursor -eq 0) { $Cursor = $Line.Length }
+  $Line = "& ($($Line.SubString(0,$Cursor)))"
+  [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $Cursor, $Line)
+}
+Remove-PSReadLineKeyHandler -Chord 7
+
 write-warning "$(FLINE) Before Ctrl+Alt+|"
 
 #	[Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
@@ -904,11 +921,15 @@ if ($PSRL = Get-Module PSReadline -ea Ignore) {
   Set-PSReadLineKeyHandler -Key DownArrow             -Function HistorySearchForward
   Set-PSReadLineKeyHandler -Key 'F7','F9'             -Function HistorySearchBackward
   Set-PSReadLineKeyHandler -Key 'Shift+F7','Shift+F9' -Function HistorySearchForward
-#  Set-PSReadLineKeyHandler -Key 'Ctrl+b'              -Function ViGoToBrace 
-#  Set-PSReadLineKeyHandler -Key 'Ctrl+Alt-B'          -Function ViDeleteBrace
-  Set-PSReadLineKeyHandler -Key 'Ctrl+B'              -Function ViYankPercent
-  Set-PSReadLineKeyHandler -Key 'Ctrl+5'              -Function ViYankPercent
-  Set-PSReadLineKeyHandler -Key 'Ctrl+%'              -Function ViYankPercent
+  Try {
+    Set-PSReadLineKeyHandler -Key 'Ctrl+b'              -Function GotoBrace
+    Set-PSReadLineKeyHandler -Key 'Ctrl+Alt-B'          -Function ViDeleteBrace
+    Set-PSReadLineKeyHandler -Key 'Ctrl+B'              -Function ViYankPercent
+    Set-PSReadLineKeyHandler -Key 'Ctrl+5'              -Function ViYankPercent
+    Set-PSReadLineKeyHandler -Key 'Ctrl+%'              -Function ViYankPercent
+  } Catch {
+    Write-Verbose "$(FLINE) 'Set-PSReadLine -Key ? -Function ?'`n$_ | Format-List * -force | Out-String"
+  }
 
   if ($SaveHistory -and !@(Get-History).count) { Add-History $SaveHistory };
   try {
