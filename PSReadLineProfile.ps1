@@ -904,8 +904,8 @@ if ($PSRL = Get-Module PSReadline -ea Ignore) {
   Set-PSReadLineKeyHandler -Key DownArrow             -Function HistorySearchForward
   Set-PSReadLineKeyHandler -Key 'F7','F9'             -Function HistorySearchBackward
   Set-PSReadLineKeyHandler -Key 'Shift+F7','Shift+F9' -Function HistorySearchForward
-  Set-PSReadLineKeyHandler -Key 'Ctrl+b'              -Function ViGoToBrace 
-  Set-PSReadLineKeyHandler -Key 'Ctrl+Alt-B'          -Function ViDeleteBrace
+#  Set-PSReadLineKeyHandler -Key 'Ctrl+b'              -Function ViGoToBrace 
+#  Set-PSReadLineKeyHandler -Key 'Ctrl+Alt-B'          -Function ViDeleteBrace
   Set-PSReadLineKeyHandler -Key 'Ctrl+B'              -Function ViYankPercent
   Set-PSReadLineKeyHandler -Key 'Ctrl+5'              -Function ViYankPercent
   Set-PSReadLineKeyHandler -Key 'Ctrl+%'              -Function ViYankPercent
