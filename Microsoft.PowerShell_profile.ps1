@@ -1967,26 +1967,34 @@ Function ahk {
     If ($Help) { Return }
     [string[]]$ArgX = @(If ($Parameters) { $Parameters })
     write-verbose "$AHK [$($Path -join '] [')] Switches: [$($Switches -join '], [')] ArgX $($ArgX.count): [$($ArgX -join '], [')]"
-    $Path | ForEach-Object {
-      $P = $_.clone()
-      $S = @()
-      $ResolveBare = Get-Command -name "$P$Ext" @EA @App |
-                     Get-Property | ? Name -eq 'Path' | % Value
-      Write-Verbose "Path: $P Resolve: [$Path] [$($Path.GetType())]"
-      $ResolveWith = Get-Command -name "$P$Ext" @EA @App |
-                     Get-Property | ? Name -eq 'Path' | % Value
-      Write-Verbose "Path: $P Resolve: [$Path] [$($Path.GetType())]"
-      $Script = @(Switch ($True) {
-        {[boolean]($S = @(Resolve-Path $P @EA)) -and $S.count} { Get-ScriptPath $S 1; break }
-        {[boolean]($ResolveBare)             }                { $ResolveBare; break }
-        {[boolean]($S = @(Resolve-Path "$P$Ext" @EA      | Select -First 1)) } { Get-ScriptPath $S 3; break }
-        {[boolean]($ResolveWith)             }                { $ResolveWith; break }
-        Default                                             { $P                  }
-      })
-      Write-Verbose "Script: $Script"
-      $Script | % {
-        EchoArgs @Switches $Script @ArgX
-        & $AHK   @Switches $Script @ArgX
+    If (!($AHK -and (Test-Path $AHK))) { 
+      Write-Warning "$(FLINE) AHK not present at: $AHK"
+    } Else {
+      $Path | ForEach-Object {
+        $P = $_.clone()
+        $S = @()
+        $ResolveBare = Get-Command -name "$P$Ext" @EA @App |
+                       Get-Property | ? Name -eq 'Path' | % Value
+        Write-Verbose "Path: $P Resolve: [$Path] [$($Path.GetType())]"
+        $ResolveWith = Get-Command -name "$P$Ext" @EA @App |
+                       Get-Property | ? Name -eq 'Path' | % Value
+        Write-Verbose "Path: $P Resolve: [$Path] [$($Path.GetType())]"
+        $Script = @(Switch ($True) {
+          {[boolean]($S = @(Resolve-Path $P @EA)) -and $S.count} { Get-ScriptPath $S 1; break }
+          {[boolean]($ResolveBare)             }                { $ResolveBare; break }
+          {[boolean]($S = @(Resolve-Path "$P$Ext" @EA      | Select -First 1)) } { Get-ScriptPath $S 3; break }
+          {[boolean]($ResolveWith)             }                { $ResolveWith; break }
+          Default                                             { $P                  }
+        })
+        Write-Verbose "Script: $Script"
+        $Script | % {
+         If (Test-Path $_) { 
+          EchoArgs @Switches $_ @ArgX
+          & $AHK   @Switches $_ @ArgX
+         } Else {
+          Write-Warning "$(FLINE) Script not present at: $_"
+         }
+        }
       }
     }
   }
@@ -2912,9 +2920,11 @@ If ($AHK) {
     # Write-Warning "Run AutoHotKey scripts"
     If (Get-Variable 'AHK' -ea Ignore -Value) {
       ForEach ($File in $AHKFiles) {
-        If ($File) {
+        If ($File -and (Test-Path $File)) {
           Write-Warning "$(FLINE) Load AHK: $File"
           & $AHK /r $File
+        } Else {
+          Write-Warning "$(FLINE) Script not found: [$File]"
         }
       }
     }
