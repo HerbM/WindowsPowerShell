@@ -2891,12 +2891,16 @@ Function Lock {
 Function ip4  { ipconfig | Select-String IPv4 }
 Function ipv4 { ipconfig | Select-String IPv4 }
 
-Write-Warning "Before AutoHotKey definition"
+If (Test-Path 'C:\Users\Herb\AppData\Local\Programs\Microsoft VS Code\bin\code.cmd') {
+  New-Alias code 'C:\Users\Herb\AppData\Local\Programs\Microsoft VS Code\bin\code.cmd' -Scope Global -Force
+}
+
+#Write-Warning "Before AutoHotKey definition"
 $AHK = If     (Test-Path 'C:\util\AutoHotKey\AutoHotkeyU64.exe') { 'C:\util\AutoHotKey\AutoHotkeyU64.exe' }
        ElseIf (Test-Path 'C:\util\AutoHotKey\AutoHotkey.exe'   ) { 'C:\util\AutoHotKey\AutoHotkey.exe' }
        Else   { '' }
 If ($AHK) {  
-  Write-Warning "AutoHotKey defined"
+  #Write-Warning "AutoHotKey defined"
   Function ak { & $AHK /r C:\bat\ahk.ahk }
   Function hk { & $AHK /r C:\bat\ahk.ahk }
   $AHKFiles = @(
@@ -2905,7 +2909,7 @@ If ($AHK) {
   )
   If (($Host.Name -notmatch 'Visual Studio') -and
       (@(Get-Process AutoHotKey* -ea Ignore).Count -lt $AHKFiles.Count)) {
-    Write-Warning "Run AutoHotKey scripts"
+    # Write-Warning "Run AutoHotKey scripts"
     If (Get-Variable 'AHK' -ea Ignore -Value) {
       ForEach ($File in $AHKFiles) {
         If ($File) {
@@ -3028,7 +3032,7 @@ Function Convert-ClipBoard {
     $Trim = If     ($NoTrim)  { ''        }
             ElseIf ($TrimAll) { '\W'      }
             ElseIf ($Trim)    { $Trim     }
-            Else              { ',;: \\/' }
+            Else              { ',;:\t\s\\/' }
     $MinimumLength = If ($AllowBlankLines) { -1 } Else { 0 }
   }
   Process {
@@ -3102,7 +3106,7 @@ Function Select-Everything {    # es.exe everything
     }
     $Extensions = @($Extensions -join '|')
     If (!$Args)    {
-      $Args = @(Convert-ClipBoard).Trim()
+      $Args = @(Convert-ClipBoard).Trim() | Where Length -gt 0 | Select -first 1 
       If ($Args -and ($Args[0] -ceq 'Downloaded')) { $Null, $Args = $Args }
       If ($NoSubtitle) { $Args = $Args -replace ':.*' }
       Write-Verbose "Begin-NoSubtitle: $Args" ;
