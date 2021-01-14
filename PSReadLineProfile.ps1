@@ -765,20 +765,23 @@ If ($PSVersionTable.PSVersion -ge [Version]'7.1.9999')  {
   Write-Warning "Set-PSReadLineOption -PredictionSource History -ea Ignore"
   Set-PSReadLineOption -PredictionSource History -ea Ignore
 }
-Set-PSReadLineKeyHandler -Chord 'Alt+&','Ctrl+Alt+&','Ctrl+&','Alt+&','Ctrl+Alt+7','Ctrl+7','Alt+7' `
-                         -BriefDescription AddExecuteWithWrap `
-                         -LongDescription "Prefix with & and wrap line to cursor with Parens" `
-                         -ScriptBlock {
-  param($key, $arg)
-  $Line = $Cursor = $Null
-  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$Line, [ref]$cursor)
-  If ($Cursor -eq 0) { $Cursor = $Line.Length }
-  $Line = "& ($($Line.SubString(0,$Cursor)))"
+
+$HandlerParams = @{ 
+  Chord = 'Shift+Alt+&','Shift+Ctrl+Alt+&','Ctrl+&','Alt+&','Ctrl+7','Alt+7'
+  BriefDescription = 'AddExecuteWithWrap'
+  LongDescription  = "Prefix with & and wrap line to cursor with Parens"
+}
+Set-PSReadLineKeyHandler @HandlerParams -ScriptBlock {
+  Param($Key, $Arg)
+  $Line = $Cursor = $Null                      # Initialize variables
+  [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$Line, [ref]$Cursor)
+  If (!$Cursor) { $Cursor = $Line.Length }     # Wrap entire line
+  $Line = "& ($($Line.SubString(0,$Cursor)))"  # Wrap to cursor
   [Microsoft.PowerShell.PSConsoleReadLine]::Replace(0, $Cursor, $Line)
 }
-Remove-PSReadLineKeyHandler -Chord 7
+Remove-PSReadLineKeyHandler -Chord 7,'&'  # Avoid bug???
 
-write-warning "$(FLINE) Before Ctrl+Alt+|"
+Write-Warning "$(FLINE) Before Ctrl+Alt+|"
 
 #	[Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
 #	[Microsoft.PowerShell.PSConsoleReadLine]::Insert($Line)
@@ -922,7 +925,7 @@ if ($PSRL = Get-Module PSReadline -ea Ignore) {
   Set-PSReadLineKeyHandler -Key 'F7','F9'             -Function HistorySearchBackward
   Set-PSReadLineKeyHandler -Key 'Shift+F7','Shift+F9' -Function HistorySearchForward
   Try {
-    Set-PSReadLineKeyHandler -Key 'Ctrl+b'              -Function GotoBrace
+    Set-PSReadLineKeyHandler -Key 'Ctrl+b'              -Function GotoBrace 
     Set-PSReadLineKeyHandler -Key 'Ctrl+Alt-B'          -Function ViDeleteBrace
     Set-PSReadLineKeyHandler -Key 'Ctrl+B'              -Function ViYankPercent
     Set-PSReadLineKeyHandler -Key 'Ctrl+5'              -Function ViYankPercent
