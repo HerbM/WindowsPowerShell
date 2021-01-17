@@ -2418,10 +2418,10 @@ Function Set-LocationUserFolder {
 
 try {
   $ECSTraining = "\Training"
-  $SearchPath  = "$Home\Downloads", 'C:\',"$Home\Downloads","S:$ECSTraining","T:$ECSTraining"
-  $Books = Join-Path $SearchPath 'Books' -ea ignore -resolve | Select-Object -First 1
+  $SearchPath  = 'D:\',"$Home\Downloads", 'C:\',"$Home\Downloads","S:$ECSTraining","T:$ECSTraining"
+  $Script:Books = Join-Path $SearchPath 'Books' -ea ignore -resolve | Select-Object -First 1
 } catch {
-  $Books = $PSProfile
+  $Script:Books = $PSProfileDirectory
 }  # just ignore
 $goHash = [ordered]@{
   book       = $books
@@ -3039,14 +3039,14 @@ Function Convert-ClipBoard {
     [switch]$NoTrim                           = $False
   )
   Begin {
-    $Trim = If     ($NoTrim)  { ''        }
+    $Trim = If     ($NoTrim)  { "`n"        }
             ElseIf ($TrimAll) { '\W'      }
             ElseIf ($Trim)    { $Trim     }
-            Else              { ',;:\t\s\\/' }
+            Else              { '[,;:\t\s\\/]+' }
     $MinimumLength = If ($AllowBlankLines) { -1 } Else { 0 }
   }
   Process {
-    (Get-ClipBoard) -split "`n+" | ForEach-Object { $_ -replace "^(\$Trim)|(\$Trim$)" } |
+    (Get-ClipBoard) -split "`n+" | ForEach-Object { $_ -replace "^$($Trim)|$($Trim)$" } |
       Where-Object Length -gt $MinimumLength
   }
   End {}
@@ -3116,7 +3116,9 @@ Function Select-Everything {    # es.exe everything
     }
     $Extensions = @($Extensions -join '|')
     If (!$Args)    {
-      $Args = @(Convert-ClipBoard).Trim() | Where Length -gt 0 | Select -first 1 
+      $Args = @(Convert-ClipBoard).Trim()
+        Where { $_ -match '[a-z]' } | Select -first 1 
+      #      -replace '^([_\s]*Download[_\s*]|\W+)$' | 
       If ($Args -and ($Args[0] -ceq 'Downloaded')) { $Null, $Args = $Args }
       If ($NoSubtitle) { $Args = $Args -replace ':.*' }
       Write-Verbose "Begin-NoSubtitle: $Args" ;
