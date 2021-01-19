@@ -1,3 +1,7 @@
+<#
+.Notes
+  Herb Martin's profile
+#>
 #region    Parameters
 [CmdLetBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
 param (
