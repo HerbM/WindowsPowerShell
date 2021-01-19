@@ -780,7 +780,7 @@ Set-ProgramAlias 7z   7z.exe @('C:Util\7-Zip\app\7-Zip64\7z.exe',
                                'C:\ProgramData\chocolatey\bin\7z.exe',
                                'S:\Programs\7-Zip\app\7-Zip64\7z.exe'
                              ) -FirstPath
-
+# NSCP.exe Nagios NSClient++ Network monitor client Network client monitor 
 Write-Warning "$(Get-Date -Format 'HH:mm:ss') $(LINE) After Set-ProgramAlias"
 
 # Get-WMIObject Win32_logicaldisk -filter 'drivetype = 3 or drivetype = 4'
@@ -3068,6 +3068,7 @@ Function Select-Everything {    # es.exe everything
   [cmdletbinding(PositionalBinding=$False)][Alias('se')]param(
     [Parameter(valuefromremainingarguments)][string[]]$Args = @(),
     [String]$Path                                           = '',
+    [Int]   $Index,
     [Alias('MoreArgs')][String[]]$AddArgs                   = @(),
     [Switch]$Directory                                      = $False,
     [Switch]$File                                           = $False,
@@ -3085,6 +3086,12 @@ Function Select-Everything {    # es.exe everything
     [switch]$Ordered                                        = $False
   )
   Begin {
+    $SelectIndex = @()
+    If ($PSBoundParameters.ContainsKey('Index')) {
+      If ($Index -gt 0)   { $Index-- }  # 0 or 1 is first 1 
+      $SelectIndex = If (($Index -ge 0)) { @{ Skip = $Index; First = 1 } }
+                     Else                { @{ Last = $Index * -1       } }
+    }
     $ExtraArgs, $Args = $Args.Where({$_ -match '^[-/]'}, 'split')
     $Local:PathX = $Null
     If ($Args -and (Test-Path $Args[0] -PathType Container -ea Ignore)) {
@@ -3116,8 +3123,9 @@ Function Select-Everything {    # es.exe everything
     }
     $Extensions = @($Extensions -join '|')
     If (!$Args)    {
-      $Args = @(Convert-ClipBoard).Trim()
-        Where { $_ -match '[a-z]' } | Select -first 1 
+      $Args = @(Convert-ClipBoard).Trim() |
+        Where { $_ -match '[a-z]' } | Select -first 1
+      Write-Verbose "$(FLINE) Args: [$($Args -join " `n")]"  
       #      -replace '^([_\s]*Download[_\s*]|\W+)$' | 
       If ($Args -and ($Args[0] -ceq 'Downloaded')) { $Null, $Args = $Args }
       If ($NoSubtitle) { $Args = $Args -replace ':.*' }
@@ -3137,9 +3145,10 @@ Function Select-Everything {    # es.exe everything
     }
     Write-Verbose "es $Local:PathX $Switches $args $Extensions $ExtraArgs" ;
     ForEach ($Line in @(echoargs @Local:PathX @Switches @Args @AddArgs @Extensions @ExtraArgs)) { Write-Verbose $Line }
+    Write-Verbose "$(FLINE) SelectIndex:`n$($SelectIndex | Out-String )"
     es @Local:PathX @Switches @Args @AddArgs @Extensions @ExtraArgs |
+      Select-Object $SelectIndex |
       ForEach-Object -Begin { $LineCount = 0 } { $LineCount++; $_ }
-    
   }
   End {
     If (!$LineCount) {
