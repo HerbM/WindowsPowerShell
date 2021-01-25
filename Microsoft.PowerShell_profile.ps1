@@ -1,3 +1,7 @@
+<#
+.Notes
+  Herb Martin's profile
+#>
 #region    Parameters
 [CmdLetBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
 param (
@@ -780,7 +784,7 @@ Set-ProgramAlias 7z   7z.exe @('C:Util\7-Zip\app\7-Zip64\7z.exe',
                                'C:\ProgramData\chocolatey\bin\7z.exe',
                                'S:\Programs\7-Zip\app\7-Zip64\7z.exe'
                              ) -FirstPath
-
+# NSCP.exe Nagios NSClient++ Network monitor client Network client monitor 
 Write-Warning "$(Get-Date -Format 'HH:mm:ss') $(LINE) After Set-ProgramAlias"
 
 # Get-WMIObject Win32_logicaldisk -filter 'drivetype = 3 or drivetype = 4'
@@ -2418,10 +2422,10 @@ Function Set-LocationUserFolder {
 
 try {
   $ECSTraining = "\Training"
-  $SearchPath  = "$Home\Downloads", 'C:\',"$Home\Downloads","S:$ECSTraining","T:$ECSTraining"
-  $Books = Join-Path $SearchPath 'Books' -ea ignore -resolve | Select-Object -First 1
+  $SearchPath  = 'D:\',"$Home\Downloads", 'C:\',"$Home\Downloads","S:$ECSTraining","T:$ECSTraining"
+  $Script:Books = Join-Path $SearchPath 'Books' -ea ignore -resolve | Select-Object -First 1
 } catch {
-  $Books = $PSProfile
+  $Script:Books = $PSProfileDirectory
 }  # just ignore
 $goHash = [ordered]@{
   book       = $books
@@ -3039,14 +3043,14 @@ Function Convert-ClipBoard {
     [switch]$NoTrim                           = $False
   )
   Begin {
-    $Trim = If     ($NoTrim)  { ''        }
+    $Trim = If     ($NoTrim)  { "`n"        }
             ElseIf ($TrimAll) { '\W'      }
             ElseIf ($Trim)    { $Trim     }
-            Else              { ',;:\t\s\\/' }
+            Else              { '[,;:\t\s\\/]+' }
     $MinimumLength = If ($AllowBlankLines) { -1 } Else { 0 }
   }
   Process {
-    (Get-ClipBoard) -split "`n+" | ForEach-Object { $_ -replace "^(\$Trim)|(\$Trim$)" } |
+    (Get-ClipBoard) -split "`n+" | ForEach-Object { $_ -replace "^$($Trim)|$($Trim)$" } |
       Where-Object Length -gt $MinimumLength
   }
   End {}
@@ -3068,6 +3072,7 @@ Function Select-Everything {    # es.exe everything
   [cmdletbinding(PositionalBinding=$False)][Alias('se')]param(
     [Parameter(valuefromremainingarguments)][string[]]$Args = @(),
     [String]$Path                                           = '',
+    [Int]   $Index,
     [Alias('MoreArgs')][String[]]$AddArgs                   = @(),
     [Switch]$Directory                                      = $False,
     [Switch]$File                                           = $False,
@@ -3085,6 +3090,12 @@ Function Select-Everything {    # es.exe everything
     [switch]$Ordered                                        = $False
   )
   Begin {
+    $SelectIndex = @()
+    If ($PSBoundParameters.ContainsKey('Index')) {
+      If ($Index -gt 0)   { $Index-- }  # 0 or 1 is first 1 
+      $SelectIndex = If (($Index -ge 0)) { @{ Skip = $Index; First = 1 } }
+                     Else                { @{ Last = $Index * -1       } }
+    }
     $ExtraArgs, $Args = $Args.Where({$_ -match '^[-/]'}, 'split')
     $Local:PathX = $Null
     If ($Args -and (Test-Path $Args[0] -PathType Container -ea Ignore)) {
@@ -3116,7 +3127,10 @@ Function Select-Everything {    # es.exe everything
     }
     $Extensions = @($Extensions -join '|')
     If (!$Args)    {
-      $Args = @(Convert-ClipBoard).Trim() | Where Length -gt 0 | Select -first 1 
+      $Args = @(Convert-ClipBoard).Trim() |
+        Where { $_ -match '[a-z]' } | Select -first 1
+      Write-Verbose "$(FLINE) Args: [$($Args -join " `n")]"  
+      #      -replace '^([_\s]*Download[_\s*]|\W+)$' | 
       If ($Args -and ($Args[0] -ceq 'Downloaded')) { $Null, $Args = $Args }
       If ($NoSubtitle) { $Args = $Args -replace ':.*' }
       Write-Verbose "Begin-NoSubtitle: $Args" ;
@@ -3135,9 +3149,10 @@ Function Select-Everything {    # es.exe everything
     }
     Write-Verbose "es $Local:PathX $Switches $args $Extensions $ExtraArgs" ;
     ForEach ($Line in @(echoargs @Local:PathX @Switches @Args @AddArgs @Extensions @ExtraArgs)) { Write-Verbose $Line }
+    Write-Verbose "$(FLINE) SelectIndex:`n$($SelectIndex | Out-String )"
     es @Local:PathX @Switches @Args @AddArgs @Extensions @ExtraArgs |
+      Select-Object $SelectIndex |
       ForEach-Object -Begin { $LineCount = 0 } { $LineCount++; $_ }
-    
   }
   End {
     If (!$LineCount) {
