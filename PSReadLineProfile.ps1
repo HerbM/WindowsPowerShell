@@ -767,7 +767,7 @@ If ($PSVersionTable.PSVersion -ge [Version]'7.1.9999')  {
 }
 
 $HandlerParams = @{ 
-  Chord = 'Shift+Alt+&','Shift+Ctrl+Alt+&','Ctrl+&','Alt+&','Ctrl+7','Alt+7'
+  Chord = 'Alt+&','Ctrl+Alt+&','Ctrl+&','Alt+&','Ctrl+7','Alt+7'
   BriefDescription = 'AddExecuteWithWrap'
   LongDescription  = "Prefix with & and wrap line to cursor with Parens"
 }
