@@ -1,4 +1,6 @@
 <#
+.Synopsis
+  Herb Martin's profile
 .Notes
   Herb Martin's profile
 #>
@@ -3073,6 +3075,8 @@ Function Select-Everything {    # es.exe everything
     [Parameter(valuefromremainingarguments)][string[]]$Args = @(),
     [String]$Path                                           = '',
     [Int]   $Index,
+    [Alias('Number','Maximum')][UInt] $First,
+    [Alias('Omit','Offset')]   [UInt]$Skip,
     [Alias('MoreArgs')][String[]]$AddArgs                   = @(),
     [Switch]$Directory                                      = $False,
     [Switch]$File                                           = $False,
@@ -3123,6 +3127,8 @@ Function Select-Everything {    # es.exe everything
       $Archives  { $Extensions += $ArchiveExtensions          }
       $Video     { $Extensions += $VideoExtensions            }
       $Books     { $Extensions += $BookExtensions             }
+      $PSBoundParameters.ContainsKey('First') { $Switches += '-n', $First}
+      $PSBoundParameters.ContainsKey('Skip' ) { $Switches += '-o', $Skip }
       Default    {                                            }
     }
     $Extensions = @($Extensions -join '|')
