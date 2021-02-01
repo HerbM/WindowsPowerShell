@@ -3075,8 +3075,8 @@ Function Select-Everything {    # es.exe everything
     [Parameter(valuefromremainingarguments)][string[]]$Args = @(),
     [String]$Path                                           = '',
     [Int]   $Index,
-    [Alias('Number','Maximum')][UInt] $First,
-    [Alias('Omit','Offset')]   [UInt]$Skip,
+    [Alias('Number','Maximum')][UInt32] $First,
+    [Alias('Omit','Offset')]   [UInt32]$Skip,
     [Alias('MoreArgs')][String[]]$AddArgs                   = @(),
     [Switch]$Directory                                      = $False,
     [Switch]$File                                           = $False,
@@ -3134,7 +3134,8 @@ Function Select-Everything {    # es.exe everything
     $Extensions = @($Extensions -join '|')
     If (!$Args)    {
       $Args = @(Convert-ClipBoard).Trim() |
-        Where { $_ -match '[a-z]' } | Select -first 1
+        Where { $_ -match '[a-z]' -and $_ -notmatch '^(?-i:Downloaded)$' } | 
+        Select -first 1
       Write-Verbose "$(FLINE) Args: [$($Args -join " `n")]"  
       #      -replace '^([_\s]*Download[_\s*]|\W+)$' | 
       If ($Args -and ($Args[0] -ceq 'Downloaded')) { $Null, $Args = $Args }
