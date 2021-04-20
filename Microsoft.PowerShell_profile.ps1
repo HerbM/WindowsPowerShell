@@ -8,6 +8,7 @@
 [CmdLetBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
 param (
                                                        [switch]$Force,
+                                                       [switch]$RunForce,
   [Alias('DotNet')]                                    [switch]$ShowDotNetVersions,
   [Alias('Modules')]                                   [switch]$ShowModules,
   [Alias('IModules')]                                  [switch]$InstallModules,
@@ -22,7 +23,20 @@ param (
   #[Alias('IAc','IAction','InfoAction')]
   #[ValidateSet('SilentlyContinue','')]                                  [switch]$InformationAction
 )
+
 Set-StrictMode -off
+
+If (!$RunForce) {  
+  If ($Host.Version -lt [Version]'7.1.9' -and $Host.Version -gt [Version]'6.0.0') {
+    "=============================================="
+    $Host | Select Name,Version,InstanceID
+    ""
+    $MyInvocation.ScriptName
+    "`nSkipping profile for VS Code etc."
+    RETURN     #### <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  }
+}
+
 $Script:PSLog = "$Home\PowerShellLog.txt"
 Get-Date -Format 's' >> $Script:PSLog
 '-' * 60      | Format-List * -force | Out-String >> $Script:PSLog
@@ -773,6 +787,19 @@ Function Set-ProgramAlias {
     write-warning "$(LINE) $Name NOT found on path or in: $($SearchPath -join '; ')"
   }
 }
+
+$CodeInsiders = 'C:\Program Files\Microsoft VS Code Insiders\bin\code-insiders.cmd'
+If (Test-Path $CodeInsiders) {
+  new-alias code $CodeInsiders -Scope Global -force
+}
+
+$Local:Diff = Get-Command diff.exe -CommandType Application -ea Ignore  | Select -first 1
+If ($diff) { 
+  Remove-Item Alias:Diff -force -ea ignore
+  New-Alias diff $Diff.Definition -scope Global -force -ea Ignore
+}
+
+
 Set-ProgramAlias np notepad++.exe @('C:\Util\notepad++.exe',
    'C:\ProgramData\chocolatey\bin\notepad++.exe',
    'S:\Programs\Notepad++\app\Notepad++\notepad++.exe'
@@ -791,7 +818,7 @@ Write-Warning "$(Get-Date -Format 'HH:mm:ss') $(LINE) After Set-ProgramAlias"
 
 # Get-WMIObject Win32_logicaldisk -filter 'drivetype = 3 or drivetype = 4'
 
-Join-Path 'C:\Program Files*\Microsoft VS Code*' Code*.exe -resolve | Select -first 1
+$VSCode = Join-Path 'C:\Program Files*\Microsoft VS Code*\bin' Code*.cmd -resolve -ea Ignore | Select -first 1
 
 # 'Thu, 08 Feb 2018 07:47:42 -0800 (PST)' -replace '[^\d]+$' -as [datetime] 13:47:42 -0800 (PST)'
 # 'Thu, 08 Feb 2018 07:47:42 -0800 (PST)' -replace '[^\d]+$' -as [datetime] 13:47:42 -0800 (PST)'
@@ -1359,7 +1386,7 @@ Write-Information "$(LINE) Test hex format: $("{0:X}" -f -2068774911)"
 # "{0:X}" -f -2068774911
 Function Get-DriveType {
   [CmdletBinding()][Alias('Get-DriveTypeName')]
-  [Alias('DriveTypeName','DriveType','Code','DriveCode')]Param($Type)
+  [Alias('DriveTypeName','DriveType','DriveCode')]Param($Type)
   $DriveTypes = [Ordered]@{
     0 = 'UNKNOWN'   # Type cannot be determined.
     1 = 'NOROOTDIR' # Root path is invalid, e.g., no volume mounted at specified path
@@ -3070,10 +3097,18 @@ Function Get-About {
   }
 }
 
+$Local:Cargo = Get-Command cargo.exe -CommandType Application -ea Ignore | Select -first 1
+If ($Cargo) { Import-Module posh-cargo -ea Ignore }
+$Local:CoreUtils = Get-Command coreutils.exe -CommandType Application -ea Ignore  | Select -first 1
+If ($CoreUtils) { New-Alias cu $CoreUtils.Definition -scope Global -force }
+$Local:Diff = Get-Command diff.exe -CommandType Application -ea Ignore  | Select -first 1
+If ($diff) { New-Alias diff $Diff.Definition -scope Global -force -ea Continue}
+
+
 Function Select-Everything {    # es.exe everything
   [cmdletbinding(PositionalBinding=$False)][Alias('se')]param(
     [Parameter(valuefromremainingarguments)][string[]]$Args = @(),
-    [String]$Path                                           = '',
+    [String[]]$Path                                           = '',
     [Int]   $Index,
     [Alias('Number','Maximum')][UInt32] $First,
     [Alias('Omit','Offset')]   [UInt32]$Skip,
@@ -3281,3 +3316,41 @@ wmic --% path Win32_LogicalFileSecuritySetting where Path="C:\\Users\\A469526\\A
 cd (get-userfolder documents).folder
 (get-userfolder documents).tostring()
 #>
+
+# 1..255 | % { Start-ThreadJob -Name "TestThread$_" { ForEach ($Port in 80,135,445) { 
+Function Test-TCPPort {  # check actual IP & Port combination
+  [Alias('Test-TCPService','TestTCP','tcp')][CmdLetBinding()]Param(
+    [string]$Server='127.0.0.1',
+    [Uint16]$Port=135,
+    [Alias('Wait','MaxWait')]$TimeOut=3000
+  )
+  if ($TimeOut -lt 30) { $TimeOut *= 1000 }
+  $Failed = $False
+  $Succeeded = $True
+  try {
+    $ErrorActionPreference = 'Continue'
+    $tcpclient = new-Object system.Net.Sockets.TcpClient
+    $Start = Get-Date
+    Function Elapsed { param($Start = $Start) '{0,5:N0}ms' -f ((Get-Date) - $Start).TotalMilliseconds }
+    $iar = $tcpclient.BeginConnect($Server, $port, $null, $null) # Create Client
+    $wait = $iar.AsyncWaitHandle.WaitOne($TimeOut,$false)         # Set timeout
+    if (!$wait) {                                                 # Check if connection is complete
+        $Failed = $True
+    }  else {
+      $tcpclient.EndConnect($iar) | out-Null
+      if (!$?) {
+        $failed = $true
+      }
+    }
+  } catch {
+    $Failed = $True
+  } finally {
+    if ($tcpclient.Connected) {
+      $null = $tcpclient.Close
+    }
+  }
+  !$failed  # Return $true if connection Establish else $False
+}
+
+# Test-TCPPort "192.168.239.$($args[0])" $Port } } -ArgumentList $_  -ThrottleLimit 255 } ; While ($Threads = Get-Job -State Completed -HasMoreData $True) { ForEach ($Thread in $Threads) { If ($Thread.State -ne 'Completed') { Continue } "Job: $(Receive-Job $Thread)"; Remove-Job $Thread } 
+ 

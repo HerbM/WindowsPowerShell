@@ -7,7 +7,7 @@ Return a curried PowerShell function supplied with default paraters provided by 
 Build a function or scriptblock closure with PSDefaultParameterValues closed inside
 
 #>
-[Get-CmdletBinding()]Param(
+[CmdletBinding()]Param(
   [Parameter(Mandatory)]$Name,
   [Parameter(Mandatory)]$NewName,
   [Hashtable]$Parameters = @{},       
@@ -20,5 +20,5 @@ New-Module -Name $Name$NewName {
   ForEach ($Key in $Parameters.Keys) {
      $PSDefaultParameterValues."$($Name):$Key" = $Parameters.$Key  ## Need to convert to Name:Parameter
   }
-
+  
 }
