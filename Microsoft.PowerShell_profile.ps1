@@ -792,13 +792,28 @@ $CodeInsiders = 'C:\Program Files\Microsoft VS Code Insiders\bin\code-insiders.c
 If (Test-Path $CodeInsiders) {
   new-alias code $CodeInsiders -Scope Global -force
 }
+# new-alias sense (gcb) -Scope Global -force
+# 
 
 $Local:Diff = Get-Command diff.exe -CommandType Application -ea Ignore  | Select -first 1
 If ($diff) { 
   Remove-Item Alias:Diff -force -ea ignore
   New-Alias diff $Diff.Definition -scope Global -force -ea Ignore
 }
+$Local:CoreUtils = Get-Command coreutils.exe -CommandType Application -ea Ignore
+If ($CoreUtils) { New-Alias cu $CoreUtils.Definition -scope Global -force }
 
+new-alias v "$(${Env:ProgramFiles})\VideoLan\VLC\vlc.exe" -force -scope global
+
+# netsh advfirewall show allprofiles  state
+# netsh advfirewall set allprofiles   state off
+# netsh advfirewall set publicprofile state on
+
+# set-netfirewallprofile -All         -Enabled False
+# set-netfirewallprofile -name public -Enabled True
+# netsh advfirewall firewall delete rule name="TCP Port 6624" protocol=TCP localport=6624
+# netsh advfirewall firewall add rule name="TCP Port 6624" dir=in action=allow protocol=TCP localport=6624
+# New-NetFirewallRule -DisplayName 'My port' -Profile 'Private' -Direction Inbound -Action Allow -Protocol TCP -LocalPort 6624
 
 Set-ProgramAlias np notepad++.exe @('C:\Util\notepad++.exe',
    'C:\ProgramData\chocolatey\bin\notepad++.exe',
