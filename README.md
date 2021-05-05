@@ -9,7 +9,7 @@ If ($PWD -match '\b(System32|Windows|Program\sFile.*$|C:\\)') { Push-Location (J
 
 ## The command above downloads the following script:
 
-```
+```ps
 <#
 .Synopsis
   Get git for Windows and clone WindowsPowerShell to profile directory
