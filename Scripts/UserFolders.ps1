@@ -1,25 +1,35 @@
+[CmdletBinding()]Param(
+  [Switch]$Force=$False
+)
+
+If (!$Force) {
+  Write-Warning "Run this script only if you completely understand the issues...  returning without executing..."
+  return
+}
+
 Set-StrictMode -off
-$jpp = @{ ErrorAction = 'Ignore'} #; resolve = $True }
+# $jpp = @{ ErrorAction = 'Ignore'} #; resolve = $True }
 If (($UserName       -or (      $UserName = $Env:UserName))               -and
     ($SharedLocation -or ($SharedLocation = 'D:'))                        -and
     ($UserFolderRoot -or ($UserFolderRoot = "$SharedLocation\$UserName")) -and
     ($UserDocuments  -or ($UserDocuments  = "$UserFolderRoot\Documents"))) {
-  Write-Host "Directories variables set"  
+  Write-Host "Directories variables set"
 } else {
-  Write-Host "Unable to set Directories variables, exiting!!!"  
+  Write-Host "Unable to set Directories variables, exiting!!!"
   return
 }
 
 Function Set-PersonalFolder {
-  [CmdletBinding(SupportsShouldProcess,ConfirmImpact=’Low’)]param(
+  [CmdletBinding(SupportsShouldProcess,ConfirmImpact=’HIGH’)]param(
+    [String]$FolderRoot = 'C:\Users\%UserName%',
     [string[]]$FoldersToMove  = @('Personal','Desktop','Programs','Startup',
                                   '{374DE290-123F-4565-9164-39C4925E467B}',
                                   'AppData','Local AppData','Start Menu',
                                   'NetHood')
-  )  
-  Get-ItemProperty 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -name * 
-  $FolderRoot = 'C:\Users\%UserName%\'   # default
-  $FolderRoot = 'D:\%UserName%'          # share from RDP servers  
+  )
+  Get-ItemProperty 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -name *
+  # $FolderRoot = 'C:\Users\%UserName%'   # default
+  # $FolderRoot = 'D:\%UserName%'          # share from RDP servers
   $UserFolders = @{
     AppData                                  = "$FolderRoot\AppData\Roaming"
     Cache                                    = "$FolderRoot\AppData\Local\Microsoft\Windows\Temporary Internet Files"
@@ -44,26 +54,26 @@ Function Set-PersonalFolder {
     'CD Burning'                             = "$FolderRoot\AppData\Local\Microsoft\Windows\Burn\Burn2"
   }
   $UserFoldersKey = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
-  Get-ItemProperty $UserFoldersKey  -name * 
-  $FolderRoot = 'C:\Users\%UserName%\'   # default
-  $FolderRoot = 'D:\%UserName%'          # share from RDP servers
+  Get-ItemProperty $UserFoldersKey  -name *
+  # $FolderRoot = 'C:\Users\%UserName%'   # default
+  # $FolderRoot = 'D:\%UserName%'          # share from RDP servers
   $FoldersToMove  = 'Personal','Desktop','Programs','Startup','AppData','Local AppData','Start Menu','NetHood','{374DE290-123F-4565-9164-39C4925E467B}'
   ForEach ($Folder in $FoldersToMove) {
     $Existing = Get-ItemProperty $UserFoldersKey -name $Folder -ea ignore
     If (!$Existing -or $UserFolders.$Folder -ne $Existing.$Folder) {
       Set-ItemProperty $UserFoldersKey -name $Folder -Value $UserFolders.$Folder -Type ExpandString -Force
-      (Get-ItemProperty $UserFoldersKey -name $Folder -ea ignore).$Folder 
+      (Get-ItemProperty $UserFoldersKey -name $Folder -ea ignore).$Folder
     } Else {
-      Write-Warning "Already set: $Folder = [$($Existing.$Folder)]"      
+      Write-Warning "Already set: $Folder = [$($Existing.$Folder)]"
     }
   }
-  foreach ($F in $FoldersToMove) { 
-    "$F $($F)"; 
-    if (!(Test-Path $UserFolders.$f -ea ignore)) { md $UserFolders.$f } 
-    Get-ItemProperty $UserFoldersKey -name * 
-  }  
+  foreach ($F in $FoldersToMove) {
+    "$F $($F)";
+    if (!(Test-Path $UserFolders.$f -ea ignore)) { mkdir $UserFolders.$f }
+    Get-ItemProperty $UserFoldersKey -name *
+  }
 }
-set-personalfolder
+# set-personalfolder
 Function Get-UserFolder {
   [CmdletBinding()][Alias('guf','gf')]param(
     [Alias('Folder', 'FolderName', 'Directory', 'DirectoryName','Path','PSPath')]
@@ -72,39 +82,37 @@ Function Get-UserFolder {
     [switch]$Regex
   )
   Begin {
-    $Key = 
-      'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
+    $Key = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
     $Folders = @()
-    $RegistryFolders = 
-      (Get-ItemProperty $Key -name * -ea Ignore).psobject.get_properties() | 
-        Where-Object Name -notlike 'PS*' | ForEach {
-          $_ = [PSCustomObject]@{ $_.Name = $_.Value }
-          If ($_.Name -eq '{374DE290-123F-4565-9164-39C4925E467B}') {
-            $Alias = $_.Clone
-            $Alias.Name =  'Downloads'
-            $Alias
-          }
+    $RegistryFolders = (Get-ItemProperty $Key -name * -ea Ignore).psobject.get_properties() |
+      Where-Object Name -notlike 'PS*' | ForEach-Object {  # Skip PS* ItemProperty 'pseudo-properties'
+        $_ = [PSCustomObject]@{ $_.Name = $_.Value }       # Ignore other (registry) properties
+        If ($_.Name -eq '{374DE290-123F-4565-9164-39C4925E467B}') {  # Downloads uses a GUID name
+          $Alias = $_.Clone
+          $Alias.Name =  'Downloads'
+          $Alias
         }
+      }
   }
   Process {
     $Folders += ForEach ($Folder in $Name) {
-      $Folder = $Folder -replace '^Dow.*', '{374DE290-123F-4565-9164-39C4925E467B}'
-      $Folder = $Folder -replace '^Doc.*',  'Personal' 
-      $Folder = $Folder -replace '^(Pict|Vid|Mus).*$', 'My $1'
-      $Folder = $Folder -replace '^(AppData)$', 'Local $1'
+      $Folder = $Folder -replace '^Downloads', '{374DE290-123F-4565-9164-39C4925E467B}'
+      $Folder = $Folder -replace '^Documents',  'Personal'
+      $Folder = $Folder -replace '^(Pictures|Video|Music)', 'My $1'
+      # $Folder = $Folder -replace '^(AppData)$', 'Local $1'
       Write-Verbose "Folder: Folder pattern: [$Folder]"
-      If ($Regex -and ($F = $RegistryFolders | Where Name -match $Folder)) {
+      If ($Regex -and ($F = $RegistryFolders | Where-Object Name -match $Folder)) {
         Write-Verbose "Regex: User folders: [$($F.Name)]"
         $F
       } ElseIf ($F = Get-ItemProperty $Key -name $Folder -ea Ignore) {
-        $F.psobject.get_properties() | Where-Object Name -notlike 'PS*' 
+        $F.psobject.get_properties() | Where-Object Name -notlike 'PS*'
       } Else {
         Write-Warning "User folder: [$Folder] not found"
-      }   
+      }
     }
   }
   End {
-    $Folders | Select -unique Name,@{N='Folder';E={$_.Value}}
+    $Folders | Select-Object -unique Name,@{N='Folder';E={$_.Value}}
   }
 }
 get-userfolder
@@ -118,29 +126,29 @@ If (Test-Path $RDCCert -ea Ignore) {
   Set-Location D:\A469526\Documents
   If (Test-Path RDCManCertificate.pfx -ea Ignore) {
     .\Import-RDPCertificate.ps1 .\RDCManCertificate.pfx
-  } 
+  }
   If (Test-Path $RDCCert -ea Ignore) {
     Write-Warning "Certificate installed:  $RDCCert"
   } else {
-    Write-Error "Certificate NOT found:  $RDCCert" -back 'DarkRed' -fore 'White' 
+    Write-Error "Certificate NOT found:  $RDCCert" -back 'DarkRed' -fore 'White'
   }
 }
 
-If (!(Test-Path O:\ -ea ignore )) { 
+If (!(Test-Path O:\ -ea ignore )) {
   net use O: /d /y 2>&1 1>$Null
-  net use O: \\tsclient\C /persistent:yes 
+  net use O: \\tsclient\C /persistent:yes
 }
 $Drive,$Null = $SharedLocation -split  '(?<=:)'
 $EscapeUserFolderRoot   = [Regex]::Escape($UserFolderRoot)
 $UserPSProfileDirectory = "$UserDocuments\WindowsPowerShell"
 $NetworkModules         = "$UserPSProfileDirectory\Modules"
-If ($Env:PSModulePath -NotMatch "$EscapeUserFolderRoot" ) { 
+If ($Env:PSModulePath -NotMatch "$EscapeUserFolderRoot" ) {
   $Env:PSModulePath    += ";$NetworkModules"
-}  
+}
 $PSProfileName          = 'Microsoft.PowerShell_profile.ps1'  # different for 6.x
 $Global:Profile         = "$UserPSProfileDirectory\$PSProfileName"
 
-$SessionID = ( ((qwinsta) -match '>') -split '\s+')[2]
+# $SessionID = ( ((qwinsta) -match '>') -split '\s+')[2]
 
 # dir -dir task* -ea ignore -rec
 $StartUpSubPath  = "AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup"
@@ -149,10 +157,10 @@ $OriginalStartUp = "$Home\$StartUpSubPath\"
 $OriginalTaskbar = "$Home\$TaskBarSubPath\"
 $NetworkStartUp  = "$UserFolderRoot\$StartUpSubPath\"
 $NetworkTaskbar  = "$UserFolderRoot\$TaskBarSubPath\"
-copy  "$UserFolderRoot\Task"  $OriginalTaskbar -force -ea Ignore
-copy  "$UserFolderRoot\Start" $OriginalStartUp -force -ea Ignore
-copy  "$UserFolderRoot\Task"  $NetworkStartUp  -force -ea Ignore
-copy  "$UserFolderRoot\Start" $NetworkTaskbar  -force -ea Ignore
+copy-item  "$UserFolderRoot\Task"  $OriginalTaskbar -force -ea Ignore
+copy-item  "$UserFolderRoot\Start" $OriginalStartUp -force -ea Ignore
+copy-item  "$UserFolderRoot\Task"  $NetworkStartUp  -force -ea Ignore
+copy-item  "$UserFolderRoot\Start" $NetworkTaskbar  -force -ea Ignore
 
 Set-Location $UserPSProfileDirectory
 . $Global:Profile
