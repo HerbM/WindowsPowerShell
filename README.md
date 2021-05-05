@@ -1,10 +1,10 @@
-# My idiosyncratic PowerShell utilities and profile 
+# My idiosyncratic PowerShell utilities and profile
 (tested on Windows PowerShell 5+ & 7+)
 
 ## Use the following line to download & install Git if not present:
 
 ```
-If ($PWD -match '\b(System32|Windows|Program\sFile.*$|C:\\)') { Push-Location (Join-Path $Home 'Downloads') }; Invoke-WebRequest https://raw.githubusercontent.com/HerbM/WindowsPowerShell/master/Scripts/Get-WindowsGit.ps1 -out Get-WindowsGit.ps1; ./Get-WindowsGit
+If ($PWD -match '\b(System32|Windows|Program\sFile.*$|C:\\)') { Push-Location (Join-Path $Home 'Downloads') }; Invoke-WebRequest https://raw.githubusercontent.com/HerbM/WindowsPowerShell/master/Scripts/Get-WindowsGit.ps1 -out Get-WindowsGit.ps1; ./Get-WindowsGit -install; cd $Home\Documents; & 'c:\Program Files\Git\bin\git' clone https://github.com/HerbM/WindowsPowerShell
 ```
 
 ## The command above downloads the following script:
