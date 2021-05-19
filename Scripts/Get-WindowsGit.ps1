@@ -53,10 +53,13 @@ param (
   [Alias('Url','Link')] [string]$uri='https://git-scm.com/download/win', # Windows Git page
   [Alias('Directory')][string[]]$Path="$Home\Downloads",                 # downloaded file to path
   [Alias('GitInstall')][switch]$Install,
-  [Alias('bit32','b32','old')][switch]$Bits32
+  [Alias('bit32','b32','old')][switch]$Bits32 = $False,
+  [switch]$Force = $False
 )
 
-$VersionPattern = If ($bits32) { 'git-.*-32-bit.exe' } else { 'git-.*-64-bit.exe' }
+$VersionPattern = If ($bits32 -or ![Environment]::Is64BitOperatingSystem) {
+  'git-.*-32-bit.exe' } else { 'git-.*-64-bit.exe'
+}
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 <#
 $VimHelp = @'
@@ -83,7 +86,7 @@ $VimHelp = @'
 write-host $VimHelp -fore yellow -back darkblue
 #>
 
-If ($PWD -match '\b(System32|Windows|Program\sFile.*)$') {
+If ($PWD -match '\b(System32|Windows|Program\sFile.*|C:\\)$') {
   $Local:OldDir = $Pwd
   Write-Warning "Changing out of $PWD to prevent loading this accidentally in a bad place"
   Write-Warning ""
@@ -96,35 +99,59 @@ $InstallerUri = ($page.links | where outerhtml -match $VersionPattern | Select -
 Write-Verbose "Installer Uri: $InstallerUri"
 $FileName = Split-Path $InstallerUri -leaf                          # split out the filename
 Write-Verbose "Filename: $filename"
-$InstallerlPath = Join-Path -Path $path -ChildPath $filename         # construct a filepath for the download
-Write-Verbose "Download save path: $InstallerlPath"
-if ($PSCmdlet.ShouldProcess("$InstallerUri", "Saving: $InstallerlPath`n")) {
-  Invoke-WebRequest -uri $InstallerUri -OutFile $InstallerlPath -UseBasicParsing -verbose:$false # download file
+$InstallerPath = Join-Path -Path $path -ChildPath $filename         # construct a filepath for the download
+If ($Force -or (Test-Path $InstallerPath)) {
+  Write-Warning "Skipping download, file exists: [$InstallerPath]"
+  Write-Warning "Use -Force switch to force downloading (new version) file again"
+} Else {
+  Write-Warning "Download save path: $InstallerPath"
+  if ($PSCmdlet.ShouldProcess("$InstallerUri", "Saving: $InstallerPath`n")) {
+    Invoke-WebRequest -uri $InstallerUri -OutFile $InstallerPath -UseBasicParsing -verbose:$false # download file
+  }
 }
-Get-item $InstallerlPath | ForEach { "$($_.length) $($_.lastwritetime) $($_.fullname)" }
+Get-item $InstallerPath | ForEach-Object { "$($_.length) $($_.lastwritetime) $($_.fullname)" }
 
 # $PSVersionTable.PSVersion -gt [Version]'6.0'
 
-if (Test-Path $InstallerlPath) {
+Function Set-ProcessCommandPath {
+  Param(
+    [String[]]$Path = $Pwd
+  )
+  $CurrentPath = [Environment]::GetEnvironmentVariable('Path','Process')
+  $NewPath = (@($CurrentPath) + $Path) -join ';'
+  [Environment]::GetEnvironmentVariable('Path', $NewPath,'Process')
+}
+
+Function Get-ProgramFilesPath {
+  Param(
+    [Alias('bit32','b32','old')][switch]$Bits32 = $False
+  )
+  If ([Environment]::Is64BitOperatingSystem -and $Bits32) {
+    ${Env:ProgramFiles(x86)}
+  } Else {
+    ${Env:ProgramFiles}
+  }
+}
+
+if (Test-Path $InstallerPath) {
   If ($Install) {
-    Write-Warning "Running git install: $InstallerlPath /verysilent"
-    & $InstallerlPath /verysilent
+    Write-Warning "Running git install: $InstallerPath /verysilent"
+    & $InstallerPath /verysilent
     If (!(Get-Command git -CommandType Application -ea Ignore) -and
-         ($Env:Path -notmatch 'C:.Program Files.*\bGit.cmd')) {
-      If ($Bits32) { $Env:Path += ';C:\Program Files\Git\cmd' }
-      Else         { $Env:Path += ';C:\Program Files (x86)\Git\cmd' }
+         ($Env:Path -notmatch ':.Program Files.*\bGit.cmd')) {
+      $NewPath = "$(Get-ProgramFilesPath)\Git\cmd"
     }
   }
-  # $InstallerlPath /verysilent # To install Git"
+  # $InstallerPath /verysilent # To install Git"
   Write-Host '' -fore white -back darkcyan
   $Instructions = @"
- 
- 
+
+
     # RUN THESE COMMANDS IF you don't already have a PowerShell profile:
-    
+
     `$Env:Path += ';C:\Program Files\Git\cmd'   # or restart PowerShell
     cd `$Home\Documents -ea ignore              # if you don't have a Profile
-    
+
     # for Windows PowerShell through 5.x
     git clone https://github.com/HerbM/WindowsPowerShell WindowsPowerShell #PS5
 
@@ -139,7 +166,7 @@ if (Test-Path $InstallerlPath) {
   Write-Host '' -fore white -back darkcyan
   Write-Host ''
 } else {
-  "Download FAILED to $InstallerlPath"
+  "Download FAILED to $InstallerPath"
 }
 
 <#
