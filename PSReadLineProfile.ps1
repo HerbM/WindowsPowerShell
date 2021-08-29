@@ -44,8 +44,12 @@ $PSHistoryFileName  = 'PSReadLine_history.txt'
 $PSHistoryDirectory = "$Home\Documents\PSHistory"
 $PSHistory          = "$PSHistoryDirectory\$PSHistoryFileName"
 
-If (($PSRL = Get-Module PSReadLine -ea 0) -and ($PSRL.version -ge [version]'2.0.0')) { 
-  Remove-PSReadLineKeyHandler ' ' -ea Ignore 
+Try {
+  If (($PSRL = Get-Module PSReadLine -ea 0) -and ($PSRL.version -ge [version]'2.0.0')) { 
+    Remove-PSReadLineKeyHandler ' ' -ea Ignore 
+  }
+} Catch {
+  Write-Warning "Error Remove KeyHandler [$($_.ToString())]"
 }
 
 ######### Move Old History to new location

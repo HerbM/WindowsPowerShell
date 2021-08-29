@@ -7,29 +7,29 @@
 #region    Parameters
 [CmdLetBinding(SupportsShouldProcess=$true,ConfirmImpact='Medium')]
 param (
-                                                       [switch]$Force,
-                                                       [switch]$RunForce,
-  [Alias('DotNet')]                                    [switch]$ShowDotNetVersions,
-  [Alias('Modules')]                                   [switch]$ShowModules,
-  [Alias('IModules')]                                  [switch]$InstallModules,
-                                                       [switch]$ForceModuleInstall,
-  [ValidateSet('AllUsers','CurrentUser')]              [string]$ScopeModule='AllUsers',
-  [Parameter(ValueFromRemainingArguments=$true)]       [string[]]$RemArgs,
-  [Alias('ClobberAllowed')]                            [switch]$AllowClobber,
-  [Alias('SilentlyContinue')]                          [switch]$Quiet,
-  [Alias('PSReadlineProfile','ReadlineProfile','psrl')][switch]$PSReadline,
-  [Alias('ForcePSReadlineProfile','fpsrl')]            [switch]$ForcePSReadline,
-                                                       [switch]$UpdatePackageManager
+                                                        [switch]$Force,
+                                                        [switch]$RunForce,
+  [Alias('DotNet')]                                     [switch]$ShowDotNetVersions,
+  [Alias('Modules')]                                    [switch]$ShowModules,
+  [Alias('IModules')]                                   [switch]$InstallModules,
+                                                        [switch]$ForceModuleInstall,
+  [ValidateSet('AllUsers','CurrentUser')]               [string]$ScopeModule='AllUsers',
+  [Parameter(ValueFromRemainingArguments=$true)]        [string[]]$RemArgs,
+  [Alias('ClobberAllowed')]                             [switch]$AllowClobber,
+  [Alias('SilentlyContinue')]                           [switch]$Quiet,
+  [Alias('PSReadlineProfile','ReadlineProfile','psrl')] [switch]$PSReadline,
+  [Alias('ForcePSReadlineProfile','fpsrl')]             [switch]$ForcePSReadline,
+                                                        [switch]$UpdatePackageManager
   #[Alias('IAc','IAction','InfoAction')]
-  #[ValidateSet('SilentlyContinue','')]                                  [switch]$InformationAction
+  #[ValidateSet('SilentlyContinue','')]                 [switch]$InformationAction
 )
 
 Set-StrictMode -off
 
-If (!$RunForce) {  
+If (!$RunForce) {
   If ($Host.Version -lt [Version]'7.1.9' -and $Host.Version -gt [Version]'6.0.0') {
     "=============================================="
-    $Host | Select Name,Version,InstanceID
+    $Host | Select-Object Name,Version,InstanceID
     ""
     $MyInvocation.ScriptName
     "`nSkipping profile for VS Code etc."
@@ -107,7 +107,7 @@ Function ConvertFrom-FileTime {
   } catch { }  # Just return $Null, no need to do more
 }
 
-# $LastLogon = ((nslookup $env:userdnsdomain | select -skip 3 ) -replace '.*\s+([\d.]{7,})?.*','$1').where{$_} | % { get-aduser martinh -Properties *  -server $_ } | Select name,@{N='LastLogon';E={ConvertFrom-FileTIme -sort $_.LastLogon}},LastLogonDate,@{N='LastLogonTimeStamp';E={ConvertFrom-FileTIme -sort $_.LastLogonTimeStamp}} 131775519645343599
+# $LastLogon = ((nslookup $env:userdnsdomain | select-Object -skip 3 ) -replace '.*\s+([\d.]{7,})?.*','$1').where{$_} | % { get-aduser martinh -Properties *  -server $_ } | Select-Object name,@{N='LastLogon';E={ConvertFrom-FileTIme -sort $_.LastLogon}},LastLogonDate,@{N='LastLogonTimeStamp';E={ConvertFrom-FileTIme -sort $_.LastLogonTimeStamp}} 131775519645343599
 
 Function Get-CurrentLineNumber { $MyInvocation.ScriptLineNumber }
 remove-item Alias:LINE -ea Ignore -force
@@ -261,8 +261,8 @@ If ($Host.PrivateData -and ($host.PrivateData.ErrorBackgroundColor -as [string])
   #         Configure new build, Firewall off,RDP On,No IPv6 etc
   #         Split out functions etc to "Scripts" directory
   #         Speed up History loading?
-  #         get-process notepad++ | select name,starttime,productversion,path
-  #         Get-WMIObject win32_service -filter 'name = "everything"' | select name,StartMode,State,Status,Processid,StartName,DisplayName,PathName | ft
+  #         get-process notepad++ | select-Object name,starttime,productversion,path
+  #         Get-WMIObject win32_service -filter 'name = "everything"' | select-Object name,StartMode,State,Status,Processid,StartName,DisplayName,PathName | ft
   # Git-Windows Git (new file), previous commit worked on JR 2 machines
   # Improve goHash, Books & Dev more general, fix S: T: not found
   # Everything? es?
@@ -346,14 +346,14 @@ try {
   } else { Write-Information "$(LINE) Administrator privileges DISABLED"}
 write-warning "$(Get-Date -Format 'HH:mm:ss') $(LINE)"
 If ($WinMerge = Join-Path -resolve -ea ignore 'C:\Program*\WinMerge*' 'WinMerge*.exe' |
-  ? { $_ -notmatch 'proxy' } | select -first 1) {
+  ? { $_ -notmatch 'proxy' } | select-Object -first 1) {
   new-alias WinMerge $WinMerge -force -scope Global
 }
 
 #Clean the $Env:Path
 $SavePath = ($Env:Path -split ';' -replace '(?<=[\w\)])[\\;\s]*$' |
              Where-Object { $_ -and (Test-Path $_) } |
-             select -uniq) -join ';'
+             select-Object -uniq) -join ';'
 if ($SavePath) { $Env:Path, $SavePath = $SavePath, $Env:Path }
 Function Add-ToolPath {
   [CmdLetBinding()]param(
@@ -722,7 +722,7 @@ If ($LoadUtilityFile) {
   try {
     $TryPath = $PSProfileDirectory,$ProfileDirectory,'C:\Bat','.'
     Write-Warning "$(Get-Date -Format 'HH:mm:ss') $(LINE) Try Utility path: $($TryPath -join '; ')"
-    If ($Util=(Join-Path $TryPath 'utility.ps1' -ea ignore | Select -First 1)) {
+    If ($Util=(Join-Path $TryPath 'utility.ps1' -ea ignore | Select-Object -First 1)) {
       Write-Warning "Utility: $Util"
       . $Util
       ## Get-Command Write-Log -syntax
@@ -793,10 +793,10 @@ If (Test-Path $CodeInsiders) {
   new-alias code $CodeInsiders -Scope Global -force
 }
 # new-alias sense (gcb) -Scope Global -force
-# 
+#
 
-$Local:Diff = Get-Command diff.exe -CommandType Application -ea Ignore  | Select -first 1
-If ($diff) { 
+$Local:Diff = Get-Command diff.exe -CommandType Application -ea Ignore  | Select-Object -first 1
+If ($diff) {
   Remove-Item Alias:Diff -force -ea ignore
   New-Alias diff $Diff.Definition -scope Global -force -ea Ignore
 }
@@ -828,12 +828,12 @@ Set-ProgramAlias 7z   7z.exe @('C:Util\7-Zip\app\7-Zip64\7z.exe',
                                'C:\ProgramData\chocolatey\bin\7z.exe',
                                'S:\Programs\7-Zip\app\7-Zip64\7z.exe'
                              ) -FirstPath
-# NSCP.exe Nagios NSClient++ Network monitor client Network client monitor 
+# NSCP.exe Nagios NSClient++ Network monitor client Network client monitor
 Write-Warning "$(Get-Date -Format 'HH:mm:ss') $(LINE) After Set-ProgramAlias"
 
 # Get-WMIObject Win32_logicaldisk -filter 'drivetype = 3 or drivetype = 4'
 
-$VSCode = Join-Path 'C:\Program Files*\Microsoft VS Code*\bin' Code*.cmd -resolve -ea Ignore | Select -first 1
+$VSCode = Join-Path 'C:\Program Files*\Microsoft VS Code*\bin' Code*.cmd -resolve -ea Ignore | Select-Object -first 1
 
 # 'Thu, 08 Feb 2018 07:47:42 -0800 (PST)' -replace '[^\d]+$' -as [datetime] 13:47:42 -0800 (PST)'
 # 'Thu, 08 Feb 2018 07:47:42 -0800 (PST)' -replace '[^\d]+$' -as [datetime] 13:47:42 -0800 (PST)'
@@ -881,7 +881,7 @@ Function Set-PropertyForce {
   }
   Process {
     If (!($Prop = (Get-ItemProperty -Path $Path -Name $Name -ea Ignore |
-      Select $Name))) {
+      Select-Object $Name))) {
       If (!(Test-Path $Path -ea ignore) -and $Force) {
         Write-Warning "Creating path: $Path"
         MkDir $Path -Force -ea Ignore
@@ -978,7 +978,7 @@ Function Get-WhoAmI {
   } Else { 'xxx' }
   Write-Verbose "Show: $Show Switchkey: $Switchkey"
   # $Args = "$Switch"
-  $Switch = If ($Switches) { $Switches -match "^$SwitchKey" | Select -first 1 }
+  $Switch = If ($Switches) { $Switches -match "^$SwitchKey" | Select-Object -first 1 }
   If ($Switch -in 'GROUPS', 'PRIV', 'ALL') {
     Write-Verbose "WhoAmI /$Switch /fo csv | convertfrom-csv"
     WhoAmI "/$Switch" /fo csv | convertfrom-csv
@@ -1148,7 +1148,7 @@ Function Get-ServiceProcess {      # ToDo add params for ID,Name to find
     $Service = $_;
     $Processes                               |
       Where-Object ID -eq $Service.ProcessID |
-      Select -First 1                        |
+      Select-Object -First 1                        |
       ForEach-Object { Merge-Object $_ $Service }
   } | Select-Object ID,State, Status,Name,Path
 }
@@ -1198,7 +1198,7 @@ Function Set-DefaultPropertySet { param([Object]$Object,
 
 
 
-# $x = quser; $head = ($x[0] -split '\s{2,}') -replace '\s+',''; $data = $x | ? { $_ } | select -skip 1 | convertfrom-string -PropertyNames $head -delim '\s\s+'
+# $x = quser; $head = ($x[0] -split '\s{2,}') -replace '\s+',''; $data = $x | ? { $_ } | select-Object -skip 1 | convertfrom-string -PropertyNames $head -delim '\s\s+'
 Function Get-WinStaSession {
   [CmdletBinding()]param(
     [Alias('Name')][string]$UserName,
@@ -1249,7 +1249,7 @@ Function Start-Shadow {
   $argX = $args
   If ($ID = $UserName -as [uint16]) {
   } else {
-    If ($session = Get-WinStaSession $UserName $ComputerName -verbose:$False | Select -first 1) {
+    If ($session = Get-WinStaSession $UserName $ComputerName -verbose:$False | Select-Object -first 1) {
       If ($Session.Current -and ($Env:Computername -eq $Session.ComputerName)) {
         throw "You cannot shadow yourself ($UserName) on same machine: $($Session.ComputerName)"
       } else {
@@ -1486,7 +1486,7 @@ Function Get-Free {
   }
   $PSBoundParameters.PSProvider = 'FileSystem'
   $PSDrives = Get-PSDrive @PSBoundParameters
-  $MaxUsed, $MaxFree = get-psdrive | measure -max Used,Free | Select Maximum | ForEach Maximum
+  $MaxUsed, $MaxFree = get-psdrive | measure -max Used,Free | Select-Object Maximum | ForEach Maximum
   $WidthUsed = [math]::floor([math]::Log10($MaxUsed/$Divisor)+1) + 2 + 1 #7;
   $WidthFree = [math]::floor([math]::Log10($MaxUsed/$Divisor)+1) + 2 + 1 #7;
   $PSDrives | Where-Object Used -ne '' | ForEach-Object {
@@ -1513,7 +1513,7 @@ Function Get-WMIClassInfo {
   $r = (Get-WmiObject -list $className -Amended).qualifiers | Select-Object -Object name, value
   if ($WrapList) { $r | Format-Table -AutoSize -Wrap } else { $r }
 }
-# [AppDomain]::CurrentDomain.GetAssemblies() | sort FullName | Select FullName
+# [AppDomain]::CurrentDomain.GetAssemblies() | sort FullName | Select-Object FullName
   # Fixed Get-DotNetAssembly
 Function Get-DotNetAssembly  {
   [CmdletBinding()]param(
@@ -1677,7 +1677,7 @@ Function Get-RunTime {
   )
   begin {
     If ($HistoryItem.Count -gt $Count) {
-      $HistoryItem = $HistoryItem | Select -Last $Count
+      $HistoryItem = $HistoryItem | Select-Object -Last $Count
     }
     If (!$HistoryItem) { $HistoryItem = Get-History -Count $Count }
     $width = +1 * "$((($HistoryItem | Measure-Object -max id).maximum))".length
@@ -2015,7 +2015,7 @@ Function ahk {
     If ($Help) { Return }
     [string[]]$ArgX = @(If ($Parameters) { $Parameters })
     write-verbose "$AHK [$($Path -join '] [')] Switches: [$($Switches -join '], [')] ArgX $($ArgX.count): [$($ArgX -join '], [')]"
-    If (!($AHK -and (Test-Path $AHK))) { 
+    If (!($AHK -and (Test-Path $AHK))) {
       Write-Warning "$(FLINE) AHK not present at: $AHK"
     } Else {
       $Path | ForEach-Object {
@@ -2030,13 +2030,13 @@ Function ahk {
         $Script = @(Switch ($True) {
           {[boolean]($S = @(Resolve-Path $P @EA)) -and $S.count} { Get-ScriptPath $S 1; break }
           {[boolean]($ResolveBare)             }                { $ResolveBare; break }
-          {[boolean]($S = @(Resolve-Path "$P$Ext" @EA      | Select -First 1)) } { Get-ScriptPath $S 3; break }
+          {[boolean]($S = @(Resolve-Path "$P$Ext" @EA      | Select-Object -First 1)) } { Get-ScriptPath $S 3; break }
           {[boolean]($ResolveWith)             }                { $ResolveWith; break }
           Default                                             { $P                  }
         })
         Write-Verbose "Script: $Script"
         $Script | % {
-         If (Test-Path $_) { 
+         If (Test-Path $_) {
           EchoArgs @Switches $_ @ArgX
           & $AHK   @Switches $_ @ArgX
          } Else {
@@ -2445,7 +2445,7 @@ Function Get-UserFolder {
     }
   }
   End {
-    $Folders | Select -unique Name,@{N='PSPath';E={$_.Value}}
+    $Folders | Select-Object -unique Name,@{N='PSPath';E={$_.Value}}
   }
 }
 
@@ -2594,9 +2594,9 @@ Function Set-GoLocation {
         } ElseIf ($KeyPath = TestKeyPath $P) {
           Microsoft.PowerShell.Management\Set-Location $KeyPath
         } Else {
-          Write-Verbose "$(Get-ChildItem "$P*" -ea STOP -dir | Select -first 1 | ForEach FullName)"
+          Write-Verbose "$(Get-ChildItem "$P*" -ea STOP -dir | Select-Object -first 1 | ForEach FullName)"
           Microsoft.PowerShell.Management\Set-Location (
-            Get-ChildItem "$P*" -ea STOP -dir | Select -first 1 | ForEach FullName
+            Get-ChildItem "$P*" -ea STOP -dir | Select-Object -first 1 | ForEach FullName
           )
         }
       }
@@ -2606,13 +2606,13 @@ Function Set-GoLocation {
         Write-Verbose "ForEach $P in AllArgs"
         If ($P -and (Test-Path $P -PathType Container -ea Ignore)) {
           Write-Verbose "cd to $P"
-          $Dir = Get-ChildItem -path .\ -filter "$P" -ea STOP -dir | Select -first 1 | ForEach FullName
+          $Dir = Get-ChildItem -path .\ -filter "$P" -ea STOP -dir | Select-Object -first 1 | ForEach FullName
           Write-Verbose "P: [$P] GCI: [$Dir]"
           If ($Dir) { Microsoft.PowerShell.Management\Set-Location $Dir }
         } ElseIf ($P) {
           Write-Verbose "cd to $P*"
-          Write-Verbose "GCI: Get-ChildItem -path .\ `"$P*`" -ea STOP -dir | Select -first 1 | ForEach FullName"
-          $Dir = Get-ChildItem -path .\ -filter "$P*" -ea STOP -dir | Select -first 1 | ForEach FullName
+          Write-Verbose "GCI: Get-ChildItem -path .\ `"$P*`" -ea STOP -dir | Select-Object -first 1 | ForEach FullName"
+          $Dir = Get-ChildItem -path .\ -filter "$P*" -ea STOP -dir | Select-Object -first 1 | ForEach FullName
           Write-Verbose "P: [$P] GCI: [$Dir]"
           If ($Dir) { Microsoft.PowerShell.Management\Set-Location $Dir }
         }
@@ -2886,7 +2886,7 @@ If (Get-Command Set-Proxy.ps1 -ea Ignore -and (get-computerdomain).domain -match
 #Convenience aliases for RDCMan
 $Private:RDCMan   = @('C:\Program*\*\R*D*C*Man*','C:\Program*\R*D*C*Man*')
 $Private:RDCMan   = Join-Path $RDCMan 'RDCMan.exe' -Resolve -EA ignore |
-                      Select -First 1 # Path to RDG file
+                      Select-Object -First 1 # Path to RDG file
 If ($RDCMan) {
   New-Alias rdcman $Private:RDCMan -Force
   New-Alias rdc    $Private:RDCMan -Force
@@ -2955,7 +2955,7 @@ If (Test-Path 'C:\Users\Herb\AppData\Local\Programs\Microsoft VS Code\bin\code.c
 $AHK = If     (Test-Path 'C:\util\AutoHotKey\AutoHotkeyU64.exe') { 'C:\util\AutoHotKey\AutoHotkeyU64.exe' }
        ElseIf (Test-Path 'C:\util\AutoHotKey\AutoHotkey.exe'   ) { 'C:\util\AutoHotKey\AutoHotkey.exe' }
        Else   { '' }
-If ($AHK) {  
+If ($AHK) {
   #Write-Warning "AutoHotKey defined"
   Function ak { & $AHK /r C:\bat\ahk.ahk }
   Function hk { & $AHK /r C:\bat\ahk.ahk }
@@ -2977,7 +2977,7 @@ If ($AHK) {
       }
     }
   }
-}       
+}
 
 Function ToTitleCase {
   [CmdletBinding()]Param(
@@ -3112,11 +3112,11 @@ Function Get-About {
   }
 }
 
-$Local:Cargo = Get-Command cargo.exe -CommandType Application -ea Ignore | Select -first 1
+$Local:Cargo = Get-Command cargo.exe -CommandType Application -ea Ignore | Select-Object -first 1
 If ($Cargo) { Import-Module posh-cargo -ea Ignore }
-$Local:CoreUtils = Get-Command coreutils.exe -CommandType Application -ea Ignore  | Select -first 1
+$Local:CoreUtils = Get-Command coreutils.exe -CommandType Application -ea Ignore  | Select-Object -first 1
 If ($CoreUtils) { New-Alias cu $CoreUtils.Definition -scope Global -force }
-$Local:Diff = Get-Command diff.exe -CommandType Application -ea Ignore  | Select -first 1
+$Local:Diff = Get-Command diff.exe -CommandType Application -ea Ignore  | Select-Object -first 1
 If ($diff) { New-Alias diff $Diff.Definition -scope Global -force -ea Continue}
 
 
@@ -3146,7 +3146,7 @@ Function Select-Everything {    # es.exe everything
   Begin {
     $SelectIndex = @()
     If ($PSBoundParameters.ContainsKey('Index')) {
-      If ($Index -gt 0)   { $Index-- }  # 0 or 1 is first 1 
+      If ($Index -gt 0)   { $Index-- }  # 0 or 1 is first 1
       $SelectIndex = If (($Index -ge 0)) { @{ Skip = $Index; First = 1 } }
                      Else                { @{ Last = $Index * -1       } }
     }
@@ -3157,23 +3157,23 @@ Function Select-Everything {    # es.exe everything
       $Local:PathX = (Resolve-Path $Local:PathX -ea Ignore).Path
       Write-Verbose "PathX: $Local:PathX Args: [$Args]"
       $Local:PathX = @($Local:PathX)
-    } 
+    }
     Write-Verbose "Args: $Args"
     Write-Verbose "Extra: $ExtraArgs"
     $ArchiveExtensions = '*.zip','*.rar','*.lzw','*.7z','.gz','.gzip','.tar'
     $BookExtensions    = '*.pdf','*.azw','*.azw3','*.azw4',
                          '*.djv','*.epub','*.djvu','*.mobi'
     $VideoExtensions   = '*.mp4','*.mov','*.wmv','*.mpg','*.flv','*.divx','*.rm',
-                         '*.avi','*.mkv','*.mv4','*.asf','*.m4v','*.mpeg'                     
+                         '*.avi','*.mkv','*.mv4','*.asf','*.m4v','*.mpeg'
     Switch ($True) {
       $True      { $Extensions  = $Switches = @()             }
       $File      { $Switches   += '/a-d'                      }
       $Directory { $Switches   += '/ad'                       }
       $Date      { $Switches   += '-dm', '-sort-dm-ascending' }
       $Ascending { $Switches   += '-sort-dm-ascending'        }
-      $PDF       { $Extensions += '*.pdf'                     } 
-      $Epub      { $Extensions += '*.epub'                    } 
-      $Zip       { $Extensions += '*.zip'                     } 
+      $PDF       { $Extensions += '*.pdf'                     }
+      $Epub      { $Extensions += '*.epub'                    }
+      $Zip       { $Extensions += '*.zip'                     }
       $Archives  { $Extensions += $ArchiveExtensions          }
       $Video     { $Extensions += $VideoExtensions            }
       $Books     { $Extensions += $BookExtensions             }
@@ -3184,21 +3184,21 @@ Function Select-Everything {    # es.exe everything
     $Extensions = @($Extensions -join '|')
     If (!$Args)    {
       $Args = @(Convert-ClipBoard).Trim() |
-        Where { $_ -match '[a-z]' -and $_ -notmatch '^(?-i:Downloaded)$' } | 
-        Select -first 1
-      Write-Verbose "$(FLINE) Args: [$($Args -join " `n")]"  
-      #      -replace '^([_\s]*Download[_\s*]|\W+)$' | 
+        Where { $_ -match '[a-z]' -and $_ -notmatch '^(?-i:Downloaded)$' } |
+        Select-Object -first 1
+      Write-Verbose "$(FLINE) Args: [$($Args -join " `n")]"
+      #      -replace '^([_\s]*Download[_\s*]|\W+)$' |
       If ($Args -and ($Args[0] -ceq 'Downloaded')) { $Null, $Args = $Args }
       If ($NoSubtitle) { $Args = $Args -replace ':.*' }
       Write-Verbose "Begin-NoSubtitle: $Args" ;
-      If ($NoEdition)  { $Args = $Args -replace 
+      If ($NoEdition)  { $Args = $Args -replace
         '((\d{1,2}\s*(st|nd|rd|th)*)|first|second|third|([fsent][eiolwh][-a-z]+th))\s*ed.*$' }
       Write-Verbose "Begin-NoEdition: $Args" ;
     }
   }
   Process {
-    $Args = ($Args -split '\W+').trim()                  | 
-      Where-Object   { $_ -and $_ -notmatch '^-?verbo' } | 
+    $Args = ($Args -split '\W+').trim()                  |
+      Where-Object   { $_ -and $_ -notmatch '^-?verbo' } |
       ForEach-Object { Write-verbose "[$_]"; $_        }
     If ($Ordered -or $Complete) {
       $Args = $Args.trim() -join '*' -replace '[\s*]{2,}', '*'
@@ -3220,7 +3220,7 @@ Function Select-Everything {    # es.exe everything
 
 <#
 80,445,3389,5985 | ForEach-Object {
-  $Port = $_ 
+  $Port = $_
   ‘Server1’, ‘Server2’, ‘Server3’ | ForEach-Object {
     Test-NetConnection -ComputerName $_ -Port $Port
   }
@@ -3332,7 +3332,7 @@ cd (get-userfolder documents).folder
 (get-userfolder documents).tostring()
 #>
 
-# 1..255 | % { Start-ThreadJob -Name "TestThread$_" { ForEach ($Port in 80,135,445) { 
+# 1..255 | % { Start-ThreadJob -Name "TestThread$_" { ForEach ($Port in 80,135,445) {
 Function Test-TCPPort {  # check actual IP & Port combination
   [Alias('Test-TCPService','TestTCP','tcp')][CmdLetBinding()]Param(
     [string]$Server='127.0.0.1',
@@ -3367,5 +3367,4 @@ Function Test-TCPPort {  # check actual IP & Port combination
   !$failed  # Return $true if connection Establish else $False
 }
 
-# Test-TCPPort "192.168.239.$($args[0])" $Port } } -ArgumentList $_  -ThrottleLimit 255 } ; While ($Threads = Get-Job -State Completed -HasMoreData $True) { ForEach ($Thread in $Threads) { If ($Thread.State -ne 'Completed') { Continue } "Job: $(Receive-Job $Thread)"; Remove-Job $Thread } 
- 
+# Test-TCPPort "192.168.239.$($args[0])" $Port } } -ArgumentList $_  -ThrottleLimit 255 } ; While ($Threads = Get-Job -State Completed -HasMoreData $True) { ForEach ($Thread in $Threads) { If ($Thread.State -ne 'Completed') { Continue } "Job: $(Receive-Job $Thread)"; Remove-Job $Thread }
