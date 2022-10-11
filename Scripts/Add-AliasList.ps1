@@ -8,3 +8,6 @@ New-Alias mdig 'C:\Program Files\BIND9\bin\mdig.exe' -Scope Global -Force
 New-Alias arpaname 'C:\Program Files\BIND9\bin\arpaname.exe' -Scope Global -Forc
 New-Alias host 'C:\Program Files\BIND9\bin\host.exe' -Scope Global -Force
 New-Alias delv 'C:\Program Files\BIND9\bin\delv.exe' -Scope Global -Force
+New-Alias fmo Find-Module -force -Scope Global
+New-Alias b64 ConvertFrom-Base64ToString -force -scope Global
+New-Alias tess 'C:\Program Files\Tesseract-OCR\tesseract.exe' -Scope Global -Force

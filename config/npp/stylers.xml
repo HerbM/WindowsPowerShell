@@ -917,5 +917,6 @@
         <WidgetStyle name="Active tab text" styleID="0" fgColor="C10000" fontStyle="0" bgColor="80FF00" />
         <WidgetStyle name="Inactive tabs" styleID="0" fgColor="000000" bgColor="EBEBEB" fontStyle="0" />
         <WidgetStyle name="URL hovered" styleID="0" fgColor="0000FF" fontStyle="0" bgColor="C0C0C0" />
+        <WidgetStyle name="EOL custom color" styleID="0" fgColor="DADADA" fontStyle="0" />
     </GlobalStyles>
 </NotepadPlus>

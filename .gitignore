@@ -6,6 +6,10 @@ ic.ps1
 */.#*#
 */.#*
 config/npp/save/
+*.c
+*.reg
+*.log
+*.lng
 Profile*post.ps1
 Profile*pre.ps1
 config.xml

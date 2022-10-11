@@ -1,0 +1,42 @@
+.
+After Internet search, the above is (basically) correct:
+
+The following was in the STANDARD up updating Windows Console but won't work in PS 5.1 even though it's the same "console" since PS strings don't support the \`e escape code.
+There are ways to fix that; easiest is probably the module Pansies (PowerShell ANSI Escape Sequences)
+
+The does with PowerShell 7 are explained well at the following link:
+https://duffney.io/usingansiescapesequencespowershell/
+```ps
+$asciiArt = @"
+     __ __  ____ _____  ______              
+  __/ // /_/ __ \ ___/ /___  /
+ /_  _  __/ /_/ \__ \     / /
+/_  _  __/ ____/__/ /    / /  
+ /_//_/ /_/   /____/    /_/  
+                                              
+"@
+Write-Output "`e[5;36m$asciiArt`e[0m";
+```
+
+\`e is a new ANSI escape for interpolated PS strings, similar to \`n \`r \`t  (newline, return, tab)
+
+```ps
+$esc=$([char]27)
+echo "`n$esc[1;4m256-Color Foreground & Background Charts$esc[0m"
+foreach ($fgbg in 38,48) {  # foreground/background switch
+  foreach ($color in 0..255) {  # color range
+    #Display the colors
+    $field = "$color".PadLeft(4)  # pad the chart boxes with spaces
+    Write-Host -NoNewLine "$esc[$fgbg;5;${color}m$field $esc[0m"
+    #Display 6 colors per line
+    if ( (($color+1)%6) -eq 4 ) { echo "`r" }
+  }
+  echo `n
+}
+
+```
+256 'colors' but note these are not (quite) RGB, but rather a section is set aside for 16-bit colors, and another for grey scale. 
+
+The rest is an RGB (?) and you can see this fairly clearly in the example.  (Top 2 rows are the 16 legacy colors, bottom 4 rows are the grey scale.
+
+FYI:   I spent far too long messing with this just now but I've been meaning to work this out for a while so THANKS for prompting me to look into it.

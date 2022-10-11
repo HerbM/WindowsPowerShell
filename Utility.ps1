@@ -822,6 +822,75 @@ Function Get-TempPassword() {
   $password += ($specialchar | Get-Random -count 2)
   return ($password -join '')
 }
+Function Get-TempPassword {
+  [CmdletBinding()]Param(
+    [ValidateRange(4,64kb)][UInt]$Length = 8,
+    [ValidateSet('Upper','Lower','Digit','Special','All','AlphaNumeric','Alpha')][string[]]$Require = @('All')
+  )
+  $Uppercase   = 'A'..'Z'
+  $Lowercase   = 'a'..'z'
+  $Special     = '!@*._?+~=-' -split '' # recommended set
+  $Digit       = '0'..'9'
+  $Alphabetic  = ($Uppercase + $Lowercase)
+  $AllTypes    =  $Alphabetic + $Special + $Digit
+  $Characters  = @(Get-Random $UpperCase) + (Get-Random $LowerCase) + (Get-Random $Special) + (Get-Random $Digit)
+  While ($Length -gt $Characters.Length) {
+    $Characters += Get-Random $AllTypes
+  }
+  (Get-Random $Characters -count $Length) -join ''
+}
+
+<#
+.SYNOPSIS
+  Create a random text password
+.DESCRIPTION
+  Create a random pssword of a given length, using a variety of characters:
+  LowerCase, UpperCase, Digits, SpecialCharacter, Alpha, Alphanumeric, All
+.Parameter Length
+  Create a password of given length using at least one of each character type
+.Parameter Require
+  Reuure specific characters sets using a list of oe ore more choices:
+  LowerCase, UpperCase, Digits, SpecialCharacter, Alpha, Alphanumeric, All
+.Notes
+  Minimum password length is greater of 4 or number of required character types supplied
+  Use Include instead of Require?
+  Allow for providing character sets
+  Allow for extended Ascii, Unicode, or Culture specific character sets?
+  Allow for random weighting of character sets?
+#>
+Function New-RandomPassword {
+  [CmdletBinding()]Param(
+    [ValidateRange(4,64kb)][UInt]$Length = 8,
+    [ValidateSet('Upper','Lower','Digit','Special','All','AlphaNumeric','Alpha')][string[]]$Require = @('All')
+  )
+  $RequireUpper = $RequireLower = $RequireDigit = $RequireSpecial = $False
+  Switch (@($Require)) {
+    'Upper'        { $RequireUpper   = $True;                                                   Break }
+    'Lower'        { $RequireLower   = $True;                                                   Break }
+    'Digit'        { $RequireDigit   = $True;                                                   Break }
+    'Special'      { $RequireSpecial = $True;                                                   Break }
+    'Alpha'        { $RequireUpper   = $RequireLower = $True;                                   Break }
+    'AlphaNumeric' { $RequireUpper   = $RequireLower = $RequireDigit = $True;                   Break }
+    'All'          { $RequireUpper   = $RequireLower = $RequireDigit = $RequireSpecial = $True; Break }
+    Default        { $RequireUpper   = $RequireLower = $RequireDigit = $RequireSpecial = $True        }
+  }
+  $UpperCase  = 'A'..'Z'
+  $LowerCase  = 'a'..'z'
+  $Special    = '!@*._?+~=-' -split '' # recommended set
+  $Digit      = '0'..'9'
+  $AllTypes = @()
+  If ($RequireUpper  ) { $AllTypes += $UpperCase }
+  If ($RequireLower  ) { $AllTypes += $LowerCase }
+  If ($RequireSpecial) { $AllTypes += $Special   }
+  If ($RequireDigit  ) { $AllTypes += $Digit     }
+  Write-Verbose "AllTypes: $AllTypes"
+  $Characters = Get-Random $AllTypes -count $AllTypes.Length
+  While ($Length -gt $Characters.Length) {
+    $Characters += Get-Random $AllTypes
+  }
+  (Get-Random $Characters -count $Length) -join ''
+}
+
 
 Function Get-TempName([UINT16]$Length=8, [switch]$Alphabetic, [switch]$Numeric) {
   $uppercase   = (65..90  | % {[char]$_})

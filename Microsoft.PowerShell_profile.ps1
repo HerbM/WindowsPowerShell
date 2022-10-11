@@ -45,7 +45,7 @@ $Host         | Format-List * -force | Out-String >> $Script:PSLog
 '=' * 60      | Format-List * -force | Out-String >> $Script:PSLog
 If ((Get-Variable Env:NoPSProfile -value -ea Ignore) -or
      (Get-Variable Env:SkipPSProfile -value -ea Ignore)) {
-  Write-Host "Skipping PS Profile due to environment settings" -Fore Yellow -Back DarkRed
+  Write-Host "Skipping PowerShell Profile due to environment settings" -Fore Yellow -Back DarkRed
   return
 }
 #region    Parameters
@@ -1039,7 +1039,7 @@ $PSVersionNumber = "$($psversiontable.psversion.major).$($psversiontable.psversi
 $CurrentWindowTitle = $Host.ui.RawUI.WindowTitle
 if ($CurrentWindowTitle -match 'Windows PowerShell([\(\)\s\d]*)$') {
   $Host.ui.RawUI.WindowTitle += " $(Get-WhoAmI) OS:" +
-    (Get-WMIObject win32_operatingsystem).version + "PS: $PSVersionNumber"
+    (Get-WMIObject win32_operatingsystem).version + "PowerShell version: $PSVersionNumber"
 }
 
 write-warning "$(Get-Date -Format 'HH:mm:ss') $(LINE) Before Show-Module "
@@ -1825,8 +1825,8 @@ Function sbcl {
     [Parameter(ParameterSetName='LiteralPath', Mandatory,
       ValueFromPipeLine, ValueFromPipelineByPropertyName)]
     [Alias('PSPath')][string[]]$LiteralPath       = @(),
-    [string]$SBCL                                 = 'C:\build\SBCLisp\sbcl.exe',
-    [string]$Core                                 = 'C:\build\SBCLisp\sbcl.core',
+    [string]$SBCL                                 = 'D:\Programs\SBCL\sbcl.exe',
+    [string]$Core                                 = 'D:\Programs\SBCL\sbcl.core',
     [Int32]$DynamicSpaceSize                      = 10000,
     [Parameter(ValueFromRemainingArguments)]
     [string[]]$Arguments                          = @(),
@@ -2491,7 +2491,6 @@ $goHash = [ordered]@{
   PF         = ${ENV:ProgramFiles}
   PD         = ${ENV:ProgramData}
   power      = "$books\PowerShell"
-  PowerShell = "$Books\PowerShell"
   pro        = $PSProfileDirectory
   prof       = $PSProfileDirectory
   profile    = $ProfileDirectory
@@ -2530,10 +2529,10 @@ Function Set-GoAlias {
       Try {
         If ($goHash.$Name -and
             (Test-Path $goHash.$Name -PathType Container -ea Ignore)) {
-          Write-Verbose "New-Alias $Name Set-GoLocation -force -scope Global -ea STOP"
-                         New-Alias $Name Set-GoLocation -force -scope Global -ea STOP
+          Write-Verbose "$(FLINE) New-Alias $Name Set-GoLocation -force -scope Global -ea STOP"
+                                  New-Alias $Name Set-GoLocation -force -scope Global -ea STOP
         }
-      } Catch { Write-Warning "Can't recreate Alias $Name Set-GoLocation" }
+      } Catch { Write-Warning "$(FLINE) Can't recreate Alias $Name Set-GoLocation" }
     }
   }
 }
@@ -2859,7 +2858,7 @@ Function Get-PSVersion {
   "$($psversiontable.psversion.major).$($psversiontable.psversion.minor)"
 }
 
-function Load-Assembly {
+Function Load-Assembly {
   [CmdletBinding()]param(
     [Parameter(Mandatory, ValueFromPipeline)]
     [ValidateNotNullOrEmpty()][String]$AssemblyName,
@@ -3100,6 +3099,15 @@ Function Convert-ClipBoard {
   End {}
 }
 
+Filter Convert-FileUrl {
+  Function CleanUrl { $Args[0] -replace '(%\d\d)+',' ' -replace '^.*[\\/]' }
+  If ($Args -and $Args[0]) {
+    ForEach ($Url in $Args) { CleanUrl $Url }
+  } Else {
+    CleanUrl $_
+  }
+}
+
 Function Get-About {
   Param([String[]]$Name='.*')
   Begin {
@@ -3119,13 +3127,15 @@ If ($CoreUtils) { New-Alias cu $CoreUtils.Definition -scope Global -force }
 $Local:Diff = Get-Command diff.exe -CommandType Application -ea Ignore  | Select-Object -first 1
 If ($diff) { New-Alias diff $Diff.Definition -scope Global -force -ea Continue}
 
-
+New-Alias ses es -Scope Global -force
 Function Select-Everything {    # es.exe everything
-  [cmdletbinding(PositionalBinding=$False)][Alias('se')]param(
+  [cmdletbinding(PositionalBinding=$False)][Alias('se','ese')]param(
     [Parameter(valuefromremainingarguments)][string[]]$Args = @(),
-    [String[]]$Path                                           = '',
-    [Int]   $Index,
-    [Alias('Number','Maximum')][UInt32] $First,
+    [String[]]$Path                                         = '',
+    [UInt32[]]$Indexes = @(),
+    [String]$Exclude                                        = '^$',
+    [String]$Include                                        = '.',
+    [Alias('Number','Maximum','Select')][UInt32]$First,
     [Alias('Omit','Offset')]   [UInt32]$Skip,
     [Alias('MoreArgs')][String[]]$AddArgs                   = @(),
     [Switch]$Directory                                      = $False,
@@ -3141,14 +3151,23 @@ Function Select-Everything {    # es.exe everything
     [switch]$ZIP                                            = $False,
     [switch]$Video                                          = $False,
     [switch]$Archives                                       = $False,
+    [switch]$Executables                                    = $False,
+    [switch]$Programs                                       = $False,
     [switch]$Ordered                                        = $False
   )
   Begin {
     $SelectIndex = @()
-    If ($PSBoundParameters.ContainsKey('Index')) {
-      If ($Index -gt 0)   { $Index-- }  # 0 or 1 is first 1
-      $SelectIndex = If (($Index -ge 0)) { @{ Skip = $Index; First = 1 } }
-                     Else                { @{ Last = $Index * -1       } }
+    $NoIndex = $True
+    If ($PSBoundParameters.ContainsKey('Indexes') -and $Indexes.Count -gt 0) {
+      $NoIndex = $False
+      $SelectIndex = $Indexes | Where-Object { try {
+          $A = $_ -as 'Int';
+          $A -is 'Int' -and $A -gt 0
+        } Catch {}
+      }
+      #If ($Index -gt 0)   { $Index-- }  # 0 or 1 is first 1
+      #$SelectIndex = If (($Index -ge 0)) { @{ Skip = $Index; First = 1 } }
+      #               Else                { @{ Last = $Index * -1       } }
     }
     $ExtraArgs, $Args = $Args.Where({$_ -match '^[-/]'}, 'split')
     $Local:PathX = $Null
@@ -3161,38 +3180,42 @@ Function Select-Everything {    # es.exe everything
     Write-Verbose "Args: $Args"
     Write-Verbose "Extra: $ExtraArgs"
     $ArchiveExtensions = '*.zip','*.rar','*.lzw','*.7z','.gz','.gzip','.tar'
+    $ExeExtensions     = '*.exe','*.com'
+    $ProgramExtensions = $Env:PathExt -replace '\.', '*.' -split ';'
     $BookExtensions    = '*.pdf','*.azw','*.azw3','*.azw4',
                          '*.djv','*.epub','*.djvu','*.mobi'
     $VideoExtensions   = '*.mp4','*.mov','*.wmv','*.mpg','*.flv','*.divx','*.rm',
                          '*.avi','*.mkv','*.mv4','*.asf','*.m4v','*.mpeg'
     Switch ($True) {
-      $True      { $Extensions  = $Switches = @()             }
-      $File      { $Switches   += '/a-d'                      }
-      $Directory { $Switches   += '/ad'                       }
-      $Date      { $Switches   += '-dm', '-sort-dm-ascending' }
-      $Ascending { $Switches   += '-sort-dm-ascending'        }
-      $PDF       { $Extensions += '*.pdf'                     }
-      $Epub      { $Extensions += '*.epub'                    }
-      $Zip       { $Extensions += '*.zip'                     }
-      $Archives  { $Extensions += $ArchiveExtensions          }
-      $Video     { $Extensions += $VideoExtensions            }
-      $Books     { $Extensions += $BookExtensions             }
+      $True         { $Extensions  = $Switches = @()             }
+      $File         { $Switches   += '/a-d'                      }
+      $Directory    { $Switches   += '/ad'                       }
+      $Date         { $Switches   += '-dm', '-sort-dm-ascending' }
+      $Ascending    { $Switches   += '-sort-dm-ascending'        }
+      $PDF          { $Extensions += '*.pdf'                     }
+      $Epub         { $Extensions += '*.epub'                    }
+      $Zip          { $Extensions += '*.zip'                     }
+      $Archives     { $Extensions += $ArchiveExtensions          }
+      $Video        { $Extensions += $VideoExtensions            }
+      $Books        { $Extensions += $BookExtensions             }
+      $Programs     { $Extensions += $ProgramExtensions          }
+      $Executables  { $Extensions += $ExeExtensions              }
       $PSBoundParameters.ContainsKey('First') { $Switches += '-n', $First}
       $PSBoundParameters.ContainsKey('Skip' ) { $Switches += '-o', $Skip }
       Default    {                                            }
     }
     $Extensions = @($Extensions -join '|')
     If (!$Args)    {
-      $Args = @(Convert-ClipBoard).Trim() |
-        Where { $_ -match '[a-z]' -and $_ -notmatch '^(?-i:Downloaded)$' } |
-        Select-Object -first 1
+      $Args = @((Convert-ClipBoard) -replace '^[\s\r\n]+|[\s\r\n]+$').Trim() |
+        Where-Object { $_ -match '[a-z]' -and $_ -notmatch '^(?-i:Downloaded)$' } |
+          Select-Object -first 1
       Write-Verbose "$(FLINE) Args: [$($Args -join " `n")]"
       #      -replace '^([_\s]*Download[_\s*]|\W+)$' |
       If ($Args -and ($Args[0] -ceq 'Downloaded')) { $Null, $Args = $Args }
       If ($NoSubtitle) { $Args = $Args -replace ':.*' }
       Write-Verbose "Begin-NoSubtitle: $Args" ;
       If ($NoEdition)  { $Args = $Args -replace
-        '((\d{1,2}\s*(st|nd|rd|th)*)|first|second|third|([fsent][eiolwh][-a-z]+th))\s*ed.*$' }
+        '((\d{1,2}(st|nd|rd|th))|(first|second|third|((four|fif|six|seven|eigh|nin|ten|eleven|twel|thirteen|fourteen)th)))[_\s-]ed[iton]*\s*' }
       Write-Verbose "Begin-NoEdition: $Args" ;
     }
   }
@@ -3207,9 +3230,19 @@ Function Select-Everything {    # es.exe everything
     Write-Verbose "es $Local:PathX $Switches $args $Extensions $ExtraArgs" ;
     ForEach ($Line in @(echoargs @Local:PathX @Switches @Args @AddArgs @Extensions @ExtraArgs)) { Write-Verbose $Line }
     Write-Verbose "$(FLINE) SelectIndex:`n$($SelectIndex | Out-String )"
+    Write-Verbose "$(echoargs @Local:PathX @Switches @Args @AddArgs @Extensions @ExtraArgs)"
+    Write-Verbose "Indexes     = $Indexes"
+    Write-Verbose "SelectIndex = $SelectIndex"
+    $LineCount = 0
     es @Local:PathX @Switches @Args @AddArgs @Extensions @ExtraArgs |
-      Select-Object $SelectIndex |
-      ForEach-Object -Begin { $LineCount = 0 } { $LineCount++; $_ }
+      #Select-Object $SelectIndex |
+      Where-Object { $_ -match $Include -and $_ -notMatch $Exclude } |
+        ForEach-Object  -Process {
+          $LineCount++;
+          If ($NoIndex -or ($LineCount -in $SelectIndex)) { $_ }
+          # $_
+        }
+      #| ForEach-Object -Begin { $LineCount = 0 } { $LineCount++; $_ }
   }
   End {
     If (!$LineCount) {
@@ -3333,6 +3366,7 @@ cd (get-userfolder documents).folder
 #>
 
 # 1..255 | % { Start-ThreadJob -Name "TestThread$_" { ForEach ($Port in 80,135,445) {
+Filter Exec { & $_ } # Mostly for piping files to open/exec in default app
 Function Test-TCPPort {  # check actual IP & Port combination
   [Alias('Test-TCPService','TestTCP','tcp')][CmdLetBinding()]Param(
     [string]$Server='127.0.0.1',

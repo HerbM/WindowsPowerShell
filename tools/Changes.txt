@@ -1,13 +1,16 @@
-Tuesday, 25 January 2021: Version 1.4.1.1005
-	updated localization
+Thursday, 16 December 2021: Version 1.4.1.1014
+	updated installer to protect against DLL hijacking.
+	updated installer to support ASLR.
+	fixed an issue with the ETP client requesting the wrong number of results.
+	fixed an issue with hotkey_user_notification_state.
+	added -rescan-all command line option.
 
-Tuesday, 19 January 2021: Version 1.4.1.1004
-	added <meta name=\"robots\" content=\"noindex, nofollow\"> to http server
+Thursday, 3 June 2021: Version 1.4.1.1009
+	fixed an issue with detecting NTFS volumes.
 
-Friday, 8 January 2021: Version 1.4.1.1003
+Monday, 25 January 2021: Version 1.4.1.1005
 	fixed a security issue with loading urlmon.dll and imm32.dll.
 	fixed a 4-byte utf8 comparison issue.
-	fixed an issue with the ETP client skipping space prefixes in filenames.
 	fixed an issue with connecting to the Everything Service from some devices (eg: a ram drive).
 	fixed an issue with focus search on activate.
 	fixed an issue with excluding filenames with 4-byte UTF-8 characters.
@@ -28,8 +31,7 @@ Friday, 8 January 2021: Version 1.4.1.1003
 	fixed an issue when renaming a file or folder.
 	fixed a crash with unaligned memory access and some USB disk drivers.
 	fixed an issue with Everything not showing as an active window correctly.
-	fixed an issue with Windows 10 not giving Everything focus from the system tray after opening and closing the startmenu not working when creating a new window.
-	fixed an issue with Windows 10 not giving Everything focus from the system tray after opening and closing the startmenu.
+	fixed an issue with Windows 10 not giving Everything focus
 	fixed an issue with scheduled folder updates never occuring for network drives when waking from sleep.
 	fixed an issue when permanently deleting folders with really long filenames.
 	fixed an issue with gathering icons for files with paths longer than 260 characters.
@@ -43,10 +45,12 @@ Friday, 8 January 2021: Version 1.4.1.1003
 	fixed an issue with accessing offline volumes.
 	fixed an issue with comparing dc: to dm:
 	fixed an issue with attrib:d
+	fixed an issue with the ETP client skipping space prefixes in filenames.
 	added autofocus to the HTTP server search box.
 	added check to see if volumes are mounted before accessing.
 	added Lite version (which removes ETP/FTP/HTTP Servers and removes IPC)
-	access denied dialog will now prompt to install the Everything Service by default when Store settings and data in %APPDATA%\Everything is enabled.
+	added <meta name=\"robots\" content=\"noindex, nofollow\"> to http server
+	access denied dialog will now prompt to install the Everything Service.
 	start menu shortcut and Desktop shortcut now installed as "Everything"
 	compiled with /DYNAMICBASE
 	compiled with /NXCOMPAT
